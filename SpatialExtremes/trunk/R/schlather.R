@@ -7,7 +7,7 @@
 ##be unit Frechet and only the covariance function parameters are
 ##estimated.
 schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
-                          fit.marge = FALSE, warn.inf = TRUE, method = "Nelder-Mead",
+                          fit.marge = FALSE, warn.inf = TRUE, method = "BFGS",
                           std.err.type = "none", corr = FALSE){
   ##data is a matrix with each column corresponds to one location
   ##locations is a matrix giving the coordinates (1 row = 1 station)
