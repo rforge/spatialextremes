@@ -210,17 +210,17 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nDim, int *n
   //Stage 5: Removing the penalizing terms (if any)
   // 1- For the location parameter
   if (*locpenalty > 0)
-    *dns = *dns - penalization2(locpenmat, loccoeff, *locpenalty,
-				*nloccoeff, *npparloc);
+    *dns = *dns - penalization(locpenmat, loccoeff, *locpenalty,
+			       *nloccoeff, *npparloc);
  
   // 2- For the scale parameter
   if (*scalepenalty > 0)    
-    *dns = *dns - penalization2(scalepenmat, scalecoeff, *scalepenalty,
-				*nscalecoeff, *npparscale);
+    *dns = *dns - penalization(scalepenmat, scalecoeff, *scalepenalty,
+			       *nscalecoeff, *npparscale);
     
   // 3- For the shape parameter
   if (*shapepenalty > 0)
-    *dns = *dns - penalization2(shapepenmat, shapecoeff, *shapepenalty,
-				*nshapecoeff, *npparshape);
+    *dns = *dns - penalization(shapepenmat, shapecoeff, *shapepenalty,
+			       *nshapecoeff, *npparshape);
   
 }
