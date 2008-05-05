@@ -78,8 +78,8 @@ double lplikschlather(double *data, double *rho, double *jac,
 	}
 
 	//Now the final step, multiplying by Fvec
-	dvecM1 = log(dvecM1 * lFvec);
-	dvecM2 = log(dvecM2 * lFvec);
+	//dvecM1 = log(dvecM1 * lFvec);
+	//dvecM2 = log(dvecM2 * lFvec);
 	dvecMixed = log(dvecMixed * lFvec) +
 	  jac[k + i * nObs] + jac[k + j * nObs];
 
