@@ -1,0 +1,386 @@
+\documentclass{report}
+\usepackage{a4wide}
+\usepackage{amsmath}
+
+\title{SpatialExtremes: A R package for Modelling Spatial Extremes}
+\author{Mathieu Ribatet}
+
+\begin{document}
+%\VignetteIndexEntry{An R Package for Modelling Spatial Extremes} 
+%\VignetteDepens{SpatialExtremes}
+%\VignetteKeyword{Extreme Value Theory, Multivariate Extremes, Max-stable processes} 
+%\VignettePackage{SpatialExtremes}
+
+\maketitle
+
+\appendix
+
+\chapter{Density and Gradient Computations}
+\label{cha:dens-grad-comp}
+
+\section{The Smith Characterisation}
+\label{sec:smith-char}
+
+The Smith characterisation of a max-stable process is given by:
+
+\begin{equation}
+  \label{eq:smith}
+  \Pr[Z_1 \leq z_1, Z_2 \leq z_2] = \exp\left[-\frac{1}{z_1} \Phi
+    \left(\frac{a}{2} + \frac{1}{a} \log \frac{z_2}{z_1} \right) -
+    \frac{1}{z_2} \Phi \left(\frac{a}{2} + \frac{1}{a}
+      \log\frac{z_1}{z_2} \right) \right]
+\end{equation}
+where $\Phi$ is the standard normal cumulative distribution function
+and, for two location \#1 and \#2  
+\begin{equation*}
+  a^2 = \Delta x^T \Sigma^{-1} \Delta x \quad \text{and} \quad 
+  \Sigma = 
+  \begin{bmatrix}
+    cov_{11} & cov_{12}\\
+    cov_{12} & cov_{22}
+  \end{bmatrix}
+\end{equation*}
+where $\Delta x$ is the distance vector between location \#1 and
+location \#2.
+
+\subsection{Useful quantities}
+\label{sec:usefull-quantities}
+
+Computation of the density as well as the gradient of the density is
+not difficult but ``heavy'' though. For computation facilities and to
+help readers, we define:
+\begin{eqnarray}
+  \label{eq:1}
+  c_1 = \frac{a}{2} + \frac{1}{a} \log \frac{z_2}{z_1} \quad
+  \text{and} \quad
+  c_2 = \frac{a}{2} + \frac{1}{a} \log \frac{z_1}{z_2}
+\end{eqnarray}
+From these definitions, we note that $c_1 + c_2 = a$.
+
+\subsection{Density computation}
+\label{sec:density-computation-smith}
+
+From \eqref{eq:smith}, we note the standard normal distribution
+appears. Consequently, we need to compute its derivatives in $c_1$ and
+$c_2$.
+\begin{eqnarray}
+  \label{eq:2}
+  \frac{\partial c_1}{\partial z_1} = \frac{1}{a} \left(-
+    \frac{z_2}{z_1^2} \frac{z_1}{z_2} \right) = -\frac{1}{az_1} &\qquad&
+  \frac{\partial c_1}{\partial z_2} = \frac{1}{a} \frac{1}{z_1}
+  \frac{z_1}{z_2} = \frac{1}{az_2}\\
+  \frac{\partial c_2}{\partial z_1} = - \frac{\partial c_1}{\partial z_1}
+  = \frac{1}{az_1} &\qquad&
+  \frac{\partial c_2}{\partial z_2} = - \frac{\partial c_1}{\partial z_2}
+  = - \frac{1}{az_2}  
+\end{eqnarray}
+
+As the normal distribution appears in the Smith characterisation, the
+following quantities will be useful:
+\begin{eqnarray}
+  \label{eq:6}
+  \frac{\partial \Phi(c_1)}{\partial z_1} = \frac{\partial
+    \Phi(c_1)}{\partial c_1}
+  \frac{\partial c_1}{\partial z_1} =  -\frac{\varphi(c_1)}{az_1} &\qquad&
+  \frac{\partial \Phi(c_1)}{\partial z_2} = \frac{\partial
+    \Phi(c_1)}{\partial c_1}
+  \frac{\partial c_1}{\partial z_2} =  \frac{\varphi(c_1)}{az_2}\\
+  \frac{\partial \Phi(c_2)}{\partial z_1} = \frac{\partial \Phi(c_2)}{\partial c_2}
+  \frac{\partial c_2}{\partial z_1} =  \frac{\varphi(c_2)}{az_1} &\qquad&
+  \frac{\partial \Phi(c_2)}{\partial z_2} = \frac{\partial \Phi(c_2)}{\partial c_2}
+  \frac{\partial c_2}{\partial z_2} =  -\frac{\varphi(c_2)}{az_2}\\
+  \frac{\partial \varphi(c_1)}{\partial z_1} = \frac{\partial \varphi(c_1)}{\partial c_1}
+  \frac{\partial c_1}{\partial z_1} = \frac{c_1 \varphi(c_1)}{az_1} &\qquad& 
+  \frac{\partial \varphi(c_1)}{z_2} = \frac{\partial
+    \varphi(c_1)}{\partial c_1} \frac{\partial c_1}{\partial z_2} = -
+  \frac{c_1 \varphi(c_1)}{a z_2}\\
+  \frac{\partial \varphi(c_2)}{\partial z_1} = \frac{\partial \varphi(c_2)}{\partial c_2}
+  \frac{\partial c_2}{\partial z_1} = - \frac{c_2 \varphi(c_2)}{a z_1} &\qquad&
+  \frac{\partial \varphi(c_2)}{\partial z_2} = \frac{\partial \varphi(c_2)}{\partial c_2}
+  \frac{\partial c_2}{\partial z_2} = \frac{c_2 \varphi(c_2)}{a z_2}
+\end{eqnarray}
+
+Define
+\begin{equation}
+  \label{eq:3}
+  A = \frac{1}{z_1}\Phi(c_1) \quad \text{and} \quad B = \frac{1}{z_2}\Phi(c_2)
+\end{equation}
+Consequently, $F(z_1, z_2) = exp(-A -B)$ and
+\begin{equation}
+  \label{eq:4}
+  \frac{\partial F}{\partial z_1} (z_1, z_2) = - \left(\frac{\partial
+      A}{\partial z_1} + \frac{\partial B}{\partial z_1} \right)
+  F(z_1, z_2)\qquad
+  \frac{\partial F}{\partial z_2} (z_1, z_2) = - \left(\frac{\partial
+      A}{\partial z_2} + \frac{\partial B}{\partial z_2} \right)
+  F(z_1, z_2)
+\end{equation}
+By noting that
+\begin{eqnarray}
+  \label{eq:5}
+  \frac{\partial A}{\partial z_1} &=& -\frac{\Phi(c_1)}{z_1^2} +
+  \frac{1}{z_1} \left(-\frac{\varphi(c_1)}{az_1}\right) =
+  -\frac{\Phi(c_1)}{z_1^2} - \frac{\varphi(c_1)}{az_1^2}\\
+  \frac{\partial B}{\partial z_1} &=& \frac{1}{z_2}
+  \frac{\varphi(c_2)}{az_1} = \frac{\varphi(c_2)}{az_1z_2}\\
+  \frac{\partial A}{\partial z_2} &=& \frac{1}{z_1}
+  \frac{\varphi(c_1)}{az_2} = \frac{\varphi(c_1)}{az_1z_2}\\
+  \frac{\partial B}{\partial z_2} &=& -\frac{\Phi(c_2)}{z_2^2} +
+  \frac{1}{z_2} \left(- \frac{\varphi(c_2)}{az_2}\right) =
+  -\frac{\Phi(c_2)}{z_2^2} - \frac{\varphi(c_2)}{az_2^2}
+\end{eqnarray}
+and
+\begin{eqnarray}
+  \label{eq:10}
+   \frac{\partial^2 A}{\partial z_2 \partial z_1} &=& 
+   \frac{\partial }{\partial z_2} \left(-\frac{\Phi(c_1)}{z_1^2} -
+     \frac{\varphi(c_1)}{az_1^2}\right) = -\frac{\varphi(c_1)}{a z_1^2
+     z_2} + \frac{c_1\varphi(c_1)}{a^2 z_1^2 z_2} = -\frac{c_2
+     \varphi(c_1)}{a^2z_1^2z_2}\\
+   \frac{\partial^2 B}{\partial z_2 \partial z_1} &=& \frac{\partial
+   }{\partial z_2} \frac{\varphi(c_2)}{az_1z_2} =
+   -\frac{c_1\varphi(c_2)}{a^2z_1z_2^2}
+\end{eqnarray}
+So that,
+\begin{eqnarray}
+  \label{eq:7}
+  \frac{\partial F}{\partial z_1} (z_1, z_2) &=&  \left(
+    \frac{\Phi(c_1)}{z_1^2} + \frac{\varphi(c_1)}{az_1^2} -
+    \frac{\varphi(c_2)}{az_1z_2} \right) F(z_1, z_2)\\
+  \frac{\partial F}{\partial z_2} (z_1, z_2) &=& \left(
+   \frac{\Phi(c_2)}{z_2^2} + \frac{\varphi(c_2)}{az_2^2}
+   -\frac{\varphi(c_1)}{az_1z_2} \right) F(z_1, z_2)
+\end{eqnarray}
+Finally,
+\begin{equation}
+  \label{eq:9}
+  \frac{\partial^2 F}{\partial z_2 \partial z_1} (z_1,
+  z_2) = - \left(\frac{\partial^2 A}{\partial z_2 \partial z_1} +
+    \frac{\partial^2 B}{\partial z_2 \partial z_1} \right) F(z_1, z_2)
+  - \left(\frac{\partial A}{\partial z_1} + \frac{\partial B}{\partial
+      z_1} \right) \frac{\partial F}{\partial z_2} (z_1, z_2)
+\end{equation}
+Thus, it leads to the following relation:
+\begin{equation}
+  \label{eq:11}
+  \frac{f(z_1, z_2)}{F(z_1, z_2)} = \frac{c_2 \varphi(c_1)}{a^2z_1^2z_2} + \frac{c_1
+    \varphi(c_2)}{a^2z_1z_2^2} + \left(\frac{\Phi(c_1)}{z_1^2} +
+    \frac{\varphi(c_1)}{az_1^2} - \frac{\varphi(c_2)}{az_1z_2} \right)
+  \left(\frac{\Phi(c_2)}{z_2^2} + \frac{\varphi(c_2)}{az_2^2} -
+    \frac{\varphi(c_1)}{az_1z_2} \right)
+\end{equation}
+
+\subsection{Gradient computation}
+\label{sec:gradient-computation-smith}
+
+The gradient of the density must be known as we fit our model using
+pairwise likelihood rather than the ``full'' likelihood. Consequently,
+our model is ``mispecified'' and we need to compute standard errors
+using a \textbf{sandwich estimator}. Let $\hat{\theta}$ be the maximum
+pairwise likelihood estimate; then:
+\begin{equation*}
+  \hat{\theta} \sim \mathcal{N}\left(\theta, H^{-1} J H^{-1}\right)
+\end{equation*}
+where $H$ is the Fisher information matrix and $J$ the gradient of the
+log pairwise likelihood.
+
+Let us recall that the log pairwise likelihood is defined by:
+\begin{equation*}
+  \ell_{pair}(\mathbf{x}, \Sigma^{-1}) = \sum_{k = 1}^{n_{obs}}
+  \sum_{i=1}^{n_{site}-1} \sum_{j=i+1}^{n_{site}} \log f(x_k^{(i)}, x_k^{(j)})
+\end{equation*}
+where $n_{obs}$ is the number of observations, $\mathbf{x}_k =
+(x_k^{(1)}, \ldots, x_k^{(n_{site})})$ is the $k$-th observation vector,
+$n_{site}$ is the number of site within the region and $f$ is the
+bivariate density.
+
+Consequently, the gradient of the log pairwise density is given by:
+\begin{equation*}
+  \nabla f_{pair}(\mathbf{x}, \Sigma^{-1}) = \sum_{i=1}^{n_{site}-1}
+  \sum_{j=i+1}^{n_{site}} \nabla \log f(x_k^{(i)}, x_k^{(j)})
+\end{equation*}
+
+Define:
+\begin{eqnarray*}
+  A &=& - \frac{\Phi(c1)}{z_1} - \frac{\Phi(c2)}{z_2}\\
+  B &=& \frac{\Phi(c_2)}{z_2^2} + \frac{\varphi(c_2)}{az_2^2} -
+  \frac{\varphi(c_1)}{az_1z_2}\\
+  C &=& \frac{\Phi(c_1)}{z_1^2} + \frac{\varphi(c_1)}{az_1^2} -
+  \frac{\varphi(c_2)}{az_1z_2}\\
+  D &=& \frac{c_2 \varphi(c_1)}{a^2z_1^2z_2} + \frac{c_1
+    \varphi(c_2)}{a^2z_1z_2^2}  
+\end{eqnarray*}
+so that,
+\begin{equation*}
+  \log f(x_k^{(i)}, x_k^{(j)}) = A + log(B C + D)
+\end{equation*}
+
+As the logarithm of the bivariate density $f$ is only a function of the
+Mahalanobis distance $a$, the gradient is given through the following
+relation\footnote{algebra operators are defined component-wise.}:
+\begin{equation*}
+  \nabla \log f(x_k^{(i)}, x_k^{(j)}) = \frac{\partial}{\partial a}
+  \log f(x_k^{(i)}, x_k^{(j)}) \left( \frac{\partial a}{\partial
+      cov{11}}, \frac{\partial a}{\partial cov{12}}, \frac{\partial
+      a}{\partial cov{22}} \right)^T
+\end{equation*}
+
+For clarity purposes, we first compute the following quantities:
+\begin{eqnarray*}
+  \frac{\partial c_1}{\partial a} = \frac{1}{2} - \frac{1}{a^2} \log
+  \frac{z_2}{z_1} = \frac{c_2}{a} &\qquad& \frac{\partial c_2}{\partial
+    a} = \frac{c_1}{a}\\
+  \frac{\partial \Phi(c_1)}{\partial a} = \frac{\partial
+    \Phi(c_1)}{\partial c_1} \frac{\partial c_1}{\partial a} =
+  \frac{c_2 \varphi(c_1)}{a} &\qquad& \frac{\partial
+    \Phi(c_2)}{\partial a} = \frac{c_1 \varphi(c_2)}{a}\\
+  \frac{\partial \varphi(c_1)}{\partial a} = \frac{\partial
+    \varphi(c_1)}{\partial c_1} \frac{\partial c_1}{\partial a} =
+  -\frac{c_1c_2 \varphi(c_1)}{a} &\qquad& \frac{\partial
+    \varphi(c_2)}{\partial a} = -\frac{c_1c_2 \varphi(c_2)}{a}\\
+  \frac{\partial c_2\varphi(c_1)}{\partial a} = \frac{c_1(1 -
+    c_2^2)\varphi(c_1)}{a} &\qquad& \frac{\partial
+    c_1\varphi(c_2)}{\partial a} = \frac{(1-c_1^2)c_2\varphi(c_2)}{a}
+\end{eqnarray*}
+
+Consequently, we have:
+\begin{eqnarray*}
+  dA &=& \frac{\partial A}{\partial a} = - \frac{1}{z_1} \frac{c_2
+    \varphi(c_1)}{a} - \frac{1}{z_2} \frac{c_1 \varphi(c_2)}{a} =
+  -\frac{c_2 \varphi(c_1)}{az_1} - \frac{c_1 \varphi(c_2)}{az_2}\\
+  dC &=& \frac{\partial C}{\partial a} = \frac{1}{z_1^2} \frac{c_2
+    \varphi(c_1)}{a} + \frac{1}{z_1^2}
+  \frac{-\frac{c_1c_2\varphi(c_1)}{a} a  - \varphi(c_1)}{a^2} -
+  \frac{1}{z_1z_2} \frac{-\frac{c_1c_2 \varphi(c_2)}{a}a -
+    \varphi(c_2)}{a^2}\\
+  &=& \frac{c_2 \varphi(c_1)}{az_1^2} -
+  \frac{(1+c_1c_2)\varphi(c_1)}{a^2z_1^2} +
+  \frac{(1+c_1c_2)\varphi(c_2)}{a^2z_1z_2}\\
+  &=& \frac{\left[c_2(a - c_1)-1\right] \varphi(c_1)}{a^2z_1^2} +
+  \frac{(1+c_1c_2)\varphi(c_2)}{a^2z_1z_2}\\
+  &=& \frac{(c_2^2 - 1) \varphi(c_1)}{a^2z_1^2} +
+  \frac{(1+c_1c_2)\varphi(c_2)}{a^2z_1z_2}\\
+  dB &=& \frac{\partial B}{\partial a} = \frac{(c_1^2 - 1)
+    \varphi(c_2)}{a^2z_2^2} +
+  \frac{(1+c_1c_2)\varphi(c_1)}{a^2z_1z_2}\\
+  dD &=& \frac{\partial D}{\partial a} = \frac{1}{z_1^2z_2}\frac{\frac{c_1(1 -
+      c_2^2)\varphi(c_1)}{a}a^2 - 2a c_2\varphi(c_1)}{a^4} +
+  \frac{1}{z_1z_2^2}\frac{\frac{(1-c1^2)c_2\varphi(c_2)}{a}a^2 - 2a
+    c_1\varphi(c_2)}{a^4}\\
+ &=& \frac{(c_1- 2 c_2 - c_1c_2^2) \varphi(c_1)}{a^3z_1^2z_2} +
+ \frac{(c_2- 2 c_1 - c_1^2c_2) \varphi(c_2)}{a^3z_1z_2^2}
+\end{eqnarray*}
+
+Finally,
+\begin{equation*}
+  \nabla \log f(x_k^{(i)}, x_k^{(j)}) = \left[dA + \frac{(C dB + B dC
+    +dD)}{BC + D} \right] \left( \frac{\partial a}{\partial cov{11}},
+    \frac{\partial a}{\partial cov{12}}, \frac{\partial a}{\partial
+      cov{22}} \right)^T
+\end{equation*}
+
+\section{The Schlather Characterisation}
+\label{sec:schlather-char}
+
+The Schlather characterisation of a max-stable process is given by:
+
+\begin{equation}
+  \label{eq:schlather}
+  \Pr[Z_1 \leq z_1, Z_2 \leq z_2] = \exp\left[-\frac{1}{2}
+    \left(\frac{1}{z_1} + \frac{1}{z_2} \right) \left(1 + \sqrt{1 - 2
+        (\rho(h) + 1) \frac{z_1 z_2}{(z_1 + z_2)^2}} \right) \right]
+\end{equation}
+where $h$ is the distance between location \#1 and location \#2 and
+$\rho(h)$ is a valid correlation function such as $-1 \leq rho(h) \leq
+1$.
+
+\subsection{Density computation}
+\label{sec:density-computation-schlather}
+
+Computation of the density as well as the gradient of the density is
+not difficult but ``heavy'' though.
+
+By noting that, 
+\begin{equation*}
+  \frac{\partial^2 }{\partial z_1 \partial z_2} \exp(V(z_1, z_2)) =
+  \left[\frac{\partial^2}{\partial z_1 \partial z_2} V(z_1, z_2) +
+    \left(\frac{\partial }{\partial z_1} V(z_1, z_2) \right)
+    \left(\frac{\partial }{\partial z_2} V(z_1, z_2) \right) \right]
+  \exp(V(z_1, z_2))
+\end{equation*}
+where $V(z_1, z_2)$ is any function in $\mathcal{C}^2$.
+
+Consequently, to compute the (bivariate) density, we only need to
+compute the partial derivatives and the mixed partial derivatives. For
+our case, it turns out to be:
+
+\begin{equation*}
+  V(z_1, z_2) = -\frac{1}{2} \left(\frac{1}{z_1} + \frac{1}{z_2} \right)
+  \left(1 + \sqrt{1 - 2 (\rho(h) + 1) \frac{z_1 z_2}{(z_1 + z_2)^2}}
+  \right)
+\end{equation*}
+
+
+\begin{equation*}
+  \frac{\partial}{\partial z_1} V(z_1, z_2) = -\frac{\rho(h) z_1 -
+    c1 - z_2}{2 c_1 z_1^2} \quad
+  \frac{\partial}{\partial z_2} V(z_1, z_2) = -\frac{\rho(h) z_2 -
+    c1 - z_1}{2 c_1 z_2^2} \quad
+  \frac{\partial^2}{\partial z_1\partial z_2} V(z_1, z_2) =
+  \frac{1 - \rho(h)^2}{2 c_1^3}
+\end{equation*}
+where
+\begin{equation*}
+  c_1 = \sqrt{z_1^2 + z_2^2 - 2 z_1 z_2 \rho(h)}
+\end{equation*}
+
+Lastly,
+\begin{equation}
+  \label{eq:schlatherDens}
+  f(z_1, z_2) = \left[ \frac{1 - \rho(h)^2}{2 c_1^3} +
+    \left(-\frac{\rho(h) z_1 - c1 - z_2}{2 c_1 z_1^2} \right) \left(
+      -\frac{\rho(h) z_2 - c1 - z_1}{2 c_1 z_2^2} \right) \right]
+  \exp(V(z_1, z_2))
+\end{equation}
+
+\subsection{Gradient computation}
+\label{sec:gradient-computation-schlather}
+
+From equation~(\ref{eq:schlatherDens}), we have:
+\begin{equation*}
+  \log f(z_1, z_2) = A \log(B + C D)
+\end{equation*}
+where
+\begin{equation*}
+  A =  V(z_1, z_2) \quad
+  B = \frac{1 - \rho(h)^2}{2 c_1^3} \quad
+  C = -\frac{\rho(h) z_1 - c1 - z_2}{2 c_1 z_1^2} \quad
+  D = -\frac{\rho(h) z_2 - c1 - z_1}{2 c_1 z_2^2}
+\end{equation*}
+
+As the bivariate density is only a function of the covariance function
+$\rho(h)$, we have:
+\begin{equation*}
+  \nabla \log f(z_1, z_2) = \frac{\partial}{\partial \rho(h)} \log
+  f(z_1, z_2) \left(\nabla \rho(h) \right)^T
+\end{equation*}
+where $\nabla \rho(h)$ is the vector of the partial derivatives of the
+covariance function $\rho(h)$ with respect to its parameters.
+
+\begin{eqnarray*}
+  dA &=& \frac{\partial A}{\partial \rho(h)} = \frac{1}{2c_1}\\
+  dB &=& \frac{\partial B}{\partial \rho(h)}  = -\frac{\rho(h)}{c_1^3} +
+  \frac{3(1 - \rho(h))z_1 z_2}{c_1^5}\\
+  dC &=& \frac{\partial C}{\partial \rho(h)} = -\frac{z_1-z_2\rho(h)}{2
+    c_1^3}\\
+  dD &=& \frac{\partial D}{\partial \rho(h)} = -\frac{z_2-z_1\rho(h)}{2
+    c_1^3}\\
+\end{eqnarray*}
+So that,
+\begin{equation*}
+  \nabla \log f(z_1, z_2) = \left[dA + \frac{(C dB + B dC
+    +dD)}{BC + D} \right] \left(\nabla \rho(h) \right)^T
+\end{equation*}
+
+\end{document}
+
