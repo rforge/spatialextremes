@@ -35,9 +35,8 @@ modeldef.rb <- function(data, formula){
   ##This function computes the design matrix X for using radial basis
   ##as well as the penalty matrix K
 
-  attach(as.data.frame(data))
-  model <- eval(formula[[3]])
-  detach(as.data.frame(data))
+  model <- eval(formula[[3]], envir = as.data.frame(data))
+
   dsgn.mat <- model$dsgn.mat
   pen.mat <- model$pen.mat
   degree <- model$degree

@@ -135,7 +135,9 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
 
   else opt$convergence <- "successful"
 
-  if (std.err.type == "observed"){
+  param <- c(opt$par, unlist(fixed.param))
+
+  if (std.err.type != "none"){
     
     tol <- .Machine$double.eps^0.5
     
@@ -148,7 +150,11 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
 
     else{
       var.cov <- solve(var.cov, tol = tol)
-      
+      jacobian <- .schlathergrad(param, data, dist, cov.mod.num, as.double(0),
+                                 as.double(0), as.double(0), fit.marge = fit.marge,
+                                 std.err.type = std.err.type)
+
+      var.cov <- var.cov %*% jacobian %*% var.cov
       std.err <- diag(var.cov)
 
       std.idx <- which(std.err <= 0)
@@ -180,18 +186,14 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
     var.cov <- NULL
   }
 
-  param <- c(opt$par, unlist(fixed.param))
-
-  rho <- function(h)
-    2^(1 - param["smooth"]) / gamma(param["smooth"]) *
-      (h / param["scale"])^param["smooth"] * 
-        besselK(h / param["scale"], param["smooth"])
+  cov.fun <-  covariance(scale = param["scale"], smooth = param["smooth"],
+                        cov.mod = cov.mod)
   
   extCoeff <- function(h)
     1 + sqrt(1 - 1/2 * (rho(h) + 1))
 
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
-                 var.cov = var.cov, param = param, cov.fun = rho, fixed = unlist(fixed.param),
+                 var.cov = var.cov, param = param, cov.fun = cov.fun, fixed = unlist(fixed.param),
                  deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
                  counts = opt$counts, message = opt$message, est = "MLE", data = data,
                  logLik = -opt$value, opt.value = opt$value, model = "schlather",
@@ -234,6 +236,11 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
     cov.mod.num <- 2
   if (cov.mod == "powexp")
     cov.mod.num <- 3
+
+  ##With our notation, formula must be of the form y ~ xxxx
+  loc.form <- update(loc.form, y ~ .)
+  scale.form <- update(scale.form, y ~ .)
+  shape.form <- update(shape.form, y ~ .)
 
   loc.model <- modeldef(coord, loc.form)
   scale.model <- modeldef(coord, scale.form)
@@ -358,6 +365,8 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
 
   else opt$convergence <- "successful"
 
+  param <- c(opt$par, unlist(fixed.param))
+  
   if (std.err.type == "observed"){
     
     tol <- .Machine$double.eps^0.5
@@ -371,11 +380,11 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
 
     else{
       var.cov <- solve(var.cov, tol = tol)
-      jacobian <- smithgrad(param, data, distVec, loc.dsgn.mat,
-                            scale.dsgn.mat, shape.dsgn.mat,
-                            fit.marge = fit.marge)
+      jacobian <- .schlathergrad(param, data, dist, cov.mod.num, loc.dsgn.mat,
+                                 scale.dsgn.mat, shape.dsgn.mat,
+                                 fit.marge = fit.marge)
       
-      var.cov <- var.cov[1:3,1:3] %*% jacobian %*% var.cov[1:3,1:3]
+      var.cov <- var.cov %*% jacobian %*% var.cov
       
       std.err <- diag(var.cov)
       
@@ -407,8 +416,6 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
     var.cov <- NULL
   }
 
-  param <- c(opt$par, unlist(fixed.param))
-  
   cov.fun <- covariance(scale = param["scale"], smooth = param["smooth"],
                         cov.mod = cov.mod)
   
@@ -420,7 +427,7 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
                  deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
                  counts = opt$counts, message = opt$message, data = data, est = "MLE",
                  logLik = -opt$value, opt.value = opt$value, model = "schlather", coord = coord,
-                 fit.marge = fit.marge, extCoeff = extCoeff, cov.mod = cov.mod,
+                 fit.marge = fit.marge, extCoeff = extCoeff, cov.mod = cov.mod, cov.fun = cov.fun,
                  loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                  lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
                  shape.type = shape.type)

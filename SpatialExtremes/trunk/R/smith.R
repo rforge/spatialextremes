@@ -35,21 +35,21 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
     scale.names <- paste("scale", 1:n.site, sep="")
     shape.names <- paste("shape", 1:n.site, sep="")
   
-    param <- c("icov11", "icov12", "icov22", loc.names, scale.names, shape.names)
+    param <- c("cov11", "cov12", "cov22", loc.names, scale.names, shape.names)
     body(nplk) <- parse(text = paste("-.C('smithfull', data, as.double(distVec), as.integer(n.site), as.integer(n.obs),",
                             paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                            "as.double(icov11), as.double(icov12), as.double(icov22), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+                            "as.double(cov11), as.double(cov12), as.double(cov22), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
   }
   
   else{
-    param <- c("icov11", "icov12", "icov22")
+    param <- c("cov11", "cov12", "cov22")
     body(nplk) <- parse(text = paste("-.C('smithfull', data, as.double(distVec), as.integer(n.site), as.integer(n.obs),",
                             paste("as.double(rep(1,", n.site, ")), "),
                             paste("as.double(rep(1,", n.site, ")), "),
                             paste("as.double(rep(1,", n.site, ")), "),
-                            "as.double(icov11), as.double(icov12), as.double(icov22), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+                            "as.double(cov11), as.double(cov12), as.double(cov22), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
   }
  
   ##Define the formal arguments of the function
@@ -78,7 +78,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
       start <- as.list(unlist(list(loc = locs, scale = scales, shape = shapes)))
     }
 
-    start <- c(list(icov11 = 1, icov12 = 0, icov22 = 1), start)
+    start <- c(list(cov11 = 1, cov12 = 0, cov22 = 1), start)
     
     
     start <- start[!(param %in% names(list(...)))]
@@ -142,10 +142,11 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
     }
 
     else{
+      
       var.cov <- solve(var.cov, tol = tol)
-      jacobian <- smithgrad(param, data, distVec, as.double(0),
-                            as.double(0), as.double(0),
-                            fit.marge = fit.marge, std.err.type = std.err.type)
+      jacobian <- .smithgrad(param, data, distVec, as.double(0), as.double(0),
+                             as.double(0), fit.marge = fit.marge, std.err.type =
+                             std.err.type)
       
       var.cov <- var.cov %*% jacobian %*% var.cov
       
@@ -181,7 +182,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
     var.cov <- NULL
   }
     
-  iSigma <- matrix(c(opt$par["icov11"], opt$par["icov12"], opt$par["icov12"],
+  iSigma <- matrix(c(opt$par["cov11"], opt$par["cov12"], opt$par["cov12"],
                      opt$par["cov22"]), 2, 2)
 
   extCoeff <- function(posVec)
@@ -221,6 +222,11 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
 
   else
     hessian <- TRUE
+
+  ##With our notation, formula must be of the form y ~ xxxx
+  loc.form <- update(loc.form, y ~ .)
+  scale.form <- update(scale.form, y ~ .)
+  shape.form <- update(shape.form, y ~ .)
 
   loc.model <- modeldef(coord, loc.form)
   scale.model <- modeldef(coord, scale.form)
@@ -273,7 +279,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   else
     shape.names <- paste("shapeCoeff", 1:n.shapecoeff, sep="")
   
-  param <- c("icov11", "icov12", "icov22", loc.names, scale.names, shape.names)
+  param <- c("cov11", "cov12", "cov22", loc.names, scale.names, shape.names)
 
   ##First create a "void" function
   nplk <- function(x) x
@@ -284,7 +290,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
                           paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                           paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                           paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                          "as.double(icov11), as.double(icov12), as.double(icov22), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+                          "as.double(cov11), as.double(cov12), as.double(cov22), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
   ##Define the formal arguments of the function
   form.nplk <- NULL
   for (i in 1:length(param))
@@ -347,8 +353,8 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
 
   param <- c(opt$par, unlist(fixed.param))
   
-  iSigma <- matrix(c(param["icov11"], param["icov12"], param["icov12"],
-                     param["icov22"]), 2, 2)
+  iSigma <- matrix(c(param["cov11"], param["cov12"], param["cov12"],
+                     param["cov22"]), 2, 2)
 
   extCoeff <- function(posVec)
     2 * pnorm(sqrt(posVec %*% iSigma %*% posVec) / 2)
@@ -366,9 +372,9 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
 
     else{
       var.cov <- solve(var.cov, tol = tol)
-      jacobian <- smithgrad(param, data, distVec, loc.dsgn.mat,
-                            scale.dsgn.mat, shape.dsgn.mat,
-                            fit.marge = fit.marge)
+      jacobian <- .smithgrad(param, data, distVec, loc.dsgn.mat,
+                             scale.dsgn.mat, shape.dsgn.mat,
+                             fit.marge = fit.marge)
       
       var.cov <- var.cov[1:3,1:3] %*% jacobian %*% var.cov[1:3,1:3]
       
@@ -393,7 +399,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
         corr.mat <- NULL
       
       colnames(var.cov) <- rownames(var.cov) <- 
-        names(std.err) <- c("icov11", "icov12", "icov22")
+        names(std.err) <- c("cov11", "cov12", "cov22")
     }
   }
 
