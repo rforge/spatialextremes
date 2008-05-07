@@ -73,9 +73,9 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
     cat("  Marginal Parameters:\n")
 
     if (x$fit.marge){
-      idx <- which(names(x$fitted.values) == "icov11")
-      idx <- c(idx, which(names(x$fitted.values) == "icov12"))
-      idx <- c(idx, which(names(x$fitted.values) == "icov22"))
+      idx <- which(names(x$fitted.values) == "cov11")
+      idx <- c(idx, which(names(x$fitted.values) == "cov12"))
+      idx <- c(idx, which(names(x$fitted.values) == "cov22"))
 
       margin.param <- x$fitted.values[-idx]
       loc.idx <- which(substr(names(margin.param), 1, 3) == "loc")

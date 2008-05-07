@@ -49,9 +49,9 @@ dpostmaxstab <- function(par, prior, model, cov.mod, data, coord,
   }
 }
 
-dpriormaxstab <- function(par, mean, icov){
+dpriormaxstab <- function(par, mean, cov){
   par[1:2] <- log(par[1:2])
-  as.numeric((par -mean) %*% icov %*% (par - mean))
+  as.numeric((par -mean) %*% cov %*% (par - mean))
 }
 
 gibbs <- function(n, init, prior, model, cov.mod, ...,
@@ -97,8 +97,6 @@ prior <- function(mean, cov){
   if(any(eg <= 0))
     warning("`cov' may not be positive definite")
   
-  icov <- solve(cov)
-
-  list(mean = mean, icov = icov)
+  list(mean = mean, cov = cov)
 }
 
