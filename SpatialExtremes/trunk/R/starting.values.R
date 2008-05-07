@@ -10,12 +10,11 @@
     loc[i] <- marg.param["loc"]
     scale[i] <- marg.param["scale"]
     shape[i] <- marg.param["shape"]
-    ##data[,i] <- gev2frech(data[,i], loc[i], scale[i], shape[i])
+    data[,i] <- gev2frech(data[,i], loc[i], scale[i], shape[i])
   }
 
-  ##icovs <- smithfull(data, coord)$param
-  ##icovs <- c(1, 0, 1)
-  ##names(icovs) <- c("icov11", "icov12", "icov22")
+  covs <- smithfull(data, coord, method = "Nelder")$param
+  ##names(covs) <- c("cov11", "cov12", "cov22")
 
   locCoeff <- loc.model$init.fun(loc)
   scaleCoeff <- scale.model$init.fun(scale)
@@ -27,19 +26,19 @@
 
   ##Then we transform observation to unit Frechet using the predict
   ##values for the GEV parameters
-  loc <- loc.model$dsgn.mat %*% locCoeff
-  scale <- scale.model$dsgn.mat %*% scaleCoeff
-  shape <- shape.model$dsgn.mat %*% shapeCoeff
+  ##loc <- loc.model$dsgn.mat %*% locCoeff
+  ##scale <- scale.model$dsgn.mat %*% scaleCoeff
+  ##shape <- shape.model$dsgn.mat %*% shapeCoeff
+  ##
+  ##for (i in 1:n.site)
+  ##  data[,i] <- gev2frech(data[,i], loc[i], scale[i], shape[i])
+  ##
+  ##covs <- smithfull(data, coord)$param
+  ##names(covs) <- c("cov11", "cov12", "cov22")
 
-  for (i in 1:n.site)
-    data[,i] <- gev2frech(data[,i], loc[i], scale[i], shape[i])
-
-  icovs <- smithfull(data, coord)$param
-  names(icovs) <- c("icov11", "icov12", "icov22")
-
-  ##start <- list(icov11 = icovs["icov11"], icov12 = icovs["icov12"],
-  ##              icov22 = icovs["icov22"])
-  start <- as.list(icovs)
+  ##start <- list(cov11 = covs["cov11"], cov12 = covs["cov12"],
+  ##              cov22 = covs["cov22"])
+  start <- as.list(covs)
 
   names(locCoeff) <- names(scaleCoeff) <- names(shapeCoeff) <- NULL
   
@@ -70,6 +69,7 @@
     loc[i] <- marg.param["loc"]
     scale[i] <- marg.param["scale"]
     shape[i] <- marg.param["shape"]
+    data[,i] <- gev2frech(data[,i], loc[i], scale[i], shape[i])
   }
 
   locCoeff <- loc.model$init.fun(loc)
@@ -82,14 +82,15 @@
 
   ##Then we transform observation to unit Frechet using the predict
   ##values for the GEV parameters
-  loc <- loc.model$dsgn.mat %*% locCoeff
-  scale <- scale.model$dsgn.mat %*% scaleCoeff
-  shape <- shape.model$dsgn.mat %*% shapeCoeff
-
-  for (i in 1:n.site)
-    data[,i] <- gev2frech(data[,i], loc[i], scale[i], shape[i])
-
-  cov.param <- schlatherfull(data, coord)$param
+  ##loc <- loc.model$dsgn.mat %*% locCoeff
+  ##scale <- scale.model$dsgn.mat %*% scaleCoeff
+  ##shape <- shape.model$dsgn.mat %*% shapeCoeff
+  ##
+  ##for (i in 1:n.site)
+  ##  data[,i] <- gev2frech(data[,i], loc[i], scale[i], shape[i])
+  ##
+  
+  cov.param <- schlatherfull(data, coord, method = "Nelder")$param
   
   start <- as.list(cov.param)
 
