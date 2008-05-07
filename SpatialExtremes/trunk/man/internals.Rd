@@ -5,7 +5,6 @@
 \alias{dpriormaxstab}
 \alias{gibbs}
 \alias{prior}
-\alias{smithgrad}
 \alias{smithrb}
 \alias{gev2frech}
 \alias{smithdsgnmat}
