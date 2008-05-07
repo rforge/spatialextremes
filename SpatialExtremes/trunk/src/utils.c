@@ -50,6 +50,7 @@ struct toFrech gev2frech(double *data, int nObs, int nSite, double *locs,
   //When flag == 1, the GEV parameters are invalid.
   
   int i, j;
+  const double eps = R_pow(DOUBLE_EPS, 0.3);
   struct toFrech ans;
   ans.frech =  (double *)R_alloc(nObs * nSite, sizeof(double));
   ans.jac =  (double *)R_alloc(nObs * nSite, sizeof(double));
@@ -59,7 +60,7 @@ struct toFrech gev2frech(double *data, int nObs, int nSite, double *locs,
     for (j=0;j<nObs;j++){
       ans.frech[i * nObs + j] = (data[i * nObs + j] - locs[i])/ scales[i];
       
-      if(shapes[i] == 0){
+      if(fabs(shapes[i]) <= eps){
 	ans.jac[i * nObs + j] = ans.frech[i * nObs + j] - log(scales[i]);
 	ans.frech[i * nObs + j] = exp(ans.frech[i * nObs + j]);
       }
