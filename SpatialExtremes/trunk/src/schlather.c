@@ -107,6 +107,7 @@ void schlatherlm(int *covmod, double *data, double *dist, int *nDim, int *nSite,
 			   *nloccoeff, *nscalecoeff, *nshapecoeff);
 
   if (gevParam.flag == 1){
+    //printf("problem with GEV param.\n");
     *dns = -1.0e35;
     return;
   }
@@ -119,6 +120,7 @@ void schlatherlm(int *covmod, double *data, double *dist, int *nDim, int *nSite,
   toFrechObj = gev2frech(data, *nObs, *nSite, locs, scales, shapes);
     
   if (toFrechObj.flag == 1){
+    //printf("problem with trans. to Frechet\n");
     *dns = -1.0e35;
     return;
   }
@@ -168,6 +170,7 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nDim, int *n
   }
   
   if (covCompObj.flag == 1){
+    //printf("problem with covariance param.\n");
     *dns = -1.0e35;
     return;
   }
@@ -180,6 +183,7 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nDim, int *n
 			   *nloccoeff, *nscalecoeff, *nshapecoeff);
 
   if (gevParam.flag == 1){
+    //printf("problem with GEV param.\n");
     *dns = -1.0e35;
     return;
   }
@@ -192,6 +196,7 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nDim, int *n
   toFrechObj = gev2frech(data, *nObs, *nSite, locs, scales, shapes);
     
   if (toFrechObj.flag == 1){
+    //printf("problem with transf. to Frechet\n");
     *dns = -1.0e35;
     return;
   }
