@@ -27,15 +27,15 @@ struct covComp whittleMatern(double *dist, int nPairs, double scale,
   }
   
   for (i=0;i<nPairs;i++){
+
     ans.vec[i] = R_pow(2, 1 - smooth) / gammafn(smooth) *
-      R_pow(dist[i] / scale, smooth) * 
-      bessel_k(dist[i] / scale, smooth, 1);
-    
-    if (fabs(ans.vec[i]) > 1){
-      //printf("|rho| > 1 !\n"); 
-      ans.flag = 1;
-      return ans;
-    }
+	  R_pow(dist[i] / scale, smooth) * 
+	  bessel_k(dist[i] / scale, smooth, 1);
+
+
+    if (!R_FINITE(ans.vec[i]))
+      ans.vec[i] = 1.0;
+
   }
 
   return ans;
@@ -60,16 +60,9 @@ struct covComp cauchy(double *dist, int nPairs, double scale,
     return ans;
   }
   
-  for (i=0;i<nPairs;i++){
+  for (i=0;i<nPairs;i++)
     ans.vec[i] = R_pow(1 + R_pow_di(dist[i] / scale, 2), -smooth);
     
-    if (fabs(ans.vec[i]) > 1){
-      //printf("|rho| > 1 !\n"); 
-      ans.flag = 1;
-      return ans;
-    }
-  }
-
   return ans;
 }
 
@@ -92,16 +85,9 @@ struct covComp powerExp(double *dist, int nPairs, double scale,
     return ans;
   }
   
-  for (i=0;i<nPairs;i++){
+  for (i=0;i<nPairs;i++)
     ans.vec[i] = exp(-R_pow(dist[i] / scale, smooth));
     
-    if (fabs(ans.vec[i]) > 1){
-      //printf("|rho| > 1 !\n"); 
-      ans.flag = 1;
-      return ans;
-    }
-  }
-
   return ans;
 }
 
@@ -127,18 +113,11 @@ struct covComp genHyper(double *dist, int nPairs, double scale,
     return ans;
   }
   
-  for (i=0;i<nPairs;i++){
+  for (i=0;i<nPairs;i++)
     ans.vec[i] = sqrt(smooth2 / 2 / M_PI) / R_pow(smooth1, smooth3) /
       bessel_k(smooth1 * smooth2, smooth3, 1) * 
       R_pow(pythag(smooth1, dist[i]), smooth3 - .5) *
       bessel_k(smooth2 * pythag(smooth1, dist[i]), smooth3 - .5, 1);
-    
-    if (fabs(ans.vec[i]) > 1){
-      //printf("|rho| > 1 !\n"); 
-      ans.flag = 1;
-      return ans;
-    }
-  }
 
   return ans;
 }
@@ -195,6 +174,7 @@ struct covComp mahalDistFct(double *distVec, int nPairs, double *cov11,
   //covariance matrix instead of the inverse covariance matrix directly
 
   int i;
+  const double eps = R_pow(DOUBLE_EPS, 0.3);
   double det;
   struct covComp ans;
 
@@ -204,7 +184,7 @@ struct covComp mahalDistFct(double *distVec, int nPairs, double *cov11,
   det = *cov11 * *cov22 - R_pow_di(*cov12, 2);
   //We test if the covariance matrix is *not* nonnegative
   //definite e.g. all minor determinant are negative or 0
-  if ((det <= 0) || (*cov22 <= 0)){
+  if ((det <= eps) || (*cov22 <= 0)){
     ans.flag = 1;
     //printf("Covariance matrice is singular!\n");
     return ans;
@@ -217,11 +197,11 @@ struct covComp mahalDistFct(double *distVec, int nPairs, double *cov11,
 			    *cov22 * R_pow_di(distVec[i], 2)) / det;
     
     //We test if the Mahalanobis distance is singular.
-    if (!R_FINITE(ans.vec[i]) || (ans.vec[i] <= 0)){
-      ans.flag = 1;
-      //printf("mahalDist^2 is erradic!\n"); 
-      return ans;
-    }
+    //if (!R_FINITE(ans.vec[i]) || (ans.vec[i] <= 0)){
+    //  ans.flag = 1;
+    //  //printf("mahalDist^2 is erradic!\n"); 
+    //  return ans;
+    //}
     
     ans.vec[i] = sqrt(ans.vec[i]);
   }
