@@ -1,7 +1,7 @@
 #include "header.h"
 
 SEXP gibbs(SEXP n, SEXP np, SEXP thin, SEXP init,
-	   SEXP propsd, SEXP f, SEXP rho){
+	   SEXP propsd, SEXP f, SEXP env){
 
   int i,j,k,nr;
   int nn = INTEGER(n)[0], nnp = INTEGER(np)[0], thinn = INTEGER(thin)[0];
@@ -13,8 +13,8 @@ SEXP gibbs(SEXP n, SEXP np, SEXP thin, SEXP init,
   crow = (double *)R_alloc(nnp, sizeof(double));
   prow = (double *)R_alloc(nnp, sizeof(double));
   PROTECT(current = allocVector(REALSXP, nnp));
-  PROTECT(nacc = allocVector(INTSXP, nnp));
-  PROTECT(nex = allocVector(INTSXP, nnp));
+  PROTECT(nacc = allocVector(REALSXP, nnp));
+  PROTECT(nex = allocVector(REALSXP, nnp));
   PROTECT(mc = allocVector(REALSXP, nr * nnp));
   PROTECT(ans = allocVector(VECSXP, 3));
   PROTECT(dpst_lower = allocVector(REALSXP, 1));
@@ -23,7 +23,7 @@ SEXP gibbs(SEXP n, SEXP np, SEXP thin, SEXP init,
   for(i=0;i<nnp;i++) {
     prow[i] = REAL(init)[i];
     REAL(mc)[i] = REAL(init)[i];
-    INTEGER(nex)[i] = INTEGER(nacc)[i] = 0;
+    REAL(nex)[i] = REAL(nacc)[i] = 0.0;
   }
 
   RANDIN;
@@ -31,34 +31,35 @@ SEXP gibbs(SEXP n, SEXP np, SEXP thin, SEXP init,
     for(j=0;j<nnp;j++) {     
 
       if (j < 2){
-	prop = rlnorm(log(prow[j]), REAL(propsd)[j]);
-	prop_ratio = prop / prow[j];
+      	prop = rlnorm(log(prow[j]), REAL(propsd)[j]);
+      	prop_ratio = prop / prow[j];
       }
-
+      
       else{
 	prop = rnorm(prow[j], REAL(propsd)[j]);
-	prop_ratio = 1;
+	prop_ratio = 1.0;
       }
       
       for(k=0;k<nnp;k++) {
-     	if (k < j) 
+	if (k < j) 
 	  REAL(current)[k] = crow[k];
 
         else
 	  REAL(current)[k] = prow[k];
-      }
 
-      defineVar(install("x"), current, rho);
-      dpst_lower = eval(f, rho);
+      }      
+
+      defineVar(install("x"), current, env);
+      dpst_lower = eval(f, env);
+
       REAL(current)[j] = prop;
+      defineVar(install("x"), current, env);
+      dpst_upper = eval(f, env);
+            
+      post_ratio = exp(REAL(dpst_upper)[0] -REAL(dpst_lower)[0]);
 
-      defineVar(install("x"), current, rho);
-      dpst_upper = eval(f, rho);
-
-      post_ratio = exp(REAL(dpst_upper)[0] - REAL(dpst_lower)[0]);
-      
       if(!R_FINITE(REAL(dpst_upper)[0]))
-        INTEGER(nex)[j] = INTEGER(nex)[j] + 1;
+        REAL(nex)[j] = REAL(nex)[j] + 1;
 
       acc_prob = fmin2(1.0, prop_ratio * post_ratio);
 
@@ -69,19 +70,18 @@ SEXP gibbs(SEXP n, SEXP np, SEXP thin, SEXP init,
 
       if (runif(0, 1) < acc_prob) {
         crow[j] = prop;
-	INTEGER(nacc)[j] = INTEGER(nacc)[j] + 1;
+	REAL(nacc)[j] = REAL(nacc)[j] + 1;
       }
 
       else crow[j] = prow[j];
     }
 
     if( ((i+1) % thinn) == 0)
-      for(j=0;j<nnp;j++) {
-	REAL(mc)[(i+1)/thinn * nnp + j] = crow[j];
-      }
+      for(k=0;k<nnp;k++)
+	REAL(mc)[(i+1)/thinn * nnp + k] = crow[k];
     
-    for (j=0;j<nnp;j++)
-      prow[j] = crow[j];
+    for (k=0;k<nnp;k++)
+      prow[k] = crow[k];
   }
 
   RANDOUT;
