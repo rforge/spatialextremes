@@ -5,20 +5,19 @@
   pairwise likelihood. Two max-stable characterisations are available:
   the Smith and Schlather representations.
 }
-\usage{fitmaxstab(data,  coord, model = c("smith", "schlather"), cov.mod
-= "whitmat", loc.form, scale.form, shape.form, fit.marge = TRUE, \dots,
-warn.inf = TRUE, method = "BFGS", std.err.type = "none", corr = FALSE)}
+\usage{fitmaxstab(data,  coord, cov.mod = c("gauss", "whitmat",
+"cauchy", "powexp"), loc.form, scale.form, shape.form, fit.marge = TRUE,
+\dots, warn.inf = TRUE, method = "BFGS", std.err.type = "none", corr = FALSE)}
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
     one location.}
   \item{coord}{A matrix that gives the coordinates of each
     location. Each row corresponds to one location.}
-  \item{model}{A character string that defines the max-stable
-    characterisation. Must be one of "smith" or "schlather".}
   \item{cov.mod}{A character string corresponding the the covariance
-    model in the Schlather representation. Must be one of "whitmat",
-    "cauchy" or "powexp" for the Whittle-Matern, the Cauchy and the
-    Powered Exponential covariance family.}
+    model in the max-stable representation. Must be one of "gauss" for
+    the Smith's characterisation; or "whitmat", "cauchy" or "powexp" for
+    the Whittle-Matern, the Cauchy and the Powered Exponential
+    covariance family with the Schlather's characterisation.} 
   \item{loc.form, scale.form, shape.form}{R formulas defining the
     spatial linear model for the GEV parameters. May be missing. See
     section details.}
@@ -122,14 +121,15 @@ require(RandomFields)
 
 ##Define the coordinate of each location
 n.site <- 30
-locations <- matrix(rnorm(2*n.site, sd = sqrt(.2)), ncol = 2)
+locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
 ##Simulate a max-stable process - with unit Frechet margins
 ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
                    param=c(0,1,0,30, .5), maxstable="extr",
-                   n = 30)
-ms1 <- t(ms0)
+                   n = 40)
+ms0 <- t(ms0)
+ms1 <- ms0
 
 ##Now define the spatial model for the GEV parameters
 param.loc <- -10 + 2 * locations[,2]
@@ -150,23 +150,66 @@ shape.form <- shape ~ 1
 
 ##Fit a max-stable process
 ##  1- using the Schlather representation
-\dontrun{
-fitmaxstab(ms1, locations, "schlather", loc.form, scale.form,
+fitmaxstab(ms1, locations, "whitmat", loc.form, scale.form,
            shape.form)
-}
 
 ##  2- using the Smith representation
-\dontrun{
-fitmaxstab(ms1, locations, "smith", loc.form, scale.form,
-           shape.form)}
+fitmaxstab(ms1, locations, "gauss", loc.form, scale.form,
+           shape.form)
 
 ##  3- without any spatial model for the GEV parameters
 ## Be careful this could be *REALLY* time consuming
 \dontrun{fitmaxstab(ms1, locations, "schlather")}
 
 ##  4- Fixing the smooth parameter of the Whittle-Matern family
-##     to 0.5 - e.g. considering exponential family
-\dontrun{fitmaxstab(ms1, locations, "schlather", smooth = 0.5)}
+##     to 0.5 - e.g. considering exponential family. We suppose the date
+##     are unit Frechet here.
+fitmaxstab(ms0, locations, "whitmat", smooth = 0.5, fit.marge = FALSE)
+
+##  5- Fitting a penalized smoothing splines for the margins.
+##     We need to re-simulate a new max-stable process.
+sigma = matrix(c(100, 25, 25, 220),ncol = 2)
+sigma.inv = solve(sigma)
+sqrtCinv = t(chol(sigma.inv))
+model = list(list(model = "gauss", var = 1,
+  aniso = sqrtCinv / 2))
+ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model,
+                   maxstable="Bool", n = 40)
+ms1 <- t(ms0)
+
+
+##     And transform it to ordinary GEV margins with a non-linear
+##     function
+
+fun <- function(x)
+  2 * sin(pi * x / 4) + 10
+fun2 <- function(x)
+  (fun(x) - 7 ) / 15
+
+param.loc <- fun(locations[,2])
+param.scale <- fun(locations[,2])
+param.shape <- fun2(locations[,1])
+
+##Transformation from unit Frechet to common GEV margins
+for (i in 1:n.site)
+  ms1[,i] <- param.scale[i] * (ms1[,i]^param.shape[i] - 1) / param.shape[i] + param.loc[i]
+
+##Defining the knots, penalty, degree for the splines
+n.knots <- 5
+knots <- quantile(locations[,2], prob = 1:n.knots/(n.knots+1))
+knots2 <- quantile(locations[,1], prob = 1:n.knots/(n.knots+1))
+
+##Be careful the choice of the penalty (i.e. the smoothing parameter)
+##may strongly affect the result Here we use p-splines for each GEV
+##parameter - so it's really CPU demanding but one can use 1 p-spline
+##and 2 linear models.
+##A simple linear model will be clearly faster...
+loc.form <- y ~ rb(lat, knots = knots, degree = 3, penalty = .5)
+scale.form <- y ~ rb(lat, knots = knots, degree = 3, penalty = .5)
+shape.form <- y ~ rb(lon, knots = knots2, degree = 3, penalty = .5)
+
+fitmaxstab(ms1, locations, "gauss", loc.form, scale.form, shape.form,
+                   control = list(ndeps = rep(1e-4, 24), trace = 10))
 }
 \author{Mathieu Ribatet}
 \keyword{htest}
