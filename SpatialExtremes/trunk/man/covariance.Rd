@@ -68,12 +68,19 @@ loc.form <- loc ~ lat
 scale.form <- scale ~ lon + I(lat^2)
 shape.form <- shape ~ 1
 
-\dontrun{
-fitted <- fitmaxstab(ms1, locations, "schlather", loc.form, scale.form,
+fitted <- fitmaxstab(ms1, locations, "whitmat", loc.form, scale.form,
                shape.form)
 covariance(fitted)
 covariance(fitted, dist = seq(0,5, 0.2))
-}
+
+cov.fun.theo <- covariance(scale = 30, smooth = .5, cov.mod = "whitmat")
+cov.fun.hat <- covariance(fitted)
+
+plot(cov.fun.theo, from = 0, to = 100, xlab = "Distance", ylab =
+  "Covariance")
+title("Whittle-Matern covariance function")
+plot(cov.fun.hat, from = 0, to = 100, col = "red", add = TRUE)
+legend("topright", c("Theo.", "Fitted"), lty = 1, col = 1:2, inset = .05)
 }
 \author{Mathieu Ribatet}
 \keyword{htest}

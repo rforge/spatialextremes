@@ -44,18 +44,14 @@ form.loc <- loc ~ lat
 form.scale <- scale ~ lon + I(lat^2)
 form.shape <- shape ~ lat
 
-\dontrun{
-schlather <- fitmaxstab(ms1, locations, "schlather", loc.form = form.loc,
+schlather <- fitmaxstab(ms1, locations, "whitmat", loc.form = form.loc,
                         scale.form = form.scale, shape.form =
                         form.shape)
-}
 
 ## 4- GEV parameters estimates at each locations or at ungauged locations
-\dontrun{
 predict(schlather)
 ungauged <- data.frame(lon = runif(10), lat = rnorm(10))
 predict(schlather, ungauged)
-}
 }
 \author{Mathieu Ribatet}
 \keyword{htest}

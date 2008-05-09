@@ -5,7 +5,7 @@
   smoothing spline. 
 }
 \usage{
-\method{predict}{rb}(object, newdata, \dots)
+\method{predict}{pspline}(object, newdata, \dots)
 }
 \arguments{
   \item{object}{An object of class ``pspline''. Most often, it will be
