@@ -121,12 +121,13 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
   
   start.arg <- c(list(p = unlist(start)), fixed.param)
 
-  if (warn.inf && do.call("nllh", start.arg) == 1e36) 
+  init.lik <- do.call("nllh", start.arg)
+  if (warn.inf && (init.lik == 1.0e35)) 
     warning("negative log-likelihood is infinite at starting values")
 
   opt <- optim(start, nllh, hessian = hessian, ..., method = method)
 
-  if ((opt$convergence != 0) || (opt$value == 1e36)) {
+  if ((opt$convergence != 0) || (opt$value == 1.0e35) || (opt$value == init.lik)) {
     warning("optimization may not have succeeded")
 
     if (opt$convergence == 1) 
@@ -190,7 +191,7 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
                         cov.mod = cov.mod)
   
   extCoeff <- function(h)
-    1 + sqrt(1 - 1/2 * (rho(h) + 1))
+    1 + sqrt(1 - 1/2 * (cov.fun(h) + 1))
 
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
                  var.cov = var.cov, param = param, cov.fun = cov.fun, fixed = unlist(fixed.param),
@@ -351,12 +352,13 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   
   start.arg <- c(list(p = unlist(start)), fixed.param)
 
-  if (warn.inf && (do.call("nllh", start.arg) == 1e36)) 
+  init.lik <- do.call("nllh", start.arg)
+  if (warn.inf && (init.lik == 1.0e35)) 
     warning("negative log-likelihood is infinite at starting values")
 
   opt <- optim(start, nllh, hessian = hessian, ..., method = method)
   
-  if ((opt$convergence != 0) || (opt$value == 1e36)) {
+  if ((opt$convergence != 0) || (opt$value == 1.0e35) || (opt$value == init.lik) ) {
     warning("optimization may not have succeeded")
 
     if (opt$convergence != 0) 
