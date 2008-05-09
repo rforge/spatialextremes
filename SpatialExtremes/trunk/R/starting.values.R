@@ -14,8 +14,7 @@
   }
 
   covs <- smithfull(data, coord, method = "Nelder")$param
-  ##names(covs) <- c("cov11", "cov12", "cov22")
-
+  
   locCoeff <- loc.model$init.fun(loc)
   scaleCoeff <- scale.model$init.fun(scale)
   shapeCoeff <- shape.model$init.fun(shape)
@@ -24,20 +23,6 @@
   scaleCoeff[is.na(scaleCoeff)] <- 0
   shapeCoeff[is.na(shapeCoeff)] <- 0
 
-  ##Then we transform observation to unit Frechet using the predict
-  ##values for the GEV parameters
-  ##loc <- loc.model$dsgn.mat %*% locCoeff
-  ##scale <- scale.model$dsgn.mat %*% scaleCoeff
-  ##shape <- shape.model$dsgn.mat %*% shapeCoeff
-  ##
-  ##for (i in 1:n.site)
-  ##  data[,i] <- gev2frech(data[,i], loc[i], scale[i], shape[i])
-  ##
-  ##covs <- smithfull(data, coord)$param
-  ##names(covs) <- c("cov11", "cov12", "cov22")
-
-  ##start <- list(cov11 = covs["cov11"], cov12 = covs["cov12"],
-  ##              cov22 = covs["cov22"])
   start <- as.list(covs)
 
   names(locCoeff) <- names(scaleCoeff) <- names(shapeCoeff) <- NULL
@@ -80,16 +65,6 @@
   scaleCoeff[is.na(scaleCoeff)] <- 0
   shapeCoeff[is.na(shapeCoeff)] <- 0
 
-  ##Then we transform observation to unit Frechet using the predict
-  ##values for the GEV parameters
-  ##loc <- loc.model$dsgn.mat %*% locCoeff
-  ##scale <- scale.model$dsgn.mat %*% scaleCoeff
-  ##shape <- shape.model$dsgn.mat %*% shapeCoeff
-  ##
-  ##for (i in 1:n.site)
-  ##  data[,i] <- gev2frech(data[,i], loc[i], scale[i], shape[i])
-  ##
-  
   cov.param <- schlatherfull(data, coord, method = "Nelder")$param
   
   start <- as.list(cov.param)
