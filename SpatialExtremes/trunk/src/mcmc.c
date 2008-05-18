@@ -5,7 +5,7 @@ SEXP gibbs(SEXP n, SEXP np, SEXP thin, SEXP init,
 
   int i,j,k,nr;
   int nn = INTEGER(n)[0], nnp = INTEGER(np)[0], thinn = INTEGER(thin)[0];
-  double prop, prop_ratio, acc_prob, post_ratio;
+  double prop, acc_prob, post_ratio;
   double *crow, *prow, dpst_lower, dpst_upper;
   SEXP ans, nacc, nex, mc, current;
 
@@ -28,15 +28,7 @@ SEXP gibbs(SEXP n, SEXP np, SEXP thin, SEXP init,
   for(i=0;i<nn;i++) {
     for(j=0;j<nnp;j++) {     
 
-      if (j < 2){
-      	prop = rlnorm(log(prow[j]), REAL(propsd)[j]);
-      	prop_ratio = prop / prow[j];
-      }
-      
-      else{
-	prop = rnorm(prow[j], REAL(propsd)[j]);
-	prop_ratio = 1.0;
-      }
+      prop = rnorm(prow[j], REAL(propsd)[j]);
       
       for(k=0;k<nnp;k++) {
 	if (k < j) 
@@ -59,7 +51,7 @@ SEXP gibbs(SEXP n, SEXP np, SEXP thin, SEXP init,
       if (!R_FINITE(dpst_upper))
         REAL(nex)[j] = REAL(nex)[j] + 1;
 
-      acc_prob = fmin2(1.0, prop_ratio * post_ratio);
+      acc_prob = fmin2(1.0, post_ratio);
 
       if (!R_FINITE(acc_prob)){
 	acc_prob = 0.0;
