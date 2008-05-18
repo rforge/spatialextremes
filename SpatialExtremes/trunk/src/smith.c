@@ -5,15 +5,14 @@ void smithfull(double *data, double *distVec, int *nSite,
 	       double *icov11, double *icov12, double *icov22, double *dns){
   //This is the Smith model. It computes the pairwise log-likelihood
 
-  struct toFrech toFrechObj;
-  struct covComp covCompObj;
   const int nPairs = *nSite * (*nSite - 1) / 2;
-  int i;
-  double *jac, *mahalDist;
+  int i, flag = 0;
+  double *jac, *mahalDist, *frech;
   
   jac = (double *)R_alloc(*nSite * *nObs, sizeof(double));
   mahalDist = (double *)R_alloc(nPairs, sizeof(double));
-  
+  frech = (double *)R_alloc(*nSite * *nObs, sizeof(double));
+
   //Some preliminary steps: Valid points?
   for (i=0;i<*nSite;i++)
     if ((scales[i] <= 0) || (shapes[i] <= -1)){
@@ -23,32 +22,27 @@ void smithfull(double *data, double *distVec, int *nSite,
     }
 
   //Stage 1: Computing the Mahalanobis distance
-  covCompObj = mahalDistFct(distVec, nPairs, icov11,
-			    icov12, icov22);
+  flag = mahalDistFct(distVec, nPairs, icov11,
+		      icov12, icov22, mahalDist);
   
-  if (covCompObj.flag == 1){
+  if (flag == 1){
     //printf("Problem with mahal. dist\n");
     *dns = -1.0e35;
     return;
   }
 
-  mahalDist = covCompObj.vec;
-    
   //Stage 2: Transformation to unit Frechet
-  toFrechObj = gev2frech(data, *nObs, *nSite, locs, scales,
-			 shapes);
+  flag = gev2frech(data, *nObs, *nSite, locs, scales,
+		   shapes, jac, frech);
     
-  if (toFrechObj.flag == 1){
+  if (flag == 1){
     //printf("problem with conversion to unit frechet\n");
     *dns = -1.0e35;
     return;
   }
   
-  data = toFrechObj.frech;
-  jac = toFrechObj.jac;
-  
   //Stage 3: Bivariate density computations
-  *dns = lpliksmith(data, mahalDist, jac, *nObs, *nSite);
+  *dns = lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
 }
 
 void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs, 
@@ -61,60 +55,51 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs,
 		  double *icov11, double *icov12, double *icov22, double *dns){
   //This is the Smith model. It computes the pairwise log-likelihood
   
-  struct toFrech toFrechObj;
-  struct covComp covCompObj;
-  struct toParam gevParam;
   const int nPairs = *nSite * (*nSite - 1) / 2;
-  int i, j;
-  double *jac, *mahalDist, *locs, *scales, *shapes, pen;
+  int i, j, flag = 0;
+  double *jac, *mahalDist, *locs, *scales, *shapes, *frech;
   
   jac = (double *)R_alloc(*nSite * *nObs, sizeof(double));
   mahalDist = (double *)R_alloc(nPairs, sizeof(double));
   locs = (double *)R_alloc(*nSite, sizeof(double));
   scales = (double *)R_alloc(*nSite, sizeof(double));
   shapes = (double *)R_alloc(*nSite, sizeof(double));
+  frech = (double *)R_alloc(*nSite * *nObs, sizeof(double));
   
   //Stage 1: Computing the Mahalanobis distance
-  covCompObj = mahalDistFct(distVec, nPairs, icov11, icov12,
-			    icov22);
+  flag = mahalDistFct(distVec, nPairs, icov11, icov12,
+		      icov22, mahalDist);
 
-  if (covCompObj.flag == 1){
+  if (flag == 1){
     //printf("problem with mahal. dist\n");
     *dns = -1.0e35;
     return;
   }
 
-  mahalDist = covCompObj.vec;
-
   //Stage 2: Computing the GEV parameters using the design matrix
-  gevParam = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
-			   loccoeff, scalecoeff, shapecoeff, *nSite,
-			   *nloccoeff, *nscalecoeff, *nshapecoeff);
+  flag = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
+		       loccoeff, scalecoeff, shapecoeff, *nSite,
+		       *nloccoeff, *nscalecoeff, *nshapecoeff,
+		       locs, scales, shapes);
 
-  if (gevParam.flag == 1){
+  if (flag == 1){
     //printf("problem with the GEV parameters\n");
     *dns = -1.0e35;
     return;
   }
 
-  locs = gevParam.locs;
-  scales = gevParam.scales;
-  shapes = gevParam.shapes;
-
   //Stage 3: Transformation to unit Frechet
-  toFrechObj = gev2frech(data, *nObs, *nSite, locs, scales, shapes);
+  flag = gev2frech(data, *nObs, *nSite, locs, scales, shapes,
+		   jac, frech);
     
-  if (toFrechObj.flag == 1){
+  if (flag == 1){
     //printf("problem with conversion to unit frechet\n");
     *dns = -1.0e35;
     return;
   }
   
-  data = toFrechObj.frech;
-  jac = toFrechObj.jac;
-  
   //Stage 4: Bivariate density computations
-  *dns = lpliksmith(data, mahalDist, jac, *nObs, *nSite);
+  *dns = lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
   
   if (*dns == -1.0e35){
     //printf("problem with the pairwise lik.\n");

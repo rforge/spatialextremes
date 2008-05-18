@@ -9,14 +9,11 @@ void smithgrad2(double *data, double *distVec, int *nSite,
 
   //This is the Smith model. It computes the gradient of the pairwise log-likelihood
   
-  struct toFrech toFrechObj;
-  struct covComp covCompObj;
-  struct toParam gevParam;
   const int nPairs = *nSite * (*nSite - 1) / 2;
-  int i, j, k, currentPair = -1;
+  int i, j, k, currentPair = -1, flag;
   double c1, c2, dA, B, dB, C, dC, D, dD,
     *mahalDist, *locs, *scales, *shapes,
-    jacCommon;
+    jacCommon, *jac, *frech;
   //c1, c2 are useful quantities
   //A, B, C, D are part of the log-bivariate density
   //dB, dC and dD are their derivatives with respect to the
@@ -24,47 +21,45 @@ void smithgrad2(double *data, double *distVec, int *nSite,
   //jacCommon is the common part of all the jacobians - i.e. the common
   //part when deriving with respect to icov11, icov12 or icov22
 
+  jac = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   mahalDist = (double *)R_alloc(nPairs, sizeof(double));
   locs = (double *)R_alloc(*nSite, sizeof(double));
   scales = (double *)R_alloc(*nSite, sizeof(double));
   shapes = (double *)R_alloc(*nSite, sizeof(double));
+  frech = (double *)R_alloc(*nObs * *nSite, sizeof(double));
 
   //Computing the Mahalanobis distance
-  covCompObj = mahalDistFct(distVec, nPairs, icov11, icov12,
-			    icov22);
+  flag = mahalDistFct(distVec, nPairs, icov11, icov12,
+		      icov22, mahalDist);
 
   //if (covCompObj.flag == 1){
   //  *dns = -1e50;
   //  return;
   //}
 
-  mahalDist = covCompObj.vec;
-
   //Compute the GEV parameters using the design matrix
   if (*fitmarge){
     
-    gevParam = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
-			     loccoeff, scalecoeff, shapecoeff, *nSite,
-			     *nloccoeff, *nscalecoeff, *nshapecoeff);
+    flag = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
+			 loccoeff, scalecoeff, shapecoeff, *nSite,
+			 *nloccoeff, *nscalecoeff, *nshapecoeff,
+			 locs, scales, shapes);
     
-    //if (gevParam.flag == 1){
+    //if (flag == 1){
     //  *dns = -1e50;
     //  return;
     //}
     
-    locs = gevParam.locs;
-    scales = gevParam.scales;
-    shapes = gevParam.shapes;
 
     //Stage 1: Transformation to unit Frechet
-    toFrechObj = gev2frech(data, *nObs, *nSite, locs, scales, shapes);
+    flag = gev2frech(data, *nObs, *nSite, locs, scales, shapes,
+		     jac, frech);
     
-    //if (toFrechObj.flag == 1){
+    //if (flag == 1){
     //  *dns = -1e50;
     //  return;
     //}
     
-    data = toFrechObj.frech;
   }
   
   //Stage 2: Gradient computations;
@@ -75,45 +70,45 @@ void smithgrad2(double *data, double *distVec, int *nSite,
 	 
 	 currentPair++;
 	 
-	 c1 = log(data[k + j * *nObs] / data[k + i * *nObs]) /
+	 c1 = log(frech[k + j * *nObs] / frech[k + i * *nObs]) /
 	   mahalDist[currentPair] + mahalDist[currentPair] / 2;
-	 c2 = log(data[k + i * *nObs] / data[k + j * *nObs]) /
+	 c2 = log(frech[k + i * *nObs] / frech[k + j * *nObs]) /
 	   mahalDist[currentPair] + mahalDist[currentPair] / 2;
 	 
-	 //A = - pnorm(c1, 0., 1., 1, 0) / data[k + i * *nObs] -
-	 //  - pnorm(c2, 0., 1., 1, 0) / data[k + j * *nObs];
+	 //A = - pnorm(c1, 0., 1., 1, 0) / frech[k + i * *nObs] -
+	 //  - pnorm(c2, 0., 1., 1, 0) / frech[k + j * *nObs];
 	 B = - dnorm(c1, 0., 1., 0) / mahalDist[currentPair] /
-	   data[k + i * *nObs] / data[k + j * *nObs] +
-	   pnorm(c2, 0., 1., 1, 0) / R_pow_di(data[k + j * *nObs], 2) +
+	   frech[k + i * *nObs] / frech[k + j * *nObs] +
+	   pnorm(c2, 0., 1., 1, 0) / R_pow_di(frech[k + j * *nObs], 2) +
 	   dnorm(c2, 0., 1., 0) / mahalDist[currentPair] / 
-	   R_pow_di(data[k + j * *nObs], 2);
+	   R_pow_di(frech[k + j * *nObs], 2);
 	 C = - dnorm(c2, 0., 1., 0) / mahalDist[currentPair] /
-	   data[k + i * *nObs] / data[k + j * *nObs] +
-	   pnorm(c1, 0., 1., 1, 0) / R_pow_di(data[k + i * *nObs], 2) +
+	   frech[k + i * *nObs] / frech[k + j * *nObs] +
+	   pnorm(c1, 0., 1., 1, 0) / R_pow_di(frech[k + i * *nObs], 2) +
 	   dnorm(c1, 0., 1., 0) / mahalDist[currentPair] / 
-	   R_pow_di(data[k + i * *nObs], 2);
-	 D = c2 * dnorm(c1, 0., 1., 0) / data[k + j * *nObs] /
-	   R_pow_di(mahalDist[currentPair] * data[k + i * *nObs], 2) +
-	   c1 * dnorm(c2, 0., 1., 0) / data[k + i * *nObs] /
-	   R_pow_di(mahalDist[currentPair] * data[k + j * *nObs], 2);
+	   R_pow_di(frech[k + i * *nObs], 2);
+	 D = c2 * dnorm(c1, 0., 1., 0) / frech[k + j * *nObs] /
+	   R_pow_di(mahalDist[currentPair] * frech[k + i * *nObs], 2) +
+	   c1 * dnorm(c2, 0., 1., 0) / frech[k + i * *nObs] /
+	   R_pow_di(mahalDist[currentPair] * frech[k + j * *nObs], 2);
 	 
-	 dA = - c2 * dnorm(c1, 0., 1., 0) / data[k + i * *nObs] /
+	 dA = - c2 * dnorm(c1, 0., 1., 0) / frech[k + i * *nObs] /
 	   mahalDist[currentPair] - c1 * dnorm(c2, 0., 1., 0) / 
-	   data[k + j * *nObs] / mahalDist[currentPair];
+	   frech[k + j * *nObs] / mahalDist[currentPair];
 	 dB = (R_pow_di(c1, 2) - 1) * dnorm(c2, 0., 1., 0) /
-	   R_pow_di(mahalDist[currentPair] * data[k + j * *nObs], 2) +
-	   (1 + c1 * c2 ) * dnorm(c1, 0., 1., 0) / data[k + i * *nObs] /
-	   data[k + j * *nObs] / R_pow_di(mahalDist[currentPair], 2);
+	   R_pow_di(mahalDist[currentPair] * frech[k + j * *nObs], 2) +
+	   (1 + c1 * c2 ) * dnorm(c1, 0., 1., 0) / frech[k + i * *nObs] /
+	   frech[k + j * *nObs] / R_pow_di(mahalDist[currentPair], 2);
 	 dC = (R_pow_di(c2, 2) - 1) * dnorm(c1, 0., 1., 0) /
-	   R_pow_di(mahalDist[currentPair] * data[k + i * *nObs], 2) +
-	   (1 + c1 * c2) * dnorm(c2, 0., 1., 0) / data[k + i * *nObs] /
-	   data[k + j * *nObs] / R_pow_di(mahalDist[currentPair], 2);
+	   R_pow_di(mahalDist[currentPair] * frech[k + i * *nObs], 2) +
+	   (1 + c1 * c2) * dnorm(c2, 0., 1., 0) / frech[k + i * *nObs] /
+	   frech[k + j * *nObs] / R_pow_di(mahalDist[currentPair], 2);
 	 dD = (c1 - c1 * R_pow_di(c2, 2) - 2 * c2) * dnorm(c1, 0., 1., 0) / 
 	   R_pow_di(mahalDist[currentPair], 3) /
-	   R_pow_di(data[k + i * *nObs], 2) / data[k + j * *nObs] +
+	   R_pow_di(frech[k + i * *nObs], 2) / frech[k + j * *nObs] +
 	   (c2 - R_pow_di(c1, 2) *c2 - 2 * c1) * dnorm(c2, 0., 1., 0) /
-	   R_pow_di(mahalDist[currentPair], 3) / data[k + i * *nObs] /
-	   R_pow_di(data[k + j * *nObs], 2);
+	   R_pow_di(mahalDist[currentPair], 3) / frech[k + i * *nObs] /
+	   R_pow_di(frech[k + j * *nObs], 2);
 	 
 	 jacCommon = dA + (dB * C + B * dC + dD) / (B*C + D);
 	 
@@ -139,14 +134,11 @@ void smithgrad(double *data, double *distVec, int *nSite,
 
   //This is the Smith model. It computes the gradient of the pairwise log-likelihood
   
-  struct toFrech toFrechObj;
-  struct covComp covCompObj;
-  struct toParam gevParam;
   const int nPairs = *nSite * (*nSite - 1) / 2;
-  int i, j, k, currentPair = -1;
+  int i, j, k, currentPair = -1, flag;
   double c1, c2, dA, B, dB, C, dC, D, dD,
     *mahalDist, *locs, *scales, *shapes,
-    jacCommon, det;
+    jacCommon, det, *jac, *frech;
   //c1, c2 are useful quantities
   //A, B, C, D are part of the log-bivariate density
   //dB, dC and dD are their derivatives with respect to the
@@ -155,49 +147,46 @@ void smithgrad(double *data, double *distVec, int *nSite,
   //part when deriving with respect to cov11, cov12 or cov22
   //det is the determinant of the covariance matrix
 
+  jac = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   mahalDist = (double *)R_alloc(nPairs, sizeof(double));
   locs = (double *)R_alloc(*nSite, sizeof(double));
   scales = (double *)R_alloc(*nSite, sizeof(double));
   shapes = (double *)R_alloc(*nSite, sizeof(double));
+  frech = (double *)R_alloc(*nObs * *nSite, sizeof(double));
 
   det = *cov11 * *cov22 - R_pow_di(*cov12, 2);
 
   //Computing the Mahalanobis distance
-  covCompObj = mahalDistFct(distVec, nPairs, cov11, cov12,
-			    cov22);
+  flag = mahalDistFct(distVec, nPairs, cov11, cov12,
+		      cov22, mahalDist);
 
-  //if (covCompObj.flag == 1){
+  //if (flag == 1){
   //  *dns = -1e50;
   //  return;
   //}
 
-  mahalDist = covCompObj.vec;
-
   //Compute the GEV parameters using the design matrix
   if (*fitmarge){
     
-    gevParam = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
-			     loccoeff, scalecoeff, shapecoeff, *nSite,
-			     *nloccoeff, *nscalecoeff, *nshapecoeff);
+    flag = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
+			 loccoeff, scalecoeff, shapecoeff, *nSite,
+			 *nloccoeff, *nscalecoeff, *nshapecoeff,
+			 locs, scales, shapes);
     
-    //if (gevParam.flag == 1){
+    //if (flag == 1){
     //  *dns = -1e50;
     //  return;
     //}
     
-    locs = gevParam.locs;
-    scales = gevParam.scales;
-    shapes = gevParam.shapes;
-
     //Stage 1: Transformation to unit Frechet
-    toFrechObj = gev2frech(data, *nObs, *nSite, locs, scales, shapes);
+    flag = gev2frech(data, *nObs, *nSite, locs, scales, shapes,
+		     jac, frech);
     
     //if (toFrechObj.flag == 1){
     //  *dns = -1e50;
     //  return;
     //}
     
-    data = toFrechObj.frech;
   }
   
   //Stage 2: Gradient computations;
@@ -208,45 +197,45 @@ void smithgrad(double *data, double *distVec, int *nSite,
 	 
 	 currentPair++;
 	 
-	 c1 = log(data[k + j * *nObs] / data[k + i * *nObs]) /
+	 c1 = log(frech[k + j * *nObs] / frech[k + i * *nObs]) /
 	   mahalDist[currentPair] + mahalDist[currentPair] / 2;
-	 c2 = log(data[k + i * *nObs] / data[k + j * *nObs]) /
+	 c2 = log(frech[k + i * *nObs] / frech[k + j * *nObs]) /
 	   mahalDist[currentPair] + mahalDist[currentPair] / 2;
 	 
-	 //A = - pnorm(c1, 0., 1., 1, 0) / data[k + i * *nObs] -
-	 //  - pnorm(c2, 0., 1., 1, 0) / data[k + j * *nObs];
+	 //A = - pnorm(c1, 0., 1., 1, 0) / frech[k + i * *nObs] -
+	 //  - pnorm(c2, 0., 1., 1, 0) / frech[k + j * *nObs];
 	 B = - dnorm(c1, 0., 1., 0) / mahalDist[currentPair] /
-	   data[k + i * *nObs] / data[k + j * *nObs] +
-	   pnorm(c2, 0., 1., 1, 0) / R_pow_di(data[k + j * *nObs], 2) +
+	   frech[k + i * *nObs] / frech[k + j * *nObs] +
+	   pnorm(c2, 0., 1., 1, 0) / R_pow_di(frech[k + j * *nObs], 2) +
 	   dnorm(c2, 0., 1., 0) / mahalDist[currentPair] / 
-	   R_pow_di(data[k + j * *nObs], 2);
+	   R_pow_di(frech[k + j * *nObs], 2);
 	 C = - dnorm(c2, 0., 1., 0) / mahalDist[currentPair] /
-	   data[k + i * *nObs] / data[k + j * *nObs] +
-	   pnorm(c1, 0., 1., 1, 0) / R_pow_di(data[k + i * *nObs], 2) +
+	   frech[k + i * *nObs] / frech[k + j * *nObs] +
+	   pnorm(c1, 0., 1., 1, 0) / R_pow_di(frech[k + i * *nObs], 2) +
 	   dnorm(c1, 0., 1., 0) / mahalDist[currentPair] / 
-	   R_pow_di(data[k + i * *nObs], 2);
-	 D = c2 * dnorm(c1, 0., 1., 0) / data[k + j * *nObs] /
-	   R_pow_di(mahalDist[currentPair] * data[k + i * *nObs], 2) +
-	   c1 * dnorm(c2, 0., 1., 0) / data[k + i * *nObs] /
-	   R_pow_di(mahalDist[currentPair] * data[k + j * *nObs], 2);
+	   R_pow_di(frech[k + i * *nObs], 2);
+	 D = c2 * dnorm(c1, 0., 1., 0) / frech[k + j * *nObs] /
+	   R_pow_di(mahalDist[currentPair] * frech[k + i * *nObs], 2) +
+	   c1 * dnorm(c2, 0., 1., 0) / frech[k + i * *nObs] /
+	   R_pow_di(mahalDist[currentPair] * frech[k + j * *nObs], 2);
 	 
-	 dA = - c2 * dnorm(c1, 0., 1., 0) / data[k + i * *nObs] /
+	 dA = - c2 * dnorm(c1, 0., 1., 0) / frech[k + i * *nObs] /
 	   mahalDist[currentPair] - c1 * dnorm(c2, 0., 1., 0) / 
-	   data[k + j * *nObs] / mahalDist[currentPair];
+	   frech[k + j * *nObs] / mahalDist[currentPair];
 	 dB = (R_pow_di(c1, 2) - 1) * dnorm(c2, 0., 1., 0) /
-	   R_pow_di(mahalDist[currentPair] * data[k + j * *nObs], 2) +
-	   (1 + c1 * c2 ) * dnorm(c1, 0., 1., 0) / data[k + i * *nObs] /
-	   data[k + j * *nObs] / R_pow_di(mahalDist[currentPair], 2);
+	   R_pow_di(mahalDist[currentPair] * frech[k + j * *nObs], 2) +
+	   (1 + c1 * c2 ) * dnorm(c1, 0., 1., 0) / frech[k + i * *nObs] /
+	   frech[k + j * *nObs] / R_pow_di(mahalDist[currentPair], 2);
 	 dC = (R_pow_di(c2, 2) - 1) * dnorm(c1, 0., 1., 0) /
-	   R_pow_di(mahalDist[currentPair] * data[k + i * *nObs], 2) +
-	   (1 + c1 * c2) * dnorm(c2, 0., 1., 0) / data[k + i * *nObs] /
-	   data[k + j * *nObs] / R_pow_di(mahalDist[currentPair], 2);
+	   R_pow_di(mahalDist[currentPair] * frech[k + i * *nObs], 2) +
+	   (1 + c1 * c2) * dnorm(c2, 0., 1., 0) / frech[k + i * *nObs] /
+	   frech[k + j * *nObs] / R_pow_di(mahalDist[currentPair], 2);
 	 dD = (c1 - c1 * R_pow_di(c2, 2) - 2 * c2) * dnorm(c1, 0., 1., 0) / 
 	   R_pow_di(mahalDist[currentPair], 3) /
-	   R_pow_di(data[k + i * *nObs], 2) / data[k + j * *nObs] +
+	   R_pow_di(frech[k + i * *nObs], 2) / frech[k + j * *nObs] +
 	   (c2 - R_pow_di(c1, 2) *c2 - 2 * c1) * dnorm(c2, 0., 1., 0) /
-	   R_pow_di(mahalDist[currentPair], 3) / data[k + i * *nObs] /
-	   R_pow_di(data[k + j * *nObs], 2);
+	   R_pow_di(mahalDist[currentPair], 3) / frech[k + i * *nObs] /
+	   R_pow_di(frech[k + j * *nObs], 2);
 	 
 	 jacCommon = dA + (dB * C + B * dC + dD) / (B*C + D);
 	 
@@ -277,14 +266,11 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 
   //This is the Smith model. It computes the gradient of the pairwise log-likelihood
   
-  struct toFrech toFrechObj;
-  struct covComp covCompObj;
-  struct toParam gevParam;
   const int nPairs = *nSite * (*nSite - 1) / 2;
-  int i, j, k, currentPair = -1;
+  int i, j, k, currentPair = -1, flag;
   double c1, dA, B, dB, C, dC, D, dD,
     *rho, *locs, *scales, *shapes,
-    jacCommon;
+    jacCommon, *jac, *frech;
   //c1 is a useful quantity
   //A, B, C, D are part of the log-bivariate density
   //dB, dC and dD are their derivatives with respect to the
@@ -292,41 +278,38 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
   //jacCommon is the common part of all the jacobians - i.e. the common
   //part when deriving with respect to cov11, cov12 or cov22
   
+  jac = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   rho = (double *)R_alloc(nPairs, sizeof(double));
   locs = (double *)R_alloc(*nSite, sizeof(double));
   scales = (double *)R_alloc(*nSite, sizeof(double));
   shapes = (double *)R_alloc(*nSite, sizeof(double));
+  frech = (double *)R_alloc(*nObs * *nSite, sizeof(double));
 
   //Stage 0: Compute the covariance at each location
   switch (*covmod){
   case 1:
-    covCompObj = whittleMatern(dist, nPairs, *scale, *smooth);
+    flag = whittleMatern(dist, nPairs, *scale, *smooth, rho);
     break;
   case 2:
-    covCompObj = cauchy(dist, nPairs, *scale, *smooth);
+    flag = cauchy(dist, nPairs, *scale, *smooth, rho);
     break;
   case 3:
-    covCompObj = powerExp(dist, nPairs, *scale, *smooth);
+    flag = powerExp(dist, nPairs, *scale, *smooth, rho);
     break;
   }
   
-  rho = covCompObj.vec;
-
   //Compute the GEV parameters using the design matrix
   if (*fitmarge){
     
-    gevParam = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
-			     loccoeff, scalecoeff, shapecoeff, *nSite,
-			     *nloccoeff, *nscalecoeff, *nshapecoeff);
+    flag = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
+			 loccoeff, scalecoeff, shapecoeff, *nSite,
+			 *nloccoeff, *nscalecoeff, *nshapecoeff,
+			 locs, scales, shapes);
     
-    locs = gevParam.locs;
-    scales = gevParam.scales;
-    shapes = gevParam.shapes;
-
     //Stage 1: Transformation to unit Frechet
-    toFrechObj = gev2frech(data, *nObs, *nSite, locs, scales, shapes);
+    flag = gev2frech(data, *nObs, *nSite, locs, scales, shapes,
+		     jac, frech);
     
-    data = toFrechObj.frech;
   }
   
   //Stage 2: Gradient computations;
@@ -337,27 +320,27 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 	 
 	 currentPair++;
 	 
-	 c1 = sqrt(R_pow_di(data[k + i * *nObs], 2) + 
-		   R_pow_di(data[k + j * *nObs], 2) -
-		   2 * data[k + i * *nObs] * data[k + j * *nObs] *
+	 c1 = sqrt(R_pow_di(frech[k + i * *nObs], 2) + 
+		   R_pow_di(frech[k + j * *nObs], 2) -
+		   2 * frech[k + i * *nObs] * frech[k + j * *nObs] *
 		   rho[currentPair]);
 
 	 B = (1 - R_pow_di(rho[currentPair], 2)) / 2 /
 	   R_pow_di(c1, 3);
-	 C = - (rho[currentPair] * data[k + i * *nObs] - c1 -
-		data[k + j * *nObs]) / 2 / c1 /
-	   R_pow_di(data[k + i * *nObs], 2);
-	 D = - (rho[currentPair] * data[k + j * *nObs] - c1 -
-		data[k + i * *nObs]) / 2 / c1 /
-	   R_pow_di(data[k + j * *nObs], 2);
+	 C = - (rho[currentPair] * frech[k + i * *nObs] - c1 -
+		frech[k + j * *nObs]) / 2 / c1 /
+	   R_pow_di(frech[k + i * *nObs], 2);
+	 D = - (rho[currentPair] * frech[k + j * *nObs] - c1 -
+		frech[k + i * *nObs]) / 2 / c1 /
+	   R_pow_di(frech[k + j * *nObs], 2);
 
 	 dA =  1 / 2 / c1;
 	 dB = - rho[currentPair] / R_pow_di(c1, 3) + 3 * 
-	   (1 - rho[currentPair]) * data[k + i * *nObs] *
-	   data[k + j * *nObs] / R_pow_di(c1, 5);
-	 dC = - (data[k + i * *nObs] - data[k + j * *nObs] *
+	   (1 - rho[currentPair]) * frech[k + i * *nObs] *
+	   frech[k + j * *nObs] / R_pow_di(c1, 5);
+	 dC = - (frech[k + i * *nObs] - frech[k + j * *nObs] *
 		 rho[currentPair]) / 2 / R_pow_di(c1, 3);
-	 dD = - (data[k + j * *nObs] - data[k + i * *nObs] *
+	 dD = - (frech[k + j * *nObs] - frech[k + i * *nObs] *
 		 rho[currentPair]) / 2 / R_pow_di(c1, 3);
 		   
 

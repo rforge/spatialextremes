@@ -42,8 +42,9 @@ void distVecFct(double *coord, int *nSite, int *nDim,
 	
       
 
-struct toFrech gev2frech(double *data, int nObs, int nSite, double *locs, 
-			 double *scales, double *shapes){
+int gev2frech(double *data, int nObs, int nSite, double *locs, 
+	      double *scales, double *shapes, double *jac,
+	      double *frech){
 
   //This function transforms the GEV observations to unit Frechet ones
   //and computes the log of the jacobian of each transformation
@@ -51,73 +52,64 @@ struct toFrech gev2frech(double *data, int nObs, int nSite, double *locs,
   
   int i, j;
   const double eps = R_pow(DOUBLE_EPS, 0.3);
-  struct toFrech ans;
-  ans.frech =  (double *)R_alloc(nObs * nSite, sizeof(double));
-  ans.jac =  (double *)R_alloc(nObs * nSite, sizeof(double));
-  ans.flag = 0;  
   
   for (i=0;i<nSite;i++){
     for (j=0;j<nObs;j++){
-      ans.frech[i * nObs + j] = (data[i * nObs + j] - locs[i])/ scales[i];
+      frech[i * nObs + j] = (data[i * nObs + j] - locs[i])/ scales[i];
       
       if(fabs(shapes[i]) <= eps){
-	ans.jac[i * nObs + j] = ans.frech[i * nObs + j] - log(scales[i]);
-	ans.frech[i * nObs + j] = exp(ans.frech[i * nObs + j]);
+	jac[i * nObs + j] = frech[i * nObs + j] - log(scales[i]);
+	frech[i * nObs + j] = exp(frech[i * nObs + j]);
       }
       
       else {
-	ans.frech[i * nObs + j] = 1 + shapes[i] * ans.frech[i * nObs + j];
+	frech[i * nObs + j] = 1 + shapes[i] * frech[i * nObs + j];
 	
-	if(ans.frech[i * nObs + j] <= 0) {
-	  ans.flag = 1;
-	  return ans;
+	if (frech[i * nObs + j] <= 0) {
+	  return 1;
 	}
 	
 	else{
-	  ans.jac[i * nObs + j] = (1/ shapes[i] -1) * 
-	    log(ans.frech[i * nObs + j]) - log(scales[i]);
-	  ans.frech[i * nObs + j] = R_pow(ans.frech[i * nObs + j], 1/ shapes[i]);
+	  jac[i * nObs + j] = (1/ shapes[i] -1) * 
+	    log(frech[i * nObs + j]) - log(scales[i]);
+	  frech[i * nObs + j] = R_pow(frech[i * nObs + j], 1/ shapes[i]);
 	}
       }
     }
   }
-  return ans;
+  return 0;
 }
 
-struct toParam dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
-			     double *shapedsgnmat, double *loccoeff, 
-			     double *scalecoeff, double *shapecoeff,
-			     int nSite, int nloccoeff, int nscalecoeff,
-			     int nshapecoeff){
+int dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
+		  double *shapedsgnmat, double *loccoeff, 
+		  double *scalecoeff, double *shapecoeff,
+		  int nSite, int nloccoeff, int nscalecoeff,
+		  int nshapecoeff, double *locs, double *scales,
+		  double *shapes){
 
   int i, j;
-  struct toParam ans;
-  ans.locs =  (double *)R_alloc(nSite, sizeof(double));
-  ans.scales =  (double *)R_alloc(nSite, sizeof(double));
-  ans.shapes =  (double *)R_alloc(nSite, sizeof(double));
-  ans.flag = 0;  
-  
+
   for (i=0;i<nSite;i++){
-    ans.locs[i] = 0.;
-    ans.scales[i] = 0.;
-    ans.shapes[i] = 0.;
+       
+    locs[i] = 0.0;
+    scales[i] = 0.0;
+    shapes[i] = 0.0;
     
     for (j=0;j<nloccoeff;j++)
-      ans.locs[i] = ans.locs[i] + loccoeff[j] * locdsgnmat[i + nSite * j];
+      locs[i] = locs[i] + loccoeff[j] * locdsgnmat[i + nSite * j];
     
     for (j=0;j<nscalecoeff;j++)
-      ans.scales[i] = ans.scales[i] + scalecoeff[j] * scaledsgnmat[i + nSite * j];
+      scales[i] = scales[i] + scalecoeff[j] * scaledsgnmat[i + nSite * j];
     
     for (j=0;j<nshapecoeff;j++)
-      ans.shapes[i] = ans.shapes[i] + shapecoeff[j] * shapedsgnmat[i + nSite * j];
+      shapes[i] = shapes[i] + shapecoeff[j] * shapedsgnmat[i + nSite * j];
     
-    if ((ans.scales[i]<=0) || (ans.shapes[i] <= -1)){
+    if ((scales[i]<=0) || (shapes[i] <= -1)){
       //printf("scales[%i] = %f\n", i, scales[i]);
-      ans.flag = 1;
-      return ans;
+      return 1;
     }
   }
 
-  return(ans);
+  return 0;
 }
   

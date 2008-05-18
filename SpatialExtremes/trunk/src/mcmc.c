@@ -6,8 +6,8 @@ SEXP gibbs(SEXP n, SEXP np, SEXP thin, SEXP init,
   int i,j,k,nr;
   int nn = INTEGER(n)[0], nnp = INTEGER(np)[0], thinn = INTEGER(thin)[0];
   double prop, prop_ratio, acc_prob, post_ratio;
-  double *crow, *prow;
-  SEXP ans, nacc, nex, mc, current, dpst_lower, dpst_upper;
+  double *crow, *prow, dpst_lower, dpst_upper;
+  SEXP ans, nacc, nex, mc, current;
 
   nr = 1 + ftrunc(nn/thinn);
   crow = (double *)R_alloc(nnp, sizeof(double));
@@ -17,8 +17,6 @@ SEXP gibbs(SEXP n, SEXP np, SEXP thin, SEXP init,
   PROTECT(nex = allocVector(REALSXP, nnp));
   PROTECT(mc = allocVector(REALSXP, nr * nnp));
   PROTECT(ans = allocVector(VECSXP, 3));
-  PROTECT(dpst_lower = allocVector(REALSXP, 1));
-  PROTECT(dpst_upper = allocVector(REALSXP, 1));
 
   for(i=0;i<nnp;i++) {
     prow[i] = REAL(init)[i];
@@ -26,7 +24,7 @@ SEXP gibbs(SEXP n, SEXP np, SEXP thin, SEXP init,
     REAL(nex)[i] = REAL(nacc)[i] = 0.0;
   }
 
-  RANDIN;
+  GetRNGstate();
   for(i=0;i<nn;i++) {
     for(j=0;j<nnp;j++) {     
 
@@ -50,22 +48,22 @@ SEXP gibbs(SEXP n, SEXP np, SEXP thin, SEXP init,
       }      
 
       defineVar(install("x"), current, env);
-      dpst_lower = eval(f, env);
-
+      dpst_lower = REAL(eval(f, env))[0];
+      
       REAL(current)[j] = prop;
       defineVar(install("x"), current, env);
-      dpst_upper = eval(f, env);
-            
-      post_ratio = exp(REAL(dpst_upper)[0] -REAL(dpst_lower)[0]);
-
-      if(!R_FINITE(REAL(dpst_upper)[0]))
+      dpst_upper = REAL(eval(f, env))[0];
+      
+      post_ratio = exp(dpst_upper - dpst_lower);
+      
+      if (!R_FINITE(dpst_upper))
         REAL(nex)[j] = REAL(nex)[j] + 1;
 
       acc_prob = fmin2(1.0, prop_ratio * post_ratio);
 
-      if(!R_FINITE(acc_prob)) {
-        acc_prob = 0;
-        warning("NaN returned for posterior density");
+      if (!R_FINITE(acc_prob)){
+	acc_prob = 0.0;
+	warning("NaN returned for posterior density");
       }
 
       if (runif(0, 1) < acc_prob) {
@@ -84,10 +82,10 @@ SEXP gibbs(SEXP n, SEXP np, SEXP thin, SEXP init,
       prow[k] = crow[k];
   }
 
-  RANDOUT;
+  PutRNGstate();
   SET_VECTOR_ELT(ans, 0, mc);
   SET_VECTOR_ELT(ans, 1, nacc);
   SET_VECTOR_ELT(ans, 2, nex);
-  UNPROTECT(7);
+  UNPROTECT(5);
   return(ans);
 }

@@ -9,6 +9,7 @@ double lplikschlather(double *data, double *rho, double *jac,
   double c1, dns, lFvec, dvecM1, dvecM2, dvecMixed;
   //c1 is a useful quantity - see documentation
 
+  dns = 0.0;
   for (i=0;i<(nSite-1);i++){
     for (j=i+1;j<nSite;j++){
       
@@ -63,6 +64,7 @@ double lpliksmith(double *data, double *mahalDist, double *jac,
   int i, j, k, currentPair = -1;
   double c1, c2, dns, lFvec, dvecM1, dvecM2, dvecMixed;
 
+  dns = 0.0;
   for (i=0;i<(nSite-1);i++){
     for (j=i+1;j<nSite;j++){
       
