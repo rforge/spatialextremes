@@ -8,7 +8,7 @@
 void schlatherfull(int *covmod, double *data, double *dist, int *nSite, int *nObs,
 		   double *locs, double *scales, double *shapes,
 		   double *scale, double *smooth, double *dns);
-void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nDim, int *nSite, int *nObs,
+void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
 		      double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
 		      double *locpenalty, double *scaledsgnmat, double *scalepenmat,
 		      int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,

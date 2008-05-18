@@ -54,7 +54,7 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite,
 
 }
 
-void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nDim, int *nSite, int *nObs,
+void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
 		      double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
 		      double *locpenalty, double *scaledsgnmat, double *scalepenmat,
 		      int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
@@ -102,7 +102,7 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nDim, int *n
 		       locs, scales, shapes);
 
   if (flag == 1){
-    printf("problem with GEV param.\n");
+    //printf("problem with GEV param.\n");
     *dns = -1.0e35;
     return;
   }
