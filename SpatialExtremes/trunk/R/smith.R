@@ -183,10 +183,11 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
     var.cov <- NULL
   }
     
-  iSigma <- matrix(c(opt$par["cov11"], opt$par["cov12"], opt$par["cov12"],
-                     opt$par["cov22"]), 2, 2)
-
-  extCoeff <- function(posVec)
+  Sigma <- matrix(c(param["cov11"], param["cov12"], param["cov12"],
+                    param["cov22"]), 2, 2)
+  iSigma <- solve(qr(Sigma))
+  
+  ext.coeff <- function(posVec)
     2 * pnorm(sqrt(posVec %*% iSigma %*% posVec) / 2)
   
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
@@ -194,8 +195,8 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
                  deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
                  counts = opt$counts, message = opt$message, data = data, est = "MLE",
                  logLik = -opt$value, opt.value = opt$value, model = "smith",
-                 fit.marge = fit.marge, extCoeff = extCoeff, cov.mod = "Gaussian",
-                 lik.fun = nllh)
+                 fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = "Gaussian",
+                 lik.fun = nllh, coord = coord)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
@@ -355,10 +356,11 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
 
   param <- c(opt$par, unlist(fixed.param))
   
-  iSigma <- matrix(c(param["cov11"], param["cov12"], param["cov12"],
-                     param["cov22"]), 2, 2)
+  Sigma <- matrix(c(param["cov11"], param["cov12"], param["cov12"],
+                    param["cov22"]), 2, 2)
+  iSigma <- solve(qr(Sigma))
 
-  extCoeff <- function(posVec)
+  ext.coeff <- function(posVec)
     2 * pnorm(sqrt(posVec %*% iSigma %*% posVec) / 2)
   
   if (std.err.type == "observed"){
@@ -415,7 +417,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
                  deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
                  counts = opt$counts, message = opt$message, data = data, est = "MLE",
                  logLik = -opt$value, opt.value = opt$value, model = "smith", coord = coord,
-                 fit.marge = fit.marge, extCoeff = extCoeff, cov.mod = "Gaussian",
+                 fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = "Gaussian",
                  loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                  lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
                  shape.type = shape.type)

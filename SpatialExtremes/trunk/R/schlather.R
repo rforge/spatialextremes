@@ -190,7 +190,7 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
   cov.fun <-  covariance(scale = param["scale"], smooth = param["smooth"],
                         cov.mod = cov.mod)
   
-  extCoeff <- function(h)
+  ext.coeff <- function(h)
     1 + sqrt(1 - 1/2 * (cov.fun(h) + 1))
 
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
@@ -198,8 +198,8 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
                  deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
                  counts = opt$counts, message = opt$message, est = "MLE", data = data,
                  logLik = -opt$value, opt.value = opt$value, model = "schlather",
-                 cov.mod = cov.mod, fit.marge = fit.marge, ext.coeff = extCoeff,
-                 hessian = opt$hessian, lik.fun = nllh)
+                 cov.mod = cov.mod, fit.marge = fit.marge, ext.coeff = ext.coeff,
+                 hessian = opt$hessian, lik.fun = nllh, coord = coord)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
@@ -217,7 +217,6 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   ##coord is a matrix giving the coordinates (1 row = 1 station)
   n.site <- ncol(data)
   n.obs <- nrow(data)
-  dist.dim <- ncol(coord)
   n.pair <- n.site * (n.site - 1) / 2
 
   dist <- distance(coord)
@@ -301,7 +300,7 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
 
   ##And define the "body" of the function as the number of parameters
   ##to estimate depends on n.site
-   body(nplk) <- parse(text = paste("-.C('schlatherdsgnmat', as.integer(cov.mod.num), data, as.double(dist), as.integer(dist.dim), as.integer(n.site), as.integer(n.obs), loc.dsgn.mat, loc.pen.mat, as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), scale.dsgn.mat, scale.pen.mat, as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), shape.dsgn.mat, shape.pen.mat, as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
+   body(nplk) <- parse(text = paste("-.C('schlatherdsgnmat', as.integer(cov.mod.num), data, as.double(dist), as.integer(n.site), as.integer(n.obs), loc.dsgn.mat, loc.pen.mat, as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), scale.dsgn.mat, scale.pen.mat, as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), shape.dsgn.mat, shape.pen.mat, as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
                           paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                           paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                           paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
@@ -421,7 +420,7 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   cov.fun <- covariance(scale = param["scale"], smooth = param["smooth"],
                         cov.mod = cov.mod)
   
-  extCoeff <- function(h)
+  ext.coeff <- function(h)
     1 + sqrt(1 - 1/2 * (cov.fun(h) + 1))
   
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
@@ -429,7 +428,7 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
                  deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
                  counts = opt$counts, message = opt$message, data = data, est = "MLE",
                  logLik = -opt$value, opt.value = opt$value, model = "schlather", coord = coord,
-                 fit.marge = fit.marge, extCoeff = extCoeff, cov.mod = cov.mod, cov.fun = cov.fun,
+                 fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = cov.mod, cov.fun = cov.fun,
                  loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                  lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
                  shape.type = shape.type)
