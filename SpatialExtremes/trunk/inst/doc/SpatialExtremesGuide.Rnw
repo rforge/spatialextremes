@@ -1,4 +1,5 @@
 \documentclass{report}
+\usepackage{Sweave}
 \usepackage{a4wide}
 \usepackage{amsmath}
 
@@ -346,7 +347,7 @@ Lastly,
 \subsection{Gradient computation}
 \label{sec:gradient-computation-schlather}
 
-From equation~(\ref{eq:schlatherDens}), we have:
+From equation \eqref{eq:schlatherDens}, we have:
 \begin{equation*}
   \log f(z_1, z_2) = A \log(B + C D)
 \end{equation*}
