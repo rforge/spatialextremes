@@ -8,15 +8,15 @@ dpostmaxstab <- function(par, prior, cov.mod, data, coord,
   dist.dim <- ncol(coord)
   n.pairs <- n.site * (n.site - 1) / 2
 
+  if (!(cov.mod %in% c("gauss", "whitmat","cauchy","powexp")))
+    stop("``cov.mod'' must be one of 'gauss', 'whitmat', 'cauchy', 'powexp'")
+
   if (cov.mod == "gauss")
     distVec <- distance(coord, vec = TRUE)
 
   else
     dist <- distance(coord)
-
-  if (!(cov.mod %in% c("gauss", "whitmat","cauchy","powexp")))
-    stop("``cov.mod'' must be one of 'gauss', 'whitmat', 'cauchy', 'powexp'")
-
+ 
   if (cov.mod == "whitmat")
     cov.mod.num <- 1
   if (cov.mod == "cauchy")
@@ -44,10 +44,6 @@ dpostmaxstab <- function(par, prior, cov.mod, data, coord,
   loc.penalty <- loc.model$penalty.tot
   scale.penalty <- scale.model$penalty.tot
   shape.penalty <- shape.model$penalty.tot
-
-  loc.type <- loc.model$type
-  scale.type <- scale.model$type
-  shape.type <- shape.model$type
 
   ##The total number of parameters to be estimated for each GEV
   ##parameter
@@ -93,15 +89,14 @@ dpostmaxstab <- function(par, prior, cov.mod, data, coord,
     postCont <- schlatherlik(par)
   }
 
-  ans <- as.double(dprior + postCont)
-  print(mode(ans))
-  print(names(ans))
-  return(as.double(ans))
+  ans <- dprior + postCont
+  
+  return(ans)
 }
 
-dpriormaxstab <- function(par, mean, cov){
+dpriormaxstab <- function(par, mean, icov){
   par[1:2] <- log(par[1:2])
-  as.double((par -mean) %*% cov %*% (par - mean))
+  as.double((par - mean) %*% icov %*% (par - mean))
 }
 
 gibbs <- function(n, init, prior, cov.mod, ...,
@@ -144,7 +139,9 @@ prior <- function(mean, cov){
   
   if(any(eg <= 0))
     warning("`cov' may not be positive definite")
+
+  icov <- solve(cov)
   
-  list(mean = mean, cov = cov)
+  list(mean = mean, icov = icov)
 }
 
