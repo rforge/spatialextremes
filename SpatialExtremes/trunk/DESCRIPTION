@@ -5,7 +5,7 @@ Title: Modelling Spatial Extremes
 Author: Mathieu Ribatet <mathieu.ribatet@epfl.ch>
 Maintainer: Mathieu Ribatet <mathieu.ribatet@epfl.ch>
 Depends: R (>= 1.8.0)
-Suggests: RandomFields
+Suggests: RandomFields, coda
 Description: This package proposes several approaches for spatial extremes modelling.
 License: GPL (>= 2)
 URL: http://people.epfl.ch/mathieu.ribatet
