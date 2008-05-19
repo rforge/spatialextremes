@@ -356,13 +356,6 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
 
   param <- c(opt$par, unlist(fixed.param))
   
-  Sigma <- matrix(c(param["cov11"], param["cov12"], param["cov12"],
-                    param["cov22"]), 2, 2)
-  iSigma <- solve(qr(Sigma))
-
-  ext.coeff <- function(posVec)
-    2 * pnorm(sqrt(posVec %*% iSigma %*% posVec) / 2)
-  
   if (std.err.type == "observed"){
     
     tol <- .Machine$double.eps^0.5
@@ -411,6 +404,13 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
     std.err <- std.err.type <- corr.mat <- NULL
     var.cov <- NULL
   }
+
+  Sigma <- matrix(c(param["cov11"], param["cov12"], param["cov12"],
+                    param["cov22"]), 2, 2)
+  iSigma <- solve(qr(Sigma))
+
+  ext.coeff <- function(posVec)
+    2 * pnorm(sqrt(posVec %*% iSigma %*% posVec) / 2)
   
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
                  var.cov = var.cov, fixed = unlist(fixed.param), param = param,
