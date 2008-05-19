@@ -59,7 +59,7 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
     }
 
     else{
-      cat("  Not estimated.\n")
+      cat("  Assuming unit Frechet.\n")
       cat("  Dependence Parameters:\n")
       print.default(format(x$fitted.values, digits = digits), print.gap = 2, 
                     quote = FALSE)
