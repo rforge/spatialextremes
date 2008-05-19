@@ -60,7 +60,7 @@ mean.p <- c(scale = 60, smooth = .7)
 sd.p <- diag(c(1000, 1000))
 psd <- c(1.73, .007)
 prior.p <- prior(mean.p, sd.p)
-init <- c(55, .72)
+init <- c(40, 1)
 
 ## 3- MCMC stage
 mc <- posterior(5000, init, prior.p, "whitmat", data = ms0, fit.marge =
