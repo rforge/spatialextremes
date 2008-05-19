@@ -1,7 +1,9 @@
 .start.smith <- function(data, coord, loc.model, scale.model, shape.model,
-                         print.start.values = TRUE){
+                         print.start.values = FALSE){
 
-  cat("Computing appropriate starting values\n")
+  if (print.start.values)
+    cat("Computing appropriate starting values\n")
+  
   n.site <- ncol(data)
 
   loc <- scale <- shape <- rep(NA, n.site)
@@ -23,6 +25,13 @@
   scaleCoeff[is.na(scaleCoeff)] <- 0
   shapeCoeff[is.na(shapeCoeff)] <- 0
 
+  ##To be sure that the scale parameter is always positive at starting
+  ##values
+  scales.hat <- scale.model$dsgn.mat %*% scaleCoeff
+
+  if (any(scales.hat <= 0))
+    scaleCoeff[1] <- scaleCoeff[1] - min(scales.hat) + .1
+  
   start <- as.list(covs)
 
   names(locCoeff) <- names(scaleCoeff) <- names(shapeCoeff) <- NULL
@@ -30,8 +39,8 @@
   start <- c(start, as.list(unlist(list(locCoeff = locCoeff,
                                         scaleCoeff = scaleCoeff,
                                         shapeCoeff = shapeCoeff))))
-  
-  cat("Starting values are defined\n")
+  if (print.start.values)
+    cat("Starting values are defined\n")
 
   if (print.start.values){
     cat("Starting values are:\n")
@@ -43,9 +52,11 @@
 
 
 .start.schlather <- function(data, coord, loc.model, scale.model, shape.model,
-                             print.start.values = TRUE){
+                             print.start.values = FALSE){
 
-  cat("Computing appropriate starting values\n")
+  if (print.start.values)
+    cat("Computing appropriate starting values\n")
+  
   n.site <- ncol(data)
 
   loc <- scale <- shape <- rep(NA, n.site)
@@ -65,6 +76,13 @@
   scaleCoeff[is.na(scaleCoeff)] <- 0
   shapeCoeff[is.na(shapeCoeff)] <- 0
 
+  ##To be sure that the scale parameter is always positive at starting
+  ##values
+  scales.hat <- scale.model$dsgn.mat %*% scaleCoeff
+
+  if (any(scales.hat <= 0))
+    scaleCoeff[1] <- scaleCoeff[1] - min(scales.hat) + .1
+    
   cov.param <- schlatherfull(data, coord, method = "Nelder")$param
   
   start <- as.list(cov.param)
@@ -74,8 +92,9 @@
   start <- c(start, as.list(unlist(list(locCoeff = locCoeff,
                                         scaleCoeff = scaleCoeff,
                                         shapeCoeff = shapeCoeff))))
-  
-  cat("Starting values are defined\n")
+
+  if (print.start.values)
+    cat("Starting values are defined\n")
 
   if (print.start.values){
     cat("Starting values are:\n")
