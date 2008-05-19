@@ -45,6 +45,8 @@ int dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
 		  int nSite, int nloccoeff, int nscalecoeff,
 		  int nshapecoeff, double *locs, double *scales,
 		  double *shapes);
+void gev(double *prob, int *n, double *locs, double *scales, double *shapes,
+	 double *quant);
 
 ///////////////////////////////////
 //  From univllik.c
