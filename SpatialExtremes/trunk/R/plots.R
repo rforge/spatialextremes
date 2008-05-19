@@ -10,8 +10,7 @@ extcoeff <- function(fitted, n = 150, ...){
     denom <- param["cov22"] - 2 * param[2] + param["cov12"]
     x1 <- 2 * qnorm(1 - eps) / sqrt(param["cov22"] / det)
     x2 <- 2 * qnorm(1 - eps) / sqrt(param["cov11"] / det)
-    x3 <-2 * qnorm(1 - eps) * sqrt(param["cov11"] * param["cov12"] / denom -
-                               param["cov12"]^2 / denom)
+    x3 <- 2 * qnorm(1 - eps) * sqrt(det / denom)
       
     x.range <- 1.05 * c(-max(x1, x3), max(x1, x3))
     y.range <- 1.05 * c(-max(x2, x3), max(x2, x3))
@@ -44,8 +43,49 @@ extcoeff <- function(fitted, n = 150, ...){
       }
   }
 
-  contour(xs, ys, extcoeff.hat, ...)
+  coord.names <- colnames(fitted$coord)
+  xlab <- coord.names[1]
+  ylab <- coord.names[2]
+  contour(xs, ys, extcoeff.hat, xlab = xlab, ylab = ylab, ...)
 }
     
+map <- function(fitted, param = c("loc", "scale", "shape", "quant"),
+                ..., ret.per = 100, ranges = apply(fitted$coord, 2, range),
+                n = 80, col = terrain.colors(round(n))){
 
+  x.range <- ranges[,1]
+  y.range <- ranges[,2]
+
+  ans <- matrix(NA, nrow = n, ncol = n)
+
+  xs <- seq(x.range[1], x.range[2], length = n)
+  ys <- seq(y.range[1], y.range[2], length = n)
+  
+  for (i in 1:n){
+    new.data <- cbind(xs[i], ys)
+    colnames(new.data) <- colnames(fitted$coord)
+    param.hat <- predict(fitted, new.data)
+
+    if (param == "loc")
+      ans[,i] <- param.hat[,"loc"]
     
+    if (param == "scale")
+      ans[i,] <- param.hat[,"scale"]
+  
+    if (param == "shape")
+      ans[i,] <- param.hat[,"shape"]
+  
+    if (param == "quant")
+      ans[i,] <- .qgev(1 - 1/ret.per, param.hat[,"loc"],
+                       param.hat[,"scale"], param.hat[,"shape"])
+  }
+
+  coord.names <- colnames(fitted$coord)
+  xlab <- coord.names[1]
+  ylab <- coord.names[2]
+  
+  image(xs, ys, ans, ..., col = col, xlab = xlab, ylab = ylab)
+  contour(xs, ys, ans, ..., add = TRUE)
+
+  invisible(list(x = xs, y = ys, z = ans))
+}
