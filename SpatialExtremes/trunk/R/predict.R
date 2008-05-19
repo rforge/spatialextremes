@@ -29,6 +29,7 @@ predict.maxstab <- function(object, newdata, ...){
 
   ans <- cbind(loc.pred, scale.pred, shape.pred)
   colnames(ans) <- c("loc", "scale", "shape")
+  ans <- cbind(data, ans)
   return(ans)
 }
 
