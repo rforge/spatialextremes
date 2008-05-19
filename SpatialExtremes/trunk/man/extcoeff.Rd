@@ -37,14 +37,14 @@ ms0 <- t(ms0)
 
 ## 2- Fit 2 max-stable processes
 smith <- fitmaxstab(ms0, locations, "gauss",
-                    fit.marge = FALSE, cov12 = 0)
+                    fit.marge = FALSE)
 schlather <- fitmaxstab(ms0, locations, "whitmat",
                         fit.marge = FALSE)
 
 ## 3- Plot the extremal coefficient
 extcoeff(schlather)
 extcoeff(smith, add = TRUE, col = 2)
-legend("topright", c("Schalther", "Smith"), col = 1:2,
+legend("topright", c("Schlather", "Smith"), col = 1:2,
        inset = .05, lty = 1)
 }
 \author{Mathieu Ribatet}
