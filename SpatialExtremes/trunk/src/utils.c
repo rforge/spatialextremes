@@ -113,3 +113,20 @@ int dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
   return 0;
 }
   
+void gev(double *prob, int *n, double *locs, double *scales, double *shapes,
+	 double *quant){
+  
+  int i;
+  
+  for (i=0;i<*n;i++){
+    
+    if (shapes[i] == 0)
+      quant[i] = locs[i] - scales[i] * log(-log(*prob));
+
+    else
+      quant[i] = locs[i] + scales[i] * R_pow(-log(*prob), shapes[i] - 1) /
+	shapes[i];
+  }
+}
+
+	

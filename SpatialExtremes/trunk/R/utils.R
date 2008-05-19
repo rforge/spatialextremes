@@ -23,3 +23,27 @@ distance <- function(coord, vec = FALSE){
 
 gev2frech <- function(x, loc, scale, shape)
   pmax(1 + shape * (x - loc) / scale, 0)^(1/shape)
+
+.qgev <- function(p, loc = 1, scale = 1, shape = 1,
+                  lower.tail = TRUE){
+  
+    if ((min(p, na.rm = TRUE) <= 0) || (max(p, na.rm = TRUE) >=1))
+      stop("`p' must contain probabilities in (0,1)")
+    
+    if (min(scale) < 0)
+      stop("invalid scale")
+    
+    if (length(p) != 1)
+      stop("invalid p")
+    
+    if (!lower.tail)
+      p <- 1 - p
+
+    n <- length(loc)
+
+    ans <- .C("gev", as.double(p), as.integer(n), as.double(loc),
+              as.double(scale), as.double(shape), quant = double(n),
+              PACKAGE = "SpatialExtremes")$quant
+    
+    return(ans)
+}
