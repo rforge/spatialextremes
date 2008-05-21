@@ -12,8 +12,8 @@ extcoeff <- function(fitted, n = 150, ...){
     x2 <- 2 * qnorm(1 - eps) / sqrt(param["cov11"] / det)
     x3 <- 2 * qnorm(1 - eps) * sqrt(det / denom)
       
-    x.range <- 1.05 * c(-max(x1, x3), max(x1, x3))
-    y.range <- 1.05 * c(-max(x2, x3), max(x2, x3))
+    x.range <- 1.2 * c(-max(x1, x3), max(x1, x3))
+    y.range <- 1.2 * c(-max(x2, x3), max(x2, x3))
   }
 
   if (model == "schlather"){
@@ -21,7 +21,7 @@ extcoeff <- function(fitted, n = 150, ...){
     init <- sqrt(sum(colMeans(fitted$coord)^2))
     opt1 <- optim(init, fun, method = "BFGS")$par
 
-    y.range <- x.range <- 1.05 * c(-abs(opt1), abs(opt1))
+    y.range <- x.range <- 1.2 * c(-abs(opt1), abs(opt1))
   }
 
   extcoeff.hat <- matrix(NA, nrow = n, ncol = n)
