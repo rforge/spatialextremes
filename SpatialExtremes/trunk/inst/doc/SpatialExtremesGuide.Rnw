@@ -8,8 +8,8 @@
 
 \begin{document}
 % \VignetteIndexEntry{A R Package for Modelling Spatial Extremes} 
-% \VignetteDepens{SpatialExtremes}
-% \VignetteKeyword{Extreme Value Theory, Multivariate Extremes, Max-stable processes} 
+% \VignetteDepends{SpatialExtremes,RandomFields}
+% \VignetteKeyword{Extreme Value Theory, Spatial Extremes, Max-stable processes} 
 % \VignettePackage{SpatialExtremes}
 \begin{titlepage}
   \vspace*{2cm}
@@ -25,45 +25,13 @@
     École Polytechnique Fédérale de Lausanne\\
     Switzerland
   \end{center}
-  
+  \vspace{1cm}
   \begin{center}
 <<echo=FALSE,fig=TRUE>>=
-require(RandomFields)
 library(SpatialExtremes)
-
-##Define the coordinate of each location
-n.site <- 30
-locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
-colnames(locations) <- c("longitude", "latitude")
-
-##Simulate a max-stable process - with unit Frechet margins
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
-param=c(0,1,0,30, .5), maxstable="extr",
-n = 40)
-ms0 <- t(ms0)
-ms1 <- ms0
-
-##Now define the spatial model for the GEV parameters
-param.loc <- -10 - 4 * locations[,1] + locations[,2]^2
-param.scale <- 5 + locations[,1] + locations[,2]^2 / 10
-param.shape <- rep(.2, n.site)
-
-##Transform the unit Frechet margins to GEV 
-for (i in 1:n.site)
-ms1[,i] <- param.scale[i] * (ms1[,i]^param.shape[i] - 1) /
-param.shape[i] + param.loc[i]
-
-##Define a model for the GEV margins to be fitted
-##shape ~ 1 stands for the GEV shape parameter is constant
-##over the region
-loc.form <- loc ~ longitude + I(latitude^2)
-scale.form <- scale ~ longitude + I(latitude^2)
-shape.form <- shape ~ 1
-
-##  1- Fit a max-stable process
-schlather <- fitmaxstab(ms1, locations, "whitmat", loc.form, scale.form,
-shape.form)
-map(schlather, param = "loc")
+library(RandomFields)
+image(volcano, col = terrain.colors(100), xaxt = "n", yaxt="n")
+contour(volcano, add = TRUE)
 @ 
   \end{center}
 \end{titlepage}
@@ -77,7 +45,7 @@ map(schlather, param = "loc")
 \label{sec:what-spat-pack}
 
 The \textbf{SpatialExtremes} package is an add-on package for the R
-\citep{RSoft} statistical computing system. It provides functions for
+\citep{Rsoft} statistical computing system. It provides functions for
 the analysis of spatial extremes.
 
 All comments, criticisms and queries on the package or associated
@@ -213,7 +181,7 @@ $\rho(h)$ is a valid correlation function such as $-1 \leq rho(h) \leq
 
 Currently, there is three types of covariance functions implemented:
 \begin{description}
-\item[Whittle-Matèrn] $\rho(h) =
+\item[Whittle-Matérn] $\rho(h) =
   \frac{2^{1-\mbox{smooth}}}{\Gamma(\mbox{smooth})}
   \left(\frac{h}{\mbox{scale}} \right)^{\mbox{smooth}}
   K_{\mbox{smooth}}\left(\frac{h}{\mbox{scale}} \right)$
@@ -223,14 +191,16 @@ Currently, there is three types of covariance functions implemented:
     \left(\frac{h}{\mbox{scale}} \right)^{\mbox{smooth}} \right]$
 \end{description}
 where $h$ is the distance between locations \#1 and \#2,
-\textsl{scale} and \textsl{smooth} are the scale and smooth parameter
-of the covariance function.
+\textsl{scale}  and \textsl{smooth} are the scale and smooth parameter
+of the covariance function, $\Gamma$ is the gamma function and
+$K_{\mbox{smooth}}$ is the modified Bessel function of the third kind
+with order \textsl{smooth}.
 
 The derivation of the density is reported in section
 \ref{sec:density-computation-schlather}.
 
 \chapter{Fitting a Max-Stable Process to Data}
-\label{sec:using-package}
+\label{sec:fit-maxstab}
 
 As stated in the previous chapter, the density of the two max-stable
 characterisations are only known for two different locations. The
@@ -239,36 +209,21 @@ the ``full'' likelihood. Namely, the log pairwise-likelihood is given
 by:
 \begin{equation}
   \label{eq:lplik}
-  \ell_p(\mathbf{x};\psi) = \sum_{i<j} \sum_{k=1}^{n_{i,j}}
-  f(x_k^{(i)}, x_k^{(j)})
+  \ell_p(\mathbf{y};\psi) = \sum_{i<j} \sum_{k=1}^{n_{i,j}}
+  f(y_k^{(i)}, y_k^{(j)})
 \end{equation}
-where $\mathbf{x}$ is the data available on the whole region,
+where $\mathbf{y}$ is the data available on the whole region,
 $n_{i,j}$ is the number of common observations between sites $i$ and
-$j$, $x_k^{(i)}$ is the $k$-th observation of the $i$-th site and
+$j$, $y_k^{(i)}$ is the $k$-th observation of the $i$-th site and
 $f(\cdot, \cdot)$ is the bivariate distribution of the max-stable
 process - see Annex~\ref{cha:dens-grad-comp} for analytical forms.
 
 Consequently, the max-stable process is fitted to data by maximizing
 the log pairwise-likelihood\footnote{This is why the fitting procedure
   is time consuming.}. Properties of the maximum pairwise likelihood
-estimator are well known \textbf{cite Varin,Lindsay}. In particular,
+estimator are well known \citep{Lindsay1988,Cox2004}. In particular,
 because each pairwise score equation is unbiased, the sum of these
 score equations is unbiased.
-
-However, because we substitute the ``full'' likelihood for the
-pairwise-likelihood, our model belongs to the class of
-\emph{misspecified} models. Consequently, the maximum pairwise
-likelihood estimator is still asymptotically normally distributed but
-with a different asymptotic covariance matrix. Namely, the maximum
-pairwise likelihood estimator $\psi_{\mbox{pair}}$ satisfies the
-following relation:
-\begin{equation}
-  \label{eq:lplikAsymp}
-  \psi_{\mbox{pair}} \sim \mathcal{N}\left(\psi, H^{-1} J H^{-1}
-  \right), \qquad n \rightarrow +\infty
-\end{equation}
-where $H$ is the Hessian matrix and $J$ is the gradient of $f$.
-
 
 \section{Assuming Unit Fréchet Margins}
 \label{sec:simple-case-study}
@@ -295,7 +250,7 @@ ms0 <- t(ms0)
 
 Consequently, our locations are distributed uniformly on the square
 $[0,10]^2$. For this application, the covariance function is taken to
-be the Whittle-Matèrn covariance function with scale and smooth
+be the Whittle-Matérn covariance function with scale and smooth
 parameters equal to 30 and 0.5 respectively.
 
 To fit a max-stable process assuming unit Fréchet all we have to do is
@@ -305,22 +260,22 @@ fitmaxstab(ms0, locations, cov.mod = "whitmat", fit.marge = FALSE)
 @ 
 
 From this output, we can see that we use the Schlather's
-representation with a Whittle-Matèrn covariance function. The
+representation with a Whittle-Matérn covariance function. The
 convergence was successful and the estimates of the covariance
 function are accessible. Note that large deviations from the
 theoretical values are not fatal as the parameters of the
-Whittle-Matèrn covariance function are far from orthogonal. Thus, the
+Whittle-Matérn covariance function are far from orthogonal. Thus, the
 scale and smooth estimates may be totally different while leading
 (approximately) to the same covariance function.
 
-When using the Whittle-Matèrn covariance function, it is
+When using the Whittle-Matérn covariance function, it is
 sometimes preferable to fix the smooth parameter using prior knowledge
 on the process smoothness. This can be done by:
 <<>>=
 fitmaxstab(ms0, locations, cov.mod = "whitmat", smooth = 1.2, fit.marge = FALSE)
 @ 
 
-Despite the Whittle-Matèrn is a flexible covariance function, one may
+Despite the Whittle-Matérn is a flexible covariance function, one may
 want to consider other types of covariance functions. This is achieved
 invoking:
 <<eval=FALSE>>=
@@ -458,6 +413,59 @@ fitmaxstab(ms1, locations, "powexp", loc.form = loc.form, scale.form = scale.for
 \section{Assessing Uncertainties}
 \label{sec:assess-uncert}
 
+As stated in section~\ref{sec:fit-maxstab}, because the model is
+fitted by maximizing the pairwise likelihood instead of the ``full''
+likelihood, the model is \emph{misspecified}. Consequently, the
+maximum pairwise likelihood estimator is still asymptotically normally
+distributed but with a different asymptotic covariance matrix. Namely,
+the maximum pairwise likelihood estimator $\psi_p$ satisfies the
+following relation:
+\begin{equation}
+  \label{eq:lplikAsymp}
+  \psi_p \sim \mathcal{N}\left(\psi, H(\psi)^{-1} J(\psi)
+    H(psi)^{-T} \right), \qquad n \rightarrow +\infty
+\end{equation}
+where $H(\psi) = \mathbb{E}[\nabla^2 \ell_p(\psi;\mathbf{Y})]$ and
+$J(\psi) = \mbox{Var}[\nabla \ell_p(\psi;\mathbf{Y})]$, where the
+expectations are with respect to the ``full'' density.
+
+In practice, to get the standard errors we need to get efficient
+estimates of $H(\psi)$ and $J(\psi)$. The estimation of the former is
+straightforward and is given by $\hat{H}(\hat{\psi}_p) = \nabla^2
+\ell_p(\hat{\psi}_p;\mathbf{y})$; that is the Hessian matrix evaluated
+at $\hat{\psi}_p$. 
+
+The estimation of $J(\psi)$ can be done in two different ways. First,
+it can be estimated using the ``naive'' estimator
+$\hat{J}(\hat{\psi}_p) = \nabla \ell_p(\hat{\psi}_p;\mathbf{y})
+{\ell_p(\hat{\psi}_p;\mathbf{y})}^T$. In the SpatialExtremes package,
+this estimator is tagged \textsl{grad} as it uses the gradient of the
+log pairwise likelihood. Another estimator is given by noticing that
+$J(\psi)$ corresponds to the variance of the pairwise score equations
+$\ell_p(\psi;\mathbf{Y}) = 0$. Consequently, a second estimator,
+tagged \textsl{score}, is given by the sample variance of each
+contribution to the pairwise score function. Note that the second
+estimator is only accessible if independent replications of
+$\mathbf{Y}$ are available\footnote{which will mostly be the case for
+  spatial extremes.}.
+
+The standard errors are available by invoking the following two lines:
+<<echo=FALSE>>=
+n.site <- 20
+locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
+colnames(locations) <- c("lon", "lat")
+
+sigma = matrix(c(100, 25, 25, 220),ncol = 2)
+sigma.inv = solve(sigma)
+sqrtCinv = t(chol(sigma.inv))
+model = list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
+ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model, maxstable="Bool", n = 50)
+ms0 <- t(ms0)
+@ 
+<<eval=FALSE>>=
+fitmaxstab(ms0, locations, cov.mod = "gauss", fit.marge = FALSE, std.err.type = "grad")
+fitmaxstab(ms0, locations, cov.mod = "gauss", fit.marge = FALSE, std.err.type = "score")
+@ 
 
 
 \chapter{Manipulating and Visualising Fitted Models}
@@ -469,8 +477,34 @@ fitmaxstab(ms1, locations, "powexp", loc.form = loc.form, scale.form = scale.for
 Once the model is fitted, one may want to get the estimates of the GEV
 parameters at any locations. This is achieved using the
 \textsl{predict} function:
+<<echo=FALSE>>=
+n.site <- 20
+locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
+colnames(locations) <- c("lon", "lat")
+
+sigma = matrix(c(100, 25, 25, 220),ncol = 2)
+sigma.inv = solve(sigma)
+sqrtCinv = t(chol(sigma.inv))
+model = list(list(model = "gauss", var = 1,
+aniso = sqrtCinv / 2))
+ms0 <- MaxStableRF(locations[,1], locations[,2],
+grid=FALSE, model=model,
+maxstable="Bool",
+n = 50)
+ms1 <- t(ms0)
+param.loc <- -10 + 2 * locations[,2]
+param.scale <- 5 + 2 * locations[,1] + locations[,2]^2
+param.shape <- rep(0.2, n.site)
+
+for (i in 1:n.site)
+ms1[,i] <- param.scale[i] * (ms1[,i]^param.shape[i] - 1) / param.shape[i] + param.loc[i]
+
+loc.form <- y ~ lat
+scale.form <- y ~ lon + I(lat^2)
+shape.form <- y ~ 1
+@ 
 <<>>=
-fitted <- fitmaxstab(ms1, locations, "gauss", loc.form = loc.form, scale.form = scale.form, shape.form= shape.form)
+fitted <- fitmaxstab(ms1, locations, "gauss", loc.form = loc.form, scale.form = scale.form, shape.form = shape.form)
 predict(fitted)
 @ 
 
@@ -509,6 +543,13 @@ space.
 The closed form of the extremal coefficient function is known for both
 Smith's and Schlather's characterisations. Namely, the function is
 given by:
+\begin{tabular}{ll}
+  \textbf{Smith} & $\theta(||x_1 - x_2||) = 2
+  \Phi\left(\frac{\sqrt{(x_1 - x_2)^T \Sigma^-1 (x_1 - x_2)}}{2}
+  \right)$\\
+  \textbf{Schlather} & $\theta(||x_1 - x_2||) = 1 + \sqrt{\frac{1 -
+      \rho(||x_1 - x_2||)}{2}}$
+\end{tabular}
 \begin{description}
 \item[Smith] $\theta(||x_1 - x_2||) = 2 \Phi\left(\frac{\sqrt{(x_1 -
         x_2)^T \Sigma^-1 (x_1 - x_2)}}{2} \right)$
@@ -621,8 +662,8 @@ title("50-year return level")
 \section{The Smith Characterisation}
 \label{sec:smith-char}
 
-The Smith characterisation of a max-stable process is given by:
-
+Let us recall that the Smith's characterisation of a max-stable
+process is given by:
 \begin{equation}
   \label{eq:smith}
   \Pr[Z_1 \leq z_1, Z_2 \leq z_2] = \exp\left[-\frac{1}{z_1} \Phi
@@ -631,7 +672,7 @@ The Smith characterisation of a max-stable process is given by:
       \log\frac{z_1}{z_2} \right) \right]
 \end{equation}
 where $\Phi$ is the standard normal cumulative distribution function
-and, for two location \#1 and \#2  
+and, for two locations \#1 and \#2  
 \begin{equation*}
   a^2 = \Delta x^T \Sigma^{-1} \Delta x \quad \text{and} \quad 
   \Sigma = 
@@ -661,8 +702,8 @@ From these definitions, we note that $c_1 + c_2 = a$.
 \label{sec:density-computation-smith}
 
 From \eqref{eq:smith}, we note the standard normal distribution
-appears. Consequently, we need to compute its derivatives in $c_1$ and
-$c_2$.
+appears. Consequently, we need to compute its derivatives at $c_1$ and
+$c_2$ with respect to $z_1$ and $z_2$.
 \begin{eqnarray}
   \label{eq:2}
   \frac{\partial c_1}{\partial z_1} = \frac{1}{a} \left(-
@@ -675,8 +716,8 @@ $c_2$.
   = - \frac{1}{az_2}  
 \end{eqnarray}
 
-As the normal distribution appears in the Smith characterisation, the
-following quantities will be useful:
+As the normal distribution appears in the Smith's characterisation,
+the following quantities will be useful:
 \begin{eqnarray}
   \label{eq:6}
   \frac{\partial \Phi(c_1)}{\partial z_1} = \frac{\partial
@@ -763,41 +804,46 @@ Finally,
 Thus, it leads to the following relation:
 \begin{equation}
   \label{eq:11}
-  \frac{f(z_1, z_2)}{F(z_1, z_2)} = \frac{c_2 \varphi(c_1)}{a^2z_1^2z_2} + \frac{c_1
-    \varphi(c_2)}{a^2z_1z_2^2} + \left(\frac{\Phi(c_1)}{z_1^2} +
-    \frac{\varphi(c_1)}{az_1^2} - \frac{\varphi(c_2)}{az_1z_2} \right)
-  \left(\frac{\Phi(c_2)}{z_2^2} + \frac{\varphi(c_2)}{az_2^2} -
-    \frac{\varphi(c_1)}{az_1z_2} \right)
+  f(z_1, z_2) = \left[ \frac{c_2 \varphi(c_1)}{a^2z_1^2z_2} + \frac{c_1
+      \varphi(c_2)}{a^2z_1z_2^2} + \left(\frac{\Phi(c_1)}{z_1^2} +
+      \frac{\varphi(c_1)}{az_1^2} - \frac{\varphi(c_2)}{az_1z_2} \right)
+    \left(\frac{\Phi(c_2)}{z_2^2} + \frac{\varphi(c_2)}{az_2^2} -
+      \frac{\varphi(c_1)}{az_1z_2} \right) \right] F(z_1, z_2)
 \end{equation}
 
 \subsection{Gradient computation}
 \label{sec:gradient-computation-smith}
 
-The gradient of the density must be known as we fit our model using
-pairwise likelihood rather than the ``full'' likelihood. Consequently,
-our model is ``mispecified'' and we need to compute standard errors
-using a \textbf{sandwich estimator}. Let $\hat{\theta}$ be the maximum
-pairwise likelihood estimate; then:
+As said in section \ref{sec:assess-uncert}, the maximum pairwise
+likelihood estimator $\hat{\theta}$ satisfies:
 \begin{equation*}
   \hat{\theta} \sim \mathcal{N}\left(\theta, H^{-1} J H^{-1}\right)
 \end{equation*}
 where $H$ is the Fisher information matrix and $J$ the gradient of the
 log pairwise likelihood.
 
+This section aims to derive analytical form for $J$.
+
+\subsubsection{With Unit Fréchet Margins}
+\label{sec:with-unit-frechet}
+
+For clarity purposes, let start our computations assuming that the
+observations have unit Fréchet margins.
+
 Let us recall that the log pairwise likelihood is defined by:
 \begin{equation*}
-  \ell_{pair}(\mathbf{x}, \Sigma^{-1}) = \sum_{k = 1}^{n_{obs}}
-  \sum_{i=1}^{n_{site}-1} \sum_{j=i+1}^{n_{site}} \log f(x_k^{(i)}, x_k^{(j)})
+  \ell_p(\mathbf{z}, \Sigma^{-1}) = \sum_{k = 1}^{n_{obs}}
+  \sum_{i=1}^{n_{site}-1} \sum_{j=i+1}^{n_{site}} \log f(z_k^{(i)}, z_k^{(j)})
 \end{equation*}
-where $n_{obs}$ is the number of observations, $\mathbf{x}_k =
-(x_k^{(1)}, \ldots, x_k^{(n_{site})})$ is the $k$-th observation vector,
+where $n_{obs}$ is the number of observations, $\mathbf{z}_k =
+(z_k^{(1)}, \ldots, z_k^{(n_{site})})$ is the $k$-th observation vector,
 $n_{site}$ is the number of site within the region and $f$ is the
 bivariate density.
 
 Consequently, the gradient of the log pairwise density is given by:
 \begin{equation*}
-  \nabla f_{pair}(\mathbf{x}, \Sigma^{-1}) = \sum_{i=1}^{n_{site}-1}
-  \sum_{j=i+1}^{n_{site}} \nabla \log f(x_k^{(i)}, x_k^{(j)})
+  \nabla \ell_p(\theta) = \sum_{i=1}^{n_{site}-1}
+  \sum_{j=i+1}^{n_{site}} \nabla \log f(z_k^{(i)}, z_k^{(j)})
 \end{equation*}
 
 Define:
@@ -812,15 +858,15 @@ Define:
 \end{eqnarray*}
 so that,
 \begin{equation*}
-  \log f(x_k^{(i)}, x_k^{(j)}) = A + log(B C + D)
+  \log f(z_k^{(i)}, z_k^{(j)}) = A + log(B C + D)
 \end{equation*}
 
 As the logarithm of the bivariate density $f$ is only a function of the
 Mahalanobis distance $a$, the gradient is given through the following
 relation\footnote{algebra operators are defined component-wise.}:
 \begin{equation*}
-  \nabla \log f(x_k^{(i)}, x_k^{(j)}) = \frac{\partial}{\partial a}
-  \log f(x_k^{(i)}, x_k^{(j)}) \left( \frac{\partial a}{\partial
+  \nabla \log f(z_k^{(i)}, z_k^{(j)}) = \frac{\partial}{\partial a}
+  \log f(z_k^{(i)}, z_k^{(j)}) \left( \frac{\partial a}{\partial
       cov{11}}, \frac{\partial a}{\partial cov{12}}, \frac{\partial
       a}{\partial cov{22}} \right)^T
 \end{equation*}
@@ -879,11 +925,227 @@ Finally,
       cov{22}} \right)^T
 \end{equation*}
 
-\section{The Schlather Characterisation}
+\subsubsection{With Ordinary GEV Margins}
+\label{sec:with-ordinary-gev}
+
+In the previous section, we derived the gradient assuming unit Fréchet
+margins. Now, we consider the more general case where margins are
+supposed to be ordinary GEV. Consequently, we need a response surface
+(see section~\ref{sec:with-unknown-gev}) to model the evolution of the
+GEV parameters in space. Let suppose that we have a polynomial
+response surface for each GEV parameter, one can write:
+\begin{eqnarray}
+  \label{eq:polynomSurface}
+  \mathbf{\mu} &=& X_\mu \beta_\mu\\
+  \mathbf{\sigma} &=& X_\sigma \beta_\sigma\\
+  \mathbf{\xi} &=& X_\xi \beta_\xi
+\end{eqnarray}
+where $\mathbf{\mu} = (\mu_1, \ldots, \mu_{n_{site}})$,
+$\mathbf{\sigma} = (\sigma_1, \ldots, \sigma_{n_{site}})$ and
+$\mathbf{\xi} = (\xi_1, \ldots, \xi_{n_{site}})$ are the vector for
+the location, scale and shape GEV parameters for all the sites within
+the region study, $X_\mu$, $X_\sigma$ and $X_\xi$ are the design
+matrices for each GEV parameters and $\beta_\mu$, $\beta_\sigma$ and
+$\beta_\xi$ are the regression coefficients to be estimated.
+
+Consequently, from one ordinary GEV observation $\mathbf{x}$, one can
+transform it to unit Fréchet margins using the following
+transformation:
+\begin{equation}
+  \label{eq:gev2frech}
+  \mathbf{z}^{(i)}=\left\{1+\frac{X^{(i)}_\xi
+      \beta_\xi(\mathbf{x}^{(i)}-X^{(i)}_\mu
+      \beta_\mu)}{X^{(i)}_\sigma \beta_\sigma}\right\}^{1/(X^{(i)}_\xi
+    \beta_\xi)}, \qquad i=1,\ldots,n_{site} 
+\end{equation}
+where $X^{(i)}$ stands for the $i$-th row of the design matrix $X$ and
+$\mathbf{z}^{(i)}$ denotes the $i$-th element of the vector
+$\mathbf{z}$.
+
+
+Consequently, it is easy to see that:
+\begin{eqnarray*}
+  \frac{\partial \mathbf{z}^{(i)}}{\partial \beta_\mu} &=&
+  -\frac{(\mathbf{z}^{(i)})^{1 - X^{(i)}_\xi \beta_\xi} X^{(i)}_\mu}{
+    X^{(i)}_\sigma \beta_\sigma}\\
+  &=& -\frac{(\mathbf{z}^{(i)})^{1-\xi_i}}{\sigma_i}\cdot
+  X_\mu^{(i)}\\
+  \frac{\partial \mathbf{z}^{(i)}}{\partial \beta_\sigma} &=&
+  -\frac{(\mathbf{z}^{(i)})^{1 - X^{(i)}_\xi \beta_\xi}
+    \left(\mathbf{y}^{(i)} - X^{(i)}_\mu
+      \beta_\mu\right)}{X^{(i)}_\sigma \beta^2_\sigma}\\
+  &=& - \frac{(\mathbf{z}^{(i)})^{1-\xi_i} \left(\mathbf{y}^{(i)} -
+      \mu_i \right)}{\sigma_i} \cdot \frac{1}{\beta_\sigma}\\ 
+  \frac{\partial \mathbf{z}^{(i)}}{\partial \beta_\xi} &=& -
+  \frac{\mathbf{z}^{(i)} \log \mathbf{z}^{(i)}}{\beta_\xi} +
+  \frac{\mathbf{z}^{(i)} \left(\mathbf{y}^{(i)} - X^{(i)}_\mu
+      \beta_\mu\right)}{\beta_\xi X^{(i)}_\sigma \beta_\sigma
+    (\mathbf{z}^{(i)})^{X^{(i)}_\xi \beta_\xi}}\\
+  &=& \left[ (\mathbf{z}^{(i)})^{1 - \xi_i}
+    \frac{\left(\mathbf{y}^{(i)} - \mu_i\right)}{\sigma_i} -
+    \mathbf{z}^{(i)} \log \mathbf{z}^{(i)} \right] \cdot
+  \frac{1}{\beta_\xi}
+  % \frac{\partial c_1}{\partial \beta_\mu} &=& \frac{1}{a}
+%   \left(\frac{X^{(i)}_\mu}{X^{(i)}_\sigma \beta_\sigma
+%       (\mathbf{z}^{(i)})^{X^{(i)}_\xi \beta_\xi}} -
+%     \frac{X^{(j)}_\mu}{X^{(j)}_\sigma \beta_\sigma
+%       (\mathbf{z}^{(j)})^{X^{(j)}_\xi \beta_\xi}} \right)\\
+%   &=& \frac{1}{a \sigma_i (\mathbf{z}^{(i)})^{\xi_i}} \cdot X^{(i)}_\mu
+%   - \frac{1}{a \sigma_j (\mathbf{z}^{(j)})^{\xi_j}} \cdot X^{(j)}_\mu\\
+%   \frac{\partial c_1}{\partial \beta_\sigma} &=& \frac{1}{a}
+%   \left(\frac{\mathbf{y}^{(i)} - X^{(i)}_\mu \beta_\mu}{X^{(i)}_\sigma
+%       \beta^2_\sigma (\mathbf{z}^{(i)})^{X^{(i)}_\xi \beta_\xi}} -
+%     \frac{\mathbf{y}^{(j)} - X^{(j)}_\mu \beta_\mu}{X^{(j)}_\sigma
+%       \beta^2_\sigma (\mathbf{z}^{(j)})^{X^{(j)}_\xi \beta_\xi}}
+%   \right)\\
+%   &=& \frac{1}{a} \left[\frac{\mathbf{y}^{(i)} - \mu_i}{\sigma_i
+%       (\mathbf{z}^{(i)})^{\xi_i}} - \frac{\mathbf{y}^{(j)} -
+%       \mu_j}{\sigma_j (\mathbf{z}^{(j)})^{\xi_j}} \right] \cdot
+%   \frac{1}{\beta_\sigma}\\
+%   \frac{\partial c_1}{\partial \beta_\xi} &=& \frac{1}{a}
+%   \left[\frac{\log \mathbf{z}^{(i)}}{\beta_\xi} -
+%     \frac{\mathbf{y}^{(i)} - X^{(i)}_\mu \beta_\mu}{\beta_\xi
+%       X^{(i)}_\sigma \beta_\sigma (\mathbf{z}^{(i)})^{X^{(i)}_\xi
+%         \beta_\xi}} - \frac{\log \mathbf{z}^{(j)}}{\beta_\xi} +
+%     \frac{\mathbf{y}^{(j)} - X^{(j)}_\mu \beta_\mu}{\beta_\xi
+%       X^{(j)}_\sigma \beta_\sigma (\mathbf{z}^{(j)})^{X^{(j)}_\xi
+%         \beta_\xi}}\right]\\
+%   &=& \frac{1}{a} \left[\log \frac{\mathbf{z}^{(i)}}{\mathbf{z}^{(j)}}
+%     + \frac{\mathbf{y}^{(j)} - \mu_j}{\sigma_j
+%       (\mathbf{z}^{(j)})^{\xi_j}}- \frac{\mathbf{y}^{(i)} -
+%       \mu_i}{\sigma_i (\mathbf{z}^{(i)})^{\xi_i}} \right] \cdot
+%   \frac{1}{\beta_\xi}
+\end{eqnarray*}
+where the operator $\cdot$ performs operations component-wise.
+Note that the partial derivatives for $c_2$ are easily obtained as:
+\begin{equation*}
+  \frac{\partial c_2}{\partial \beta_\mu} = - \frac{\partial
+    c_1}{\partial \beta_\mu}, \quad \frac{\partial c_2}{\partial
+    \beta_\sigma} = - \frac{\partial c_1}{\partial \beta_\sigma},
+  \quad \frac{\partial c_2}{\partial \beta_\xi} = - \frac{\partial
+    c_1}{\partial \beta_\xi}
+\end{equation*}
+
+To obtain the gradient of the logarithm of the bivariate density, we
+need to compute the partial derivatives of $A$, $B$, $C$ and $D$
+with respect to $\beta_\mu$, $\beta_\sigma$ and $\beta_\xi$. However,
+for clarity purpose, we compute first the following derivatives.
+
+% \begin{eqnarray*}
+%   \frac{\partial \Phi(c_1)}{\partial \beta_\mu} &=& \frac{\partial
+%     \Phi(c_1)}{\partial c_1} \frac{\partial c_1}{\partial \beta_\mu}\\
+%   &=&
+%   \frac{\varphi(c_1)}{a \sigma_i (\mathbf{z}^{(i)})^{\xi_i}} \cdot
+%   X^{(i)}_\mu - \frac{\varphi(c_1)}{a \sigma_j
+%     (\mathbf{z}^{(j)})^{\xi_j}} \cdot X^{(j)}_\mu\\
+%   \frac{\partial \Phi(c_2)}{\partial \beta_\mu} &=& \frac{\varphi(c_2)}{a
+%     \sigma_j (\mathbf{z}^{(j)})^{\xi_j}} \cdot X^{(j)}_\mu -
+%   \frac{\varphi(c_2)}{a \sigma_i (\mathbf{z}^{(i)})^{\xi_i}} \cdot
+%   X^{(i)}_\mu\\
+%   \frac{\partial \Phi(c_1)}{\partial \beta_\sigma} &=& \frac{\partial
+%     \Phi(c_1)}{\partial c_1} \frac{\partial c_1}{\partial
+%     \beta_\sigma}\\
+%   &=& \frac{\varphi(c_1)}{a} \left[\frac{\mathbf{y}^{(i)} -
+%       \mu_i}{\sigma_i (\mathbf{z}^{(i)})^{\xi_i}} -
+%     \frac{\mathbf{y}^{(j)} - \mu_j}{\sigma_j
+%       (\mathbf{z}^{(j)})^{\xi_j}} \right] \cdot
+%   \frac{1}{\beta_\sigma}\\
+%   \frac{\partial \Phi(c_2)}{\partial \beta_\sigma} &=&
+%   \frac{\varphi(c_2)}{a} \left[\frac{\mathbf{y}^{(j)} - \mu_j}{\sigma_j
+%       (\mathbf{z}^{(j)})^{\xi_j}} - \frac{\mathbf{y}^{(i)} -
+%       \mu_i}{\sigma_i (\mathbf{z}^{(i)})^{\xi_i}} \right] \cdot
+%   \frac{1}{\beta_\sigma}\\
+%   \frac{\partial \Phi(c_1)}{\partial \beta_\xi} &=& \frac{\partial 
+%     \Phi(c_1)}{\partial c_1} \frac{\partial c_1}{\partial \beta_\xi}\\
+%   &=&
+%   \frac{\varphi(c_1)}{a} \left[\log \frac{\mathbf{z}^{(i)}}{\mathbf{z}^{(j)}}
+%     + \frac{\mathbf{y}^{(j)} - \mu_j}{\sigma_j
+%       (\mathbf{z}^{(j)})^{\xi_j}}- \frac{\mathbf{y}^{(i)} -
+%       \mu_i}{\sigma_i (\mathbf{z}^{(i)})^{\xi_i}} \right] \cdot
+%   \frac{1}{\beta_\xi} \\
+%   \frac{\partial \Phi(c_2)}{\partial \beta_\xi} &=&
+%   \frac{\varphi(c_2)}{a} \left[\log
+%     \frac{\mathbf{z}^{(j)}}{\mathbf{z}^{(i)}} + \frac{\mathbf{y}^{(i)}
+%       - \mu_i}{\sigma_i (\mathbf{z}^{(i)})^{\xi_i}}-
+%     \frac{\mathbf{y}^{(j)} - \mu_j}{\sigma_j
+%       (\mathbf{z}^{(j)})^{\xi_j}} \right] \cdot \frac{1}{\beta_\xi}\\
+%   \frac{\partial \varphi(c_1)}{\partial \beta_\mu} &=& \frac{\partial 
+%     \varphi(c_1)}{\partial c_1} \frac{\partial c_1}{\partial \beta_\mu}\\
+%   &=&
+%   - \frac{c_1 \varphi(c_1)}{a \sigma_i (\mathbf{z}^{(i)})^{\xi_i}} \cdot
+%   X^{(i)}_\mu + \frac{c_1 \varphi(c_1)}{a \sigma_j
+%     (\mathbf{z}^{(j)})^{\xi_j}} \cdot X^{(j)}_\mu\\ 
+%   \frac{\partial \varphi(c_2)}{\partial \beta_\mu} &=& \frac{\partial 
+%     \varphi(c_2)}{\partial c_2} \frac{\partial c_2}{\partial \beta_\mu}\\
+%   &=&
+%   \frac{c_2 \varphi(c_2)}{a \sigma_i (\mathbf{z}^{(i)})^{\xi_i}} \cdot
+%   X^{(i)}_\mu - \frac{c_2 \varphi(c_2)}{a \sigma_j
+%     (\mathbf{z}^{(j)})^{\xi_j}} \cdot X^{(j)}_\mu\\
+%   \frac{\partial \varphi(c_1)}{\partial \beta_\sigma} &=& \frac{\partial 
+%     \varphi(c_1)}{\partial c_1} \frac{\partial c_1}{\partial
+%     \beta_\sigma}\\
+%   &=& - \frac{c_1 \varphi(c_1)}{a}
+%   \left[\frac{\mathbf{y}^{(i)} - \mu_i}{\sigma_i
+%       (\mathbf{z}^{(i)})^{\xi_i}} - \frac{\mathbf{y}^{(j)} -
+%       \mu_j}{\sigma_j (\mathbf{z}^{(j)})^{\xi_j}} \right] \cdot
+%   \frac{1}{\beta_\sigma}\\
+%   \frac{\partial \varphi(c_2)}{\partial \beta_\sigma} &=& \frac{c_2
+%     \varphi(c_2)}{a} \left[\frac{\mathbf{y}^{(i)} - \mu_i}{\sigma_i
+%       (\mathbf{z}^{(i)})^{\xi_i}} - \frac{\mathbf{y}^{(j)} -
+%       \mu_j}{\sigma_j (\mathbf{z}^{(j)})^{\xi_j}} \right] \cdot
+%   \frac{1}{\beta_\sigma}\\
+%   \frac{\partial \varphi(c_1)}{\partial \beta_\xi} &=& \frac{\partial
+%     \varphi(c_1)}{\partial c_1} \frac{\partial c_1}{\partial \beta_\xi}\\
+%   &=&
+%   - \frac{c_1 \varphi(c_1)}{a} \left[\log
+%     \frac{\mathbf{z}^{(i)}}{\mathbf{z}^{(j)}} + \frac{\mathbf{y}^{(j)}
+%       - \mu_j}{\sigma_j (\mathbf{z}^{(j)})^{\xi_j}}-
+%     \frac{\mathbf{y}^{(i)} - \mu_i}{\sigma_i
+%       (\mathbf{z}^{(i)})^{\xi_i}} \right] \cdot \frac{1}{\beta_\xi}\\
+%   \frac{\partial \varphi(c_2)}{\partial \beta_\xi} &=& \frac{c_2
+%     \varphi(c_2)}{a} \left[\log \frac{\mathbf{z}^{(i)}}{\mathbf{z}^{(j)}}
+%     + \frac{\mathbf{y}^{(j)} - \mu_j}{\sigma_j
+%       (\mathbf{z}^{(j)})^{\xi_j}}- \frac{\mathbf{y}^{(i)} -
+%       \mu_i}{\sigma_i (\mathbf{z}^{(i)})^{\xi_i}} \right] \cdot
+%   \frac{1}{\beta_\xi}
+% \end{eqnarray*}
+
+Now we're ready for the partial derivatives of $A$, $B$, $C$ and $D$
+w.r.t. $\beta_\mu$, $\beta_\sigma$ and $\beta_\xi$. For shortness, we
+do it in one step with the notation $\beta = (\beta_\mu, \beta_\sigma,
+\beta_\xi)$.
+\begin{eqnarray*}
+  \frac{\partial A}{\partial \beta} &=& \frac{\partial A}{\partial z_1}
+  \nabla_\beta z_1\\ 
+  \frac{\partial B}{\partial \beta} &=& \frac{\partial B}{\partial z_1}
+  \nabla_\beta z_1\\ 
+  \frac{\partial C}{\partial \beta} &=& \frac{\partial C}{\partial z_1}
+  \nabla_\beta z_1\\ 
+  \frac{\partial D}{\partial \beta} &=& \frac{\partial D}{\partial z_1}
+  \nabla_\beta z_1\\
+\end{eqnarray*}
+where $\nabla_\beta z_1$ is the gradient of $z_1$ w.r.t. $\beta$ and
+the partial derivatives of $A$, $B$, $C$ and $D$ w.r.t. $z_1$ are
+given by the following equations:
+\begin{eqnarray*}
+  dA_{z_1} &=& \frac{\partial A}{\partial z_1} = \frac{\varphi(c_1) -
+    a \Phi(c_1)}{a z_1^2} - \frac{\varphi(c_2)}{a z_1 z_2}\\
+  dB_{z_1} &=& \frac{\partial B}{\partial z_1} = \frac{c_1
+    \varphi(c_2)}{a^2 z_1 z_2^2} + \frac{c_2 \varphi(c_1)}{a^2 z_1^2
+    z_2}\\
+  dC_{z_1} &=& \frac{\partial C}{\partial z_1} = - \frac{(c_2 + 2a)
+    \varphi(c_1)}{a^2 z_1^3} - \frac{\Phi(c_1)}{z_1^3} +
+  \frac{(a+c_2)\varphi(c_2)}{a^2z_1^2z_2}\\
+  dD_{z_1} &=& \frac{\partial D}{\partial z_1} = \frac{\left[1 - c_2
+      (a + c_2) \right] \varphi(c_1)}{a^2 z_1^3 z_2} + \frac{\left[1 -
+    c_1 (a + c_2) \right] \varphi(c_2)}{a^3 z_1^2 z_2^2}
+\end{eqnarray*}
+
+
+\section{The Schlather's Characterisation}
 \label{sec:schlather-char}
 
-The Schlather characterisation of a max-stable process is given by:
-
+The Schlather's characterisation of a max-stable process is given by:
 \begin{equation}
   \label{eq:schlather}
   \Pr[Z_1 \leq z_1, Z_2 \leq z_2] = \exp\left[-\frac{1}{2}
@@ -891,8 +1153,8 @@ The Schlather characterisation of a max-stable process is given by:
         (\rho(h) + 1) \frac{z_1 z_2}{(z_1 + z_2)^2}} \right) \right]
 \end{equation}
 where $h$ is the distance between location \#1 and location \#2 and
-$\rho(h)$ is a valid correlation function such as $-1 \leq rho(h) \leq
-1$.
+$\rho(h)$ is a valid correlation function such as $-1 \leq \rho(h)
+\leq 1$.
 
 \subsection{Density computation}
 \label{sec:density-computation-schlather}
@@ -982,7 +1244,7 @@ So that,
       +dD)}{BC + D} \right] \left(\nabla \rho(h) \right)^T
 \end{equation*}
 
-\bibliographystyle{/home/mathieu/Documents/LateX/biblio_ribatet}
-\bibliography{harvard}
+\bibliography{/home/ribatet/Documents/Biblio/biblio_ribatet}
+\bibliographystyle{kluwer}
 \end{document}
 
