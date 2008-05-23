@@ -169,11 +169,8 @@ int mahalDistFct(double *distVec, int nPairs, double *cov11,
 			    *cov22 * R_pow_di(distVec[i], 2)) / det;
     
     //We test if the Mahalanobis distance is singular.
-    //if (!R_FINITE(ans.vec[i]) || (ans.vec[i] <= 0)){
-    //  ans.flag = 1;
-    //  //printf("mahalDist^2 is erradic!\n"); 
-    //  return ans;
-    //}
+    if (mahal[i] <= 0)
+      return 1;
     
     mahal[i] = sqrt(mahal[i]);
   }
