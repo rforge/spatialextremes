@@ -1,5 +1,5 @@
 covariance <- function(fitted, scale, smooth, cov.mod = "whitmat",
-                       dist){
+                       plot = TRUE, dist, ...){
 
   if (!missing(fitted)){
     cov.mod <- fitted$cov.mod
@@ -7,8 +7,12 @@ covariance <- function(fitted, scale, smooth, cov.mod = "whitmat",
     scale <- fitted$param["scale"]
   }
 
+  if (cov.mod == "gauss")
+    stop("``covariance'' is not implemented for the Smith's model")
+
   if (!(cov.mod %in% c("whitmat", "cauchy", "powexp")))
     stop("Invalid covariance model. ``cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp'")
+  
   if (cov.mod == "whitmat"){
     if ((smooth <= 0) || (scale <= 0) || (smooth > 171))
       stop("invalid parameter for the whittle-matern covariance function")
@@ -37,13 +41,19 @@ covariance <- function(fitted, scale, smooth, cov.mod = "whitmat",
     cov.fun <- function(dist) exp(-(dist / scale)^smooth)
   }
 
+  if (plot){
+    tmp.fun <- function(dist) cov.fun(dist) - 0.05
+    xlimsup <- uniroot(tmp.fun, c(0, 10^16))$root
+    plot(cov.fun, from = 0, to = xlimsup, ...)
+  }
+
   if (!missing(dist)){
     cov.val <- cov.fun(dist)
     return(list(cov.fun = cov.fun, cov.val = cov.val))
   }
 
   else
-    return(cov.fun)
+    invisible(cov.fun)
 
   
 }
