@@ -71,9 +71,9 @@ double lpliksmith(double *data, double *mahalDist, double *jac,
       currentPair++;
       
       for (k=0;k<nObs;k++){
-	c1 = log(data[k + j * nObs] / data[k + i * nObs]) /
+	c1 = (log(data[k + j * nObs]) - log(data[k + i * nObs])) /
 	  mahalDist[currentPair] + mahalDist[currentPair] / 2;
-	c2 = log(data[k + i * nObs] / data[k + j * nObs]) /
+	c2 = (log(data[k + i * nObs]) - log(data[k + j * nObs])) /
 	  mahalDist[currentPair] + mahalDist[currentPair] / 2;
 	
 	//It's the log of the joint CDF
