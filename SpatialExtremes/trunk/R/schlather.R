@@ -188,7 +188,7 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
   }
 
   cov.fun <-  covariance(scale = param["scale"], smooth = param["smooth"],
-                        cov.mod = cov.mod)
+                        cov.mod = cov.mod, plot = FALSE)
   
   ext.coeff <- function(h)
     1 + sqrt(1 - 1/2 * (cov.fun(h) + 1))
@@ -418,7 +418,7 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   }
 
   cov.fun <- covariance(scale = param["scale"], smooth = param["smooth"],
-                        cov.mod = cov.mod)
+                        cov.mod = cov.mod, plot = FALSE)
   
   ext.coeff <- function(h)
     1 + sqrt(1 - 1/2 * (cov.fun(h) + 1))
