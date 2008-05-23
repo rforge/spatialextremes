@@ -30,7 +30,7 @@
   scales.hat <- scale.model$dsgn.mat %*% scaleCoeff
 
   if (any(scales.hat <= 0))
-    scaleCoeff[1] <- scaleCoeff[1] - min(scales.hat) + .1
+    scaleCoeff[1] <- scaleCoeff[1] - 1.1 * min(scales.hat)
   
   start <- as.list(covs)
 
