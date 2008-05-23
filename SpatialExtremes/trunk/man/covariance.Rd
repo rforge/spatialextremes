@@ -6,7 +6,8 @@
   specifying directly the covariance parameters.
 }
 \usage{
-covariance(fitted, scale, smooth, cov.mod = "whitmat", dist)
+covariance(fitted, scale, smooth, cov.mod = "whitmat", plot = TRUE,
+dist, ...)
 }
 \arguments{
   \item{fitted}{An object of class ``maxstab''. Most often this will be
@@ -17,26 +18,24 @@ covariance(fitted, scale, smooth, cov.mod = "whitmat", dist)
   \item{cov.mod}{Character string. The name of the covariance
     model. Must be one of "whitmat", "cauchy" or "powexp" for the
     Whittle-Matern, Cauchy and Powered Exponential models.}
+  \item{plot}{Logical. If \code{TRUE} (default) the covariance function
+    is plotted.} 
   \item{dist}{A numeric vector corresponding to the distance at which
     the covariance function should be evaluated. May be missing.}
+  \item{\dots}{Several option to be passed to the \code{\link{plot}}
+    function.}
 }
 \value{This function returns the covariance function. Eventually, if
   \code{dist} is given, the covariance function is computed for each
-  distance given by \code{dist}.
-}
-\details{
-}
-\references{
-}
+  distance given by \code{dist}. If \code{plot = TRUE}, the covariance
+  function is plotted.}
 \seealso{
 }
 \examples{
 ## 1- Calling covariance using fixed covariance parameters
 covariance(scale = 1, smooth = 0.5, cov.mod = "whitmat")
 covariance(scale = 1, smooth = 0.5, cov.mod = "whitmat",
-  dist = seq(0,5, 0.2))
-plot(covariance(scale = 1, smooth = 0.5, cov.mod = "whitmat"),
-  from = 0, to = 5, ylab = "Whittle-Matern Covariance Function")
+  dist = seq(0,5, 0.2), plot = FALSE)
 
 ## 2- Calling covariance from a fitted model
 require(RandomFields)
@@ -70,17 +69,11 @@ shape.form <- shape ~ 1
 
 fitted <- fitmaxstab(ms1, locations, "whitmat", loc.form, scale.form,
                shape.form)
-covariance(fitted)
-covariance(fitted, dist = seq(0,5, 0.2))
-
-cov.fun.theo <- covariance(scale = 30, smooth = .5, cov.mod = "whitmat")
-cov.fun.hat <- covariance(fitted)
-
-plot(cov.fun.theo, from = 0, to = 100, xlab = "Distance", ylab =
-  "Covariance")
+covariance(fitted, xlab = "Distance", ylab = "Covariance")
+covariance(scale = 30, smooth = .5, cov.mod = "whitmat", add = TRUE, col
+               = 3)
 title("Whittle-Matern covariance function")
-plot(cov.fun.hat, from = 0, to = 100, col = "red", add = TRUE)
-legend("topright", c("Theo.", "Fitted"), lty = 1, col = 1:2, inset = .05)
+legend("topright", c("Theo.", "Fitted"), lty = 1, col = c(3,1), inset = .05)
 }
 \author{Mathieu Ribatet}
 \keyword{htest}
