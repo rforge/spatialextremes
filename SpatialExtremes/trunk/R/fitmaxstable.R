@@ -7,8 +7,13 @@ fitmaxstab <- function(data, coord, cov.mod = c("gauss", "whitmat", "cauchy", "p
     reg.mod <- "full"
 
 
-  if (!missing(loc.form) && !missing(scale.form) && !missing(shape.form))
+  if (!missing(loc.form) && !missing(scale.form) && !missing(shape.form)){
     reg.mod <- "spatgev"
+
+    if ((class(loc.form) != "formula") || (class(scale.form) != "formula") ||
+        (class(shape.form) != "formula"))
+      stop("``loc.form'', ``scale.form'' and ``shape.form'' must be valid R formulas")
+  }
 
   flag <- missing(loc.form) + missing(scale.form)  + missing(shape.form)
 
