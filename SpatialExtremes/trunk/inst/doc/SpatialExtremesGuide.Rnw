@@ -6,6 +6,9 @@
 \usepackage{hyperref}
 \usepackage[square]{natbib}
 
+\setlength{\parskip}{0.7ex plus0.1ex minus0.1ex}
+\setlength{\parindent}{0em}
+
 \renewcommand{\floatpagefraction}{0.95}
 \renewcommand{\textfraction}{0.05}
 
@@ -14,6 +17,7 @@
 % \VignetteDepends{SpatialExtremes,RandomFields}
 % \VignetteKeyword{Extreme Value Theory, Spatial Extremes, Max-stable processes} 
 % \VignettePackage{SpatialExtremes}
+
 \begin{titlepage}
   \vspace*{2cm}
   \begin{center}
@@ -39,10 +43,20 @@ contour(volcano, add = TRUE)
   \end{center}
 \end{titlepage}
 
+
+\pagenumbering{roman}
 \normalsize
+
+\tableofcontents
+\listoftables
+\listoffigures
+
+\pagenumbering{arabic}
 
 \chapter*{Introduction}
 \label{cha:introduction}
+\addcontentsline{toc}{chapter}{Introduction}
+
 
 \section*{What is the SpatialExtremes package?}
 \label{sec:what-spat-pack}
@@ -717,7 +731,7 @@ title("Shape")
 
 \begin{figure}
   \centering
-<<fig=TRUE,echo=FALSE>>=
+<<fig=TRUE,echo=FALSE,height=6,width=8>>=
 <<mapGEV>>
 @ 
   \caption{Contour plots of the GEV parameters.}
@@ -1025,10 +1039,10 @@ In the previous section, we derived the gradient assuming unit Fréchet
 margins. Now, we consider the more general case where margins are
 supposed to be ordinary GEV. 
 
-We have to be aware that the bivariate density changed when we do not
+We have to be aware that the bivariate density changes when we do not
 suppose unit Fréchet margins anymore. For instance, the bivariate
-density evaluated at two observation $y_1$ and $y_2$ with ordinary GEV
-margins is given by:
+density evaluated at two observations $y_1$ and $y_2$ with ordinary
+GEV margins is given by:
 \begin{equation}
   \label{eq:densSmithOrdGEV}
   f(y_1,y_2) = f(z_1, z_2) |J(y_1, y_2)|
@@ -1269,11 +1283,11 @@ $B$, $C$ and $D$ w.r.t. $z_1$ are given by the following equations:
   dB_{z_1} &=& \frac{\partial B}{\partial z_1} = \frac{c_1
     \varphi(c_2)}{a^2 z_1 z_2^2} + \frac{c_2 \varphi(c_1)}{a^2 z_1^2
     z_2}\\
-  dC_{z_1} &=& \frac{\partial C}{\partial z_1} = - \frac{(c_2 + 2a)
+  dC_{z_1} &=& \frac{\partial C}{\partial z_1} = - \frac{(a + c_2)
     \varphi(c_1)}{a^2 z_1^3} - \frac{2\Phi(c_1)}{z_1^3} +
   \frac{(a+c_2)\varphi(c_2)}{a^2z_1^2z_2}\\
-  dD_{z_1} &=& \frac{\partial D}{\partial z_1} = \frac{\left[1 - c_2
-      (a + c_2) \right] \varphi(c_1)}{a^2 z_1^3 z_2} - \frac{\left[1 +
+  dD_{z_1} &=& \frac{\partial D}{\partial z_1} = \frac{(1 - c_2^2)
+      \varphi(c_1)}{a^2 z_1^3 z_2} - \frac{\left[1 +
     c_1 (a + c_2) \right] \varphi(c_2)}{a^3 z_1^2 z_2^2}
 \end{eqnarray*}
 while the partial derivatives of $A$, $B$, $C$ and $D$ w.r.t. $z_2$
@@ -1281,27 +1295,26 @@ are given by:
 \begin{eqnarray*}
   dA_{z_2} &=& \frac{\partial A}{\partial z_2} = \frac{\varphi(c_2) +
     a \Phi(c_2)}{a z_2^2} - \frac{\varphi(c_1)}{a z_1 z_2}\\
-  dB_{z_2} &=& \frac{\partial B}{\partial z_2} = - \frac{(c_1 + 2a)
+  dB_{z_2} &=& \frac{\partial B}{\partial z_2} = - \frac{(a + c_1)
     \varphi(c_2)}{a^2 z_2^3} - \frac{2\Phi(c_2)}{z_2^3} +
-  \frac{(a+c_1)\varphi(c_2)}{a^2z_1z_2^2}\\
+  \frac{(a+c_1)\varphi(c_1)}{a^2z_1z_2^2}\\
   dC_{z_2} &=& \frac{\partial C}{\partial z_2} = \frac{c_1
     \varphi(c_2)}{a^2 z_1 z_2^2} + \frac{c_2 \varphi(c_1)}{a^2 z_1^2
     z_2}\\
   dD_{z_2} &=& \frac{\partial D}{\partial z_2} = -
   \frac{\left[1+c_2(a+c_1) \right]\varphi(c_1)}{a^3 z_1^2 z_2^2} + 
-  \frac{\left[1 - c_1(a+c_1)\right] \varphi(c_2)}{a^3z_1z_2^3}
+  \frac{(1 - c_1^2) \varphi(c_2)}{a^3z_1z_2^3}
 \end{eqnarray*}
 
 For the Jacobian part $E$, we have:
 \begin{eqnarray*}
-  dE_\mu &=& \frac{\partial E}{\partial \beta_\mu} = -
-  \frac{1-\xi_1}{\sigma_1 z_1^{-\xi_1}} \cdot X^{(1)}_\mu -
-  \frac{1-\xi_2}{\sigma_2 z_2^{-\xi_2}} \cdot X^{(2)}_\mu\\
-  dE_\sigma &=& \frac{\partial E}{\partial \beta_\sigma} =  - \left(
-    \frac{(y_1 - \mu_1)(1 - \xi_1)}{\sigma_1z_1^{\xi_1}} +
-    \frac{(y_2-\mu_2)(1 - \xi_2)}{\sigma_2 z_2^{\xi_2}} + 2
-    z_1^{2\xi_1-2} z_2^{2\xi_2-2}\right) \cdot
-  \frac{1}{\beta_\sigma}\\
+  dE_\mu &=& \frac{\partial E}{\partial \beta_\mu} = 
+  \frac{\xi_1-1}{\sigma_1 z_1^{\xi_1}} \cdot X^{(1)}_\mu +
+  \frac{\xi_2-1}{\sigma_2 z_2^{\xi_2}} \cdot X^{(2)}_\mu\\
+  dE_\sigma &=& \frac{\partial E}{\partial \beta_\sigma} =  \left(
+    \frac{(y_1 - \mu_1)(\xi_1-1)}{\sigma_1z_1^{\xi_1}} +
+    \frac{(y_2-\mu_2)(\xi_2-2)}{\sigma_2 z_2^{\xi_2}} + 2\right)
+  \cdot \frac{1}{\beta_\sigma}\\
   dE_\xi &=& \frac{\partial E}{\partial \beta_\xi} =
   \frac{(1-\xi_1)(y_1 - \mu_1)}{\sigma_1 \xi_1 z_1^{\xi_1}} \cdot
   X^{(1)}_\xi + \frac{(1-\xi_2)(y_2 - \mu_2)}{\sigma_2 \xi_2
@@ -1317,9 +1330,7 @@ Finally, we have:
 \end{equation}
 where
 \begin{equation*}
-  \frac{\partial E}{\partial \beta} = \left(\frac{\partial E}{\partial
-      \beta_\mu}, \frac{\partial E}{\partial \beta_\sigma},
-    \frac{\partial E}{\partial \beta_\xi} \right)^T  
+  \frac{\partial E}{\partial \beta} = (dE_\mu, dE_\sigma, dE_\xi)^T  
 \end{equation*}
 
 
