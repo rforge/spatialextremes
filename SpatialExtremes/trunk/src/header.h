@@ -88,12 +88,6 @@ void smithgrad(double *data, double *distVec, int *nSite,
 	       int *nshapecoeff, double *loccoeff, double *scalecoeff,
 	       double *shapecoeff, double *cov11, double *cov12,
 	       double *cov22, int *fitmarge, double *grad);
-void smithgrad2(double *data, double *distVec, int *nSite,
-		int *nObs, double *locdsgnmat, int *nloccoeff,
-		double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
-		int *nshapecoeff, double *loccoeff, double *scalecoeff,
-		double *shapecoeff, double *icov11, double *icov12,
-		double *icov22, int *fitmarge, double *grad);
 void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 		   int *nObs, double *locdsgnmat, int *nloccoeff,
 		   double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
