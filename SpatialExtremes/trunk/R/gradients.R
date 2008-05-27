@@ -8,6 +8,8 @@
   n.site <- ncol(data)
   n.obs <- nrow(data)
   n.pairs <- n.site * (n.site - 1) / 2
+
+  param <- c("cov11", "cov12", "cov22")
     
   if (fit.marge){
 
@@ -33,7 +35,7 @@
     else
       shape.names <- paste("shapeCoeff", 1:n.shapecoeff, sep="")
   
-    param <- c("cov11", "cov12", "cov22", loc.names, scale.names, shape.names)
+    param <- c(param, loc.names, scale.names, shape.names)
 
     loc.idx <- which(substr(names(par), 1, 3) == "loc")
     scale.idx <- which(substr(names(par), 1, 5) == "scale")
@@ -64,9 +66,10 @@
              as.double(scale.dsgn.mat), as.integer(n.scalecoeff), as.double(shape.dsgn.mat),
              as.integer(n.shapecoeff), as.double(loc.param), as.double(scale.param),
              as.double(shape.param), as.double(cov11), as.double(cov12),
-             as.double(cov22), fit.marge, grad = double(n.obs * 3), PACKAGE = "SpatialExtremes")$grad
+             as.double(cov22), fit.marge, grad = double(n.obs * length(param)),
+             PACKAGE = "SpatialExtremes")$grad
 
-  grad <- matrix(grad, nrow = n.obs, ncol = 3)
+  grad <- matrix(grad, nrow = n.obs, ncol = length(param))
 
   if (std.err.type == "score")
     jacobian <- var(grad) * n.obs

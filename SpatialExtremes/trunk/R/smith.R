@@ -356,7 +356,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
 
   param <- c(opt$par, unlist(fixed.param))
   
-  if (std.err.type == "observed"){
+  if (std.err.type != "none"){
     
     tol <- .Machine$double.eps^0.5
     
@@ -371,9 +371,10 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
       var.cov <- solve(var.cov, tol = tol)
       jacobian <- .smithgrad(param, data, distVec, loc.dsgn.mat,
                              scale.dsgn.mat, shape.dsgn.mat,
-                             fit.marge = fit.marge)
+                             fit.marge = fit.marge, std.err.type =
+                             std.err.type)
       
-      var.cov <- var.cov[1:3,1:3] %*% jacobian %*% var.cov[1:3,1:3]
+      var.cov <- var.cov %*% jacobian %*% var.cov
       
       std.err <- diag(var.cov)
       
@@ -396,7 +397,8 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
         corr.mat <- NULL
       
       colnames(var.cov) <- rownames(var.cov) <- 
-        names(std.err) <- c("cov11", "cov12", "cov22")
+        names(std.err) <- c("cov11", "cov12", "cov22", loc.names,
+                            scale.names, shape.names)
     }
   }
 
