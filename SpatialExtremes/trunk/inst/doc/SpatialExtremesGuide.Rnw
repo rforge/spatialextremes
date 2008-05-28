@@ -124,6 +124,12 @@ A copy of the GNU General Public License can be obtained from
 
 \section*{Acknowledgements}
 
+This work has been supported by the Competence Center Environment and
+Sustainability (\href{http://www.cces.ethz.ch/index}) within the
+\href{http://www.cces.ethz.ch/projects/hazri/EXTREMES}{EXTREMES}
+project. I would like to thank Simone Padoan for his support while
+trying to get the ``awful'' gradient in Section
+\ref{sec:with-ordinary-gev}.
 
 \chapter{An Introduction to Max-Stable Processes}
 \label{cha:an-introduction-max}
@@ -496,9 +502,12 @@ ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model,
                    maxstable="Bool", n = 50)
 ms0 <- t(ms0)
 @ 
+<<>>=
+fitmaxstab(ms0, locations, cov.mod = "gauss", fit.marge = FALSE, std.err.type = "score")
+@ 
+
 <<eval=FALSE>>=
 fitmaxstab(ms0, locations, cov.mod = "gauss", fit.marge = FALSE, std.err.type = "grad")
-fitmaxstab(ms0, locations, cov.mod = "gauss", fit.marge = FALSE, std.err.type = "score")
 @ 
 
 
@@ -761,10 +770,10 @@ map(schlather, "quant", ret.per = 50 , ranges = new.ranges)
 
 \appendix
 
-\chapter{Annex: Density and Gradient Computations}
+\chapter{Density and Gradient Computations}
 \label{cha:dens-grad-comp}
 
-\section{The Smith Characterisation}
+\section{The Smith's Characterisation}
 \label{sec:smith-char}
 
 Let us recall that the Smith's characterisation of a max-stable
@@ -1283,11 +1292,11 @@ $B$, $C$ and $D$ w.r.t. $z_1$ are given by the following equations:
   dB_{z_1} &=& \frac{\partial B}{\partial z_1} = \frac{c_1
     \varphi(c_2)}{a^2 z_1 z_2^2} + \frac{c_2 \varphi(c_1)}{a^2 z_1^2
     z_2}\\
-  dC_{z_1} &=& \frac{\partial C}{\partial z_1} = - \frac{(a + c_2)
-    \varphi(c_1)}{a^2 z_1^3} - \frac{2\Phi(c_1)}{z_1^3} +
-  \frac{(a+c_2)\varphi(c_2)}{a^2z_1^2z_2}\\
-  dD_{z_1} &=& \frac{\partial D}{\partial z_1} = \frac{(1 - c_2^2)
-      \varphi(c_1)}{a^2 z_1^3 z_2} - \frac{\left[1 +
+  dC_{z_1} &=& \frac{\partial C}{\partial z_1} = \frac{(a + c_2)
+    \varphi(c_2)}{a^2 z_1^2 z_2} - \frac{2\Phi(c_1)}{z_1^3} -
+  \frac{(2a+c_2)\varphi(c_1)}{a^2z_1^3}\\
+  dD_{z_1} &=& \frac{\partial D}{\partial z_1} = \frac{\left[1 - c_2
+      (a + c_2) \right] \varphi(c_1)}{a^2 z_1^3 z_2} - \frac{\left[1 +
     c_1 (a + c_2) \right] \varphi(c_2)}{a^3 z_1^2 z_2^2}
 \end{eqnarray*}
 while the partial derivatives of $A$, $B$, $C$ and $D$ w.r.t. $z_2$
@@ -1295,15 +1304,15 @@ are given by:
 \begin{eqnarray*}
   dA_{z_2} &=& \frac{\partial A}{\partial z_2} = \frac{\varphi(c_2) +
     a \Phi(c_2)}{a z_2^2} - \frac{\varphi(c_1)}{a z_1 z_2}\\
-  dB_{z_2} &=& \frac{\partial B}{\partial z_2} = - \frac{(a + c_1)
-    \varphi(c_2)}{a^2 z_2^3} - \frac{2\Phi(c_2)}{z_2^3} +
-  \frac{(a+c_1)\varphi(c_1)}{a^2z_1z_2^2}\\
+  dB_{z_2} &=& \frac{\partial B}{\partial z_2} = \frac{(a + c_1)
+    \varphi(c_1)}{a^2 z_1 z_2^2} - \frac{2\Phi(c_2)}{z_2^3} -
+  \frac{(2a+c_1)\varphi(c_2)}{a^2z_2^3}\\
   dC_{z_2} &=& \frac{\partial C}{\partial z_2} = \frac{c_1
     \varphi(c_2)}{a^2 z_1 z_2^2} + \frac{c_2 \varphi(c_1)}{a^2 z_1^2
     z_2}\\
-  dD_{z_2} &=& \frac{\partial D}{\partial z_2} = -
-  \frac{\left[1+c_2(a+c_1) \right]\varphi(c_1)}{a^3 z_1^2 z_2^2} + 
-  \frac{(1 - c_1^2) \varphi(c_2)}{a^3z_1z_2^3}
+  dD_{z_2} &=& \frac{\partial D}{\partial z_2} = \frac{\left[1 - c_1
+      (a + c_1) \right] \varphi(c_2)}{a^2 z_1 z_2^3} - \frac{\left[1 +
+    c_2 (a + c_1) \right] \varphi(c_1)}{a^3 z_1^2 z_2^2}
 \end{eqnarray*}
 
 For the Jacobian part $E$, we have:
@@ -1400,6 +1409,9 @@ Lastly,
 \subsection{Gradient computation}
 \label{sec:gradient-computation-schlather}
 
+\subsubsection{With Unit Fréchet Margins}
+\label{sec:with-unit-frechet-1}
+
 From equation \eqref{eq:schlatherDens}, we have:
 \begin{equation*}
   \log f(z_1, z_2) = A \log(B + C D)
@@ -1435,6 +1447,15 @@ So that,
   \nabla \log f(z_1, z_2) = \left[dA + \frac{(C dB + B dC
       +dD)}{BC + D} \right] \left(\nabla \rho(h) \right)^T
 \end{equation*}
+
+Note that when using the Whittle-Matérn covariance function, the
+standard errors are not available if the \verb|smooth| parameter is
+hand fixed because the Bessel function is not derivable w.r.t. this
+parameter.
+
+\subsubsection{With Ordinary GEV Margins}
+\label{sec:with-ordinary-gev-1}
+
 
 \bibliography{/home/ribatet/Documents/Biblio/biblio_ribatet}
 \bibliographystyle{kluwer}
