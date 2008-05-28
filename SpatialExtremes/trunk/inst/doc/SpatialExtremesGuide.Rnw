@@ -1414,7 +1414,7 @@ Lastly,
 
 From equation \eqref{eq:schlatherDens}, we have:
 \begin{equation*}
-  \log f(z_1, z_2) = A \log(B + C D)
+  \log f(z_1, z_2) = A + \log(B + C D)
 \end{equation*}
 where
 \begin{equation*}
@@ -1434,18 +1434,19 @@ where $\nabla \rho(h)$ is the vector of the partial derivatives of the
 covariance function $\rho(h)$ with respect to its parameters.
 
 \begin{eqnarray*}
-  dA &=& \frac{\partial A}{\partial \rho(h)} = \frac{1}{2c_1}\\
-  dB &=& \frac{\partial B}{\partial \rho(h)}  = -\frac{\rho(h)}{c_1^3} +
+  dA_\rho &=& \frac{\partial A}{\partial \rho(h)} = \frac{1}{2c_1}\\
+  dB_\rho &=& \frac{\partial B}{\partial \rho(h)}  = -\frac{\rho(h)}{c_1^3} +
   \frac{3(1 - \rho(h))z_1 z_2}{c_1^5}\\
-  dC &=& \frac{\partial C}{\partial \rho(h)} = -\frac{z_1-z_2\rho(h)}{2
+  dC_\rho &=& \frac{\partial C}{\partial \rho(h)} = -\frac{z_1-z_2\rho(h)}{2
     c_1^3}\\
-  dD &=& \frac{\partial D}{\partial \rho(h)} = -\frac{z_2-z_1\rho(h)}{2
+  dD_\rho &=& \frac{\partial D}{\partial \rho(h)} = -\frac{z_2-z_1\rho(h)}{2
     c_1^3}\\
 \end{eqnarray*}
 So that,
 \begin{equation*}
-  \nabla \log f(z_1, z_2) = \left[dA + \frac{(C dB + B dC
-      +dD)}{BC + D} \right] \left(\nabla \rho(h) \right)^T
+  \nabla \log f(z_1, z_2) = \left[dA_\rho + \frac{(C dB_\rho + B
+      dC_\rho + dD_\rho)}{BC + D} \right] \left(\nabla \rho(h)
+  \right)^T
 \end{equation*}
 
 Note that when using the Whittle-Matérn covariance function, the
@@ -1456,8 +1457,48 @@ parameter.
 \subsubsection{With Ordinary GEV Margins}
 \label{sec:with-ordinary-gev-1}
 
+For the derivation of the gradient with ordinary GEV margins, most of
+the computations have already been done in
+Section~\ref{sec:with-ordinary-gev}. Especially, we only need to
+compute the partial derivatives of $A$, $B$, $C$ and $D$ w.r.t. $z_1$
+and $z_2$.
 
-\bibliography{/home/ribatet/Documents/Biblio/biblio_ribatet}
+\begin{eqnarray*}
+  dA_{z_1} &=& \frac{\partial A}{\partial z_1} = -\frac{\rho(h) z_1 -
+    c1 - z_2}{2 c_1 z_1^2}\\
+  dB_{z_1} &=& \frac{\partial B}{\partial z_1} = \frac{3 (\rho(h)^2 -
+    1) (z_1 - \rho(h) z_2)}{2 c_1^5}\\
+  dC_{z_1} &=& \frac{\partial C}{\partial z_1} = \frac{2z_1^3 \rho(h)
+    + 6 z_1 z_2^2 \rho(h)^2 - 3 z_1^2 z_2 (1 + \rho(h)^2) - 2 c_1^3 -
+    2 z_2^3}{2 c_1^3 z_1^3}\\
+  dD_{z_1} &=& \frac{\partial C}{\partial z_2} = -\frac{(z_2 \rho(h) -
+    c_1 - z_1) (z_2 \rho(h) + c1 - z_1)}{2 c_1^3 z_2^2}  
+\end{eqnarray*}
+and
+\begin{eqnarray*}
+  dA_{z_2} &=& \frac{\partial A}{\partial z_2} = -\frac{\rho(h) z_2 -
+    c1 - z_1}{2 c_1 z_2^2}\\
+  dB_{z_2} &=& \frac{\partial B}{\partial z_2} = \frac{3 (\rho(h)^2 -
+    1) (z_2 - \rho(h) z_1)}{2 c_1^5}\\
+  dC_{z_2} &=& \frac{\partial C}{\partial z_2} = -\frac{(z_1 \rho(h) -
+    c_1 - z_2) (z_1 \rho(h) + c1 - z_2)}{2 c_1^3 z_1^2}\\
+  dD_{z_2} &=& \frac{\partial D}{\partial z_2} = \frac{2z_2^3 \rho(h)
+    + 6 z_1^2 z_2 \rho(h)^2 - 3 z_1 z_2^2 (1 + \rho(h)^2) - 2 c_1^3 -
+    2 z_1^3}{2 c_1^3 z_2^3}
+\end{eqnarray*}
+
+Finally, we have:
+\begin{equation}
+  \nabla_\beta \log f(y_1,y_2) = \frac{\partial A}{\partial \beta} +
+  \frac{C \frac{\partial B}{\partial \beta} + B \frac{\partial
+      C}{\partial \beta}}{BC + D} + \frac{\partial E}{\partial \beta}  
+\end{equation}
+where $\frac{\partial A}{\partial \beta}$, $\frac{\partial B}{\partial
+  \beta}$, $\frac{\partial C}{\partial \beta}$, $\frac{\partial
+  D}{\partial \beta}$ and $\frac{\partial E}{\partial \beta}$ have
+been already defined in Section~\ref{sec:with-ordinary-gev}.
+
+\bibliography{biblio_ribatet}
 \bibliographystyle{kluwer}
 \end{document}
 
