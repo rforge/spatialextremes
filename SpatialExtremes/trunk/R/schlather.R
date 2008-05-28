@@ -368,7 +368,7 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
 
   param <- c(opt$par, unlist(fixed.param))
   
-  if (std.err.type == "observed"){
+  if (std.err.type != "none"){
     
     tol <- .Machine$double.eps^0.5
     
@@ -383,7 +383,7 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
       var.cov <- solve(var.cov, tol = tol)
       jacobian <- .schlathergrad(param, data, dist, cov.mod.num, loc.dsgn.mat,
                                  scale.dsgn.mat, shape.dsgn.mat,
-                                 fit.marge = fit.marge)
+                                 fit.marge = fit.marge, std.err.type = std.err.type)
       
       var.cov <- var.cov %*% jacobian %*% var.cov
       
