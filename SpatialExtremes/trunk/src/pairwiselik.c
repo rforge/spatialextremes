@@ -43,8 +43,10 @@ double lplikschlather(double *data, double *rho, double *jac,
 	dvecMixed = (1 - R_pow_di(rho[currentPair], 2)) / 2 / R_pow_di(c1, 3) + 
 	  dvecM1 * dvecM2;
 
-	if (dvecMixed <= 0)
+	if (dvecMixed <= 0){
+	  //printf("dvecMixed is erradic\n");
 	  return -1.0e35;
+	}
 
 	//Now the final step, multiplying by Fvec and the gradient
 	dvecMixed = log(dvecMixed) + lFvec +
@@ -103,8 +105,10 @@ double lpliksmith(double *data, double *mahalDist, double *jac,
 	  c1 * dnorm(c2, 0., 1., 0) / R_pow_di(data[k + j * nObs] * mahalDist[currentPair], 2) /
 	  data[k + i * nObs];
 	
-	if (dvecMixed <= 0)
+	if (dvecMixed <= 0){
+	  //printf("dvecMixed is errradic\n");
 	  return -1.0e35;
+	}
 
 	//Now the final step, multiplying by Fvec and the gradient
 	dvecMixed = log(dvecMixed) + lFvec +

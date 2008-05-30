@@ -48,7 +48,7 @@ contour(volcano, add = TRUE)
 \normalsize
 
 \tableofcontents
-\listoftables
+%%\listoftables
 \listoffigures
 
 \pagenumbering{arabic}
@@ -89,7 +89,7 @@ This guide contains examples on the use of the
 To cite this guide or the package in publications please use the
 following bibliographic database entry.
 \begin{verbatim}
-\@Manual{your_key,
+`@Manual{your_key,
   title = {SpatialExtremes: A R package for Modelling Spatial Extremes},
   author = {Ribatet, M.},
   year = {2008},

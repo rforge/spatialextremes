@@ -10,8 +10,8 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
   cat("        Estimator:", x$est, "\n")
   cat("            Model:", model, "\n")
   if (x$est == 'MLE'){
-    cat("         Deviance:", x$deviance, "\n")
-    cat("              AIC:", AIC(x), "\n")
+    cat("   Pair. Deviance:", x$deviance, "\n")
+    cat("              TIC:", TIC(x), "\n")
   }
   if (x$model == "schlather"){
 
@@ -150,4 +150,8 @@ print.pspline <- function(x, ...){
       round(x$penalty, 3), "\n")
   cat("\n     Degree of freedom:", round(x$df, 3), "\n")
   cat("Res. Degree of freedom:", round(x$res.df, 3), "\n")  
+}
+
+TIC <- function(object, ...){
+  UseMethod("TIC")
 }

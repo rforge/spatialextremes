@@ -43,6 +43,11 @@ void smithfull(double *data, double *distVec, int *nSite,
   
   //Stage 3: Bivariate density computations
   *dns = lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
+
+  if (!R_FINITE(*dns))
+    *dns = -1.0e35;
+
+  return;
 }
 
 void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs, 
@@ -122,4 +127,8 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs,
     *dns = *dns - penalization(shapepenmat, shapecoeff, *shapepenalty,
 			       *nshapecoeff, *npparshape);
 
+  if (!R_FINITE(*dns))
+    *dns = -1.0e35;
+
+  return;
 }

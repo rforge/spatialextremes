@@ -5,6 +5,8 @@
 \alias{dpriormaxstab}
 \alias{smithform}
 \alias{schlatherform}
+\alias{TIC}
+\alias{TIC.maxstab}
 
 \title{Internal functions and methods for the maxstable package.}
 \description{A set of functions that should not be used directly by the

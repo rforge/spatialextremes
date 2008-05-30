@@ -1,6 +1,6 @@
 .smithgrad <- function(par, data, distVec, loc.dsgn.mat,
                        scale.dsgn.mat, shape.dsgn.mat, fit.marge,
-                       std.err.type = "score"){
+                       std.err.type = "score", fixed.param, param.names){
 
   ##data is a matrix with each column corresponds to one location
   ##distVec is the a matrix giving the "distance vector" for each pair
@@ -8,34 +8,12 @@
   n.site <- ncol(data)
   n.obs <- nrow(data)
   n.pairs <- n.site * (n.site - 1) / 2
-
-  param <- c("cov11", "cov12", "cov22")
-    
+      
   if (fit.marge){
 
-     n.loccoeff <- ncol(loc.dsgn.mat)
-     n.scalecoeff <- ncol(scale.dsgn.mat)
-     n.shapecoeff <- ncol(shape.dsgn.mat)
-
-    if (n.loccoeff == 1)
-      loc.names <- "locCoeff"
-    
-    else
-      loc.names <- paste("locCoeff", 1:n.loccoeff, sep="")
-    
-    if (n.scalecoeff == 1)
-      scale.names <- "scaleCoeff"
-    
-    else
-      scale.names <- paste("scaleCoeff", 1:n.scalecoeff, sep="")
-    
-    if (n.shapecoeff == 1)
-      shape.names <- "shapeCoeff"
-    
-    else
-      shape.names <- paste("shapeCoeff", 1:n.shapecoeff, sep="")
-  
-    param <- c(param, loc.names, scale.names, shape.names)
+    n.loccoeff <- ncol(loc.dsgn.mat)
+    n.scalecoeff <- ncol(scale.dsgn.mat)
+    n.shapecoeff <- ncol(shape.dsgn.mat)
 
     loc.idx <- which(substr(names(par), 1, 3) == "loc")
     scale.idx <- which(substr(names(par), 1, 5) == "scale")
@@ -66,10 +44,19 @@
              as.double(scale.dsgn.mat), as.integer(n.scalecoeff), as.double(shape.dsgn.mat),
              as.integer(n.shapecoeff), as.double(loc.param), as.double(scale.param),
              as.double(shape.param), as.double(cov11), as.double(cov12),
-             as.double(cov22), fit.marge, grad = double(n.obs * length(param)),
+             as.double(cov22), fit.marge, grad = double(n.obs * length(param.names)),
              PACKAGE = "SpatialExtremes")$grad
 
-  grad <- matrix(grad, nrow = n.obs, ncol = length(param))
+  grad <- matrix(grad, nrow = n.obs, ncol = length(param.names))
+
+  n.fixed <- length(fixed.param)
+  if (n.fixed > 0){
+    idx <- NULL
+    for (i in 1:n.fixed)
+      idx <- c(idx, which(param.names == fixed.param[i]))
+    
+    grad <- grad[,-idx]
+  }
 
   if (std.err.type == "score")
     jacobian <- var(grad) * n.obs
@@ -87,7 +74,7 @@
 
 .schlathergrad <- function(par, data, dist, cov.mod, loc.dsgn.mat,
                            scale.dsgn.mat, shape.dsgn.mat, fit.marge,
-                           std.err.type = "score"){
+                           std.err.type = "score", fixed.param, param.names){
 
   ##data is a matrix with each column corresponds to one location
   ##distVec is the a matrix giving the "distance vector" for each pair
@@ -95,37 +82,15 @@
   n.site <- ncol(data)
   n.obs <- nrow(data)
   n.pairs <- n.site * (n.site - 1) / 2
-
-  param <- c("scale", "smooth")
-  
+    
   if (fit.marge){
 
-     n.loccoeff <- ncol(loc.dsgn.mat)
-     n.scalecoeff <- ncol(scale.dsgn.mat)
-     n.shapecoeff <- ncol(shape.dsgn.mat)
-
-    if (n.loccoeff == 1)
-      loc.names <- "locCoeff"
-    
-    else
-      loc.names <- paste("locCoeff", 1:n.loccoeff, sep="")
-    
-    if (n.scalecoeff == 1)
-      scale.names <- "scaleCoeff"
-    
-    else
-      scale.names <- paste("scaleCoeff", 1:n.scalecoeff, sep="")
-    
-    if (n.shapecoeff == 1)
-      shape.names <- "shapeCoeff"
-    
-    else
-      shape.names <- paste("shapeCoeff", 1:n.shapecoeff, sep="")
-  
-    param <- c(param, loc.names, scale.names, shape.names)
+    n.loccoeff <- ncol(loc.dsgn.mat)
+    n.scalecoeff <- ncol(scale.dsgn.mat)
+    n.shapecoeff <- ncol(shape.dsgn.mat)
 
     loc.idx <- which(substr(names(par), 1, 3) == "loc")
-    scale.idx <- which(substr(names(par), 1, 5) == "scale")
+    scale.idx <- which(substr(names(par), 1, 6) == "scaleC")
     shape.idx <- which(substr(names(par), 1, 5) == "shape")
 
     scale <- par["scale"]
@@ -154,10 +119,19 @@
              as.integer(n.shapecoeff), as.double(loc.param),
              as.double(scale.param), as.double(shape.param),
              as.double(scale), as.double(smooth), fit.marge, grad =
-             double(n.obs * length(param)), PACKAGE = "SpatialExtremes")$grad
+             double(n.obs * length(param.names)), PACKAGE = "SpatialExtremes")$grad
 
-  grad <- matrix(grad, nrow = n.obs, ncol = length(param))
+  grad <- matrix(grad, nrow = n.obs, ncol = length(param.names))
 
+  n.fixed <- length(fixed.param)
+  if (n.fixed > 0){
+    idx <- NULL
+    for (i in 1:n.fixed)
+      idx <- c(idx, which(param.names == fixed.param[i]))
+    
+    grad <- grad[,-idx]
+  }
+  
   if (std.err.type == "score")
     jacobian <- var(grad) * n.obs
 

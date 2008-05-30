@@ -46,7 +46,7 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
     
     param <- c("scale", "smooth", loc.names, scale.names, shape.names)
 
-    body(nplk) <- parse(text = paste("-.C('schlatherfull', as.integer(cov.mod.num), data, as.double(dist), as.integer(n.site), as.integer(n.obs),",
+    body(nplk) <- parse(text = paste("-.C('schlatherfull', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs),",
                             paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
@@ -54,7 +54,7 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
   }
 
   else{
-    body(nplk) <- parse(text = paste("-.C('schlatherfull', as.integer(cov.mod.num), data, as.double(dist), as.integer(n.site), as.integer(n.obs),",
+    body(nplk) <- parse(text = paste("-.C('schlatherfull', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs),",
                             paste("as.double(rep(1,", n.site, ")), "),
                             paste("as.double(rep(1,", n.site, ")), "),
                             paste("as.double(rep(1,", n.site, ")), "),
@@ -136,6 +136,7 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
 
   else opt$convergence <- "successful"
 
+  param.names <- param
   param <- c(opt$par, unlist(fixed.param))
 
   if (std.err.type != "none"){
@@ -151,9 +152,11 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
 
     else{
       var.cov <- solve(var.cov, tol = tol)
+      ihessian <- var.cov
       jacobian <- .schlathergrad(param, data, dist, cov.mod.num, as.double(0),
                                  as.double(0), as.double(0), fit.marge = fit.marge,
-                                 std.err.type = std.err.type)
+                                 std.err.type = std.err.type, fixed.param = names(fixed.param),
+                                 param.names = param.names)
 
       var.cov <- var.cov %*% jacobian %*% var.cov
       std.err <- diag(var.cov)
@@ -184,7 +187,7 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
 
   if (std.err.type == "none"){
     std.err <- std.err.type <- corr.mat <- NULL
-    var.cov <- NULL
+    var.cov <- ihessian <- jacobian <- NULL
   }
 
   cov.fun <-  covariance(scale = param["scale"], smooth = param["smooth"],
@@ -199,7 +202,8 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
                  counts = opt$counts, message = opt$message, est = "MLE", data = data,
                  logLik = -opt$value, opt.value = opt$value, model = "schlather",
                  cov.mod = cov.mod, fit.marge = fit.marge, ext.coeff = ext.coeff,
-                 hessian = opt$hessian, lik.fun = nllh, coord = coord)
+                 hessian = opt$hessian, lik.fun = nllh, coord = coord, ihessian = ihessian,
+                 jacobian = jacobian)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
@@ -300,7 +304,7 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
 
   ##And define the "body" of the function as the number of parameters
   ##to estimate depends on n.site
-   body(nplk) <- parse(text = paste("-.C('schlatherdsgnmat', as.integer(cov.mod.num), data, as.double(dist), as.integer(n.site), as.integer(n.obs), loc.dsgn.mat, loc.pen.mat, as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), scale.dsgn.mat, scale.pen.mat, as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), shape.dsgn.mat, shape.pen.mat, as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
+   body(nplk) <- parse(text = paste("-.C('schlatherdsgnmat', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
                           paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                           paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                           paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
@@ -366,7 +370,14 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
 
   else opt$convergence <- "successful"
 
+  param.names <- param
   param <- c(opt$par, unlist(fixed.param))
+
+  if ((cov.mod == "whitmat") && !("smooth" %in% names(fixed.param))){
+    warning("The Bessel function is not differentiable w.r.t. the ``smooth'' parameter
+Standard errors are not available unless you fix it.")
+    std.err.type <- "none"
+  }
   
   if (std.err.type != "none"){
     
@@ -381,10 +392,13 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
 
     else{
       var.cov <- solve(var.cov, tol = tol)
+      ihessian <- var.cov
       jacobian <- .schlathergrad(param, data, dist, cov.mod.num, loc.dsgn.mat,
                                  scale.dsgn.mat, shape.dsgn.mat,
-                                 fit.marge = fit.marge, std.err.type = std.err.type)
-      
+                                 fit.marge = fit.marge, std.err.type = std.err.type,
+                                 fixed.param = names(fixed.param), param.names =
+                                 param.names)
+
       var.cov <- var.cov %*% jacobian %*% var.cov
       
       std.err <- diag(var.cov)
@@ -414,7 +428,7 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
 
   if (std.err.type == "none"){
     std.err <- std.err.type <- corr.mat <- NULL
-    var.cov <- NULL
+    var.cov <- ihessian <- jacobian <- NULL
   }
 
   cov.fun <- covariance(scale = param["scale"], smooth = param["smooth"],
@@ -431,7 +445,7 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = cov.mod, cov.fun = cov.fun,
                  loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                  lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
-                 shape.type = shape.type)
+                 shape.type = shape.type, ihessian = ihessian, jacobian = jacobian)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)

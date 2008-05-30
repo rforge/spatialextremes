@@ -52,6 +52,11 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite,
   //Stage 2: Bivariate density computations
   *dns = lplikschlather(frech, rho, jac, *nObs, *nSite);
 
+  if (!R_FINITE(*dns))
+    *dns = -1.0e35;
+
+  return;
+
 }
 
 void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
@@ -140,5 +145,10 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   if (*shapepenalty > 0)
     *dns = *dns - penalization(shapepenmat, shapecoeff, *shapepenalty,
 			       *nshapecoeff, *npparshape);
+
+  if (!R_FINITE(*dns))
+    *dns = -1.0e35;
+
+  return;
   
 }

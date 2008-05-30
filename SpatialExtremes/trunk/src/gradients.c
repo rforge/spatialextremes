@@ -239,7 +239,7 @@ void smithgrad(double *data, double *distVec, int *nSite,
 	    dz2scale = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) *
 	      (data[k + j * *nObs] - locs[j]) / scales[j] / scalecoeff[l];
 
-	    grad[(3 + *nscalecoeff + l) * *nObs + k] = (dAz1 * dz1scale + dAz2 * dz2scale) +
+	    grad[(3 + *nloccoeff + l) * *nObs + k] = (dAz1 * dz1scale + dAz2 * dz2scale) +
 	      ((dBz1 * dz1scale + dBz2 * dz2scale) * C + B * 
 	       (dCz1 * dz1scale + dCz2 * dz2shape)) /
 	      (B * C + D) + dE;
@@ -389,17 +389,17 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 	  grad[*nObs + k] = R_NaReal;
 	  break;
 	case 2:
-	  grad[k] = grad[k] + rho[currentPair] * *smooth * 
-	    R_pow_di(dist[currentPair] / *scale, 2) * R_pow(rho[currentPair], 1 / *smooth) *
+	  grad[k] = grad[k] + 2 * R_pow(rho[currentPair], 1 + 1 / *smooth) *
+	    *smooth * R_pow_di(dist[currentPair] / *scale, 2) / *scale *
 	    jacCommonRho; 
-	  grad[*nObs + k] = grad[*nObs + k] - rho[currentPair] * 
-	    log(1 + R_pow_di(dist[currentPair], 2) / *scale) * jacCommonRho;
+	  grad[*nObs + k] = grad[*nObs + k] + rho[currentPair] * 
+	    log(rho[currentPair]) / *smooth * jacCommonRho;
 	  break;
 	case 3:
-	  grad[k] = grad[k] + R_pow(dist[currentPair] / *scale, *smooth) *
-	    *smooth * rho[currentPair] / *scale * jacCommonRho;
-	  grad[*nObs + k] = grad[*nObs + k] - R_pow(dist[currentPair] / *scale, *smooth) *
-	    log(dist[currentPair] / *scale) * rho[currentPair] * jacCommonRho;
+	  grad[k] = grad[k] - rho[currentPair] * log(rho[currentPair]) * 
+	    *smooth / *scale * jacCommonRho;
+	  grad[*nObs + k] = grad[*nObs + k] + rho[currentPair] * log(rho[currentPair]) *
+	    log(dist[currentPair] / *scale) * jacCommonRho;
 	  break;	   
 	}
       }
@@ -443,10 +443,11 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 	    (frech[k + j * *nObs] - rho[currentPair] * 
 	     frech[k + i * *nObs]) / 2 / R_pow_di(c1, 5);
 	  dCz1 = (2 * rho[currentPair] * R_pow_di(frech[k + i * *nObs], 3) +
-		  6 * frech[k + i * *nObs] * R_pow_di(frech[k + j * *nObs], 2) -
-		  3 * R_pow_di(frech[k + i * *nObs], 2) * frech[k + j * *nObs] *
-		  (1 + R_pow_di(rho[currentPair], 2)) - 2 * R_pow_di(c1, 3) -
-		  R_pow_di(frech[k + j * *nObs], 3)) / 2 /
+		  6 * frech[k + i * *nObs] * R_pow_di(frech[k + j * *nObs] * 
+						      rho[currentPair], 2) -
+		  3 * R_pow_di(frech[k + i * *nObs], 2) * 
+		  frech[k + j * *nObs] * (1 + R_pow_di(rho[currentPair], 2)) -
+		  2 * R_pow_di(c1, 3) - 2 * R_pow_di(frech[k + j * *nObs], 3)) / 2 /
 	    R_pow_di(c1 * frech[k + i * *nObs], 3);
 	  dCz2 = - (frech[k + i * *nObs] * rho[currentPair] - c1 - 
 		    frech[k + j * *nObs]) * 
@@ -457,10 +458,11 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 	    (frech[k + j * *nObs] * rho[currentPair] + c1 - frech[k + i * *nObs]) /
 	    2 / R_pow_di(c1, 3) / R_pow_di(frech[k + j * *nObs], 2);
 	  dDz2 = (2 * rho[currentPair] * R_pow_di(frech[k + j * *nObs], 3) +
-		  6 * frech[k + j * *nObs] * R_pow_di(frech[k + i * *nObs], 2) -
+		  6 * frech[k + j * *nObs] * R_pow_di(frech[k + i * *nObs] * 
+						      rho[currentPair], 2) -
 		  3 * R_pow_di(frech[k + j * *nObs], 2) * frech[k + i * *nObs] *
 		  (1 + R_pow_di(rho[currentPair], 2)) - 2 * R_pow_di(c1, 3) -
-		  R_pow_di(frech[k + i * *nObs], 3)) / 2 /
+		  2 * R_pow_di(frech[k + i * *nObs], 3)) / 2 /
 	    R_pow_di(c1 * frech[k + j * *nObs], 3);
 	  	 
 	  for (l=0;l<*nloccoeff;l++){
@@ -473,7 +475,7 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 	    dz2loc = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) /
 	      scales[j] * locdsgnmat[j + *nSite * l];
 
-	    grad[(3 + l) * *nObs + k] = (dAz1 * dz1loc + dAz2 * dz2loc) +
+	    grad[(2 + l) * *nObs + k] = (dAz1 * dz1loc + dAz2 * dz2loc) +
 	      ((dBz1 * dz1loc + dBz2 * dz2loc) * C + B * 
 	       (dCz1 * dz1loc + dCz2 * dz2loc)) /
 	      (B * C + D) + dE;
@@ -492,7 +494,7 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 	    dz2scale = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) *
 	      (data[k + j * *nObs] - locs[j]) / scales[j] / scalecoeff[l];
 
-	    grad[(3 + *nscalecoeff + l) * *nObs + k] = (dAz1 * dz1scale + dAz2 * dz2scale) +
+	    grad[(2 + *nloccoeff + l) * *nObs + k] = (dAz1 * dz1scale + dAz2 * dz2scale) +
 	      ((dBz1 * dz1scale + dBz2 * dz2scale) * C + B * 
 	       (dCz1 * dz1scale + dCz2 * dz2shape)) /
 	      (B * C + D) + dE;
@@ -516,7 +518,7 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 			frech[k + j * *nObs] * log(frech[k + j * *nObs])) /
 	      shapecoeff[l];
 
-	    grad[(3 + *nloccoeff + *nscalecoeff + l) * *nObs + k] = 
+	    grad[(2 + *nloccoeff + *nscalecoeff + l) * *nObs + k] = 
 	      (dAz1 * dz1shape + dAz2 * dz2shape) +
 	      ((dBz1 * dz1shape + dBz2 * dz2shape) * C + B * 
 	       (dCz1 * dz1shape + dCz2 * dz2shape)) /

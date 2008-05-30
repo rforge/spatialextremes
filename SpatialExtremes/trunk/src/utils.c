@@ -66,6 +66,7 @@ int gev2frech(double *data, int nObs, int nSite, double *locs,
 	frech[i * nObs + j] = 1 + shapes[i] * frech[i * nObs + j];
 	
 	if (frech[i * nObs + j] <= 0) {
+	  //printf("transformation to Frechet is erradic\n");
 	  return 1;
 	}
 	

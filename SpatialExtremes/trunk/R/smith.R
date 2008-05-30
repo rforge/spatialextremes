@@ -36,7 +36,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
     shape.names <- paste("shape", 1:n.site, sep="")
   
     param <- c("cov11", "cov12", "cov22", loc.names, scale.names, shape.names)
-    body(nplk) <- parse(text = paste("-.C('smithfull', data, as.double(distVec), as.integer(n.site), as.integer(n.obs),",
+    body(nplk) <- parse(text = paste("-.C('smithfull', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs),",
                             paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
@@ -45,7 +45,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
   
   else{
     param <- c("cov11", "cov12", "cov22")
-    body(nplk) <- parse(text = paste("-.C('smithfull', data, as.double(distVec), as.integer(n.site), as.integer(n.obs),",
+    body(nplk) <- parse(text = paste("-.C('smithfull', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs),",
                             paste("as.double(rep(1,", n.site, ")), "),
                             paste("as.double(rep(1,", n.site, ")), "),
                             paste("as.double(rep(1,", n.site, ")), "),
@@ -129,6 +129,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
 
   else opt$convergence <- "successful"
 
+  param.names <- param
   param <- c(opt$par, unlist(fixed.param))
   
   if (std.err.type != "none"){
@@ -145,13 +146,13 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
     else{
       
       var.cov <- solve(var.cov, tol = tol)
+      ihessian <- var.cov
       jacobian <- .smithgrad(param, data, distVec, as.double(0), as.double(0),
                              as.double(0), fit.marge = fit.marge, std.err.type =
-                             std.err.type)
+                             std.err.type, fixed.param = names(fixed.param),
+                             param.names = param.names)
       
       var.cov <- var.cov %*% jacobian %*% var.cov
-      
-      
       std.err <- diag(var.cov)
       
       std.idx <- which(std.err <= 0)
@@ -180,7 +181,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
 
   if (std.err.type == "none"){
     std.err <- std.err.type <- corr.mat <- NULL
-    var.cov <- NULL
+    var.cov <- ihessian <- jacobian <- NULL
   }
     
   Sigma <- matrix(c(param["cov11"], param["cov12"], param["cov12"],
@@ -196,7 +197,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
                  counts = opt$counts, message = opt$message, data = data, est = "MLE",
                  logLik = -opt$value, opt.value = opt$value, model = "smith",
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = "Gaussian",
-                 lik.fun = nllh, coord = coord)
+                 lik.fun = nllh, coord = coord, ihessian = ihessian, jacobian = jacobian)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
@@ -288,7 +289,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
 
   ##And define the "body" of the function as the number of parameters
   ##to estimate depends on n.site
-  body(nplk) <- parse(text = paste("-.C('smithdsgnmat', data, as.double(distVec), as.integer(n.site), as.integer(n.obs), loc.dsgn.mat, loc.pen.mat, as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), scale.dsgn.mat, scale.pen.mat, as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), shape.dsgn.mat, shape.pen.mat, as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
+  body(nplk) <- parse(text = paste("-.C('smithdsgnmat', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
                           paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                           paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                           paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
@@ -354,6 +355,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
 
   else opt$convergence <- "successful"
 
+  param.names <- param
   param <- c(opt$par, unlist(fixed.param))
   
   if (std.err.type != "none"){
@@ -369,13 +371,14 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
 
     else{
       var.cov <- solve(var.cov, tol = tol)
+      ihessian <- var.cov
       jacobian <- .smithgrad(param, data, distVec, loc.dsgn.mat,
                              scale.dsgn.mat, shape.dsgn.mat,
                              fit.marge = fit.marge, std.err.type =
-                             std.err.type)
-      
+                             std.err.type, fixed.param = names(fixed.param),
+                             param.names = param.names)
+
       var.cov <- var.cov %*% jacobian %*% var.cov
-      
       std.err <- diag(var.cov)
       
       std.idx <- which(std.err <= 0)
@@ -397,14 +400,13 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
         corr.mat <- NULL
       
       colnames(var.cov) <- rownames(var.cov) <- 
-        names(std.err) <- c("cov11", "cov12", "cov22", loc.names,
-                            scale.names, shape.names)
+        names(std.err) <- nm
     }
   }
 
   if (std.err.type == "none"){
     std.err <- std.err.type <- corr.mat <- NULL
-    var.cov <- NULL
+    var.cov <- ihessian <- jacobian <- NULL
   }
 
   Sigma <- matrix(c(param["cov11"], param["cov12"], param["cov12"],
@@ -422,7 +424,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = "Gaussian",
                  loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                  lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
-                 shape.type = shape.type)
+                 shape.type = shape.type, ihessian = ihessian, jacobian = jacobian)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
