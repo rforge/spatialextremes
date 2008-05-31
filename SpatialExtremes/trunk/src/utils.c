@@ -125,7 +125,7 @@ void gev(double *prob, int *n, double *locs, double *scales, double *shapes,
       quant[i] = locs[i] - scales[i] * log(-log(*prob));
 
     else
-      quant[i] = locs[i] + scales[i] * R_pow(-log(*prob), shapes[i] - 1) /
+      quant[i] = locs[i] + scales[i] * (R_pow(-log(*prob), -shapes[i]) - 1) /
 	shapes[i];
   }
 }
