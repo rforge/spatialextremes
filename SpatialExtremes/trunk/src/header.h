@@ -21,7 +21,7 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 //
 void smithfull(double *data, double *distVec, int *nSite,
 	       int *nObs, double *locs, double *scales, double *shapes,
-	       double *icov11, double *icov12, double *icov22, double *dns);
+	       double *cov11, double *cov12, double *cov22, double *dns);
 void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs, 
 		  double *locdsgnmat, double *locpenmat, int *nloccoeff,
 		  int *npparloc, double *locpenalty, double *scaledsgnmat,
@@ -29,7 +29,7 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs,
 		  double *scalepenalty, double *shapedsgnmat, double *shapepenmat,
 		  int *nshapecoeff, int *npparshape, double *shapepenalty,
 		  double *loccoeff, double *scalecoeff, double *shapecoeff,
-		  double *icov11, double *icov12, double *icov22, double *dns);
+		  double *cov11, double *cov12, double *cov22, double *dns);
 
 ///////////////////////////////////
 //  From utils.c
@@ -68,8 +68,8 @@ int powerExp(double *dist, int nPairs, double scale,
 int genHyper(double *dist, int nPairs, double scale,
 	     double smooth1, double smooth2,
 	     double smooth3, double *rho);
-int mahalDistFct(double *distVec, int nPairs, double *icov11,
-		 double *icov12, double *icov22, double *mahal);
+int mahalDistFct(double *distVec, int nPairs, double *cov11,
+		 double *cov12, double *cov22, double *mahal);
 int mahalDistFct2(double *distVec, int nPairs, double *cov11,
 		  double *cov12, double *cov22, double *mahal);
 

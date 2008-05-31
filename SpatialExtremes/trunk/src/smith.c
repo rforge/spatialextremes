@@ -2,7 +2,7 @@
 
 void smithfull(double *data, double *distVec, int *nSite,
 	       int *nObs, double *locs, double *scales, double *shapes,
-	       double *icov11, double *icov12, double *icov22, double *dns){
+	       double *cov11, double *cov12, double *cov22, double *dns){
   //This is the Smith model. It computes the pairwise log-likelihood
 
   const int nPairs = *nSite * (*nSite - 1) / 2;
@@ -22,8 +22,8 @@ void smithfull(double *data, double *distVec, int *nSite,
     }
 
   //Stage 1: Computing the Mahalanobis distance
-  flag = mahalDistFct(distVec, nPairs, icov11,
-		      icov12, icov22, mahalDist);
+  flag = mahalDistFct(distVec, nPairs, cov11,
+		      cov12, cov22, mahalDist);
   
   if (flag == 1){
     //printf("Problem with mahal. dist\n");
@@ -57,7 +57,7 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs,
 		  double *scalepenalty, double *shapedsgnmat, double *shapepenmat,
 		  int *nshapecoeff, int *npparshape, double *shapepenalty,
 		  double *loccoeff, double *scalecoeff, double *shapecoeff,
-		  double *icov11, double *icov12, double *icov22, double *dns){
+		  double *cov11, double *cov12, double *cov22, double *dns){
   //This is the Smith model. It computes the pairwise log-likelihood
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
@@ -72,8 +72,8 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs,
   frech = (double *)R_alloc(*nSite * *nObs, sizeof(double));
   
   //Stage 1: Computing the Mahalanobis distance
-  flag = mahalDistFct(distVec, nPairs, icov11, icov12,
-		      icov22, mahalDist);
+  flag = mahalDistFct(distVec, nPairs, cov11, cov12,
+		      cov22, mahalDist);
 
   if (flag == 1){
     //printf("problem with mahal. dist\n");
