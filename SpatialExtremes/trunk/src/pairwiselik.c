@@ -67,7 +67,8 @@ double lpliksmith(double *data, double *mahalDist, double *jac,
   //smith model.
   
   int i, j, k, currentPair = -1;
-  double c1, c2, dns, lFvec, dvecM1, dvecM2, dvecMixed;
+  double c1, c2, dns, lFvec, dvecM1, dvecM2, dvecMixed,
+    dnormc1, dnormc2, pnormc1, pnormc2;
 
   dns = 0.0;
   for (i=0;i<(nSite-1);i++){
@@ -80,29 +81,33 @@ double lpliksmith(double *data, double *mahalDist, double *jac,
 	  mahalDist[currentPair] + mahalDist[currentPair] / 2;
 	c2 = (log(data[k + i * nObs]) - log(data[k + j * nObs])) /
 	  mahalDist[currentPair] + mahalDist[currentPair] / 2;
+
+	dnormc1 = dnorm(c1, 0., 1., 0);
+	dnormc2 = dnorm(c2, 0., 1., 0);
+	pnormc1 = pnorm(c1, 0., 1., 1, 0);
+	pnormc2 = pnorm(c2, 0., 1., 1, 0);
 	
 	//It's the log of the joint CDF
-	lFvec = -pnorm(c1 , 0., 1., 1, 0) / data[k + i * nObs] -
-	  pnorm(c2, 0., 1., 1, 0) / data[k + j * nObs];
+	lFvec = -pnormc1 / data[k + i * nObs] - pnormc2 / data[k + j * nObs];
 
 	//It's the partial derivative for marge 1
-	dvecM1 = dnorm(c1, 0., 1., 0) / R_pow_di(data[k + i * nObs], 2) /
-	  mahalDist[currentPair] - dnorm(c2, 0., 1., 0) / data[k + i * nObs] / data[k + j * nObs] /
-	  mahalDist[currentPair] + pnorm(c1, 0., 1., 1, 0) / R_pow_di(data[k + i * nObs], 2);
+	dvecM1 = dnormc1 / R_pow_di(data[k + i * nObs], 2) /
+	  mahalDist[currentPair] - dnormc2 / data[k + i * nObs] / data[k + j * nObs] /
+	  mahalDist[currentPair] + pnormc1 / R_pow_di(data[k + i * nObs], 2);
 	
 	//It's the partial derivative for marge 2
-	dvecM2 = - dnorm(c1, 0., 1., 0) / data[k + i * nObs] / data[k + j * nObs] /
-	  mahalDist[currentPair] + dnorm(c2, 0., 1., 0) / R_pow_di(data[k + j * nObs], 2) /
-	  mahalDist[currentPair] + pnorm(c2, 0., 1., 1, 0) / R_pow_di(data[k + j * nObs], 2);
+	dvecM2 = - dnormc1 / data[k + i * nObs] / data[k + j * nObs] /
+	  mahalDist[currentPair] + dnormc2 / R_pow_di(data[k + j * nObs], 2) /
+	  mahalDist[currentPair] + pnormc2 / R_pow_di(data[k + j * nObs], 2);
 	
 	//Rmq: to have dvecM1 and dvecM2 we have to multiply
 	//them by Fvec[i]. It's not done yet as dvecMixed has to be
 	//computed first.
 	
 	//It's the mixed partial derivative
-	dvecMixed = dvecM1 * dvecM2 + c2 * dnorm(c1, 0., 1., 0) /
+	dvecMixed = dvecM1 * dvecM2 + c2 * dnormc1 /
 	  R_pow_di(data[k + i * nObs] * mahalDist[currentPair], 2) / data[k + j * nObs] +
-	  c1 * dnorm(c2, 0., 1., 0) / R_pow_di(data[k + j * nObs] * mahalDist[currentPair], 2) /
+	  c1 * dnormc2 / R_pow_di(data[k + j * nObs] * mahalDist[currentPair], 2) /
 	  data[k + i * nObs];
 	
 	if (dvecMixed <= 0){
