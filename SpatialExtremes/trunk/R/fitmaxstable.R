@@ -1,6 +1,6 @@
 fitmaxstab <- function(data, coord, cov.mod = c("gauss", "whitmat", "cauchy", "powexp"),
                        loc.form, scale.form, shape.form, fit.marge = TRUE,
-                       ..., warn.inf = TRUE, method = "BFGS",
+                       marg.cov = NULL, ..., warn.inf = TRUE, method = "BFGS",
                        std.err.type = "none", corr = FALSE){
 
   if (missing(loc.form) && missing(scale.form) && missing(shape.form))
@@ -26,7 +26,7 @@ be given for *ALL* GEV parameters")
                                 warn.inf = warn.inf, method = method, std.err.type =
                                 std.err.type, corr = corr),
                      "spatgev" = smithform(data, coord, ..., loc.form = loc.form, scale.form = scale.form,
-                       shape.form = shape.form, fit.marge = fit.marge,
+                       shape.form = shape.form, fit.marge = fit.marge, marg.cov = marg.cov,
                        warn.inf = warn.inf, method = method, std.err.type =
                        std.err.type, corr = corr))
 
@@ -37,8 +37,8 @@ be given for *ALL* GEV parameters")
                                 method = method, std.err.type = std.err.type, corr = corr),
                      "spatgev" = schlatherform(data, coord, cov.mod = cov.mod, ...,
                        loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
-                       fit.marge = fit.marge, warn.inf = warn.inf, method = method, std.err.type =
-                       std.err.type, corr = corr))
+                       fit.marge = fit.marge, marg.cov = marg.cov, warn.inf = warn.inf,
+                       method = method, std.err.type = std.err.type, corr = corr))
 
   return(fitted)
 }

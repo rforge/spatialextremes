@@ -7,7 +7,8 @@
 }
 \usage{fitmaxstab(data,  coord, cov.mod = c("gauss", "whitmat",
 "cauchy", "powexp"), loc.form, scale.form, shape.form, fit.marge = TRUE,
-\dots, warn.inf = TRUE, method = "BFGS", std.err.type = "none", corr = FALSE)}
+marg.cov = NULL, \dots, warn.inf = TRUE, method = "BFGS", std.err.type =
+"none", corr = FALSE)}
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
     one location.}
@@ -26,6 +27,9 @@
     \code{loc.form}, \code{scale.form} and \code{shape.form}. If
     \code{FALSE}, observations are supposed to be unit Frechet
     distributed.}
+  \item{marg.cov}{Matrix with named columns giving additional covariates
+    for the GEV parameters. If \code{NULL}, no extra covariates are
+    used.}
   \item{\dots}{Several arguments to be passed to the \code{\link{optim}}
     function. See section details.}
   \item{warn.inf}{Logical. If \code{TRUE} (default), users are warned if

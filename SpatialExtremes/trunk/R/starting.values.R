@@ -1,5 +1,5 @@
 .start.smith <- function(data, coord, loc.model, scale.model, shape.model,
-                         print.start.values = TRUE){
+                         print.start.values = FALSE){
 
   if (print.start.values)
     cat("Computing appropriate starting values\n")
@@ -24,7 +24,6 @@
   locCoeff[is.na(locCoeff)] <- 0
   scaleCoeff[is.na(scaleCoeff)] <- 0
   shapeCoeff[is.na(shapeCoeff)] <- 0
-  ##shapeCoeff <- rep(0, length(shapeCoeff))
 
   ##To be sure that the scale parameter is always positive at starting
   ##values
@@ -53,7 +52,7 @@
 
 
 .start.schlather <- function(data, coord, loc.model, scale.model, shape.model,
-                             print.start.values = TRUE){
+                             print.start.values = FALSE){
 
   if (print.start.values)
     cat("Computing appropriate starting values\n")
@@ -76,8 +75,7 @@
   locCoeff[is.na(locCoeff)] <- 0
   scaleCoeff[is.na(scaleCoeff)] <- 0
   shapeCoeff[is.na(shapeCoeff)] <- 0
-  ##shapeCoeff <- rep(0, length(shapeCoeff))
-
+  
   ##To be sure that the scale parameter is always positive at starting
   ##values
   scales.hat <- scale.model$dsgn.mat %*% scaleCoeff

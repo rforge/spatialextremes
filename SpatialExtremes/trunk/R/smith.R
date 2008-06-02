@@ -197,7 +197,8 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
                  counts = opt$counts, message = opt$message, data = data, est = "MLE",
                  logLik = -opt$value, opt.value = opt$value, model = "smith",
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = "Gaussian",
-                 lik.fun = nllh, coord = coord, ihessian = ihessian, jacobian = jacobian)
+                 lik.fun = nllh, coord = coord, ihessian = ihessian, jacobian = jacobian,
+                 marg.cov = NULL)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
@@ -208,7 +209,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
 ##radial basis functions may be used to model spatially the GEV
 ##parameters
 smithform <- function(data, coord, loc.form, scale.form, shape.form,
-                      start, fit.marge = TRUE, ...,
+                      start, fit.marge = TRUE, marg.cov = NULL, ...,
                       warn.inf = TRUE, method = "BFGS",
                       std.err.type = "none", corr = FALSE){
   ##data is a matrix with each column corresponds to one location
@@ -231,9 +232,9 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   scale.form <- update(scale.form, y ~ .)
   shape.form <- update(shape.form, y ~ .)
 
-  loc.model <- modeldef(coord, loc.form)
-  scale.model <- modeldef(coord, scale.form)
-  shape.model <- modeldef(coord, shape.form)
+  loc.model <- modeldef(cbind(coord, marg.cov), loc.form)
+  scale.model <- modeldef(cbind(coord, marg.cov), scale.form)
+  shape.model <- modeldef(cbind(coord, marg.cov), shape.form)
 
   loc.dsgn.mat <- loc.model$dsgn.mat
   scale.dsgn.mat <- scale.model$dsgn.mat
@@ -283,6 +284,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
     shape.names <- paste("shapeCoeff", 1:n.shapecoeff, sep="")
   
   param <- c("cov11", "cov12", "cov22", loc.names, scale.names, shape.names)
+  param.names <- param
 
   ##First create a "void" function
   nplk <- function(x) x
@@ -301,6 +303,13 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
 
   names(form.nplk) <- param
   formals(nplk) <- form.nplk
+
+  ##Define the gradient (analytically)
+  ##grad## <- function(param)
+  ##  .smithgrad(param, data, distVec, loc.dsgn.mat, scale.dsgn.mat, shape.dsgn.mat,
+  ##             fit.marge = fit.marge, std.err.type = std.err.type,
+  ##             fixed.param = names(fixed.param), param.names = param.names,
+  ##             jacobian = FALSE)
 
   if (missing(start)) {
 
@@ -344,7 +353,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   if (warn.inf && (init.lik == 1.0e35)) 
     warning("negative log-likelihood is infinite at starting values")
 
-  opt <- optim(start, nllh, hessian = hessian, ..., method = method)
+  opt <- optim(start, nllh, hessian = hessian, ..., method = method)#, gr = grad)
   
   if ((opt$convergence != 0) || (opt$value == 1.0e35) || (opt$value == init.lik)) {
     warning("optimization may not have succeeded")
@@ -355,7 +364,6 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
 
   else opt$convergence <- "successful"
 
-  param.names <- param
   param <- c(opt$par, unlist(fixed.param))
   
   if (std.err.type != "none"){
@@ -424,7 +432,8 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = "Gaussian",
                  loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                  lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
-                 shape.type = shape.type, ihessian = ihessian, jacobian = jacobian)
+                 shape.type = shape.type, ihessian = ihessian, jacobian = jacobian,
+                 marg.cov = marg.cov)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)

@@ -7,13 +7,15 @@ extcoeff <- function(fitted, n = 150, ...){
   if (model == "smith"){
     eps <- .Machine$double.eps
     det <- param["cov11"] * param["cov22"] - param["cov12"]^2
-    denom <- param["cov22"] - 2 * param[2] + param["cov12"]
-    x1 <- 2 * qnorm(1 - eps) / sqrt(param["cov22"] / det)
-    x2 <- 2 * qnorm(1 - eps) / sqrt(param["cov11"] / det)
-    x3 <- 2 * qnorm(1 - eps) * sqrt(det / denom)
+    denom1 <- param["cov22"] - 2 * param["cov12"] + param["cov11"]
+    denom2 <- param["cov22"] + 2 * param["cov12"] + param["cov11"]
+    x.lim <- 2 * qnorm(1 - eps) / sqrt(param["cov22"] / det)
+    y.lim <- 2 * qnorm(1 - eps) / sqrt(param["cov11"] / det)
+    x.diag1 <- 2 * qnorm(1 - eps) * sqrt(det / denom1)
+    x.diag2 <- 2 * qnorm(1 - eps) * sqrt(det / denom2)
       
-    x.range <- 1.2 * c(-max(x1, x3), max(x1, x3))
-    y.range <- 1.2 * c(-max(x2, x3), max(x2, x3))
+    x.range <- 1.2 * c(-max(x.lim, x.diag1, x.diag2), max(x.lim, x.diag1, x.diag2))
+    y.range <- 1.2 * c(-max(y.lim, x.diag1, x.diag2), max(y.lim, x.diag1, x.diag2))
   }
 
   if (model == "schlather"){
@@ -51,7 +53,7 @@ extcoeff <- function(fitted, n = 150, ...){
     
 map <- function(fitted, param = c("loc", "scale", "shape", "quant"),
                 ..., ret.per = 100, ranges = apply(fitted$coord, 2, range),
-                n = 80, col = terrain.colors(round(n))){
+                n = 80, col = terrain.colors(n), plot.contour = TRUE){
 
   x.range <- ranges[,1]
   y.range <- ranges[,2]
@@ -85,7 +87,9 @@ map <- function(fitted, param = c("loc", "scale", "shape", "quant"),
   ylab <- coord.names[2]
   
   image(xs, ys, ans, ..., col = col, xlab = xlab, ylab = ylab)
-  contour(xs, ys, ans, ..., add = TRUE)
+
+  if (plot.contour)
+    contour(xs, ys, ans, add = TRUE)
 
   invisible(list(x = xs, y = ys, z = ans))
 }

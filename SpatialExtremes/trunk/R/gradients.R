@@ -1,6 +1,7 @@
 .smithgrad <- function(par, data, distVec, loc.dsgn.mat,
                        scale.dsgn.mat, shape.dsgn.mat, fit.marge,
-                       std.err.type = "score", fixed.param, param.names){
+                       std.err.type = "score", fixed.param, param.names,
+                       jacobian = TRUE){
 
   ##data is a matrix with each column corresponds to one location
   ##distVec is the a matrix giving the "distance vector" for each pair
@@ -58,18 +59,25 @@
     grad <- grad[,-idx]
   }
 
-  if (std.err.type == "score")
-    jacobian <- var(grad) * n.obs
-
-  if (std.err.type == "grad"){
-    jacobian <- 0
-    for (i in 1:n.obs){
-      grad.vec <- matrix(grad[i,], ncol = 1)
-      jacobian <- jacobian + grad.vec %*% t(grad.vec)
+  if (jacobian){
+    if (std.err.type == "score")
+      jacobian <- var(grad) * n.obs
+    
+    if (std.err.type == "grad"){
+      jacobian <- 0
+      for (i in 1:n.obs){
+        grad.vec <- matrix(grad[i,], ncol = 1)
+        jacobian <- jacobian + grad.vec %*% t(grad.vec)
+      }
     }
+    
+    return(jacobian)
   }
 
-  return(jacobian)
+  else{
+    print(colSums(grad))
+    return(as.double(colSums(grad)))
+  }
 }
 
 .schlathergrad <- function(par, data, dist, cov.mod, loc.dsgn.mat,

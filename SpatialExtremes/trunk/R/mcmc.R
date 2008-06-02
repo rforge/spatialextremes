@@ -59,11 +59,12 @@ dpostmaxstab <- function(par, prior, cov.mod, data, coord,
 
     if (cov.mod == "gauss"){
       smithlik <- function(par)
-        .C("smithdsgnmat", data, as.double(distVec), as.integer(n.site),
-           as.integer(n.obs), loc.dsgn.mat, loc.pen.mat, as.integer(n.loccoeff),
-           as.integer(n.pparloc), as.double(loc.penalty), scale.dsgn.mat, scale.pen.mat,
-           as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty),
-           shape.dsgn.mat, shape.pen.mat, as.integer(n.shapecoeff), as.integer(n.pparshape),
+        .C("smithdsgnmat", as.double(data), as.double(distVec), as.integer(n.site),
+           as.integer(n.obs), as.double(loc.dsgn.mat), as.double(loc.pen.mat),
+           as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty),
+           as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff),
+           as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat),
+           as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape),
            as.double(shape.penalty), as.double(par[3 + 1:n.loccoeff]),
            as.double(par[3 + n.loccoeff + 1:n.scalecoeff]),
            as.double(par[3 + n.loccoeff + n.scalecoeff + 1:n.shapecoeff]), as.double(par[1]),
@@ -83,13 +84,14 @@ dpostmaxstab <- function(par, prior, cov.mod, data, coord,
         cov.mod.num <- 3
 
       schlatherlik <- function(par)
-        .C("schlatherdsgnmat", as.integer(cov.mod.num), data, as.double(dist),
-           as.integer(dist.dim), as.integer(n.site), as.integer(n.obs), loc.dsgn.mat, loc.pen.mat,
-           as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty),
-           scale.dsgn.mat, scale.pen.mat, as.integer(n.scalecoeff), as.integer(n.pparscale),
-           as.double(scale.penalty), shape.dsgn.mat, shape.pen.mat, as.integer(n.shapecoeff),
-           as.integer(n.pparshape), as.double(shape.penalty), as.double(par[2 + 1:n.loccoeff]),
-           as.double(par[2 + n.loccoeff + 1:n.scalecoeff]),
+        .C("schlatherdsgnmat", as.integer(cov.mod.num), as.double(data), as.double(dist),
+           as.integer(dist.dim), as.integer(n.site), as.integer(n.obs),
+           as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff),
+           as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat),
+           as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale),
+           as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat),
+           as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),
+           as.double(par[2 + 1:n.loccoeff]), as.double(par[2 + n.loccoeff + 1:n.scalecoeff]),
            as.double(par[2 + n.loccoeff + n.scalecoeff + 1:n.shapecoeff]), as.double(par[1]),
            as.double(par[2]), dns = double(1), PACKAGE = "SpatialExtremes")$dns
 
@@ -102,7 +104,7 @@ dpostmaxstab <- function(par, prior, cov.mod, data, coord,
 
     if (cov.mod == "gauss"){
       smithlik <- function(par)
-        .C("smithfull", data, as.double(distVec), as.integer(n.site),
+        .C("smithfull", as.double(data), as.double(distVec), as.integer(n.site),
            as.integer(n.obs), as.double(rep(1, n.site)),
            as.double(rep(1, n.site)), as.double(rep(1, n.site)),
            as.double(par[1]), as.double(par[2]), as.double(par[3]),
@@ -120,7 +122,7 @@ dpostmaxstab <- function(par, prior, cov.mod, data, coord,
         cov.mod.num <- 3
 
       schlatherlik <- function(par)
-        .C("schlatherfull", as.integer(cov.mod.num), data,
+        .C("schlatherfull", as.integer(cov.mod.num), as.double(data),
            as.double(dist), as.integer(n.site), as.integer(n.obs),
            as.double(rep(1, n.site)), as.double(rep(1, n.site)),
            as.double(rep(1, n.site)), as.double(par[1]),

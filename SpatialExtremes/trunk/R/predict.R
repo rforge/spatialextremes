@@ -7,13 +7,19 @@ predict.maxstab <- function(object, newdata, ...){
   
   if (!missing(newdata)){
     data <- newdata
+    marg.cov <- NULL
     
     if (is.null(dim(newdata)))
       data <- t(as.matrix(data))
   }
 
-  else
+  else{
     data <- object$coord
+    marg.cov <- object$marg.cov
+  }
+
+  if (!is.null(marg.cov))
+    data <- cbind(data, marg.cov)
 
   loc.dsgnmat <- modeldef(data, loc.form)$dsgn.mat
   scale.dsgnmat <- modeldef(data, scale.form)$dsgn.mat

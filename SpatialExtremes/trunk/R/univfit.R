@@ -25,10 +25,9 @@ gpdmle <- function(x, threshold, method = "BFGS"){
 
   nlgpd <- function(param){
     ##param = c(scale, shape)
-    scale <- as.double(param[1])
-    shape <- as.double(param[2])
-    -.C("gpdlik", exceed, nat, threshold, scale,
-        shape, dns = double(1), PACKAGE = "SpatialExtremes")$dns
+    -.C("gpdlik", as.double(exceed), as.integer(nat), as.double(threshold),
+        as.double(param[1]), as.double(param[2]), dns = double(1),
+        PACKAGE = "SpatialExtremes")$dns
   }
 
   high <- (x > threshold) & !is.na(x)

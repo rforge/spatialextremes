@@ -203,7 +203,7 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
                  logLik = -opt$value, opt.value = opt$value, model = "schlather",
                  cov.mod = cov.mod, fit.marge = fit.marge, ext.coeff = ext.coeff,
                  hessian = opt$hessian, lik.fun = nllh, coord = coord, ihessian = ihessian,
-                 jacobian = jacobian)
+                 jacobian = jacobian, marg.cov = NULL)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
@@ -214,7 +214,7 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
 ##radial basis functions may be used to model spatially the GEV
 ##parameters
 schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form,
-                          start, fit.marge = TRUE, ...,
+                          start, fit.marge = TRUE, marg.cov = NULL, ...,
                           warn.inf = TRUE, method = "BFGS",
                           std.err.type = "none", corr = FALSE){
   ##data is a matrix with each column corresponds to one location
@@ -246,9 +246,9 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   scale.form <- update(scale.form, y ~ .)
   shape.form <- update(shape.form, y ~ .)
 
-  loc.model <- modeldef(coord, loc.form)
-  scale.model <- modeldef(coord, scale.form)
-  shape.model <- modeldef(coord, shape.form)
+  loc.model <- modeldef(cbind(coord, marg.cov), loc.form)
+  scale.model <- modeldef(cbind(coord, marg.cov), scale.form)
+  shape.model <- modeldef(cbind(coord, marg.cov), shape.form)
 
   loc.dsgn.mat <- loc.model$dsgn.mat
   scale.dsgn.mat <- scale.model$dsgn.mat
@@ -445,7 +445,8 @@ Standard errors are not available unless you fix it.")
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = cov.mod, cov.fun = cov.fun,
                  loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                  lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
-                 shape.type = shape.type, ihessian = ihessian, jacobian = jacobian)
+                 shape.type = shape.type, ihessian = ihessian, jacobian = jacobian,
+                 marg.cov = marg.cov)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)

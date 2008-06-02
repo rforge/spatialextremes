@@ -5,8 +5,21 @@ modeldef <- function(data, formula){
   if (substr(formula[3], 1, 2) == "rb")
     ans <- modeldef.rb(data, formula)
 
-  else
+  else{
+    cov.names <- colnames(data)
+
+    if (is.null(cov.names))
+      stop("``coord'' and/or ``marg.cov'' must have named columns")
+
+    cov.names.uniq <- unique(cov.names)
+    
+    if (length(cov.names.uniq) != length(cov.names)){
+      warning("``coord'' and/or ``marg.cov'' have duplicates named columns. Omiting.")
+      data <- data[,cov.names.uniq]
+    }
+
     ans <- modeldef.lm(data, formula)
+  }
 
   return(ans)
 }
