@@ -124,8 +124,9 @@ A copy of the GNU General Public License can be obtained from
 
 \section*{Acknowledgements}
 
-This work has been supported by the Competence Center Environment and
-Sustainability (\href{http://www.cces.ethz.ch/index}) within the
+This work has been supported by the
+\href{http://www.cces.ethz.ch/index}{Competence Center Environment and
+  Sustainability} within the
 \href{http://www.cces.ethz.ch/projects/hazri/EXTREMES}{EXTREMES}
 project. I would like to thank Simone Padoan for his support while
 trying to get the ``awful'' gradient in Section
@@ -443,7 +444,7 @@ Please note that when using 3 smoothing splines for the GEV
 parameters, you might have to tweak the \verb|ndeps| option in the
 \verb|optim| function:
 <<eval=FALSE>>=
-fitmaxstab(ms1, , locations, "powexp", loc.form = loc.form,
+fitmaxstab(ms1, locations, "powexp", loc.form = loc.form,
            scale.form = scale.form, shape.form= shape.form,
            control = list(ndeps = rep(10^-4, n.par)))
 @ 
@@ -752,7 +753,7 @@ appropriate color palette.
 Fig.~\ref{fig:mapQ50} plots a map of the 50-year return level while
 focusing on a specific part of the region under study:
 <<eval=FALSE,label=mapQ50>>=
-new.ranges <- cbind(c(5, 8), c(2, 9))
+new.ranges <- cbind(c(3, 9), c(2, 10))
 colnames(new.ranges) <- c("lon", "lat")
 
 map(schlather, "quant", ret.per = 50 , ranges = new.ranges)
