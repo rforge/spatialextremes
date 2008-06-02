@@ -119,7 +119,7 @@ int mahalDistFct2(double *distVec, int nPairs, double *icov11,
   det = *icov11 * *icov22 - R_pow_di(*icov12, 2);
   //We test if the (inverse) covariance matrix is *not* nonnegative
   //definite e.g. all minor determinants are negative or 0
-  if ((det <= 0) || (*icov22 <= 0)){
+  if ((det <= 0) || (*icov11 <= 0)){
     //printf("Covariance matrice is singular!\n");
     return 1;
   }
@@ -151,13 +151,12 @@ int mahalDistFct(double *distVec, int nPairs, double *cov11,
   //covariance matrix instead of the inverse covariance matrix directly
 
   int i;
-  const double eps = R_pow(DOUBLE_EPS, 0.3);
   double det;
 
   det = *cov11 * *cov22 - R_pow_di(*cov12, 2);
   //We test if the covariance matrix is *not* nonnegative
   //definite e.g. all minor determinant are negative or 0
-  if ((det <= eps) || (*cov22 <= 0)){
+  if ((det <= 0) || (*cov11 <= 0)){
     //printf("Covariance matrice is singular!\n");
     return 1;
   }
@@ -165,8 +164,8 @@ int mahalDistFct(double *distVec, int nPairs, double *cov11,
   for (i=0;i<nPairs;i++){
 
     mahal[i] = (*cov11 *  R_pow_di(distVec[nPairs + i], 2) -
-			    2 * *cov12 * distVec[i] * distVec[nPairs + i] +
-			    *cov22 * R_pow_di(distVec[i], 2)) / det;
+		2 * *cov12 * distVec[i] * distVec[nPairs + i] +
+		*cov22 * R_pow_di(distVec[i], 2)) / det;
     
     //We test if the Mahalanobis distance is singular.
     if (mahal[i] <= 0)
