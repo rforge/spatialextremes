@@ -1,15 +1,18 @@
 \name{gev2frech}
 \alias{gev2frech}
-\title{Transforms GEV data to unit Frechet ones}
+\alias{frech2gev}
+\title{Transforms GEV data to unit Frechet ones and vice versa}
 \description{
-  Transforms GEV data to unit Frechet ones
+  Transforms GEV data to unit Frechet ones and vice versa
 }
 \usage{
 gev2frech(x, loc, scale, shape)
+frech2gev(x, loc, scale, shape)
 }
 \arguments{
-  \item{x}{The data to be transformed to unit Frechet}
-  \item{loc, scale, shape}{The location, scale and shape parameter of
+  \item{x}{The data to be transformed to unit Frechet or ordinary GEV
+    margins}
+  \item{loc, scale, shape}{The location, scale and shape parameters of
     the GEV.}
 }
 \value{
@@ -24,11 +27,21 @@ gev2frech(x, loc, scale, shape)
   [1 + \xi (Y - \mu) / \sigma]_+^(1/\xi)}
   is unit Frechet distributed - where \eqn{x_+ = max(0, x)}{x_+ =
     \max(0, x)}.
+
+  If Z is a unit Frechet random variable. Then,
+
+  \deqn{Y = \mu + \sigma \frac{Z_+^{\xi} - 1}{\xi}}{Y = \mu + \sigma
+  (Z_+^(\xi) - 1) / \xi}
+  is unit GEV distributed with location, scale and shape parameters
+  equal to \eqn{\mu}{\mu}, \eqn{\sigma}{\sigma} and \eqn{\xi}{\xi}
+  respectively.
 }
 \examples{
 x <- c(2.2975896, 1.6448808, 1.3323833, -0.4464904, 2.2737603,
     -0.2581876, 9.5184398, -0.5899699, 0.4974283, -0.8152157)
-gev2frech(x, 1, 2, .2)
+y <- gev2frech(x, 1, 2, .2)
+y
+frech2gev(y, 1, 2, .2)
 }
 \author{Mathieu Ribatet}
 \keyword{datagen}

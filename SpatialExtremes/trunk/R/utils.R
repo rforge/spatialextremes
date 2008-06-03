@@ -24,6 +24,9 @@ distance <- function(coord, vec = FALSE){
 gev2frech <- function(x, loc, scale, shape)
   pmax(1 + shape * (x - loc) / scale, 0)^(1/shape)
 
+frech2gev <- function(x, loc, scale, shape)
+  loc + scale * (pmax(x, 0)^shape - 1) / shape
+
 .qgev <- function(p, loc = 1, scale = 1, shape = 1,
                   lower.tail = TRUE){
   
