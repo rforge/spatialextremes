@@ -304,13 +304,6 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   names(form.nplk) <- param
   formals(nplk) <- form.nplk
 
-  ##Define the gradient (analytically)
-  ##grad## <- function(param)
-  ##  .smithgrad(param, data, distVec, loc.dsgn.mat, scale.dsgn.mat, shape.dsgn.mat,
-  ##             fit.marge = fit.marge, std.err.type = std.err.type,
-  ##             fixed.param = names(fixed.param), param.names = param.names,
-  ##             jacobian = FALSE)
-
   if (missing(start)) {
 
     start <- .start.smith(data, coord, loc.model, scale.model,
@@ -353,7 +346,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   if (warn.inf && (init.lik == 1.0e35)) 
     warning("negative log-likelihood is infinite at starting values")
 
-  opt <- optim(start, nllh, hessian = hessian, ..., method = method)#, gr = grad)
+  opt <- optim(start, nllh, hessian = hessian, ..., method = method)
   
   if ((opt$convergence != 0) || (opt$value == 1.0e35) || (opt$value == init.lik)) {
     warning("optimization may not have succeeded")
