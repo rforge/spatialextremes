@@ -47,6 +47,41 @@ madogram <- function(data, coord, n.lag = 100,
   ##plot(lags, ans)
   points(lags, ext.coeff)
 }
-      
-    
+
+fitexc <- function(data, coord, prob){
+  z <- - 1 / log(prob)
+  n.site <- ncol(data)
+
+  dist <- distance(coord)
+
+  ##First we need to transform data to unit Frechet using empirical CDF
+  frech <- data
+  for (i in 1:n.site){
+    idx <- order(frech[,i])
+    frech[,i] <- ppoints(frech[,i], a = 0)[idx]
+  }
+
+  frech <- - 1 / log(frech)
   
+  x.bar <- colMeans(1/frech)
+
+  lik.fun <- function(theta){
+    frech.scaled <- apply(t(frech[,pair]) * x.bar[pair], 2, max)
+    return(-sum(frech.scaled > z) * log(theta) + theta * sum(1/pmax(z, frech.scaled)))
+  }
+
+  ext.coeff <- rep(NA, n.site * (n.site - 1) / 2)
+
+  k <- 1
+  
+  for (i in 1:(n.site - 1)){
+    for (j in (i+1):n.site){
+      pair <- c(i,j)
+      ext.coeff[k] <- min(2, optim(1.5, lik.fun, method = "SANN")$par)
+      k <- k + 1
+    }
+  }
+
+  plot(dist, ext.coeff)
+  ##return(ext.coeff)
+}
