@@ -1,5 +1,5 @@
 madogram <- function(data, coord, n.lag = 100,
-                     gev.param = c(0, 1, -1)){
+                     gev.param = c(1, 1, 1)){
   
   n.site <- ncol(data)
   dist <- distance(coord)
