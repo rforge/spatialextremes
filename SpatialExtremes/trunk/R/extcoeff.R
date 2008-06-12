@@ -1,5 +1,6 @@
 madogram <- function(data, coord, n.lag = 100,
-                     gev.param = c(1, 1, 1)){
+                     gev.param = c(0, 1, 0),
+                     which = c("mado", "ext"), ...){
   
   n.site <- ncol(data)
   dist <- distance(coord)
@@ -13,7 +14,7 @@ madogram <- function(data, coord, n.lag = 100,
   }
 
   lags <- seq(0, max(dist), length = n.lag)
-  ans <- rep(0, length(lags))
+  mado <- rep(0, length(lags))
   k <- 1
 
   for (lag in lags){
@@ -24,31 +25,38 @@ madogram <- function(data, coord, n.lag = 100,
       site2 <- (idx-1) %% n.site + 1
       
       for (i in 1:length(idx))
-        ans[k] <- ans[k] + mean(abs(data[,site1[i]] -
+        mado[k] <- mado[k] + mean(abs(data[,site1[i]] -
                                     data[,site2[i]]))
       
-      ans[k] <- ans[k] / 2 / length(idx)
+      mado[k] <- mado[k] / 2 / length(idx)
     }
 
     else
-      ans[k] <- 0
+      mado[k] <- 0
 
     k <- k+1
   }
 
   if (gev.param[3] == 0)
-    ext.coeff <- exp(ans/gev.param[2])
+    ext.coeff <- exp(mado/gev.param[2])
 
   else
-    ext.coeff <- gev2frech(gev.param[1] + ans / gamma(1 - gev.param[3]),
+    ext.coeff <- gev2frech(gev.param[1] + mado / gamma(1 - gev.param[3]),
                            gev.param[1], gev.param[2], gev.param[3])
 
-  ##par(mfrow=c(1,2))
-  ##plot(lags, ans)
-  points(lags, ext.coeff)
+  if (length(which) == 2)
+    par(mfrow=c(1,2))
+
+  if (any(which == "mado"))
+    plot(lags, mado, ...)
+
+  if (any(which == "ext"))
+    plot(lags, ext.coeff, ...)
+  
+  invisible(cbind(lag = lags, madogram = mado, ext.coeff = ext.coeff))
 }
 
-fitexc <- function(data, coord, prob){
+excofun <- function(data, coord, ..., prob = 0){
   z <- - 1 / log(prob)
   n.site <- ncol(data)
 
@@ -58,11 +66,10 @@ fitexc <- function(data, coord, prob){
   frech <- data
   for (i in 1:n.site){
     idx <- order(frech[,i])
-    frech[,i] <- ppoints(frech[,i], a = 0)[idx]
+    frech[idx,i] <- ppoints(frech[,i], a = 0)
   }
 
   frech <- - 1 / log(frech)
-  
   x.bar <- colMeans(1/frech)
 
   lik.fun <- function(theta){
@@ -77,11 +84,11 @@ fitexc <- function(data, coord, prob){
   for (i in 1:(n.site - 1)){
     for (j in (i+1):n.site){
       pair <- c(i,j)
-      ext.coeff[k] <- min(2, optim(1.5, lik.fun, method = "SANN")$par)
+      ext.coeff[k] <- optimize(lik.fun, interval = c(1, 2))$minimum
       k <- k + 1
     }
   }
 
-  plot(dist, ext.coeff)
-  ##return(ext.coeff)
+  plot(dist, ext.coeff, ...)
+  invisible(cbind(dist = dist, ext.coeff = ext.coeff))
 }
