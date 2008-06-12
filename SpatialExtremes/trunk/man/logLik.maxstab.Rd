@@ -1,7 +1,7 @@
 \name{logLik}
 \alias{logLik}
 \alias{logLik.maxstab}
-\title{Extract Log-Likelihood}
+\title{Extracts Log-Likelihood}
 \description{Extract the pairwise log-likelihood for objects of class
   ``maxstab''}
 \usage{
@@ -25,7 +25,7 @@ require(RandomFields)
 
 ##Define the coordinates of each location
 n.site <- 30
-locations <- matrix(5 + rnorm(2*n.site, sd = sqrt(2)), ncol = 2)
+locations <- matrix(5 + runif(2*n.site, 0, 10), ncol = 2)
 
 ##Simulate a max-stable process - with unit Frechet margins
 ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",

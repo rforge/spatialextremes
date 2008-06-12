@@ -42,12 +42,12 @@ require(RandomFields)
 
 ##Define the coordinate of each location
 n.site <- 30
-locations <- matrix(rnorm(2*n.site, sd = sqrt(.2)), ncol = 2)
+locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
 ##Simulate a max-stable process - with unit Frechet margins
 ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
-                   param=c(0,1,0,30, .5), maxstable="extr",
+                   param=c(0,1,0,3, .5), maxstable="extr",
                    n = 30)
 ms1 <- t(ms0)
 
@@ -70,7 +70,7 @@ shape.form <- shape ~ 1
 fitted <- fitmaxstab(ms1, locations, "whitmat", loc.form, scale.form,
                shape.form)
 covariance(fitted, xlab = "Distance", ylab = "Covariance")
-covariance(scale = 30, smooth = .5, cov.mod = "whitmat", add = TRUE, col
+covariance(scale = 3, smooth = .5, cov.mod = "whitmat", add = TRUE, col
                = 3)
 title("Whittle-Matern covariance function")
 legend("topright", c("Theo.", "Fitted"), lty = 1, col = c(3,1), inset = .05)

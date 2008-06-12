@@ -24,10 +24,10 @@
 ## 1- Simulate a max-stable random field
 require(RandomFields)
 n.site <- 35
-locations <- matrix(runif(2*n.site, 0, 100), ncol = 2)
+locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
-                   param=c(0,1,0,30, .5), maxstable="extr",
+                   param=c(0,1,0,3, .5), maxstable="extr",
                    n = 50)
 ## 2- Transformation to non unit Frechet margins
 ms1 <- t(ms0)
@@ -50,7 +50,7 @@ schlather <- fitmaxstab(ms1, locations, "whitmat", loc.form = form.loc,
 
 ## 4- GEV parameters estimates at each locations or at ungauged locations
 predict(schlather)
-ungauged <- data.frame(lon = runif(10, 0, 100), lat = runif(10, 0, 100))
+ungauged <- data.frame(lon = runif(10, 0, 10), lat = runif(10, 0, 10))
 predict(schlather, ungauged)
 }
 \author{Mathieu Ribatet}
