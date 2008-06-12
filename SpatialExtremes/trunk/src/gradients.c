@@ -37,11 +37,6 @@ void smithgrad(double *data, double *distVec, int *nSite,
   flag = mahalDistFct(distVec, nPairs, cov11, cov12,
 		      cov22, mahalDist);
 
-  //if (flag == 1){
-  //  *dns = -1e50;
-  //  return;
-  //}
-
   //Compute the GEV parameters using the design matrix
   if (*fitmarge){
     
@@ -50,19 +45,9 @@ void smithgrad(double *data, double *distVec, int *nSite,
 			 *nloccoeff, *nscalecoeff, *nshapecoeff,
 			 locs, scales, shapes);
     
-    //if (flag == 1){
-    //  *dns = -1e50;
-    //  return;
-    //}
-    
     //Stage 1: Transformation to unit Frechet
     flag = gev2frech(data, *nObs, *nSite, locs, scales, shapes,
 		     jac, frech);
-    
-    //if (toFrechObj.flag == 1){
-    //  *dns = -1e50;
-    //  return;
-    //}
     
   }
 
