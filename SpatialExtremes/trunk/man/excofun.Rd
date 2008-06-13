@@ -5,7 +5,7 @@
   function.
 }
 \usage{
-excofun(data, coord, \dots, prob)
+excofun(data, coord, \dots, prob = 0, plot = TRUE, lowess = TRUE)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -14,7 +14,11 @@ excofun(data, coord, \dots, prob)
     location. Each row corresponds to one location.}
   \item{\dots}{Additional options to be passed to the \code{\link{plot}}
     function.}
-  \item{prob}{The probability related to the threshold.}  
+  \item{prob}{The probability related to the threshold.}
+  \item{plot}{Logical. If \code{TRUE} (default), the extremal
+    coefficient function is plotted}
+  \item{lowess}{If \code{TRUE} (default), a local polynomial curve is
+    plotted.}
 }
 \details{
   If \code{data} are already componentwise maxima, \code{prob} should be
