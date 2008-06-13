@@ -105,51 +105,13 @@ int genHyper(double *dist, int nPairs, double scale,
   return 0;
 }
 
-
-int mahalDistFct2(double *distVec, int nPairs, double *icov11,
-		  double *icov12, double *icov22, double *mahal){
-  
-  //This function computes the mahalanobis distance between each pair
-  //of locations. Currently this function is only valid in 2D
-  //When flag == 1, the covariance matrix and/or the mahalanobis
-  //distance is ill-defined.
-  int i;
-  double det;
-
-  det = *icov11 * *icov22 - R_pow_di(*icov12, 2);
-  //We test if the (inverse) covariance matrix is *not* nonnegative
-  //definite e.g. all minor determinants are negative or 0
-  if ((det <= 0) || (*icov11 <= 0)){
-    //printf("Covariance matrice is singular!\n");
-    return 1;
-  }
-  
-  for (i=0;i<nPairs;i++){
-
-    mahal[i] = *icov11 * R_pow_di(distVec[i], 2) +
-      2 * *icov12 * distVec[i] * distVec[nPairs + i] +
-      *icov22 * R_pow_di(distVec[nPairs + i], 2);
-    //We test if the Mahalanobis distance is singular.
-    if (!R_FINITE(mahal[i]) || (mahal[i] <= 0)){
-      //printf("mahalDist^2 is erradic!\n"); 
-      return 1;
-    }
-    
-    mahal[i] = sqrt(mahal[i]);
-  }
-  
-  return 0;
-}
-
 int mahalDistFct(double *distVec, int nPairs, double *cov11,
 		 double *cov12, double *cov22, double *mahal){
   //This function computes the mahalanobis distance between each pair
   //of locations. Currently this function is only valid in 2D
   //When flag == 1, the covariance matrix and/or the mahalanobis
   //distance is ill-defined.
-  //The difference from the previous function is that it uses the
-  //covariance matrix instead of the inverse covariance matrix directly
-
+  
   int i;
   double det;
 
@@ -166,6 +128,52 @@ int mahalDistFct(double *distVec, int nPairs, double *cov11,
     mahal[i] = (*cov11 *  R_pow_di(distVec[nPairs + i], 2) -
 		2 * *cov12 * distVec[i] * distVec[nPairs + i] +
 		*cov22 * R_pow_di(distVec[i], 2)) / det;
+    
+    //We test if the Mahalanobis distance is singular.
+    if (mahal[i] <= 0)
+      return 1;
+    
+    mahal[i] = sqrt(mahal[i]);
+  }
+  
+  return 0;
+}
+
+int mahalDistFct3d(double *distVec, int nPairs, double *cov11,
+		   double *cov12, double *cov13, double *cov22, 
+		   double *cov23, double *cov33, double *mahal){
+  //This function computes the mahalanobis distance between each pair
+  //of locations. Currently this function is only valid in 3D
+  //When flag == 1, the covariance matrix and/or the mahalanobis
+  //distance is ill-defined.
+  
+  int i;
+  double det, detMin;
+
+  det = *cov11 * *cov22 * *cov33 - R_pow_di(*cov12, 2) * *cov33 -
+    *cov11 * R_pow_di(*cov23, 2) + 2 * *cov12 * *cov13 * *cov23 -
+    R_pow_di(*cov13, 2) * *cov22;
+  detMin = *cov11 * *cov22 - R_pow_di(*cov12, 2);
+  //We test if the covariance matrix is *not* nonnegative
+  //definite e.g. all minor determinant are negative or 0
+  if ((det <= 0) || (*cov11 <= 0) || (detMin <= 0)){
+    //printf("Covariance matrice is singular!\n");
+    return 1;
+  }
+  
+  for (i=0;i<nPairs;i++){
+
+    mahal[i] = (*cov11 * *cov22 * R_pow_di(distVec[2 * nPairs + i], 2) -
+		R_pow_di(*cov12 * distVec[2 * nPairs + i], 2) - 2 * *cov11 *
+		*cov23 * distVec[nPairs + i] * distVec[2 * nPairs + i] + 2 *
+		*cov12 * *cov13 * distVec[nPairs + i] * distVec[2 * nPairs + i] +
+		2 * *cov12 * *cov23 * distVec[i] * distVec[2 * nPairs + i] - 2 *
+		*cov13 * *cov22 * distVec[i] * distVec[2 * nPairs + i] + *cov11 *
+		*cov33 * R_pow_di(distVec[nPairs + i], 2) - 
+		R_pow_di(*cov13 * distVec[nPairs + i], 2) - 2 * *cov12 * *cov33 *
+		distVec[i] * distVec[nPairs + i] + 2 * *cov13 * *cov23 *
+		distVec[i] * distVec[nPairs + i] + *cov22 * *cov33 * 
+		R_pow_di(distVec[i], 2) - R_pow_di(*cov23 * distVec[i], 2)) / det;
     
     //We test if the Mahalanobis distance is singular.
     if (mahal[i] <= 0)
