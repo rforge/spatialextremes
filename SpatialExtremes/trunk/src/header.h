@@ -32,6 +32,23 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs,
 		  double *cov11, double *cov12, double *cov22, double *dns);
 
 ///////////////////////////////////
+//  From smith3d.c
+//
+void smithfull3d(double *data, double *distVec, int *nSite,
+		 int *nObs, double *locs, double *scales, double *shapes,
+		 double *cov11, double *cov12, double *cov13, double *cov22,
+		 double *cov23, double *cov33, double *dns);
+void smithdsgnmat3d(double *data, double *distVec, int *nSite, int *nObs, 
+		    double *locdsgnmat, double *locpenmat, int *nloccoeff,
+		    int *npparloc, double *locpenalty, double *scaledsgnmat,
+		    double *scalepenmat, int *nscalecoeff, int *npparscale,
+		    double *scalepenalty, double *shapedsgnmat, double *shapepenmat,
+		    int *nshapecoeff, int *npparshape, double *shapepenalty,
+		    double *loccoeff, double *scalecoeff, double *shapecoeff,
+		    double *cov11, double *cov12, double *cov13, double *cov22,
+		    double *cov23, double *cov33, double *dns);
+
+///////////////////////////////////
 //  From utils.c
 //
 void distance(double *coord, int *nDim, int *nSite,
@@ -70,8 +87,9 @@ int genHyper(double *dist, int nPairs, double scale,
 	     double smooth3, double *rho);
 int mahalDistFct(double *distVec, int nPairs, double *cov11,
 		 double *cov12, double *cov22, double *mahal);
-int mahalDistFct2(double *distVec, int nPairs, double *cov11,
-		  double *cov12, double *cov22, double *mahal);
+int mahalDistFct3d(double *distVec, int nPairs, double *cov11,
+		   double *cov12, double *cov13, double *cov22, 
+		   double *cov23, double *cov33, double *mahal);
 
 ///////////////////////////////////
 //  From mcmc.c
