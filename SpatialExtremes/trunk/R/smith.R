@@ -34,22 +34,45 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
     loc.names <- paste("loc", 1:n.site, sep="")
     scale.names <- paste("scale", 1:n.site, sep="")
     shape.names <- paste("shape", 1:n.site, sep="")
-  
-    param <- c("cov11", "cov12", "cov22", loc.names, scale.names, shape.names)
-    body(nplk) <- parse(text = paste("-.C('smithfull', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs),",
+
+    if (dist.dim == 2){
+      param <- c("cov11", "cov12", "cov22", loc.names, scale.names, shape.names)
+      body(nplk) <- parse(text = paste("-.C('smithfull', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs),",
                             paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
                             "as.double(cov11), as.double(cov12), as.double(cov22), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+    }
+
+    else{
+      param <- c("cov11", "cov12", "cov13", "cov22", "cov23", "cov33", loc.names, scale.names, shape.names)
+      body(nplk) <- parse(text = paste("-.C('smithfull3d', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs),",
+                            paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
+                            paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
+                            paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
+                            "as.double(cov11), as.double(cov12), as.double(cov13), as.double(cov22), as.double(cov23), as.double(cov33), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+    }
   }
   
   else{
-    param <- c("cov11", "cov12", "cov22")
-    body(nplk) <- parse(text = paste("-.C('smithfull', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs),",
+
+    if (dist.dim == 2){
+      param <- c("cov11", "cov12", "cov22")
+      body(nplk) <- parse(text = paste("-.C('smithfull', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs),",
                             paste("as.double(rep(1,", n.site, ")), "),
                             paste("as.double(rep(1,", n.site, ")), "),
                             paste("as.double(rep(1,", n.site, ")), "),
                             "as.double(cov11), as.double(cov12), as.double(cov22), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+    }
+
+    else{
+      param <- c("cov11", "cov12", "cov13", "cov22", "cov23", "cov33")
+      body(nplk) <- parse(text = paste("-.C('smithfull3d', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs),",
+                            paste("as.double(rep(1,", n.site, ")), "),
+                            paste("as.double(rep(1,", n.site, ")), "),
+                            paste("as.double(rep(1,", n.site, ")), "),
+                            "as.double(cov11), as.double(cov12), as.double(cov13), as.double(cov22), as.double(cov23), as.double(cov33), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+    }
   }
  
   ##Define the formal arguments of the function
@@ -78,7 +101,12 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
       start <- as.list(unlist(list(loc = locs, scale = scales, shape = shapes)))
     }
 
-    start <- c(list(cov11 = 1, cov12 = 0, cov22 = 1), start)
+    if (dist.dim == 2)
+      start <- c(list(cov11 = 1, cov12 = 0, cov22 = 1), start)
+
+    else
+      start <- c(list(cov11 = 1, cov12 = 0, cov13 = 0, cov22 = 1, cov23 = 0,
+                      cov33 = 1), start)
     
     
     start <- start[!(param %in% names(list(...)))]
@@ -195,7 +223,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
                  var.cov = var.cov, fixed = unlist(fixed.param), param = param,
                  deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
                  counts = opt$counts, message = opt$message, data = data, est = "MLE",
-                 logLik = -opt$value, opt.value = opt$value, model = "smith",
+                 logLik = -opt$value, opt.value = opt$value, model = "Smith",
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = "Gaussian",
                  lik.fun = nllh, coord = coord, ihessian = ihessian, jacobian = jacobian,
                  marg.cov = NULL)
@@ -282,8 +310,13 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
 
   else
     shape.names <- paste("shapeCoeff", 1:n.shapecoeff, sep="")
+
+  if (dist.dim == 2)
+    param <- c("cov11", "cov12", "cov22", loc.names, scale.names, shape.names)
+
+  else
+    param <- c("cov11", "cov12", "cov13", "cov22", "cov23", "cov33", loc.names, scale.names, shape.names)
   
-  param <- c("cov11", "cov12", "cov22", loc.names, scale.names, shape.names)
   param.names <- param
 
   ##First create a "void" function
@@ -291,11 +324,20 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
 
   ##And define the "body" of the function as the number of parameters
   ##to estimate depends on n.site
-  body(nplk) <- parse(text = paste("-.C('smithdsgnmat', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
+  if (dist.dim == 2)
+    body(nplk) <- parse(text = paste("-.C('smithdsgnmat', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
                           paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                           paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                           paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
                           "as.double(cov11), as.double(cov12), as.double(cov22), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+
+  else
+    body(nplk) <- parse(text = paste("-.C('smithdsgnmat3d', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
+                          paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
+                          paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
+                          paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
+                          "as.double(cov11), as.double(cov12), as.double(cov13), as.double(cov22), as.double(cov23), as.double(33), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+    
   ##Define the formal arguments of the function
   form.nplk <- NULL
   for (i in 1:length(param))
@@ -410,8 +452,16 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
     var.cov <- ihessian <- jacobian <- NULL
   }
 
-  Sigma <- matrix(c(param["cov11"], param["cov12"], param["cov12"],
-                    param["cov22"]), 2, 2)
+  if (dist.dim == 2)
+    Sigma <- matrix(c(param["cov11"], param["cov12"], param["cov12"],
+                      param["cov22"]), 2, 2)
+
+  else
+    Sigma <- matrix(c(param["cov11"], param["cov12"], param["cov13"],
+                      param["cov12"], param["cov22"], param["cov23"],
+                      param["cov13"], param["cov23"], param["cov33"]),
+                    3, 3)
+  
   iSigma <- solve(qr(Sigma))
 
   ext.coeff <- function(posVec)
@@ -421,7 +471,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
                  var.cov = var.cov, fixed = unlist(fixed.param), param = param,
                  deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
                  counts = opt$counts, message = opt$message, data = data, est = "MLE",
-                 logLik = -opt$value, opt.value = opt$value, model = "smith", coord = coord,
+                 logLik = -opt$value, opt.value = opt$value, model = "Smith", coord = coord,
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = "Gaussian",
                  loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                  lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
