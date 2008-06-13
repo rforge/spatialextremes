@@ -56,7 +56,7 @@ madogram <- function(data, coord, n.lag = 100,
   invisible(cbind(lag = lags, madogram = mado, ext.coeff = ext.coeff))
 }
 
-excofun <- function(data, coord, ..., prob = 0){
+excofun <- function(data, coord, ..., prob = 0, plot = TRUE, lowess = TRUE){
   z <- - 1 / log(prob)
   n.site <- ncol(data)
 
@@ -89,6 +89,12 @@ excofun <- function(data, coord, ..., prob = 0){
     }
   }
 
-  plot(dist, ext.coeff, ...)
+  if (plot){
+    plot(dist, ext.coeff, ...)
+
+    if (lowess)
+      lines(lowess(dist, ext.coeff), ...)
+  }
+  
   invisible(cbind(dist = dist, ext.coeff = ext.coeff))
 }
