@@ -1,19 +1,13 @@
 
 print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
 
-  if (x$model == "schlather")
-    model <- "Schlather"
-
-  else
-    model <- "Smith"
-  
   cat("        Estimator:", x$est, "\n")
-  cat("            Model:", model, "\n")
-  if (x$est == 'MLE'){
+  cat("            Model:", x$model, "\n")
+  if (x$est == 'MPLE'){
     cat("   Pair. Deviance:", x$deviance, "\n")
     cat("              TIC:", TIC(x), "\n")
   }
-  if (x$model == "schlather"){
+  if (x$model == "Schlather"){
 
     if (x$cov.mod == "emp")
       cov.mod <- "Empirical"
@@ -73,9 +67,7 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
     cat("  Marginal Parameters:\n")
 
     if (x$fit.marge){
-      idx <- which(names(x$fitted.values) == "cov11")
-      idx <- c(idx, which(names(x$fitted.values) == "cov12"))
-      idx <- c(idx, which(names(x$fitted.values) == "cov22"))
+      idx <- which(substr(names(x$fitted.values), 1, 3) == "cov")
 
       margin.param <- x$fitted.values[-idx]
       loc.idx <- which(substr(names(margin.param), 1, 3) == "loc")
