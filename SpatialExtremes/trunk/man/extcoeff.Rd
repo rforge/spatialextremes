@@ -5,7 +5,7 @@
   Plots the extremal coefficient evolution as the coordinates evolves.
 }
 \usage{
-extcoeff(fitted, n = 150, \dots)
+extcoeff(fitted, n = 200, \dots)
 }
 \arguments{
   \item{fitted}{A object of class "\code{maxstab}". Most often, it will
