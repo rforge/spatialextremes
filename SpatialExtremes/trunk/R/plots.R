@@ -1,24 +1,27 @@
-extcoeff <- function(fitted, n = 150, ...){
+extcoeff <- function(fitted, n = 200, ...){
 
   model <- fitted$model
   extCoeff <- fitted$ext.coeff
   param <- fitted$param
   ##Define an appropriate range for the x-y axis
-  if (model == "smith"){
-    eps <- .Machine$double.eps
-    det <- param["cov11"] * param["cov22"] - param["cov12"]^2
-    denom1 <- param["cov22"] - 2 * param["cov12"] + param["cov11"]
-    denom2 <- param["cov22"] + 2 * param["cov12"] + param["cov11"]
-    x.lim <- 2 * qnorm(1 - eps) / sqrt(param["cov22"] / det)
-    y.lim <- 2 * qnorm(1 - eps) / sqrt(param["cov11"] / det)
-    x.diag1 <- 2 * qnorm(1 - eps) * sqrt(det / denom1)
-    x.diag2 <- 2 * qnorm(1 - eps) * sqrt(det / denom2)
-      
-    x.range <- 1.2 * c(-max(x.lim, x.diag1, x.diag2), max(x.lim, x.diag1, x.diag2))
-    y.range <- 1.2 * c(-max(y.lim, x.diag1, x.diag2), max(y.lim, x.diag1, x.diag2))
+  if (model == "Smith"){
+    A <- matrix(c(param["cov11"], param["cov12"], param["cov12"],
+                  param["cov22"]), 2, 2)
+    
+    eigen.values <- eigen(A)
+    eigen.vectors <- eigen.values$vectors
+    eigen.values <- eigen.values$values
+
+    xy1 <- eigen.vectors %*% c(eigen.values[1], 0)
+    xy2 <- eigen.vectors %*% c(0, eigen.values[2])
+    
+    
+    x.range <- 1.2 * c(-max(abs(xy1[1]), abs(xy2[1])), max(abs(xy1[1]), abs(xy2[1])))
+    y.range <- 1.2 * c(-max(abs(xy1[2]), abs(xy2[2])), max(abs(xy1[2]), abs(xy2[2])))
+    
   }
 
-  if (model == "schlather"){
+  if (model == "Schlather"){
     fun <- function(h) abs(2 - extCoeff(h))
     init <- sqrt(sum(colMeans(fitted$coord)^2))
     opt1 <- optim(init, fun, method = "BFGS")$par
@@ -31,13 +34,13 @@ extcoeff <- function(fitted, n = 150, ...){
   xs <- seq(x.range[1], x.range[2], length = n)
   ys <- seq(y.range[1], y.range[2], length = n)
 
-  if (model == "smith"){
+  if (model == "Smith"){
     for (i in 1:n)
       for (j in 1:n)
         extcoeff.hat[i,j] <- extCoeff(c(xs[i], ys[j]))
   }
 
-  if (model == "schlather"){
+  if (model == "Schlather"){
     for (i in 1:n)
       for (j in 1:n){
         h <- sqrt(xs[i]^2 + ys[j]^2)
