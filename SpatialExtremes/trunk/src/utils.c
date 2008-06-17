@@ -121,6 +121,11 @@ void gev(double *prob, int *n, double *locs, double *scales, double *shapes,
   
   for (i=0;i<*n;i++){
     
+    if (scales[i] <= 0){
+      quant[i] = R_NaReal;
+
+    }
+
     if (shapes[i] == 0)
       quant[i] = locs[i] - scales[i] * log(-log(*prob));
 
