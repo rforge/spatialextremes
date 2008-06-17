@@ -126,8 +126,8 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
     warning("negative log-likelihood is infinite at starting values")
 
   opt <- optim(start, nllh, hessian = hessian, ..., method = method)
-
-  if ((opt$convergence != 0) || (opt$value == 1.0e35) || (opt$value == init.lik)) {
+  
+  if ((opt$convergence != 0) || (opt$value == 1.0e35)) {
     warning("optimization may not have succeeded")
 
     if (opt$convergence == 1) 
@@ -136,28 +136,42 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
 
   else opt$convergence <- "successful"
 
+  if (opt$value == init.lik){
+    warning("optimization stopped after 1 iteration. Consider tweaking the ndeps option.")
+    opt$convergenc <- "Stopped after 1 iteration"
+  }
+
   param.names <- param
   param <- c(opt$par, unlist(fixed.param))
 
+  if ((cov.mod == "whitmat") && !("smooth" %in% names(fixed.param))){
+    warning("The Bessel function is not differentiable w.r.t. the ``smooth'' parameter
+Standard errors are not available unless you fix it.")
+    std.err.type <- "none"
+  }
+  
   if (std.err.type != "none"){
     
-    tol <- .Machine$double.eps^0.5
-    
-    var.cov <- qr(opt$hessian, tol = tol)
-    if(var.cov$rank != ncol(var.cov$qr)){
+    var.cov <- try(solve(opt$hessian), silent = TRUE)
+    if(!is.matrix(var.cov)){
       warning("observed information matrix is singular; passing std.err.type to ``none''")
       std.err.type <- "none"
       return
     }
 
     else{
-      var.cov <- solve(var.cov, tol = tol)
       ihessian <- var.cov
       jacobian <- .schlathergrad(param, data, dist, cov.mod.num, as.double(0),
                                  as.double(0), as.double(0), fit.marge = fit.marge,
                                  std.err.type = std.err.type, fixed.param = names(fixed.param),
                                  param.names = param.names)
 
+      if(is.na(jacobian)){
+        warning("observed information matrix is singular; passing std.err.type to ``none''")
+        std.err.type <- "none"
+        return
+      }
+      
       var.cov <- var.cov %*% jacobian %*% var.cov
       std.err <- diag(var.cov)
 
@@ -199,7 +213,7 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
                  var.cov = var.cov, param = param, cov.fun = cov.fun, fixed = unlist(fixed.param),
                  deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
-                 counts = opt$counts, message = opt$message, est = "MLE", data = data,
+                 counts = opt$counts, message = opt$message, est = "MPLE", data = data,
                  logLik = -opt$value, opt.value = opt$value, model = "Schlather",
                  cov.mod = cov.mod, fit.marge = fit.marge, ext.coeff = ext.coeff,
                  hessian = opt$hessian, lik.fun = nllh, coord = coord, ihessian = ihessian,
@@ -361,7 +375,7 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
 
   opt <- optim(start, nllh, hessian = hessian, ..., method = method)
   
-  if ((opt$convergence != 0) || (opt$value == 1.0e35) || (opt$value == init.lik) ) {
+  if ((opt$convergence != 0) || (opt$value == 1.0e35)){
     warning("optimization may not have succeeded")
 
     if (opt$convergence != 0) 
@@ -369,6 +383,11 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   }
 
   else opt$convergence <- "successful"
+
+  if (opt$value == init.lik){
+    warning("optimization stopped after 1 iteration. Consider tweaking the ndeps option.")
+    opt$convergenc <- "Stopped after 1 iteration"
+  }
 
   param.names <- param
   param <- c(opt$par, unlist(fixed.param))
@@ -381,17 +400,14 @@ Standard errors are not available unless you fix it.")
   
   if (std.err.type != "none"){
     
-    tol <- .Machine$double.eps^0.5
-    
-    var.cov <- qr(opt$hessian, tol = tol)
-    if(var.cov$rank != ncol(var.cov$qr)){
+    var.cov <- try(solve(opt$hessian), silent = TRUE)
+    if(!is.matrix(var.cov)){
       warning("observed information matrix is singular; passing std.err.type to ``none''")
       std.err.type <- "none"
       return
     }
 
     else{
-      var.cov <- solve(var.cov, tol = tol)
       ihessian <- var.cov
       jacobian <- .schlathergrad(param, data, dist, cov.mod.num, loc.dsgn.mat,
                                  scale.dsgn.mat, shape.dsgn.mat,
@@ -399,6 +415,12 @@ Standard errors are not available unless you fix it.")
                                  fixed.param = names(fixed.param), param.names =
                                  param.names)
 
+      if(is.na(jacobian)){
+        warning("observed information matrix is singular; passing std.err.type to ``none''")
+        std.err.type <- "none"
+        return
+      }
+      
       var.cov <- var.cov %*% jacobian %*% var.cov
       
       std.err <- diag(var.cov)
@@ -440,7 +462,7 @@ Standard errors are not available unless you fix it.")
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
                  var.cov = var.cov, fixed = unlist(fixed.param), param = param,
                  deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
-                 counts = opt$counts, message = opt$message, data = data, est = "MLE",
+                 counts = opt$counts, message = opt$message, data = data, est = "MPLE",
                  logLik = -opt$value, opt.value = opt$value, model = "Schlather", coord = coord,
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = cov.mod, cov.fun = cov.fun,
                  loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,

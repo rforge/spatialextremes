@@ -148,7 +148,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
 
   opt <- optim(start, nllh, hessian = hessian, ..., method = method)
 
-  if ((opt$convergence != 0) || (opt$value == 1.0e35) || (opt$value == init.lik)) {
+  if ((opt$convergence != 0) || (opt$value == 1.0e35)) {
     warning("optimization may not have succeeded")
 
     if (opt$convergence == 1) 
@@ -157,28 +157,36 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
 
   else opt$convergence <- "successful"
 
+  if (opt$value == init.lik){
+    warning("optimization stopped after 1 iteration. Consider tweaking the ndeps option.")
+    opt$convergenc <- "Stopped after 1 iteration"
+  }
+
   param.names <- param
   param <- c(opt$par, unlist(fixed.param))
   
   if (std.err.type != "none"){
     
-    tol <- .Machine$double.eps^0.5
-    
-    var.cov <- qr(opt$hessian, tol = tol)
-    if(var.cov$rank != ncol(var.cov$qr)){
+    var.cov <- try(solve(opt$hessian), silent = TRUE)
+
+    if(!is.matrix(var.cov)){
       warning("observed information matrix is singular; passing std.err.type to ``none''")
       std.err.type <- "none"
       return
     }
 
     else{
-      
-      var.cov <- solve(var.cov, tol = tol)
       ihessian <- var.cov
       jacobian <- .smithgrad(param, data, distVec, as.double(0), as.double(0),
                              as.double(0), fit.marge = fit.marge, std.err.type =
                              std.err.type, fixed.param = names(fixed.param),
                              param.names = param.names)
+
+      if(is.na(jacobian)){
+        warning("observed information matrix is singular; passing std.err.type to ``none''")
+        std.err.type <- "none"
+        return
+      }
       
       var.cov <- var.cov %*% jacobian %*% var.cov
       std.err <- diag(var.cov)
@@ -214,7 +222,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
     
   Sigma <- matrix(c(param["cov11"], param["cov12"], param["cov12"],
                     param["cov22"]), 2, 2)
-  iSigma <- solve(qr(Sigma))
+  iSigma <- solve(Sigma)
   
   ext.coeff <- function(posVec)
     2 * pnorm(sqrt(posVec %*% iSigma %*% posVec) / 2)
@@ -222,7 +230,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
                  var.cov = var.cov, fixed = unlist(fixed.param), param = param,
                  deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
-                 counts = opt$counts, message = opt$message, data = data, est = "MLE",
+                 counts = opt$counts, message = opt$message, data = data, est = "MPLE",
                  logLik = -opt$value, opt.value = opt$value, model = "Smith",
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = "Gaussian",
                  lik.fun = nllh, coord = coord, ihessian = ihessian, jacobian = jacobian,
@@ -390,7 +398,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
 
   opt <- optim(start, nllh, hessian = hessian, ..., method = method)
   
-  if ((opt$convergence != 0) || (opt$value == 1.0e35) || (opt$value == init.lik)) {
+  if ((opt$convergence != 0) || (opt$value == 1.0e35)) {
     warning("optimization may not have succeeded")
 
     if (opt$convergence != 0) 
@@ -399,21 +407,23 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
 
   else opt$convergence <- "successful"
 
+  if (opt$value == init.lik){
+    warning("optimization stopped after 1 iteration. Consider tweaking the ndeps option.")
+    opt$convergenc <- "Stopped after 1 iteration"
+  }
+
   param <- c(opt$par, unlist(fixed.param))
   
   if (std.err.type != "none"){
     
-    tol <- .Machine$double.eps^0.5
-    
-    var.cov <- qr(opt$hessian, tol = tol)
-    if(var.cov$rank != ncol(var.cov$qr)){
+    var.cov <- try(solve(opt$hessian), silent = TRUE)
+    if(!is.matrix(var.cov)){
       warning("observed information matrix is singular; passing std.err.type to ``none''")
       std.err.type <- "none"
       return
     }
 
     else{
-      var.cov <- solve(var.cov, tol = tol)
       ihessian <- var.cov
       jacobian <- .smithgrad(param, data, distVec, loc.dsgn.mat,
                              scale.dsgn.mat, shape.dsgn.mat,
@@ -421,6 +431,12 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
                              std.err.type, fixed.param = names(fixed.param),
                              param.names = param.names)
 
+      if(is.na(jacobian)){
+        warning("observed information matrix is singular; passing std.err.type to ``none''")
+        std.err.type <- "none"
+        return
+      }
+      
       var.cov <- var.cov %*% jacobian %*% var.cov
       std.err <- diag(var.cov)
       
@@ -462,7 +478,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
                       param["cov13"], param["cov23"], param["cov33"]),
                     3, 3)
   
-  iSigma <- solve(qr(Sigma))
+  iSigma <- solve(Sigma)
 
   ext.coeff <- function(posVec)
     2 * pnorm(sqrt(posVec %*% iSigma %*% posVec) / 2)
@@ -470,7 +486,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
                  var.cov = var.cov, fixed = unlist(fixed.param), param = param,
                  deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
-                 counts = opt$counts, message = opt$message, data = data, est = "MLE",
+                 counts = opt$counts, message = opt$message, data = data, est = "MPLE",
                  logLik = -opt$value, opt.value = opt$value, model = "Smith", coord = coord,
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = "Gaussian",
                  loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
