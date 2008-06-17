@@ -25,7 +25,7 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite,
   for (i=0;i<*nSite;i++){
     if ((scales[i] <= 0) || (shapes[i]<= -1)){
       //printf("scale GEV param. are ill-defined!\n");
-      *dns = -1.0e35;
+      *dns = MINF;
       return;
     }
   }
@@ -44,7 +44,7 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite,
   }
   
   if (flag == 1){
-    *dns = -1.0e35;
+    *dns = MINF;
     return;
   }
   
@@ -53,15 +53,12 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite,
 		   jac, frech);
     
   if (flag == 1){
-    *dns = -1.0e35;
+    *dns = MINF;
     return;
   }
 
   //Stage 2: Bivariate density computations
   *dns = lplikschlather(frech, rho, jac, *nObs, *nSite);
-
-  if (!R_FINITE(*dns))
-    *dns = -1.0e35;
 
   return;
 
@@ -117,7 +114,7 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   
   if (flag == 1){
     //printf("problem with covariance param.\n");
-    *dns = -1.0e35;
+    *dns = MINF;
     return;
   }
 
@@ -129,7 +126,7 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 
   if (flag == 1){
     //printf("problem with GEV param.\n");
-    *dns = -1.0e35;
+    *dns = MINF;
     return;
   }
 
@@ -139,14 +136,14 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
     
   if (flag == 1){
     //printf("problem with transf. to Frechet\n");
-    *dns = -1.0e35;
+    *dns = MINF;
     return;
   }
 
   //Stage 4: Bivariate density computations
   *dns = lplikschlather(frech, rho, jac, *nObs, *nSite);
 
-  if (*dns == -1.0e35){
+  if (*dns == MINF){
     //printf("problem with the pairwise lik.\n");
     return;
   }
@@ -166,9 +163,6 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   if (*shapepenalty > 0)
     *dns = *dns - penalization(shapepenmat, shapecoeff, *shapepenalty,
 			       *nshapecoeff, *npparshape);
-
-  if (!R_FINITE(*dns))
-    *dns = -1.0e35;
 
   return;
   

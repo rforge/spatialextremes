@@ -45,7 +45,7 @@ double lplikschlather(double *data, double *rho, double *jac,
 
 	if (dvecMixed <= 0){
 	  //printf("dvecMixed is erradic\n");
-	  return -1.0e35;
+	  return MINF;
 	}
 
 	//Now the final step, multiplying by Fvec and the gradient
@@ -112,7 +112,7 @@ double lpliksmith(double *data, double *mahalDist, double *jac,
 	
 	if (dvecMixed <= 0){
 	  //printf("dvecMixed is errradic\n");
-	  return -1.0e35;
+	  return MINF;
 	}
 
 	//Now the final step, multiplying by Fvec and the gradient

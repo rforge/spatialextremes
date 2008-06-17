@@ -25,7 +25,7 @@ void smithfull(double *data, double *distVec, int *nSite,
   for (i=0;i<*nSite;i++)
     if ((scales[i] <= 0) || (shapes[i] <= -1)){
       //printf("scales <= 0!!!\n");
-      *dns = -1.0e35;
+      *dns = MINF;
       return;
     }
 
@@ -35,7 +35,7 @@ void smithfull(double *data, double *distVec, int *nSite,
   
   if (flag == 1){
     //printf("Problem with mahal. dist\n");
-    *dns = -1.0e35;
+    *dns = MINF;
     return;
   }
 
@@ -45,15 +45,12 @@ void smithfull(double *data, double *distVec, int *nSite,
     
   if (flag == 1){
     //printf("problem with conversion to unit frechet\n");
-    *dns = -1.0e35;
+    *dns = MINF;
     return;
   }
   
   //Stage 3: Bivariate density computations
   *dns = lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
-
-  if (!R_FINITE(*dns))
-    *dns = -1.0e35;
 
   return;
 }
@@ -99,7 +96,7 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs,
 
   if (flag == 1){
     //printf("problem with mahal. dist\n");
-    *dns = -1.0e35;
+    *dns = MINF;
     return;
   }
 
@@ -111,7 +108,7 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs,
 
   if (flag == 1){
     //printf("problem with the GEV parameters\n");
-    *dns = -1.0e35;
+    *dns = MINF;
     return;
   }
 
@@ -121,14 +118,14 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs,
     
   if (flag == 1){
     //printf("problem with conversion to unit frechet\n");
-    *dns = -1.0e35;
+    *dns = MINF;
     return;
   }
   
   //Stage 4: Bivariate density computations
   *dns = lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
   
-  if (*dns == -1.0e35){
+  if (*dns == MINF){
     //printf("problem with the pairwise lik.\n");
     return;
   }
@@ -148,9 +145,6 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs,
   if (*shapepenalty > 0)
     *dns = *dns - penalization(shapepenmat, shapecoeff, *shapepenalty,
 			       *nshapecoeff, *npparshape);
-
-  if (!R_FINITE(*dns))
-    *dns = -1.0e35;
 
   return;
 }
