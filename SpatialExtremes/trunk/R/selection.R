@@ -1,14 +1,26 @@
 TIC.maxstab <- function(object, ...){
 
-  log.plik <- object$logLik
-  ihessian <- object$ihessian
-  jacobian <- object$jacobian
+  all.objects <- c(list(object), list(...))
+  tic <- NULL
+  for (i in 1:length(all.objects)){
 
-  if (is.null(ihessian) || is.null(jacobian))
-    return(NA)
+    object <- all.objects[[i]]
+    log.plik <- object$logLik
+    ihessian <- object$ihessian
+    jacobian <- object$jacobian
+    
+    if (is.null(ihessian) || is.null(jacobian))
+      tic <- c(tic, NA)
+    
+    else{
+      penalty <- jacobian %*% ihessian
+      
+      tic <- c(tic, -log.plik - sum(diag(penalty)))
+    }
+  }
 
-  penalty <- jacobian %*% ihessian
+  names(tic) <- as.character(sys.call())[-1]
+  tic <- tic[order(tic)]
   
-  tic <- -log.plik - sum(diag(penalty))
   return(tic)  
 }
