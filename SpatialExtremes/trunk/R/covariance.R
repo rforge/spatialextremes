@@ -14,7 +14,7 @@ covariance <- function(fitted, scale, smooth, cov.mod = "whitmat",
     stop("Invalid covariance model. ``cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp'")
   
   if (cov.mod == "whitmat"){
-    if ((smooth <= 0) || (scale <= 0) || (smooth > 171))
+    if ((smooth <= 0) || (scale <= 0) || (smooth > 50))
       stop("invalid parameter for the whittle-matern covariance function")
     
     cov.fun <- function(dist) {

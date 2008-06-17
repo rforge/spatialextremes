@@ -15,8 +15,8 @@ int whittleMatern(double *dist, int nPairs, double scale,
     return 1;
   }
   
-  if (smooth > 171){
-    //Required because gammafn is infinite
+  if (smooth > 50){
+    //Required because it could lead to infinite rho values
     //printf("smooth is too large!\n");
     return 1;
   }
@@ -28,8 +28,8 @@ int whittleMatern(double *dist, int nPairs, double scale,
       bessel_k(dist[i] / scale, smooth, 1);
 
 
-    if (!R_FINITE(rho[i]))
-      rho[i] = 1.0;
+    //if (!R_FINITE(rho[i]))
+    //  rho[i] = 1.0;
 
   }
 
