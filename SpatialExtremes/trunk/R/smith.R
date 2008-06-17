@@ -182,7 +182,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
                              std.err.type, fixed.param = names(fixed.param),
                              param.names = param.names)
 
-      if(is.na(jacobian)){
+      if(any(is.na(jacobian))){
         warning("observed information matrix is singular; passing std.err.type to ``none''")
         std.err.type <- "none"
         return
@@ -431,7 +431,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
                              std.err.type, fixed.param = names(fixed.param),
                              param.names = param.names)
 
-      if(is.na(jacobian)){
+      if(any(is.na(jacobian))){
         warning("observed information matrix is singular; passing std.err.type to ``none''")
         std.err.type <- "none"
         return

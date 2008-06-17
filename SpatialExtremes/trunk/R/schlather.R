@@ -166,7 +166,7 @@ Standard errors are not available unless you fix it.")
                                  std.err.type = std.err.type, fixed.param = names(fixed.param),
                                  param.names = param.names)
 
-      if(is.na(jacobian)){
+      if(any(is.na(jacobian))){
         warning("observed information matrix is singular; passing std.err.type to ``none''")
         std.err.type <- "none"
         return
@@ -415,7 +415,7 @@ Standard errors are not available unless you fix it.")
                                  fixed.param = names(fixed.param), param.names =
                                  param.names)
 
-      if(is.na(jacobian)){
+      if(any(is.na(jacobian))){
         warning("observed information matrix is singular; passing std.err.type to ``none''")
         std.err.type <- "none"
         return
