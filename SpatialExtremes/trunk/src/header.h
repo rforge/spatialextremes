@@ -2,6 +2,8 @@
 #include <Rmath.h>
 #include <Rinternals.h>
 
+#define MINF R_NegInf
+
 ///////////////////////////////////
 //  From schlather.c
 //
@@ -106,6 +108,12 @@ void smithgrad(double *data, double *distVec, int *nSite,
 	       int *nshapecoeff, double *loccoeff, double *scalecoeff,
 	       double *shapecoeff, double *cov11, double *cov12,
 	       double *cov22, int *fitmarge, double *grad);
+void smithgrad3d(double *data, double *distVec, int *nSite,
+		 int *nObs, double *locdsgnmat, int *nloccoeff,
+		 double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
+		 int *nshapecoeff, double *loccoeff, double *scalecoeff,
+		 double *shapecoeff, double *cov11, double *cov12, double *cov13,
+		 double *cov22, double *cov23, double *cov33, int *fitmarge, double *grad);
 void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 		   int *nObs, double *locdsgnmat, int *nloccoeff,
 		   double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,

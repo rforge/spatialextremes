@@ -9,7 +9,18 @@
   n.site <- ncol(data)
   n.obs <- nrow(data)
   n.pairs <- n.site * (n.site - 1) / 2
-      
+  dist.dim <- ncol(distVec)
+
+  cov11 <- par["cov11"]
+  cov12 <- par["cov12"]
+  cov22 <- par["cov22"]
+  
+  if (dist.dim == 3){
+    cov13 <- par["cov13"]
+    cov23 <- par["cov23"]
+    cov33 <- par["cov33"]
+  }
+        
   if (fit.marge){
 
     n.loccoeff <- ncol(loc.dsgn.mat)
@@ -20,9 +31,6 @@
     scale.idx <- which(substr(names(par), 1, 5) == "scale")
     shape.idx <- which(substr(names(par), 1, 5) == "shape")
 
-    cov11 <- par["cov11"]
-    cov12 <- par["cov12"]
-    cov22 <- par["cov22"]
     loc.param <- par[loc.idx]
     scale.param <- par[scale.idx]
     shape.param <- par[shape.idx]
@@ -32,22 +40,30 @@
     n.loccoeff <- 1
     n.scalecoeff <- 1
     n.shapecoeff <- 1
-    cov11 <- par["cov11"]
-    cov12 <- par["cov12"]
-    cov22 <- par["cov22"]
+  
     loc.param <- 1
     scale.param <- 1
     shape.param <- 1
   }
-  
-  grad <- .C("smithgrad", as.double(data), as.double(distVec), as.integer(n.site),
-             as.integer(n.obs), as.double(loc.dsgn.mat), as.integer(n.loccoeff),
-             as.double(scale.dsgn.mat), as.integer(n.scalecoeff), as.double(shape.dsgn.mat),
-             as.integer(n.shapecoeff), as.double(loc.param), as.double(scale.param),
-             as.double(shape.param), as.double(cov11), as.double(cov12),
-             as.double(cov22), fit.marge, grad = double(n.obs * length(param.names)),
-             PACKAGE = "SpatialExtremes")$grad
 
+  if (dist.dim == 2)
+    grad <- .C("smithgrad", as.double(data), as.double(distVec), as.integer(n.site),
+               as.integer(n.obs), as.double(loc.dsgn.mat), as.integer(n.loccoeff),
+               as.double(scale.dsgn.mat), as.integer(n.scalecoeff), as.double(shape.dsgn.mat),
+               as.integer(n.shapecoeff), as.double(loc.param), as.double(scale.param),
+               as.double(shape.param), as.double(cov11), as.double(cov12),
+               as.double(cov22), fit.marge, grad = double(n.obs * length(param.names)),
+               PACKAGE = "SpatialExtremes")$grad
+
+  else
+    grad <- .C("smithgrad3d", as.double(data), as.double(distVec), as.integer(n.site),
+               as.integer(n.obs), as.double(loc.dsgn.mat), as.integer(n.loccoeff),
+               as.double(scale.dsgn.mat), as.integer(n.scalecoeff), as.double(shape.dsgn.mat),
+               as.integer(n.shapecoeff), as.double(loc.param), as.double(scale.param),
+               as.double(shape.param), as.double(cov11), as.double(cov12), as.double(cov13),
+               as.double(cov22), as.double(cov23), as.double(cov33), fit.marge,
+               grad = double(n.obs * length(param.names)), PACKAGE = "SpatialExtremes")$grad
+  
   grad <- matrix(grad, nrow = n.obs, ncol = length(param.names))
 
   n.fixed <- length(fixed.param)
@@ -58,6 +74,9 @@
     
     grad <- grad[,-idx]
   }
+
+  if (any(is.na(grad)))
+    return(NA)
 
   if (jacobian){
     if (std.err.type == "score")
@@ -75,7 +94,6 @@
   }
 
   else{
-    print(colSums(grad))
     return(as.double(colSums(grad)))
   }
 }
@@ -139,6 +157,9 @@
     
     grad <- grad[,-idx]
   }
+
+  if (any(is.na(grad)))
+    return(NA)
   
   if (std.err.type == "score")
     jacobian <- var(grad) * n.obs
