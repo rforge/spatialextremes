@@ -23,14 +23,17 @@
   \begin{center}
     \LARGE SpatialExtremes: A R Package for Modelling Spatial Extremes\\
     \vspace{1em}
-    \Large Mathieu Ribatet\\
+    \Large Mathieu Ribatet$^\dag$ \and Simone Padoan$^\ast$\\
     \vspace{1em}
     Copyright \copyright{2008}\\
     \vspace{2em}
     \large
-    Chair of Statistics\\
+    $^\dag$Chair of Statistics\\
     École Polytechnique Fédérale de Lausanne\\
-    Switzerland
+    Switzerland\\
+    $^\ast$Laboratory of Environmental Fluid Mechanics and Hydrology\\
+    École Polytechnique Fédérale de Lausanne\\
+    Switzerland\\
   \end{center}
   \vspace{1cm}
   \begin{center}
@@ -81,8 +84,17 @@ vignette("SpatialExtremesGuide")
 
 \section*{Contents}
 
-This guide contains examples on the use of the
-\textbf{SpatialExtremes} package. \textbf{to be continued}
+This guide contains a few elements of theory on the modelling of
+spatial extremes as well as examples on the use of the
+\textbf{SpatialExtremes}
+package. Section~\ref{cha:an-introduction-max} gives an (light)
+introduction to max-stable processes and defines two different
+characterisations of such processes. Section~\ref{sec:fit-maxstab}
+presents the methodology used in the package to fit max-stable
+processes to data while section~\ref{cha:manip-visu-fitt} describes
+useful functions for prediction and visualizing fitted models. Details
+for the computation of the pairwise density and gradient are reported
+into the Annex~\ref{cha:dens-grad-comp}.
 
 \section*{Citing the package/guide}
 
@@ -128,9 +140,7 @@ This work has been supported by the
 \href{http://www.cces.ethz.ch/index}{Competence Center Environment and
   Sustainability} within the
 \href{http://www.cces.ethz.ch/projects/hazri/EXTREMES}{EXTREMES}
-project. I would like to thank Simone Padoan for his support while
-trying to get the ``awful'' gradient in Section
-\ref{sec:with-ordinary-gev}.
+project.
 
 \chapter{An Introduction to Max-Stable Processes}
 \label{cha:an-introduction-max}
@@ -188,12 +198,20 @@ and, for two given locations \#1 and \#2
     cov_{11} & cov_{12}\\
     cov_{12} & cov_{22}
   \end{bmatrix}
+  \quad \text{or} \quad \Sigma = 
+  \begin{bmatrix}
+    cov_{11} & cov_{12} & cov_{13}\\
+    cov_{12} & cov_{22} & cov_{23}\\
+    cov_{13} & cov_{23} & cov_{33}
+  \end{bmatrix}
+  \quad \text{and so forth}
 \end{equation*}
 where $\Delta x$ is the distance vector between location \#1 and
 location \#2.
 
 The derivation of the density is reported in section
-\ref{sec:density-computation-smith}.
+\ref{sec:density-computation-smith}. Currenlty, the package only
+handle 2 by 2 or 3 by 3 covariance matrix $\Sigma$.
 
 \section{The Schlather's Characterisation}
 \label{sec:schl-char}
@@ -242,7 +260,7 @@ by:
 \begin{equation}
   \label{eq:lplik}
   \ell_p(\mathbf{y};\psi) = \sum_{i<j} \sum_{k=1}^{n_{i,j}}
-  f(y_k^{(i)}, y_k^{(j)})
+  \log f(y_k^{(i)}, y_k^{(j)})
 \end{equation}
 where $\mathbf{y}$ is the data available on the whole region,
 $n_{i,j}$ is the number of common observations between sites $i$ and
@@ -284,17 +302,19 @@ Whittle-Matérn covariance function with scale and smooth parameters
 equal to 3 and 1.2 respectively. The locations are distributed
 uniformly on the square $[0,10]^2$.
 
-To fit a max-stable process assuming unit Fréchet all we have to do is
-to invoke:
+To fit a max-stable process assuming unit Fréchet margins, all we have
+to do is to invoke:
 <<>>=
 fitmaxstab(ms0, locations, cov.mod = "whitmat", fit.marge = FALSE)
 @ 
 
 From this output, we can see that we indeed use the Schlather's
-representation with a Whittle-Matérn covariance function. The
-convergence was successful and the estimates of the covariance
-function are accessible. Note that large deviations from the
-theoretical values are not fatal as the parameters of the
+representation with a Whittle-Matérn covariance function. The pairwise
+deviance is given and the Takeuchi's information criterion (TIC) is
+not available (NA) - see section~\ref{sec:model-selection} for more
+details. The convergence was successful and the estimates of the
+covariance function are accessible. Note that large deviations from
+the theoretical values are not fatal as the parameters of the
 Whittle-Matérn covariance function are far from orthogonal. Thus, the
 scale and smooth estimates may be totally different while leading
 (approximately) to the same covariance function.
@@ -305,6 +325,9 @@ on the process smoothness. This can be done by:
 <<>>=
 fitmaxstab(ms0, locations, cov.mod = "whitmat", smooth = 1.2, fit.marge = FALSE)
 @ 
+
+Now we can see that only the scale parameter was estimated and
+standard errors as well as the TIC are available.
 
 Despite the Whittle-Matérn is a flexible covariance function, one may
 want to consider other types of covariance functions. This is achieved
@@ -336,8 +359,8 @@ number of parameters for the covariance part.
 \section{With Unknown GEV Margins}
 \label{sec:with-unknown-gev}
 
-In practice, our observations will never distributed from a unit
-Fréchet distribution so that the previous section won't help much with
+In practice, our observations will never be drawn from a unit Fréchet
+distribution so that the previous section won't help much with
 concrete applications. One way to avoid this problem is to fit a GEV
 to each location and then transform all data to unit Fréchet. This is
 done using the \verb|gev2frech| function and the following code:
@@ -377,8 +400,7 @@ knots <- quantile(locations[,2], prob = 1:n.knots/(n.knots+1))
 y ~ rb(lat, knots = knots, degree = 3, penalty = .5)
 @
 for a penalized smoothing spline with degree 3, 5 knots and a penalty
-coefficient (or smoothing parameter) equal to 0.5. \textbf{need to
-  write an annex for the penalized smoothing splines}
+coefficient (or smoothing parameter) equal to 0.5.
 
 Let start with a simple polynomial surface. For this purpose, we need
 to simulate a max-stable process and then transform the observations
@@ -511,6 +533,34 @@ fitmaxstab(ms0, locations, cov.mod = "gauss", fit.marge = FALSE, std.err.type = 
 fitmaxstab(ms0, locations, cov.mod = "gauss", fit.marge = FALSE, std.err.type = "grad")
 @ 
 
+\section{Model Selection}
+\label{sec:model-selection}
+
+It is sometimes useful to fit several models to our data and then
+compare the models together. To this aim, the well-known Akaike
+information criterion (AIC) is often used. Because we work under
+miss-specification, AIC is not appropriate anymore. Instead, we will
+use a generalization of the Takeuchi's information
+criterion. \citet{Varin2005} show that, under miss-specification, an
+appropriate selection statistic is given by:
+\begin{equation}
+  \label{eq:TIC}
+  \mbox{TIC} = - \ell_p (\psi_p) - \mbox{tr}\left\{J H^{-1} \right\}
+\end{equation}
+In accordance with the AIC, the best model will corresponds to the one
+that minimizes equation~\eqref{eq:TIC}.
+
+In practice, one can have a look at the output of the
+\verb|fitmaxstab| function or use the \verb|TIC| function.
+
+<<>>=
+model1 <- fitmaxstab(ms0, locations, cov.mod = "gauss", fit.marge = FALSE)
+model2 <- fitmaxstab(ms0, locations, cov.mod = "powexp", fit.marge = FALSE)
+TIC(model1, model2)
+@ 
+
+Fortunately, with this simulated application, we clearly see that our
+\verb|model1| is the best model.
 
 \chapter{Manipulating and Visualising Fitted Models}
 \label{cha:manip-visu-fitt}
@@ -670,8 +720,8 @@ legend("topright", c("Fitted","Theo"), lty = 1, col = c(1,3), inset = .05)
 
 Note that one can also compute the covariance at a given distance by invoking:
 <<>>=
-rbind(covariance(fitted, dist = seq(0,100, 25))$cov.val,
-covariance(scale = 3, smooth = 1.2, cov.mod = "cauchy", dist = seq(0,100, 25))$cov.val)
+rbind(fitted = covariance(fitted, dist = seq(0,10, 3))$cov.val,
+      theo = covariance(scale = 3, smooth = 1.2, cov.mod = "cauchy", dist = seq(0,10, 3))$cov.val)
 @ 
 
 \section{Producing a map of the GEV parameters and return levels}
@@ -794,6 +844,12 @@ and, for two locations \#1 and \#2
   \begin{bmatrix}
     cov_{11} & cov_{12}\\
     cov_{12} & cov_{22}
+  \end{bmatrix}
+  \quad \text{or} \quad \Sigma = 
+  \begin{bmatrix}
+    cov_{11} & cov_{12} & cov_{13}\\
+    cov_{12} & cov_{22} & cov_{23}\\
+    cov_{13} & cov_{23} & cov_{33}
   \end{bmatrix}
 \end{equation*}
 where $\Delta x$ is the distance vector between location \#1 and
@@ -1499,7 +1555,7 @@ where $\frac{\partial A}{\partial \beta}$, $\frac{\partial B}{\partial
   D}{\partial \beta}$ and $\frac{\partial E}{\partial \beta}$ have
 been already defined in Section~\ref{sec:with-ordinary-gev}.
 
-\bibliography{biblio_ribatet}
+\bibliography{/home/ribatet/Biblio/biblio_ribatet}
 \bibliographystyle{kluwer}
 \end{document}
 
