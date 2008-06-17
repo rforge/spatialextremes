@@ -8,16 +8,19 @@ extcoeff <- function(fitted, n = 200, ...){
     A <- matrix(c(param["cov11"], param["cov12"], param["cov12"],
                   param["cov22"]), 2, 2)
     
-    eigen.values <- eigen(A)
+    eigen.values <- eigen(solve(A))
     eigen.vectors <- eigen.values$vectors
     eigen.values <- eigen.values$values
 
-    xy1 <- eigen.vectors %*% c(eigen.values[1], 0)
-    xy2 <- eigen.vectors %*% c(0, eigen.values[2])
+    r <- qnorm(.9999999)^2 / sqrt(2)
+    axis1 <- eigen.vectors %*% c(r / sqrt(eigen.values[1]), 0)
+    axis2 <- eigen.vectors %*% c(0, r / sqrt(eigen.values[2]))
+
+    x.max <- max(abs(axis1[1]), abs(axis2[1]))
+    y.max <- max(abs(axis1[2]), abs(axis2[2]))
     
-    
-    x.range <- 1.2 * c(-max(abs(xy1[1]), abs(xy2[1])), max(abs(xy1[1]), abs(xy2[1])))
-    y.range <- 1.2 * c(-max(abs(xy1[2]), abs(xy2[2])), max(abs(xy1[2]), abs(xy2[2])))
+    x.range <- 1.2 * c(-x.max, x.max)
+    y.range <- 1.2 * c(-y.max, y.max)
     
   }
 
