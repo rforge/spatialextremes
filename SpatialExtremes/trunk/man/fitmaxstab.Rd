@@ -8,7 +8,7 @@
 \usage{fitmaxstab(data,  coord, cov.mod = c("gauss", "whitmat",
 "cauchy", "powexp"), loc.form, scale.form, shape.form, fit.marge = TRUE,
 marg.cov = NULL, \dots, warn.inf = TRUE, method = "BFGS", std.err.type =
-"none", corr = FALSE)}
+"score", corr = FALSE)}
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
     one location.}

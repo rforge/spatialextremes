@@ -1,7 +1,7 @@
 fitmaxstab <- function(data, coord, cov.mod = c("gauss", "whitmat", "cauchy", "powexp"),
                        loc.form, scale.form, shape.form, fit.marge = TRUE,
                        marg.cov = NULL, ..., warn.inf = TRUE, method = "BFGS",
-                       std.err.type = "none", corr = FALSE){
+                       std.err.type = "score", corr = FALSE){
 
   if (missing(loc.form) && missing(scale.form) && missing(shape.form))
     reg.mod <- "full"
