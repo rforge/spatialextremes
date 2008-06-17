@@ -1,4 +1,5 @@
-predict.maxstab <- function(object, newdata, ...){
+predict.maxstab <- function(object, newdata, ret.per = NULL,
+                            ...){
   
   param <- object$param
   loc.form <- object$loc.form
@@ -36,6 +37,18 @@ predict.maxstab <- function(object, newdata, ...){
   ans <- cbind(loc.pred, scale.pred, shape.pred)
   colnames(ans) <- c("loc", "scale", "shape")
   ans <- cbind(data, ans)
+
+  if (!is.null(ret.per)){
+    ret.lev <- NULL
+    for (T in ret.per)
+      ret.lev <- cbind(ret.lev, .qgev(1 - 1/T, ans[,"loc"],
+                                      ans[,"scale"],
+                                      ans[,"shape"]))
+
+  colnames(ret.lev) <- paste("Q", ret.per, sep="")
+  ans <- cbind(ans, ret.lev)
+  }
+  
   return(ans)
 }
 

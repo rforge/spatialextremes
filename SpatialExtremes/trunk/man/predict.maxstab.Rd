@@ -5,13 +5,16 @@
   fitted max-stable process. 
 }
 \usage{
-\method{predict}{maxstab}(object, newdata, \dots)
+\method{predict}{maxstab}(object, newdata, ret.per = NULL, \dots)
 }
 \arguments{
   \item{object}{An object of class ``maxstab''. Most often, it will be
     the output of the function \code{\link{fitmaxstab}}.}
   \item{newdata}{An optional data frame in which to look for variables
     with which to predict. If omitted, the fitted values are used.}
+  \item{ret.per}{Numeric vector giving the return periods for which
+    return levels are computed. If \code{NULL} (default), no return
+    levels are computed.}
   \item{\dots}{further arguments passed to or from other methods.}
 }
 \value{'predict.maxstab' produces a vector of predictions or a matrix of
