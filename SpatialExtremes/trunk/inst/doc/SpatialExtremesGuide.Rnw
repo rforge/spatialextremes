@@ -96,19 +96,19 @@ useful functions for prediction and visualizing fitted models. Details
 for the computation of the pairwise density and gradient are reported
 into the Annex~\ref{cha:dens-grad-comp}.
 
-\section*{Citing the package/guide}
+% \section*{Citing the package/guide}
 
-To cite this guide or the package in publications please use the
-following bibliographic database entry.
-\begin{verbatim}
-`@Manual{your_key,
-  title = {SpatialExtremes: A R package for Modelling Spatial Extremes},
-  author = {Ribatet, M.},
-  year = {2008},
-  month = {May},
-  url = {http://cran.r-project.org/}
-}
-\end{verbatim}
+% To cite this guide or the package in publications please use the
+% following bibliographic database entry.
+% \begin{verbatim}
+% `@Manual{your_key,
+%   title = {SpatialExtremes: A R package for Modelling Spatial Extremes},
+%   author = {Ribatet, M. and Padoan, S.},
+%   year = {2008},
+%   month = {May},
+%   url = {http://cran.r-project.org/}
+% }
+% \end{verbatim}
 
 \section*{Caveat}
 
@@ -270,10 +270,12 @@ process - see Annex~\ref{cha:dens-grad-comp} for the analytical forms.
 
 Consequently, the max-stable process is fitted to data by maximizing
 the log pairwise-likelihood\footnote{This is why the fitting procedure
-  is time consuming.}. Properties of the maximum pairwise likelihood
-estimator are well known \citep{Lindsay1988,Cox2004}. In particular,
-because each pairwise score equation is unbiased, the sum of these
-score equations is unbiased and lead to consistent estimations.
+  may be time consuming with large region.}. Properties of the maximum
+composite likelihood estimator\footnote{In our case, the maximum
+  pairwise likelihood estimator} are well known
+\citep{Lindsay1988,Cox2004}. In particular, because each pairwise
+score equation is unbiased, the sum of these score equations is
+unbiased too and leads to consistent estimations.
 
 \section{Assuming Unit Fréchet Margins}
 \label{sec:simple-case-study}
@@ -281,10 +283,10 @@ score equations is unbiased and lead to consistent estimations.
 To start working with the SpatialExtremes package, let consider a
 simple case study for which each location is unit Fréchet
 distributed. M. Schlather developed a R package called
-\emph{RandomFields} to simulate spatial fields from a max-stable
-process. Consequently, all we need is to define the coordinate of each
-location as well as the parameters of the covariance function in
-equation \eqref{eq:schlather}.
+\emph{RandomFields} to simulate spatial random fields from a
+max-stable process. Consequently, all we need is to define the
+coordinate of each location as well as the parameters of the
+covariance function in equation \eqref{eq:schlather}.
 
 <<>>=
 library(RandomFields)
@@ -319,9 +321,9 @@ Whittle-Matérn covariance function are far from orthogonal. Thus, the
 scale and smooth estimates may be totally different while leading
 (approximately) to the same covariance function.
 
-When using the Whittle-Matérn covariance function, it is
-sometimes preferable to fix the smooth parameter using prior knowledge
-on the process smoothness. This can be done by:
+When using the Whittle-Matérn covariance function, it is sometimes
+preferable to fix the smooth parameter using prior knowledge on the
+process smoothness \citep{Diggle2007}. This can be done by:
 <<>>=
 fitmaxstab(ms0, locations, cov.mod = "whitmat", smooth = 1.2, fit.marge = FALSE)
 @ 
@@ -359,7 +361,7 @@ number of parameters for the covariance part.
 \section{With Unknown GEV Margins}
 \label{sec:with-unknown-gev}
 
-In practice, our observations will never be drawn from a unit Fréchet
+In practice, the observations will never be drawn from a unit Fréchet
 distribution so that the previous section won't help much with
 concrete applications. One way to avoid this problem is to fit a GEV
 to each location and then transform all data to unit Fréchet. This is
@@ -385,8 +387,8 @@ location won't be possible.
 Another way may be to fit a \emph{response surface} for the GEV
 parameters. Currently, the response surfaces allowed by the package
 are polynomial surfaces or a penalized smoothing spline\footnote{this
-  is an exclusive ``or'' i.e. a response surface with a polynomial and
-  a spline is not possible}.
+  is an exclusive ``or'' (or \emph{xor}) i.e. a response surface with
+  a polynomial and a spline is not possible}.
 
 The SpatialExtremes package defines response surfaces using the
 \emph{R formula} approach e.g.
@@ -398,9 +400,9 @@ for a polynomial surface and
 n.knots <- 5
 knots <- quantile(locations[,2], prob = 1:n.knots/(n.knots+1))
 y ~ rb(lat, knots = knots, degree = 3, penalty = .5)
-@
-for a penalized smoothing spline with degree 3, 5 knots and a penalty
-coefficient (or smoothing parameter) equal to 0.5.
+@ for a penalized smoothing spline with degree 3, 5 knots and a
+penalty coefficient (also known as the smoothing parameter) equals to
+0.5.
 
 Let start with a simple polynomial surface. For this purpose, we need
 to simulate a max-stable process and then transform the observations
@@ -470,7 +472,7 @@ fitmaxstab(ms1, locations, "powexp", loc.form = loc.form,
            scale.form = scale.form, shape.form= shape.form,
            control = list(ndeps = rep(10^-4, n.par)))
 @ 
-where \verb|ndeps| is the number of parameters to be estimated.
+where \verb|n.par| is the number of parameters to be estimated.
 
 \section{Assessing Uncertainties}
 \label{sec:assess-uncert}
@@ -487,8 +489,9 @@ following relation:
   \psi_p \sim \mathcal{N}\left(\psi, H(\psi)^{-1} J(\psi)
     H(\psi)^{-T} \right), \qquad n \rightarrow +\infty
 \end{equation}
-where $H(\psi) = \mathbb{E}[\nabla^2 \ell_p(\psi;\mathbf{Y})]$ and
-$J(\psi) = \mbox{Var}[\nabla \ell_p(\psi;\mathbf{Y})]$, where the
+where $H(\psi) = \mathbb{E}[\nabla^2 \ell_p(\psi;\mathbf{Y})]$ (the
+Hessian matrix) and $J(\psi) = \mbox{Var}[\nabla
+\ell_p(\psi;\mathbf{Y})]$ (the Jacobian matrix), where the
 expectations are with respect to the ``full'' density.
 
 In practice, to get the standard errors we need to get efficient
@@ -536,9 +539,9 @@ fitmaxstab(ms0, locations, cov.mod = "gauss", fit.marge = FALSE, std.err.type = 
 \section{Model Selection}
 \label{sec:model-selection}
 
-It is sometimes useful to fit several models to our data and then
-compare the models together. To this aim, the well-known Akaike
-information criterion (AIC) is often used. Because we work under
+It is sometimes useful to fit several models to data and then compare
+the models together. To this aim, the well-known Akaike information
+criterion (AIC) is often used. Because we work under
 miss-specification, AIC is not appropriate anymore. Instead, we will
 use a generalization of the Takeuchi's information
 criterion. \citet{Varin2005} show that, under miss-specification, an
@@ -601,7 +604,7 @@ predict(fitted)
 If one want to get estimates of the GEV parameters at an ungauged
 locations, this is done by adding a matrix giving the new
 coordinates. Be careful, if new coordinates are supplied, the column
-names of the new coordinates should match with the one of the original
+names of the new coordinates should match with the ones of the original
 coordinates. For our application, this could be done as follows:
 <<>>=
 new.coord <- cbind(3:6, 7:10)
@@ -629,6 +632,44 @@ Consequently, the extremal coefficient function $\theta(\cdot)$ is a
 natural way to know how evolves the dependence between extremes in
 space.
 
+The SpatialExtremes package proposes two way to plot the evolution of
+the extremal coefficient as the (euclidean) distance increase. The
+first one is to use an empirical estimation of the extremal
+coefficient; while the second use a parametric estimation using the
+Smith's and Schlather's models.
+
+\citet{Schlather2003} introduce a methodology to estimate non
+parametrically the extremal coefficient. The \verb|extcoeff.emp|
+function uses this methodology to get estimates for each pair of
+stations within the region and plots the evolution of these estimates
+as the distance increases. In addition, by default, a \emph{lowess}
+curve can also be plotted to help detecting trends. This is done using
+the following lines and Figure plots the resulting output.
+<<label=extcoeff.emp>>=
+n.site <- 30
+locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
+colnames(locations) <- c("lon", "lat")
+
+##Simulates a max-stable process - with unit Frechet margins
+ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
+                   param=c(0,1,0,30, .5), maxstable="extr",
+                   n = 40)
+ms0 <- t(ms0)
+
+##Plots the extremal coefficient function
+extcoeff.emp(ms0, locations)
+@ 
+
+\begin{figure}
+  \centering
+<<fig=TRUE,echo=FALSE>>=
+<<extcoeff.emp>>
+@   
+  \caption{Evolution of the (non-parametric) estimates of the extremal
+    coefficient as the distance increases.}
+  \label{fig:extcoeff.emp}
+\end{figure}
+
 The closed form of the extremal coefficient function is known for both
 Smith's and Schlather's characterisations. Namely, the function is
 given by:
@@ -647,6 +688,7 @@ The SpatialExtremes package allows to plot the evolution of the
 extremal coefficient function using the \verb|extcoeff| function - see
 Fig.~\ref{fig:extcoeff}.
 <<label=extcoeff>>=
+fitted <- fitmaxstab(ms0, locations, "whitmat", fit.marge = FALSE)
 extcoeff(fitted)
 @ 
 
@@ -728,7 +770,7 @@ rbind(fitted = covariance(fitted, dist = seq(0,10, 3))$cov.val,
 \label{sec:poroducing-map-gev}
 
 Most often, practitioners will like to have a map of the GEV
-parameters or a map of a return level with a given return period. This
+parameters or a map of return levels with a given return period. This
 is done using the \verb|map| function.
 
 To illustrate this feature, let start with a brand new application.
