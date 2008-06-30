@@ -1,5 +1,8 @@
 extcoeff <- function(fitted, n = 200, ...){
 
+  if (ncol(fitted$coord) > 2)
+    stop("It's not possible to use this function when the coordinate space has a dimension >= 2")
+  
   model <- fitted$model
   extCoeff <- fitted$ext.coeff
   param <- fitted$param
@@ -61,6 +64,9 @@ map <- function(fitted, param = c("loc", "scale", "shape", "quant"),
                 ..., ret.per = 100, ranges = apply(fitted$coord, 2, range),
                 n = 80, col = terrain.colors(n), plot.contour = TRUE){
 
+  if (ncol(fitted$coord) > 2)
+    stop("It's not possible to use this function when the coordinate space has a dimension >= 2")
+  
   x.range <- ranges[,1]
   y.range <- ranges[,2]
 
