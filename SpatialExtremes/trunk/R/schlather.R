@@ -137,8 +137,8 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
   else opt$convergence <- "successful"
 
   if (opt$value == init.lik){
-    warning("optimization stopped after 1 iteration. Consider tweaking the ndeps option.")
-    opt$convergenc <- "Stopped after 1 iteration"
+    warning("optimization stayed at the starting values. Consider tweaking the ndeps option.")
+    opt$convergenc <- "Stayed at start. val."
   }
 
   param.names <- param
@@ -385,8 +385,8 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   else opt$convergence <- "successful"
 
   if (opt$value == init.lik){
-    warning("optimization stopped after 1 iteration. Consider tweaking the ndeps option.")
-    opt$convergenc <- "Stopped after 1 iteration"
+    warning("optimization stayed at the starting values. Consider tweaking the ndeps option.")
+    opt$convergenc <- "Stayed at start. val."
   }
 
   param.names <- param

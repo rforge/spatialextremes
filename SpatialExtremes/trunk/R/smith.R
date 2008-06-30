@@ -158,8 +158,8 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
   else opt$convergence <- "successful"
 
   if (opt$value == init.lik){
-    warning("optimization stopped after 1 iteration. Consider tweaking the ndeps option.")
-    opt$convergenc <- "Stopped after 1 iteration"
+    warning("optimization stayed at the starting values. Consider tweaking the ndeps option.")
+    opt$convergenc <- "Stayed at start. val."
   }
 
   param.names <- param
@@ -408,15 +408,15 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   else opt$convergence <- "successful"
 
   if (opt$value == init.lik){
-    warning("optimization stopped after 1 iteration. Consider tweaking the ndeps option.")
-    opt$convergenc <- "Stopped after 1 iteration"
+    warning("optimization stayed at the starting values. Consider tweaking the ndeps option.")
+    opt$convergenc <- "Stayed at start. val."
   }
 
   param <- c(opt$par, unlist(fixed.param))
   
   if (std.err.type != "none"){
     
-    var.cov <- try(solve(opt$hessian), silent = TRUE)
+    var.cov <- try(solve(qr(opt$hessian)), silent = TRUE)
     if(!is.matrix(var.cov)){
       warning("observed information matrix is singular; passing std.err.type to ``none''")
       std.err.type <- "none"
