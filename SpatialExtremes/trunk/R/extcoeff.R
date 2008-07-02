@@ -1,7 +1,10 @@
 madogram <- function(data, coord, n.lag = 100,
                      gev.param = c(0, 1, 0),
                      which = c("mado", "ext"), ...){
-  
+
+   if (nrow(coord) != ncol(data))
+    stop("'data' and 'coord' don't match")
+
   n.site <- ncol(data)
   dist <- distance(coord)
 
@@ -57,6 +60,10 @@ madogram <- function(data, coord, n.lag = 100,
 }
 
 extcoeff.emp <- function(data, coord, ..., prob = 0, plot = TRUE, lowess = TRUE){
+
+   if (nrow(coord) != ncol(data))
+    stop("'data' and 'coord' don't match")
+
   z <- - 1 / log(prob)
   n.site <- ncol(data)
 
