@@ -55,7 +55,7 @@ c("mado", "ext"), \dots)
     Statistics}, 373--390.
 }
 \seealso{
-  \code{\link{excofun}}
+  \code{\link{extcoeff.emp}}
 }
 \examples{
 require(RandomFields)
