@@ -1,7 +1,7 @@
 fitmaxstab <- function(data, coord, cov.mod = c("gauss", "whitmat", "cauchy", "powexp"),
                        loc.form, scale.form, shape.form, fit.marge = TRUE,
                        marg.cov = NULL, ..., warn.inf = TRUE, method = "BFGS",
-                       std.err.type = "score", corr = FALSE){
+                       control = list(), std.err.type = "score", corr = FALSE){
 
   if (nrow(coord) != ncol(data))
     stop("'data' and 'coord' don't match")
@@ -31,22 +31,23 @@ be given for *ALL* GEV parameters")
   
   if (cov.mod == "gauss")
     fitted <- switch(reg.mod, "full" = smithfull(data, coord, ..., fit.marge = fit.marge,
-                                warn.inf = warn.inf, method = method, std.err.type =
-                                std.err.type, corr = corr),
+                                warn.inf = warn.inf, method = method, control = control,
+                                std.err.type = std.err.type, corr = corr),
                      "spatgev" = smithform(data, coord, ..., loc.form = loc.form, scale.form = scale.form,
                        shape.form = shape.form, fit.marge = fit.marge, marg.cov = marg.cov,
-                       warn.inf = warn.inf, method = method, std.err.type =
+                       warn.inf = warn.inf, method = method, control = control, std.err.type =
                        std.err.type, corr = corr))
   
   
   else
     fitted <- switch(reg.mod, "full" = schlatherfull(data, coord, cov.mod = cov.mod,
                                 ..., fit.marge = fit.marge, warn.inf = warn.inf,
-                                method = method, std.err.type = std.err.type, corr = corr),
+                                method = method, control = control, std.err.type = std.err.type,
+                                corr = corr),
                      "spatgev" = schlatherform(data, coord, cov.mod = cov.mod, ...,
                        loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                        fit.marge = fit.marge, marg.cov = marg.cov, warn.inf = warn.inf,
-                       method = method, std.err.type = std.err.type, corr = corr))
+                       method = method, control = control, std.err.type = std.err.type, corr = corr))
   
   return(fitted)
 }

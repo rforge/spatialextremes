@@ -7,8 +7,8 @@
 }
 \usage{fitmaxstab(data,  coord, cov.mod = c("gauss", "whitmat",
 "cauchy", "powexp"), loc.form, scale.form, shape.form, fit.marge = TRUE,
-marg.cov = NULL, \dots, warn.inf = TRUE, method = "BFGS", std.err.type =
-"score", corr = FALSE)}
+marg.cov = NULL, \dots, warn.inf = TRUE, method = "BFGS", control =
+list(), std.err.type = "score", corr = FALSE)}
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
     one location.}
@@ -38,6 +38,8 @@ marg.cov = NULL, \dots, warn.inf = TRUE, method = "BFGS", std.err.type =
     procedure. Must be one of \code{BFGS}, \code{Nelder-Mead},
     \code{CG}, \code{L-BFGS-B} or \code{SANN}. See \code{\link{optim}}
     for details.}
+  \item{control}{A list giving the control parameters to be passed to
+    the \code{\link{optim}} function.}
   \item{std.err.type}{Character string. Must be one of "none", "score",
     "grad". If "none", standard errors are not computed. Otherwise,
     standard errors are estimated using the sandwich estimates - see
