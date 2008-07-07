@@ -8,7 +8,8 @@
 ##be unit Frechet and only the covariance matrix is estimated.
 smithfull <- function(data, coord, start, fit.marge = FALSE,
                       ..., warn.inf = TRUE, method = "BFGS",
-                      std.err.type = "none", corr = FALSE){
+                      std.err.type = "none", control = list(),
+                      corr = FALSE){
   ##data is a matrix with each column corresponds to one location
   ##coord is a matrix giving the coordinates (1 row = 1 station)
   n.site <- ncol(data)
@@ -146,7 +147,8 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
   if (warn.inf && (init.lik == 1.0e35)) 
     warning("negative log-likelihood is infinite at starting values")
 
-  opt <- optim(start, nllh, hessian = hessian, ..., method = method)
+  opt <- optim(start, nllh, hessian = hessian, ..., method = method,
+               control = control)
 
   if ((opt$convergence != 0) || (opt$value == 1.0e35)) {
     warning("optimization may not have succeeded")
@@ -247,7 +249,8 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
 smithform <- function(data, coord, loc.form, scale.form, shape.form,
                       start, fit.marge = TRUE, marg.cov = NULL, ...,
                       warn.inf = TRUE, method = "BFGS",
-                      std.err.type = "none", corr = FALSE){
+                      std.err.type = "none", control = list(),
+                      corr = FALSE){
   ##data is a matrix with each column corresponds to one location
   ##coord is a matrix giving the coordinates (1 row = 1 station)
   n.site <- ncol(data)
@@ -396,7 +399,13 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   if (warn.inf && (init.lik == 1.0e35)) 
     warning("negative log-likelihood is infinite at starting values")
 
-  opt <- optim(start, nllh, hessian = hessian, ..., method = method)
+  if (is.null(control$parscale))
+    control$parscale <- floor(as.numeric(start))
+
+  control$parscale[control$parscale == 0] <- 1
+  
+  opt <- optim(start, nllh, hessian = hessian, ..., method = method,
+               control = control)
   
   if ((opt$convergence != 0) || (opt$value == 1.0e35)) {
     warning("optimization may not have succeeded")
