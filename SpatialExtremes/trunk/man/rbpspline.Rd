@@ -5,7 +5,7 @@
   Fits a penalized spline with radial basis functions to data.
 }
 \usage{
-rbpspline(y, x, knots, degree, penalty)
+rbpspline(y, x, knots, degree, penalty, \dots)
 }
 \arguments{
   \item{y}{The response vector.}
@@ -17,6 +17,8 @@ rbpspline(y, x, knots, degree, penalty)
   \item{penalty}{A numeric giving the penalty coefficient for the
     penalization term. If missing, \code{penalty} is determined using
     the cross-validation criterion.}
+  \item{\dots}{Additional options to be passed to the \code{\link{cv}}
+    function.}
 }
 \value{
   An object of class \code{pspline}. 

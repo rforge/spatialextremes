@@ -1,10 +1,10 @@
-rbpspline <- function(y, x, knots, degree, penalty){
+rbpspline <- function(y, x, knots, degree, penalty, ...){
 
   if ((degree %% 2) == 0)
     stop("``degree'' must be an odd number")
 
   if (missing(penalty)){
-    cv.fit <- cv(y, x, knots, degree)
+    cv.fit <- cv(y, x, knots, degree, ...)
     penalty <- cv.fit$minimum
     cv.hat <- cv.fit$objective
   }
@@ -46,7 +46,7 @@ rbpspline <- function(y, x, knots, degree, penalty){
   return(fitted)
 }
 
-cv <- function(y, x, knots, degree, pen.range = c(0, 100),
+cv <- function(y, x, knots, degree, pen.range = c(0, 1000),
                ...){
 
   if (any(pen.range < 0))
@@ -75,6 +75,9 @@ cv <- function(y, x, knots, degree, pen.range = c(0, 100),
 
   opt <- optimize(obj.fun, interval = pen.range, ...)
 
+  if (opt$value == 1000)
+    warning("the smoothing parameter estimate is equal to the upper bound.
+You should change pen.range")
   return(opt)    
 
 }

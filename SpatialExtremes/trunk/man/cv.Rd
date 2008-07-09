@@ -7,7 +7,7 @@
   criterion.
 }
 \usage{
-cv(y, x, knots, degree, pen.range = c(0, 100), \dots)
+cv(y, x, knots, degree, pen.range = c(0, 1000), \dots)
 }
 \arguments{
   \item{y}{The response vector.}
