@@ -7,7 +7,8 @@
   max-stable models.
 }
 \usage{
-posterior(n, init, prior, cov.mod, \dots, psd, burn = 0, thin = 1)
+posterior(n, init, prior, cov.mod, \dots, psd, burn = 0, thin = 1, adj =
+FALSE)
 }
 
 \arguments{
@@ -28,6 +29,8 @@ posterior(n, init, prior, cov.mod, \dots, psd, burn = 0, thin = 1)
   \item{thin}{The thinning interval (an integer); iteration \eqn{k}
     is stored only if \eqn{k} mod \code{thin} is zero (and if \eqn{k}
     greater than or equal to \code{burn}).}
+  \item{adj}{Logical. If \code{TRUE}, the posterior distribution is
+  "adjusted" to have an appropriate variance.}
 }
 \value{
   A matrix with \code{1+floor(n/thin)-burn} rows.

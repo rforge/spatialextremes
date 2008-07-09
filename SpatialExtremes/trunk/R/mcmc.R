@@ -148,6 +148,9 @@ dpostmaxstab <- function(par, prior, cov.mod, data, coord,
   dist.dim <- ncol(coord)
   n.pairs <- n.site * (n.site - 1) / 2
 
+  param.names <- names(par)
+  fixed.param <- NULL
+
   if (!(cov.mod %in% c("gauss", "whitmat","cauchy","powexp")))
     stop("``cov.mod'' must be one of 'gauss', 'whitmat', 'cauchy', 'powexp'")
 
@@ -157,8 +160,11 @@ dpostmaxstab <- function(par, prior, cov.mod, data, coord,
   else
     dist <- distance(coord)
 
+  fit.marge <- FALSE
+  
   if (!missing(loc.form) && !missing(scale.form) &&
       !missing(shape.form)){
+    fit.marge <- TRUE
     ##With our notation, formula must be of the form y ~ xxxx
     loc.form <- update(loc.form, y ~ .)
     scale.form <- update(scale.form, y ~ .)
@@ -206,10 +212,8 @@ dpostmaxstab <- function(par, prior, cov.mod, data, coord,
             as.double(par[2]), as.double(par[3]), dns = double(1), PACKAGE = "SpatialExtremes")$dns
 
       hessian <- optim(par, smithlik, control = list(maxit = 1), hessian = TRUE)$hessian
-      jacobian <- .smithgrad(par, data, distVec, loc.dsgn.mat,
-                             scale.dsgn.mat, shape.dsgn.mat,
-                             fit.marge = fit.marge, std.err.type =
-                             std.err.type, fixed.param = names(fixed.param),
+      jacobian <- .smithgrad(par, data, distVec, loc.dsgn.mat, scale.dsgn.mat, shape.dsgn.mat,
+                             fit.marge = fit.marge, fixed.param = names(fixed.param),
                              param.names = param.names)
     }
 
@@ -236,11 +240,9 @@ dpostmaxstab <- function(par, prior, cov.mod, data, coord,
             as.double(par[2]), dns = double(1), PACKAGE = "SpatialExtremes")$dns
 
       hessian <- optim(par, schlatherlik, control = list(maxit = 1), hessian = TRUE)$hessian
-      jacobian <- .schlathergrad(par, data, distVec, loc.dsgn.mat,
-                                 scale.dsgn.mat, shape.dsgn.mat,
-                                 fit.marge = fit.marge, std.err.type =
-                                 std.err.type, fixed.param = names(fixed.param),
-                                 param.names = param.names)
+      jacobian <- .schlathergrad(par, data, dist, cov.mod.num, loc.dsgn.mat, scale.dsgn.mat,
+                                 shape.dsgn.mat, fit.marge = fit.marge,
+                                 fixed.param = names(fixed.param), param.names = param.names)
     }
 
   }
@@ -256,6 +258,9 @@ dpostmaxstab <- function(par, prior, cov.mod, data, coord,
             dns = double(1), PACKAGE = "SpatialExtremes")$dns
 
       hessian <- optim(par, smithlik, control = list(maxit = 1), hessian = TRUE)$hessian
+      jacobian <- .smithgrad(par, data, distVec, as.double(1), as.double(1), as.double(1),
+                             fit.marge = fit.marge, fixed.param = names(fixed.param),
+                             param.names = param.names)
     }
 
     else{
@@ -274,11 +279,14 @@ dpostmaxstab <- function(par, prior, cov.mod, data, coord,
             as.double(par[2]), dns = double(1), PACKAGE =
             "SpatialExtremes")$dns
       
-      hessian <- optim(par, smithlik, control = list(maxit = 1), hessian = TRUE)$hessian
+      hessian <- optim(par, schlatherlik, control = list(maxit = 1), hessian = TRUE)$hessian
+      jacobian <- .schlathergrad(par, data, dist, cov.mod.num, as.double(1), as.double(1), as.double(1),
+                                 fit.marge = fit.marge, fixed.param = names(fixed.param),
+                                 param.names = param.names)
     }
   }
 
-  return(list(hessian == hessian, jacobian = jacobian))
+  return(list(hessian = hessian, jacobian = jacobian))
 }
 
 dpriormaxstab <- function(par, mean, icov){
@@ -286,7 +294,7 @@ dpriormaxstab <- function(par, mean, icov){
 }
 
 posterior <- function(n, init, prior, cov.mod, ...,
-                      psd, burn = 0, thin = 1){
+                      psd, burn = 0, thin = 1, adj = FALSE){
 
   np <- length(prior[[1]])
   param <- names(prior[[1]])
@@ -308,10 +316,14 @@ posterior <- function(n, init, prior, cov.mod, ...,
   ar <- matrix(ar, ncol = np+1, byrow = TRUE, dimnames = ardn)
 
   if (adj){
-    theta.hat <- apply(mc, 2, median)
+
+    if (burn > 0)
+      theta.hat <- apply(mc[-(1:burn),], 2, median)
+
+    else
+      theta.hat <- apply(mc, 2, median)
     
-    hessian <- .hessianpostmaxstab(par, cov.mod, data, coord,
-                                   loc.form, scale.form, shape.form, ...)
+    hessian <- .hessianpostmaxstab(theta.hat, cov.mod, ...)
     jacobian <- hessian$jacobian
     hessian <- hessian$hessian
 
@@ -319,13 +331,17 @@ posterior <- function(n, init, prior, cov.mod, ...,
     ihessian <- chol2inv(M)
     Mstar <- ihessian %*% jacobian %*% ihessian
     A <- solve(M) %*% Mstar
-    
+
+    mc.adj <- mc
     for (i in 1:nrow(mc))
-      ar[i,] <- theta.hat + A %*% (ar[i,] - theta.hat)
+      mc.adj[i,] <- theta.hat + A %*% (mc.adj[i,] - theta.hat)
     
   }
+
+  else
+    mc.adj <- NULL
   
-  structure(mc, ar = ar)
+  structure(list(mc = mc, mc.adj = mc.adj), ar = ar)
 }
 
 prior <- function(mean, cov){
