@@ -75,7 +75,7 @@ cv <- function(y, x, knots, degree, pen.range = c(0, 1000),
 
   opt <- optimize(obj.fun, interval = pen.range, ...)
 
-  if (opt$value == 1000)
+  if (opt$minimum == 1000)
     warning("the smoothing parameter estimate is equal to the upper bound.
 You should change pen.range")
   return(opt)    
