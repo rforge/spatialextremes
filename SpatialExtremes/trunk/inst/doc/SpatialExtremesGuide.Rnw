@@ -21,9 +21,9 @@
 \begin{titlepage}
   \vspace*{2cm}
   \begin{center}
-    \LARGE SpatialExtremes: A R Package for Modelling Spatial Extremes\\
+    \LARGE A User's Guide to the SpatialExtremes Package\\
     \vspace{1em}
-    \Large Mathieu Ribatet$^\dag$ \and Simone Padoan$^\ast$\\
+    \Large Mathieu Ribatet$^\dag$ Simone Padoan$^\ast$\\
     \vspace{1em}
     Copyright \copyright{2008}\\
     \vspace{2em}
@@ -35,7 +35,7 @@
     École Polytechnique Fédérale de Lausanne\\
     Switzerland\\
   \end{center}
-  \vspace{1cm}
+  \hfill
   \begin{center}
 <<echo=FALSE,fig=TRUE>>=
 library(SpatialExtremes)
@@ -44,6 +44,7 @@ image(volcano, col = terrain.colors(100), xaxt = "n", yaxt="n")
 contour(volcano, add = TRUE)
 @ 
   \end{center}
+  \vspace{2em}
 \end{titlepage}
 
 
@@ -482,12 +483,12 @@ fitted by maximizing the pairwise likelihood instead of the ``full''
 likelihood, the model is \emph{misspecified}. Consequently, the
 maximum pairwise likelihood estimator is still asymptotically normally
 distributed but with a different asymptotic covariance matrix. Namely,
-the maximum pairwise likelihood estimator $\psi_p$ satisfies the
+the maximum pairwise likelihood estimator $\hat{\psi}_p$ satisfies the
 following relation:
 \begin{equation}
   \label{eq:lplikAsymp}
-  \psi_p \sim \mathcal{N}\left(\psi, H(\psi)^{-1} J(\psi)
-    H(\psi)^{-T} \right), \qquad n \rightarrow +\infty
+  \hat{\psi}_p \sim \mathcal{N}\left(\psi, H(\psi)^{-1} J(\psi)
+    H(\psi)^{-1} \right), \qquad n \rightarrow +\infty
 \end{equation}
 where $H(\psi) = \mathbb{E}[\nabla^2 \ell_p(\psi;\mathbf{Y})]$ (the
 Hessian matrix) and $J(\psi) = \mbox{Var}[\nabla
@@ -622,9 +623,9 @@ margin, the extremal coefficient $\theta(||x_1 - x_2||)$ satisfies:
 \begin{equation}
   \label{eq:extcoeff}
   \Pr\left[Z(x_1) \leq z, Z(x_2) \leq z\right] = \exp\left(-
-    \frac{\theta(||x_1 - x_2||)}{z} \right)
+    \frac{\theta(x_1 - x_2)}{z} \right)
 \end{equation}
-where $1 \leq \theta(||x_1 - x_2||) \leq 2$ with the lower and upper
+where $1 \leq \theta(x_1 - x_2) \leq 2$ with the lower and upper
 bounds corresponding to complete dependence and independence between
 locations $x_1$ and $x_2$.
 
@@ -676,7 +677,7 @@ given by:
 
 \bigskip
 \begin{tabular}{ll}
-  \textbf{Smith} & $\theta(||x_1 - x_2||) = 2
+  \textbf{Smith} & $\theta(x_1 - x_2) = 2
   \Phi\left(\frac{\sqrt{(x_1 - x_2)^T \Sigma^-1 (x_1 - x_2)}}{2}
   \right)$\\
   \textbf{Schlather} & $\theta(||x_1 - x_2||) = 1 + \sqrt{\frac{1 -
@@ -1597,7 +1598,7 @@ where $\frac{\partial A}{\partial \beta}$, $\frac{\partial B}{\partial
   D}{\partial \beta}$ and $\frac{\partial E}{\partial \beta}$ have
 been already defined in Section~\ref{sec:with-ordinary-gev}.
 
-\bibliography{/home/ribatet/Biblio/biblio_ribatet}
+\bibliography{/home/ribatet/Documents/Biblio/biblio_ribatet}
 \bibliographystyle{kluwer}
 \end{document}
 
