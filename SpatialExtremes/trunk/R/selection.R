@@ -15,7 +15,7 @@ TIC.maxstab <- function(object, ...){
     else{
       penalty <- jacobian %*% ihessian
       
-      tic <- c(tic, -log.plik - sum(diag(penalty)))
+      tic <- c(tic, -2 * log.plik - 2 * sum(diag(penalty)))
     }
   }
 
