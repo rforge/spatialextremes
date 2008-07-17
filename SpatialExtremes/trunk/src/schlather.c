@@ -13,14 +13,6 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite,
   rho = (double *)R_alloc(nPairs, sizeof(double));
   frech = (double *)R_alloc(*nSite * *nObs, sizeof(double));
 
-   for (i=0;i<(*nSite * *nObs);i++){
-    jac[i] = 0.;
-    frech[i] = 0.;
-  }
-
-  for (i=0;i<nPairs;i++)
-    rho[i] = 0.;
-
   //Some preliminary steps: Valid points?
   for (i=0;i<*nSite;i++){
     if ((scales[i] <= 0) || (shapes[i]<= -1)){
@@ -85,20 +77,6 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   shapes = (double *)R_alloc(*nSite, sizeof(double));
   frech = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   
-  for (i=0;i<(*nSite * *nObs);i++){
-    jac[i] = 0.;
-    frech[i] = 0.;
-  }
-
-  for (i=0;i<nPairs;i++)
-    rho[i] = 0.;
-
-  for (i=0;i<*nSite;i++){
-    locs[i] = 0.;
-    scales[i] = 0.;
-    shapes[i] = 0.;
-  }
-
   //Stage 1: Compute the covariance at each location
   switch (*covmod){
   case 1:
