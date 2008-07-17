@@ -165,7 +165,7 @@ fitmaxstab(ms1, locations, "gauss", loc.form, scale.form,
 
 ##  3- without any spatial model for the GEV parameters
 ## Be careful this could be *REALLY* time consuming
-\dontrun{fitmaxstab(ms1, locations, "schlather")}
+\dontrun{fitmaxstab(ms1, locations, "whitmat")}
 
 ##  4- Fixing the smooth parameter of the Whittle-Matern family
 ##     to 0.5 - e.g. considering exponential family. We suppose the date
