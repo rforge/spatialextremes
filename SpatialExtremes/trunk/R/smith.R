@@ -102,30 +102,12 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
       start <- as.list(unlist(list(loc = locs, scale = scales, shape = shapes)))
     }
 
-    exco.hat <- extcoeff.emp(data, coord, plot = FALSE)[,"ext.coeff"]
-    sigma.init <- matrix(0, dist.dim, dist.dim)
-
-    for (i in 1:n.pair)
-      sigma.init <- solve(qnorm(exco.hat[i]/ 2)^2 *
-                          (1 / distVec[i,]) %*%  t(1 / distVec[i,])) +
-                            sigma.init
-
-    print(sigma.init)
-    sigma.init <- sigma.init / n.pair
-    print(sigma.init)
-    sigma.init <- solve(sigma.init)
-
-    print(sigma.init)
-    
     if (dist.dim == 2)
-      start <- c(list(cov11 = sigma.init[1,1], cov12 = sigma.init[1,2],
-                      cov22 = sigma.init[2,2]), start)
-
-    else
-      start <- c(list(cov11 = sigma.init[1,1], cov12 = sigma.init[1,2],
-                      cov13 = sigma.init[1,3], cov22 = sigma.init[2,2],
-                      cov23 = sigma.init[2,3], cov33 = sigma.init[3,3]), start)
+      start <- c(list(cov11 = 1, cov12 = 0,cov22 = 1), start)
     
+    else      
+      start <- c(list(cov11 = 1, cov12 = 0, cov13 = 0, cov22 = 1,
+                      cov23 = 0, cov33 = 1), start)
     
     start <- start[!(param %in% names(list(...)))]
   }
