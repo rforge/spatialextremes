@@ -315,13 +315,18 @@ posterior <- function(n, init, prior, cov.mod, ...,
   ardn <- list(c("acc.rates","ext.rates"), c(param,"total"))
   ar <- matrix(ar, ncol = np+1, byrow = TRUE, dimnames = ardn)
 
+  if (burn > 0)
+    mc <- mc[-(1:burn),]
+  
   if (adj){
 
-    if (burn > 0)
-      theta.hat <- apply(mc[-(1:burn),], 2, median)
+    find.mod <- function(x){
+      dens.hat <- density(x)
+      idx <- which.max(dens.hat$y)
+      return(dens.hat$x[idx])
+    }
 
-    else
-      theta.hat <- apply(mc, 2, median)
+    theta.hat <- apply(mc, 2, find.mod)
     
     hessian <- .hessianpostmaxstab(theta.hat, cov.mod, ...)
     jacobian <- hessian$jacobian
@@ -330,6 +335,8 @@ posterior <- function(n, init, prior, cov.mod, ...,
     M <- chol(hessian)
     ihessian <- chol2inv(M)
     Mstar <- ihessian %*% jacobian %*% ihessian
+    Mstar <- chol(Mstar)
+    
     A <- solve(M) %*% Mstar
 
     mc.adj <- mc

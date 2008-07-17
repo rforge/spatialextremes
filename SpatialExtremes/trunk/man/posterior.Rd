@@ -72,6 +72,6 @@ attributes(mc)$ar
 
 ## 4- Using coda for the trace plots
 require(coda)
-plot(mcmc(mc))
+plot(mcmc(mc$mc))
 }
 \keyword{models}
