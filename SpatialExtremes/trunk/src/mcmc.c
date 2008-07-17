@@ -3,7 +3,7 @@
 SEXP gibbs(SEXP n, SEXP np, SEXP thin, SEXP init,
 	   SEXP propsd, SEXP f, SEXP env){
 
-  int i,j,k,nr;
+  int i,j,k,nr, l = 0;
   int nn = INTEGER(n)[0], nnp = INTEGER(np)[0], thinn = INTEGER(thin)[0];
   double prop, acc_prob, post_ratio;
   double *crow, *prow, dpst_lower, dpst_upper;
@@ -48,7 +48,7 @@ SEXP gibbs(SEXP n, SEXP np, SEXP thin, SEXP init,
       
       post_ratio = exp(dpst_upper - dpst_lower);
       
-      if (!R_FINITE(dpst_upper))
+      if (dpst_upper == MINF)
         REAL(nex)[j] = REAL(nex)[j] + 1;
 
       acc_prob = fmin2(1.0, post_ratio);
@@ -66,12 +66,14 @@ SEXP gibbs(SEXP n, SEXP np, SEXP thin, SEXP init,
       else crow[j] = prow[j];
     }
 
-    if( ((i+1) % thinn) == 0)
-      for(k=0;k<nnp;k++)
-	REAL(mc)[(i+1)/thinn * nnp + k] = crow[k];
+    if( ((i+1) % thinn) == 0){
+      l++;
+      for(j=0;j<nnp;j++)
+	REAL(mc)[l * nnp + j] = crow[j];
+    }
     
-    for (k=0;k<nnp;k++)
-      prow[k] = crow[k];
+    for (j=0;j<nnp;j++)
+      prow[j] = crow[j];
   }
 
   PutRNGstate();
