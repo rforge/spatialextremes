@@ -359,7 +359,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   if (missing(start)) {
 
     start <- .start.smith(data, coord, loc.model, scale.model,
-                          shape.model)
+                          shape.model, method = method)
     
     start <- start[!(param %in% names(list(...)))]
   
@@ -399,10 +399,8 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
     warning("negative log-likelihood is infinite at starting values")
 
   if (is.null(control$parscale))
-    control$parscale <- floor(as.numeric(start))
+    control$parscale <- .define.parscale(nllh, start, fixed.param, init.lik)
 
-  control$parscale[control$parscale == 0] <- 1
-  
   opt <- optim(start, nllh, hessian = hessian, ..., method = method,
                control = control)
   

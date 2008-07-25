@@ -334,8 +334,8 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
 
   if (missing(start)) {
 
-    start <- .start.schlather(data, coord, loc.model, scale.model,
-                              shape.model)
+    start <- .start.schlather(data, coord, cov.mod, loc.model, scale.model,
+                              shape.model, method = method)
     
     start <- start[!(param %in% names(list(...)))]
   
