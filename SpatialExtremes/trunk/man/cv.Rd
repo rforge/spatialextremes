@@ -7,7 +7,7 @@
   criterion.
 }
 \usage{
-cv(y, x, knots, degree, pen.range = c(0, 1000), \dots)
+cv(y, x, knots, degree, plot = TRUE, n.points = 150, \dots)
 }
 \arguments{
   \item{y}{The response vector.}
@@ -16,15 +16,18 @@ cv(y, x, knots, degree, pen.range = c(0, 1000), \dots)
     observation.}
   \item{knots}{A vector givint the coordinates of the knots.}
   \item{degree}{The degree of the penalized smoothing spline.}
-  \item{pen.range}{A numeric vector giving the lower and upper bound for
-    which the cross validation has to be computed.}
-  \item{\dots}{Options to be passed to the \code{\link{optimize}}
+  \item{plot}{Logical. If \code{TRUE} (default), the evolution of the CV
+    score as the penalty increases is plotted.}
+  \item{n.points}{A numeric giving the number of CV computations needed
+    to produce the plot.}
+  \item{\dots}{Options to be passed to the \code{\link{nlm}}
     function.}
 }
 \value{
-  A list with components 'minimum' and 'objective' which give the
-  location of the minimum and the value of the cross-validation
-  criterion at that point.
+  A list with components 'penalty', 'cv' and 'nlm.code' which give the
+  location of the minimum, the value of the cross-validation
+  criterion at that point and the code returned by the \code{link{nlm}}
+  function - useful to assess for convergence issues.
 }
 \details{
   For every linear smoother e.g. \eqn{\hat{y} = S_\lambda y}{y.hat =

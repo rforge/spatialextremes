@@ -4,13 +4,19 @@ rbpspline <- function(y, x, knots, degree, penalty, ...){
     stop("``degree'' must be an odd number")
 
   if (missing(penalty)){
-    cv.fit <- cv(y, x, knots, degree, ...)
-    penalty <- cv.fit$minimum
-    cv.hat <- cv.fit$objective
+    cv.fit <- cv(y, x, knots, degree, plot = FALSE, ...)
+    penalty <- cv.fit$penalty
+    cv.hat <- cv.fit$cv
   }
 
   else
     cv.hat <- NA
+
+  if (is.null(dim(x))){
+    idx <- order(x)
+    x <- x[idx]
+    y <- y[idx]
+  }
 
   dsgn.mat <- rb(x, degree = degree, knots = knots,
                  penalty = penalty)
@@ -36,8 +42,8 @@ rbpspline <- function(y, x, knots, degree, penalty, ...){
   rank <- sum(eigen(smooth.mat, only.values = TRUE)$values != 0)
   
   
-  fitted <- list(x = x, y = y, penalty = penalty, knots = knots,
-                 degree = degree, fitted.values = fitted.values,
+  fitted <- list(x = x, obs = y, penalty = penalty, knots = knots,
+                 degree = degree, y = fitted.values,
                  dsgn.mat = dsgn.mat, pen.mat = pen.mat, cv = cv.hat,
                  smooth.mat = smooth.mat, df = df, res.df = res.df,
                  rank = rank, beta = beta, call = match.call())
@@ -46,11 +52,7 @@ rbpspline <- function(y, x, knots, degree, penalty, ...){
   return(fitted)
 }
 
-cv <- function(y, x, knots, degree, pen.range = c(0, 1000),
-               ...){
-
-  if (any(pen.range < 0))
-    stop("penalty term cannot be negative. Set an appropriate ``pen.range''")
+cv <- function(y, x, knots, degree, plot = TRUE, n.points = 150, ...){
 
   dsgn.mat <- rb(x, degree = degree, knots = knots, penalty = NULL)
   pen.mat <- dsgn.mat$pen.mat
@@ -66,6 +68,10 @@ cv <- function(y, x, knots, degree, pen.range = c(0, 1000),
   b <- t(A) %*% y
   
   obj.fun <- function(penalty){
+
+    if (penalty < 0)
+      return(1e6)
+
     fitted.values <- A %*% (b / (1 + penalty^degree * svd.mat$d))
     smooth.mat <- A %*% diag(1 / (1 + penalty^degree * svd.mat$d)) %*% t(A)
     
@@ -73,22 +79,28 @@ cv <- function(y, x, knots, degree, pen.range = c(0, 1000),
     return(cv)
   }
 
-  opt <- optimize(obj.fun, interval = pen.range, ...)
+  opt <- nlm(obj.fun, 500, ...)
 
-  if (opt$minimum == 1000)
-    warning("the smoothing parameter estimate is equal to the upper bound.
-You should change pen.range")
-  return(opt)    
+  if (opt$code >= 3)
+    warning("Optimization may have not succeeded")
+
+  if (plot){
+    cv.val <- NULL
+    lambda.vals <- seq(0, 2 * opt$estimate, length = n.points)
+    for (lambda in lambda.vals)
+      cv.val <- c(cv.val, obj.fun(lambda))
+
+    cv.val[cv.val == 1e6] <- NA
+         
+    plot(lambda.vals, cv.val, xlab = expression(lambda), ylab = "CV",
+         type = "l")
+  }
+  
+  return(list(cv = opt$minimum, penalty = opt$estimate, nlm.code = opt$code))    
 
 }
 
 rb <- function(..., knots, degree, penalty){
-
-  ##vars <- as.list(substitute(list(...)))[-1]
-
-  ##data <- NULL
-  ##for (i in 1:length(vars))
-  ##  data <- cbind(data, eval(vars[[i]]))
 
   data <- cbind(...)
     
@@ -128,9 +140,9 @@ rb <- function(..., knots, degree, penalty){
   X1 <- X1^degree
   dsgn.mat <- cbind(X0, X1)
 
-  pen.mat <- matrix(0, nrow = dim(dsgn.mat)[2],
-                    ncol = dim(dsgn.mat)[2])
-  pen.mat[-(1:n.ppar),-(1:n.ppar)] <- as.matrix(dist(knots, upper = TRUE, diag = TRUE))^degree
+  pen.mat <- matrix(0, nrow = dim(dsgn.mat)[2], ncol = dim(dsgn.mat)[2])
+  K <- as.matrix(dist(knots, upper = TRUE, diag = TRUE))^degree
+  pen.mat[-(1:n.ppar),-(1:n.ppar)] <- t(sqrt(K)) %*% sqrt(K)
 
   dsgn.mat <- as.matrix(dsgn.mat)
   pen.mat <- as.matrix(pen.mat)
