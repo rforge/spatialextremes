@@ -1,5 +1,5 @@
 .start.smith <- function(data, coord, loc.model, scale.model, shape.model,
-                         print.start.values = FALSE){
+                         print.start.values = FALSE, method = "BFGS"){
 
   if (print.start.values)
     cat("Computing appropriate starting values\n")
@@ -15,7 +15,7 @@
     data[,i] <- gev2frech(data[,i], loc[i], scale[i], shape[i])
   }
 
-  covs <- smithfull(data, coord, method = "BFGS", std.err.type = "none")$param
+  covs <- smithfull(data, coord, method = method, std.err.type = "none")$param
   
   locCoeff <- loc.model$init.fun(loc)
   scaleCoeff <- scale.model$init.fun(scale)
@@ -24,7 +24,7 @@
   locCoeff[is.na(locCoeff)] <- 0
   scaleCoeff[is.na(scaleCoeff)] <- 0
   shapeCoeff[is.na(shapeCoeff)] <- 0
-
+  
   ##To be sure that the scale parameter is always positive at starting
   ##values
   scales.hat <- scale.model$dsgn.mat %*% scaleCoeff
@@ -51,8 +51,8 @@
 }
 
 
-.start.schlather <- function(data, coord, loc.model, scale.model, shape.model,
-                             print.start.values = FALSE){
+.start.schlather <- function(data, coord, cov.mod, loc.model, scale.model, shape.model,
+                             print.start.values = FALSE, method = "BFGS"){
 
   if (print.start.values)
     cat("Computing appropriate starting values\n")
@@ -83,7 +83,8 @@
   if (any(scales.hat <= 0))
     scaleCoeff[1] <- scaleCoeff[1] - min(scales.hat) + .1
     
-  cov.param <- schlatherfull(data, coord, method = "BFGS", std.err.type = "none")$param
+  cov.param <- schlatherfull(data, coord, cov.mod = cov.mod, method = method,
+                             std.err.type = "none")$param
   
   start <- as.list(cov.param)
 
