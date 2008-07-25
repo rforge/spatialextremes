@@ -1598,7 +1598,7 @@ where $\frac{\partial A}{\partial \beta}$, $\frac{\partial B}{\partial
   D}{\partial \beta}$ and $\frac{\partial E}{\partial \beta}$ have
 been already defined in Section~\ref{sec:with-ordinary-gev}.
 
-\bibliography{/home/ribatet/Documents/Biblio/biblio_ribatet}
+\bibliography{references}
 \bibliographystyle{kluwer}
 \end{document}
 
