@@ -215,7 +215,8 @@ scale.form <- y ~ rb(lat, knots = knots, degree = 3, penalty = .5)
 shape.form <- y ~ rb(lon, knots = knots2, degree = 3, penalty = .5)
 
 fitmaxstab(ms1, locations, "gauss", loc.form, scale.form, shape.form,
-                   control = list(ndeps = rep(1e-4, 24), trace = 10))
+                   control = list(ndeps = rep(1e-4, 24), trace = 10),
+           std.err.type = "none")
 }
 \author{Mathieu Ribatet}
 \keyword{htest}
