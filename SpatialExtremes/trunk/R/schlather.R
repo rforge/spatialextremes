@@ -374,11 +374,6 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   if (warn.inf && (init.lik == 1.0e35)) 
     warning("negative log-likelihood is infinite at starting values")
 
-  if (is.null(control$parscale))
-    control$parscale <- floor(as.numeric(start))
-
-  control$parscale[control$parscale == 0] <- 1
-  
   opt <- optim(start, nllh, hessian = hessian, ..., method = method,
                control = control)
   

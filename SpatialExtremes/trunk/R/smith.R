@@ -103,11 +103,11 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
     }
 
     if (dist.dim == 2)
-      start <- c(list(cov11 = 1, cov12 = 0,cov22 = 1), start)
+      start <- c(list(cov11 = 1, cov12 = 0.0001,cov22 = 1), start)
     
     else      
-      start <- c(list(cov11 = 1, cov12 = 0, cov13 = 0, cov22 = 1,
-                      cov23 = 0, cov33 = 1), start)
+      start <- c(list(cov11 = 1, cov12 = 0.0001, cov13 = 0.0001, cov22 = 1,
+                      cov23 = 0.0001, cov33 = 1), start)
     
     start <- start[!(param %in% names(list(...)))]
   }
@@ -397,9 +397,6 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   init.lik <- do.call("nllh", start.arg)
   if (warn.inf && (init.lik == 1.0e35)) 
     warning("negative log-likelihood is infinite at starting values")
-
-  if (is.null(control$parscale))
-    control$parscale <- .define.parscale(nllh, start, fixed.param, init.lik)
 
   opt <- optim(start, nllh, hessian = hessian, ..., method = method,
                control = control)
