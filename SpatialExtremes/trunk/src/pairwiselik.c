@@ -43,13 +43,15 @@ double lplikschlather(double *data, double *rho, double *jac,
 	dvecMixed = (1 - R_pow_di(rho[currentPair], 2)) / 2 / R_pow_di(c1, 3) + 
 	  dvecM1 * dvecM2;
 
-	if (dvecMixed <= 0){
+	dvecMixed = log(dvecMixed);
+
+	if (!R_FINITE(dvecMixed)){
 	  //printf("dvecMixed is erradic\n");
 	  return MINF;
 	}
 
 	//Now the final step, multiplying by Fvec and the gradient
-	dvecMixed = log(dvecMixed) + lFvec +
+	dvecMixed = dvecMixed + lFvec +
 	  jac[k + i * nObs] + jac[k + j * nObs];
 
 	dns = dns + dvecMixed;
@@ -89,7 +91,7 @@ double lpliksmith(double *data, double *mahalDist, double *jac,
 	dnormc2 = dnorm(c2, 0., 1., 0);
 	pnormc1 = pnorm(c1, 0., 1., 1, 0);
 	pnormc2 = pnorm(c2, 0., 1., 1, 0);
-	
+
 	//It's the log of the joint CDF
 	lFvec = -pnormc1 / data[k + i * nObs] - pnormc2 / data[k + j * nObs];
 
@@ -112,16 +114,27 @@ double lpliksmith(double *data, double *mahalDist, double *jac,
 	  data[k + j * nObs] + c1 * dnormc2 / data2Square / mahalSquare /
 	  data[k + i * nObs];
 	
-	if (dvecMixed <= 0){
+	dvecMixed = log(dvecMixed);
+
+	if (!R_FINITE(dvecMixed)){
 	  //printf("dvecMixed is errradic\n");
 	  return MINF;
 	}
 
 	//Now the final step, multiplying by Fvec and the gradient
-	dvecMixed = log(dvecMixed) + lFvec +
+	dvecMixed = dvecMixed + lFvec +
 	  jac[k + i * nObs] + jac[k + j * nObs];
 
 	dns = dns +  dvecMixed;
+
+	if (!R_FINITE(dns)){
+	  printf("log(dvecMixed) = %f\n", dvecMixed);
+	  printf("lFvec = %f\n", lFvec);
+	  printf("jac[k + j * nObs] = %f\n", jac[k + j * nObs]);
+	  printf("jac[k + j * nObs] = %f\n", jac[k + j * nObs]);
+	}
+
+	
       }
     }
   }
