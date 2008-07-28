@@ -6,11 +6,13 @@
   generalised Pareto distribution to data using maximum likelihood.
 }
 \usage{
-gevmle(x, method = "BFGS")
-gpdmle(x, threshold, method = "BFGS")
+gevmle(x, \dots, method = "BFGS")
+gpdmle(x, \dots, threshold, method = "BFGS")
 }
 \arguments{
   \item{x}{Numeric vector of observations}
+  \item{\dots}{Optional arguments to be passed to the
+    \code{\link{optim}} function.}
   \item{threshold}{Numeric. The threshold value.}
   \item{method}{The numerical optimisation method to be used.}  
 }
