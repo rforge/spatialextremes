@@ -36,6 +36,7 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite,
   }
   
   if (flag == 1){
+    //printf("covariance is singular!\n");
     *dns = MINF;
     return;
   }
@@ -45,6 +46,7 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite,
 		   jac, frech);
     
   if (flag == 1){
+    //printf("transformation to unit Frechet erradic!\n");
     *dns = MINF;
     return;
   }

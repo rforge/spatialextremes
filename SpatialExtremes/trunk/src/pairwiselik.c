@@ -80,11 +80,11 @@ double lpliksmith(double *data, double *mahalDist, double *jac,
       currentPair++;
       
       for (k=0;k<nObs;k++){
-	c1 = (log(data[k + j * nObs]) - log(data[k + i * nObs])) /
+	c1 = log(data[k + j * nObs] / data[k + i * nObs]) /
 	  mahalDist[currentPair] + mahalDist[currentPair] / 2;
 	c2 = mahalDist[currentPair] - c1;
 	data1Square = R_pow_di(data[k + i * nObs], 2);
-	data2Square = R_pow_di(data[k + i * nObs], 2);
+	data2Square = R_pow_di(data[k + j * nObs], 2);
 	mahalSquare = R_pow_di(mahalDist[currentPair], 2);
 
 	dnormc1 = dnorm(c1, 0., 1., 0);
@@ -117,7 +117,7 @@ double lpliksmith(double *data, double *mahalDist, double *jac,
 	dvecMixed = log(dvecMixed);
 
 	if (!R_FINITE(dvecMixed)){
-	  //printf("dvecMixed is errradic\n");
+	  //printf("dvecMixed is errradic: dvecMixed = %f\n", dvecMixed);
 	  return MINF;
 	}
 
@@ -127,14 +127,6 @@ double lpliksmith(double *data, double *mahalDist, double *jac,
 
 	dns = dns +  dvecMixed;
 
-	if (!R_FINITE(dns)){
-	  printf("log(dvecMixed) = %f\n", dvecMixed);
-	  printf("lFvec = %f\n", lFvec);
-	  printf("jac[k + j * nObs] = %f\n", jac[k + j * nObs]);
-	  printf("jac[k + j * nObs] = %f\n", jac[k + j * nObs]);
-	}
-
-	
       }
     }
   }

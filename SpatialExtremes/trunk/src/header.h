@@ -2,7 +2,7 @@
 #include <Rmath.h>
 #include <Rinternals.h>
 
-#define MINF -1.0e35
+#define MINF -1.0e120
 
 ///////////////////////////////////
 //  From schlather.c
