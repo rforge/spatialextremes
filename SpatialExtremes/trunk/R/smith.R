@@ -102,12 +102,16 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
       start <- as.list(unlist(list(loc = locs, scale = scales, shape = shapes)))
     }
 
-    if (dist.dim == 2)
-      start <- c(list(cov11 = 1, cov12 = 0.0001,cov22 = 1), start)
+    if (dist.dim == 2){
+      med <- apply(coord, 2, median)
+      start <- c(list(cov11 = med[1], cov12 = 0, cov22 = med[2]), start)
+    }
     
-    else      
-      start <- c(list(cov11 = 1, cov12 = 0.0001, cov13 = 0.0001, cov22 = 1,
-                      cov23 = 0.0001, cov33 = 1), start)
+    else{
+      med <- apply(coord, 2, median)
+      start <- c(list(cov11 = med[1], cov12 = 0, cov13 = 0, cov22 = med[2],
+                      cov23 = 0, cov33 = med[3]), start)
+    }
     
     start <- start[!(param %in% names(list(...)))]
   }
