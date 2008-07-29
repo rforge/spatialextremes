@@ -1,6 +1,6 @@
 #include "header.h"
 
-int whittleMatern(double *dist, int nPairs, double scale,
+int whittleMatern(double *dist, int nPairs, double sill, double scale,
 		   double smooth, double *rho){
 
   //This function computes the whittle-matern covariance function
@@ -10,7 +10,7 @@ int whittleMatern(double *dist, int nPairs, double scale,
   int i;
 
   //Some preliminary steps: Valid points?
-  if ((smooth <= 0) || (scale <= 0)){
+  if ((smooth <= 0) || (scale <= 0) || (sill <= 0) || (sill > 1)){
     //printf("dependence parameters are ill-defined!\n");
     return 1;
   }
@@ -23,7 +23,7 @@ int whittleMatern(double *dist, int nPairs, double scale,
   
   for (i=0;i<nPairs;i++){
 
-    rho[i] = R_pow(2, 1 - smooth) / gammafn(smooth) *
+    rho[i] = sill * R_pow(2, 1 - smooth) / gammafn(smooth) *
       R_pow(dist[i] / scale, smooth) * 
       bessel_k(dist[i] / scale, smooth, 1);
 
@@ -36,7 +36,7 @@ int whittleMatern(double *dist, int nPairs, double scale,
   return 0;
 }
 
-int cauchy(double *dist, int nPairs, double scale,
+int cauchy(double *dist, int nPairs, double sill, double scale,
 	   double smooth, double *rho){
 
   //This function computes the cauchy covariance function between each
@@ -46,18 +46,18 @@ int cauchy(double *dist, int nPairs, double scale,
   int i;
 
   //Some preliminary steps: Valid points?
-  if ((smooth <= 0) || (scale <= 0)){
+  if ((smooth <= 0) || (scale <= 0) || (sill <= 0) || (sill > 1)){
     //printf("dependence parameters are ill-defined!\n");
     return 1;
   }
   
   for (i=0;i<nPairs;i++)
-    rho[i] = R_pow(1 + R_pow_di(dist[i] / scale, 2), -smooth);
+    rho[i] = sill * R_pow(1 + R_pow_di(dist[i] / scale, 2), -smooth);
     
   return 0;
 }
 
-int powerExp(double *dist, int nPairs, double scale,
+int powerExp(double *dist, int nPairs, double sill, double scale,
 	     double smooth, double *rho){
 
   //This function computes the powered exponential covariance function
@@ -67,18 +67,18 @@ int powerExp(double *dist, int nPairs, double scale,
   int i;
   
   //Some preliminary steps: Valid points?
-  if ((smooth < 0) || (smooth > 2) || (scale <= 0)){
+  if ((smooth < 0) || (smooth > 2) || (scale <= 0) || (sill <= 0) || (sill > 1)){
     //printf("dependence parameters are ill-defined!\n");
     return 1;
   }
   
   for (i=0;i<nPairs;i++)
-    rho[i] = exp(-R_pow(dist[i] / scale, smooth));
+    rho[i] = sill * exp(-R_pow(dist[i] / scale, smooth));
     
   return 0;
 }
 
-int genHyper(double *dist, int nPairs, double scale,
+int genHyper(double *dist, int nPairs, double sill, double scale,
 	     double smooth1, double smooth2,
 	     double smooth3, double *rho){
 
@@ -91,13 +91,14 @@ int genHyper(double *dist, int nPairs, double scale,
   //Some preliminary steps: Valid points?
   if (((smooth3 > 0) && ((smooth2 <= 0) || (smooth1 < 0))) ||
       ((smooth3 == 0) && ((smooth2 <= 0) || (smooth1 <= 0))) ||
-      ((smooth3 < 0) && ((smooth2 < 0) || (smooth1 <= 0)))){
+      ((smooth3 < 0) && ((smooth2 < 0) || (smooth1 <= 0))) ||
+      (sill <= 0) || (sill > 1)){
     //printf("dependence parameters are ill-defined!\n");
     return 1;
   }
   
   for (i=0;i<nPairs;i++)
-    rho[i] = sqrt(smooth2 / 2 / M_PI) / R_pow(smooth1, smooth3) /
+    rho[i] = sill * sqrt(smooth2 / 2 / M_PI) / R_pow(smooth1, smooth3) /
       bessel_k(smooth1 * smooth2, smooth3, 1) * 
       R_pow(pythag(smooth1, dist[i]), smooth3 - .5) *
       bessel_k(smooth2 * pythag(smooth1, dist[i]), smooth3 - .5, 1);

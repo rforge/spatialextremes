@@ -8,15 +8,15 @@
 //  From schlather.c
 //
 void schlatherfull(int *covmod, double *data, double *dist, int *nSite, int *nObs,
-		   double *locs, double *scales, double *shapes,
+		   double *locs, double *scales, double *shapes, double *sill,
 		   double *scale, double *smooth, double *dns);
 void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
 		      double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
 		      double *locpenalty, double *scaledsgnmat, double *scalepenmat,
 		      int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
 		      double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
-		      double *loccoeff, double *scalecoeff, double *shapecoeff, double *scale,
-		      double *smooth, double *dns);
+		      double *loccoeff, double *scalecoeff, double *shapecoeff, double *sill,
+		      double *scale, double *smooth, double *dns);
 
 ///////////////////////////////////
 //  From smith.c
@@ -78,13 +78,13 @@ void gpdlik(double *exceed, int *n, double *thresh, double *scale,
 ///////////////////////////////////
 //  From covariance.c
 //
-int whittleMatern(double *dist, int nPairs, double scale,
+int whittleMatern(double *dist, int nPairs, double sill, double scale,
 		  double smooth, double *rho);
-int cauchy(double *dist, int nPairs, double scale,
+int cauchy(double *dist, int nPairs, double sill, double scale,
 	   double smooth, double *rho);
-int powerExp(double *dist, int nPairs, double scale,
+int powerExp(double *dist, int nPairs, double sill, double scale,
 	     double smooth, double *rho);
-int genHyper(double *dist, int nPairs, double scale,
+int genHyper(double *dist, int nPairs, double sill, double scale,
 	     double smooth1, double smooth2,
 	     double smooth3, double *rho);
 int mahalDistFct(double *distVec, int nPairs, double *cov11,
@@ -118,7 +118,7 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 		   int *nObs, double *locdsgnmat, int *nloccoeff,
 		   double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
 		   int *nshapecoeff, double *loccoeff, double *scalecoeff,
-		   double *shapecoeff, double *scale, double *smooth,
+		   double *shapecoeff, double *sill, double *scale, double *smooth,
 		   int *fitmarge, double *grad);
 ///////////////////////////////////
 //  From pairwiselik.c

@@ -28,10 +28,10 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
     cat("  Marginal Parameters:\n")
 
     if (x$fit.marge){
-      idx <- which(names(x$fitted.values) == "scale")
+      idx <- which(names(x$fitted.values) == "sill")
+      idx <- c(idx, which(names(x$fitted.values) == "scale"))
       idx <- c(idx, which(names(x$fitted.values) == "smooth"))
-      idx <- c(idx, which(names(x$fitted.values) == "variance"))
-      idx <- c(idx, which(names(x$fitted.values) == "nugget"))
+      
 
       margin.param <- x$fitted.values[-idx]
       loc.idx <- which(substr(names(margin.param), 1, 3) == "loc")

@@ -6,15 +6,15 @@
   specifying directly the covariance parameters.
 }
 \usage{
-covariance(fitted, scale, smooth, cov.mod = "whitmat", plot = TRUE,
+covariance(fitted, sill, scale, smooth, cov.mod = "whitmat", plot = TRUE,
 dist, ...)
 }
 \arguments{
   \item{fitted}{An object of class ``maxstab''. Most often this will be
     the output of the \code{\link{fitmaxstab}} function. May be missing
     if \code{scale} and \code{smooth} are given.}
-  \item{scale,smooth}{The scale and smooth parameters for  the
-    covariance function. May be missing if \code{fitted} is given.}
+  \item{sill,scale,smooth}{The sill, scale and smooth parameters for
+    the covariance function. May be missing if \code{fitted} is given.}
   \item{cov.mod}{Character string. The name of the covariance
     model. Must be one of "whitmat", "cauchy" or "powexp" for the
     Whittle-Matern, Cauchy and Powered Exponential models.}
@@ -33,8 +33,8 @@ dist, ...)
 }
 \examples{
 ## 1- Calling covariance using fixed covariance parameters
-covariance(scale = 1, smooth = 0.5, cov.mod = "whitmat")
-covariance(scale = 1, smooth = 0.5, cov.mod = "whitmat",
+covariance(sill = 1, scale = 1, smooth = 0.5, cov.mod = "whitmat")
+covariance(sill = 0.5, scale = 1, smooth = 0.5, cov.mod = "whitmat",
   dist = seq(0,5, 0.2), plot = FALSE)
 
 ## 2- Calling covariance from a fitted model
@@ -70,7 +70,7 @@ shape.form <- shape ~ 1
 fitted <- fitmaxstab(ms1, locations, "whitmat", loc.form, scale.form,
                shape.form)
 covariance(fitted, xlab = "Distance", ylab = "Covariance")
-covariance(scale = 3, smooth = .5, cov.mod = "whitmat", add = TRUE, col
+covariance(sill = 1, scale = 3, smooth = .5, cov.mod = "whitmat", add = TRUE, col
                = 3)
 title("Whittle-Matern covariance function")
 legend("topright", c("Theo.", "Fitted"), lty = 1, col = c(3,1), inset = .05)

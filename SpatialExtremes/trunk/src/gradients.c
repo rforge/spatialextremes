@@ -577,7 +577,7 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 		   int *nObs, double *locdsgnmat, int *nloccoeff,
 		   double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
 		   int *nshapecoeff, double *loccoeff, double *scalecoeff,
-		   double *shapecoeff, double *scale, double *smooth,
+		   double *shapecoeff, double *sill, double *scale, double *smooth,
 		   int *fitmarge, double *grad){
 
   //This is the Smith model. It computes the gradient of the pairwise log-likelihood
@@ -606,13 +606,13 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
   //Stage 0: Compute the covariance at each location
   switch (*covmod){
   case 1:
-    flag = whittleMatern(dist, nPairs, *scale, *smooth, rho);
+    flag = whittleMatern(dist, nPairs, *sill, *scale, *smooth, rho);
     break;
   case 2:
-    flag = cauchy(dist, nPairs, *scale, *smooth, rho);
+    flag = cauchy(dist, nPairs, *sill, *scale, *smooth, rho);
     break;
   case 3:
-    flag = powerExp(dist, nPairs, *scale, *smooth, rho);
+    flag = powerExp(dist, nPairs, *sill, *scale, *smooth, rho);
     break;
   }
   
@@ -636,7 +636,7 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 	frech[i * *nObs + j] = data[i * *nObs + j];
   
   //Stage 2: Gradient computations;
-  // a- Covariance matrix part
+  // a- Covariance part
   for (k=0;k<*nObs;k++){
     currentPair = -1;
     for (i=0;i<(*nSite-1);i++){
@@ -672,28 +672,32 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 	 
 	switch (*covmod){
 	case 1:
-	  grad[k] = grad[k] - rho[currentPair] * *smooth / *scale -
-	    rho[currentPair] / R_pow_di(*scale, 2) + R_pow(2, 1 - *smooth) *
-	    R_pow(dist[currentPair] / *scale, *smooth) * dist[currentPair] * 
-	    bessel_k(dist[currentPair] / *scale, *smooth, 1) / 
-	    R_pow_di(*scale, 2) * jacCommonRho;
-	   
+	  grad[k] = grad[k] + rho[currentPair] / *sill * jacCommonRho;
+	  grad[*nObs + k] = grad[*nObs + k] + rho[currentPair] * 
+	    (-2 * *smooth / *scale* + dist[currentPair] * 
+	     bessel_k(dist[currentPair] / *scale, *smooth + 1, 1) / 
+	     bessel_k(dist[currentPair] / *scale, *smooth, 1) / R_pow_di(*scale, 2)) *
+	    jacCommonRho;
 	  //The Whittle-Matern covariance function is not
 	  //differentiable w.r.t. to the smooth parameter
-	  grad[*nObs + k] = R_NaReal;
+	  grad[2 * *nObs + k] = R_NaReal;
 	  break;
 	case 2:
-	  grad[k] = grad[k] + 2 * R_pow(rho[currentPair], 1 + 1 / *smooth) *
-	    *smooth * R_pow_di(dist[currentPair] / *scale, 2) / *scale *
+	  grad[k] = grad[k] + rho[currentPair] / *sill * jacCommonRho;
+	  grad[*nObs + k] = grad[*nObs + k] + 2 * rho[currentPair] * *smooth *
+	    R_pow_di(dist[currentPair], 2) / *scale / (R_pow_di(*scale, 2) +
+						       R_pow_di(*smooth, 2)) *
 	    jacCommonRho; 
-	  grad[*nObs + k] = grad[*nObs + k] + rho[currentPair] * 
-	    log(rho[currentPair]) / *smooth * jacCommonRho;
+	  grad[2 * *nObs + k] = grad[2 * *nObs + k] - rho[currentPair] * 
+	    log(1 + R_pow_di(dist[currentPair] / *scale, 2)) * jacCommonRho;
 	  break;
 	case 3:
-	  grad[k] = grad[k] - rho[currentPair] * log(rho[currentPair]) * 
-	    *smooth / *scale * jacCommonRho;
-	  grad[*nObs + k] = grad[*nObs + k] + rho[currentPair] * log(rho[currentPair]) *
-	    log(dist[currentPair] / *scale) * jacCommonRho;
+	  grad[k] = grad[k] + rho[currentPair] / *sill * jacCommonRho;
+	  grad[*nObs + k] = grad[*nObs + k] + rho[currentPair] * *smooth /
+	    *scale * R_pow(dist[currentPair] / *scale, *smooth) * jacCommonRho;
+	  grad[2 * *nObs + k] = grad[2 * *nObs + k] - rho[currentPair] *
+	    R_pow(dist[currentPair] / *scale, *smooth) * log(dist[currentPair] / *scale) *
+	    jacCommonRho;
 	  break;	   
 	}
       }
@@ -769,7 +773,7 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 	    dz2loc = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) /
 	      scales[j] * locdsgnmat[j + *nSite * l];
 
-	    grad[(2 + l) * *nObs + k] = (dAz1 * dz1loc + dAz2 * dz2loc) +
+	    grad[(3 + l) * *nObs + k] = (dAz1 * dz1loc + dAz2 * dz2loc) +
 	      ((dBz1 * dz1loc + dBz2 * dz2loc) * C + B * 
 	       (dCz1 * dz1loc + dCz2 * dz2loc)) /
 	      (B * C + D) + dE;
@@ -788,7 +792,7 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 	    dz2scale = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) *
 	      (data[k + j * *nObs] - locs[j]) / scales[j] / scalecoeff[l];
 
-	    grad[(2 + *nloccoeff + l) * *nObs + k] = (dAz1 * dz1scale + dAz2 * dz2scale) +
+	    grad[(3 + *nloccoeff + l) * *nObs + k] = (dAz1 * dz1scale + dAz2 * dz2scale) +
 	      ((dBz1 * dz1scale + dBz2 * dz2scale) * C + B * 
 	       (dCz1 * dz1scale + dCz2 * dz2shape)) /
 	      (B * C + D) + dE;
@@ -812,7 +816,7 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 			frech[k + j * *nObs] * log(frech[k + j * *nObs])) /
 	      shapecoeff[l];
 
-	    grad[(2 + *nloccoeff + *nscalecoeff + l) * *nObs + k] = 
+	    grad[(3 + *nloccoeff + *nscalecoeff + l) * *nObs + k] = 
 	      (dAz1 * dz1shape + dAz2 * dz2shape) +
 	      ((dBz1 * dz1shape + dBz2 * dz2shape) * C + B * 
 	       (dCz1 * dz1shape + dCz2 * dz2shape)) /

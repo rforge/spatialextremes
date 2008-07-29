@@ -2,7 +2,7 @@
 
 void schlatherfull(int *covmod, double *data, double *dist, int *nSite,
 		   int *nObs, double *locs, double *scales, double *shapes,
-		   double *scale, double *smooth, double *dns){
+		   double *sill, double *scale, double *smooth, double *dns){
   //This is the schlater model. It computes the pairwise log-likelihood
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
@@ -25,13 +25,13 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite,
   //Stage 0: Compute the covariance at each location
   switch (*covmod){
   case 1:
-    flag = whittleMatern(dist, nPairs, *scale, *smooth, rho);
+    flag = whittleMatern(dist, nPairs, *sill, *scale, *smooth, rho);
     break;
   case 2:
-    flag = cauchy(dist, nPairs, *scale, *smooth, rho);
+    flag = cauchy(dist, nPairs, *scale, *sill, *smooth, rho);
     break;
   case 3:
-    flag = powerExp(dist, nPairs, *scale, *smooth, rho);
+    flag = powerExp(dist, nPairs, *sill, *scale, *smooth, rho);
     break;
   }
   
@@ -63,8 +63,8 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 		      double *locpenalty, double *scaledsgnmat, double *scalepenmat,
 		      int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
 		      double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
-		      double *loccoeff, double *scalecoeff, double *shapecoeff, double *scale,
-		      double *smooth, double *dns){
+		      double *loccoeff, double *scalecoeff, double *shapecoeff, double *sill,
+		      double *scale, double *smooth, double *dns){
   //This is the schlater model
   //The GEV parameters are defined using a polynomial response surface
   
@@ -82,13 +82,13 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   //Stage 1: Compute the covariance at each location
   switch (*covmod){
   case 1:
-    flag = whittleMatern(dist, nPairs, *scale, *smooth, rho);
+    flag = whittleMatern(dist, nPairs, *sill, *scale, *smooth, rho);
     break;
   case 2:
-    flag = cauchy(dist, nPairs, *scale, *smooth, rho);
+    flag = cauchy(dist, nPairs, *sill, *scale, *smooth, rho);
     break;
   case 3:
-    flag = powerExp(dist, nPairs, *scale, *smooth, rho);
+    flag = powerExp(dist, nPairs, *sill, *scale, *smooth, rho);
     break;
   }
   
