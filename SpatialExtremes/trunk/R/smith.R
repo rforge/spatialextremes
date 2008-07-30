@@ -103,7 +103,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
     }
 
     if (dist.dim == 2){
-      med <- apply(coord, 2, median)
+      med <- abs(apply(distVec, 2, median))
       start <- c(list(cov11 = med[1], cov12 = 0, cov22 = med[2]), start)
     }
     
