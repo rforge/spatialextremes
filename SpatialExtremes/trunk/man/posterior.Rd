@@ -54,24 +54,28 @@ n.site <- 20
 locations <- matrix(rnorm(2*n.site, sd = sqrt(.2)), ncol = 2)
 colnames(locations) <- c("long", "latt")
 ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
-                   param=c(0,1,0,60,.7), maxstable="extr",
+                   param=c(0,1,0.5,60,.7), maxstable="extr",
                    n = 60)
 ms0 <- t(ms0)
 
 ## 2- Defining the prior distribution
-mean.p <- c(scale = 60, smooth = .7)
-sd.p <- diag(c(1000, 1000))
-psd <- c(1.73, .007)
+mean.p <- c(sill = 1, range = 60, smooth = .7)
+sd.p <- diag(c(1000, 1000, 1000))
+psd <- c(.01, 1.73, .007)
 prior.p <- prior(mean.p, sd.p)
-init <- c(40, 1)
+init <- c(.5, 40, 1)
 
 ## 3- MCMC stage
+\dontrun{
 mc <- posterior(5000, init, prior.p, "whitmat", data = ms0, fit.marge =
                 FALSE, coord = locations, psd = psd, thin = 1, burn = 0)
 attributes(mc)$ar
+}
 
 ## 4- Using coda for the trace plots
+\dontrun{
 require(coda)
 plot(mcmc(mc$mc))
+}
 }
 \keyword{models}
