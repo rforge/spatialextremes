@@ -71,7 +71,7 @@ fitted <- fitmaxstab(ms1, locations, "schlather", loc.form, scale.form,
 ##Plot the profile pairwise log-likelihood for the smooth parameter
 \dontrun{
 ranges <- rbind(c(9,11), c(.3, .8))
-profile2d(fitted, c("scale", "smooth"), ranges = ranges)
+profile2d(fitted, c("range", "smooth"), ranges = ranges)
 }
 }
 \author{Mathieu Ribatet}

@@ -29,7 +29,7 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
 
     if (x$fit.marge){
       idx <- which(names(x$fitted.values) == "sill")
-      idx <- c(idx, which(names(x$fitted.values) == "scale"))
+      idx <- c(idx, which(names(x$fitted.values) == "range"))
       idx <- c(idx, which(names(x$fitted.values) == "smooth"))
       
 

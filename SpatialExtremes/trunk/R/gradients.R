@@ -119,7 +119,8 @@
     scale.idx <- which(substr(names(par), 1, 6) == "scaleC")
     shape.idx <- which(substr(names(par), 1, 5) == "shape")
 
-    scale <- par["scale"]
+    sill <- par["sill"]
+    range <- par["range"]
     smooth <- par["smooth"]
     loc.param <- par[loc.idx]
     scale.param <- par[scale.idx]
@@ -130,7 +131,8 @@
     n.loccoeff <- 1
     n.scalecoeff <- 1
     n.shapecoeff <- 1
-    scale <- par["scale"]
+    sill <- par["sill"]
+    range <- par["range"]
     smooth <- par["smooth"]
     loc.param <- 1
     scale.param <- 1
@@ -144,8 +146,9 @@
              as.integer(n.scalecoeff), as.double(shape.dsgn.mat),
              as.integer(n.shapecoeff), as.double(loc.param),
              as.double(scale.param), as.double(shape.param),
-             as.double(scale), as.double(smooth), fit.marge, grad =
-             double(n.obs * length(param.names)), PACKAGE = "SpatialExtremes")$grad
+             as.double(sill), as.double(range), as.double(smooth),
+             fit.marge, grad = double(n.obs * length(param.names)),
+             PACKAGE = "SpatialExtremes")$grad
 
   grad <- matrix(grad, nrow = n.obs, ncol = length(param.names))
 

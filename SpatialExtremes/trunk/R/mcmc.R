@@ -93,7 +93,7 @@ dpostmaxstab <- function(par, prior, cov.mod, data, coord,
            as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),
            as.double(par[2 + 1:n.loccoeff]), as.double(par[2 + n.loccoeff + 1:n.scalecoeff]),
            as.double(par[2 + n.loccoeff + n.scalecoeff + 1:n.shapecoeff]), as.double(par[1]),
-           as.double(par[2]), dns = double(1), PACKAGE = "SpatialExtremes")$dns
+           as.double(par[2]), as.double(par[3]), dns = double(1), PACKAGE = "SpatialExtremes")$dns
 
       postCont <- schlatherlik(par)
     }
@@ -126,7 +126,7 @@ dpostmaxstab <- function(par, prior, cov.mod, data, coord,
            as.double(dist), as.integer(n.site), as.integer(n.obs),
            as.double(rep(1, n.site)), as.double(rep(1, n.site)),
            as.double(rep(1, n.site)), as.double(par[1]),
-           as.double(par[2]), dns = double(1), PACKAGE =
+           as.double(par[2]), as.double(par[3]), dns = double(1), PACKAGE =
            "SpatialExtremes")$dns
 
       postCont <- schlatherlik(par)
@@ -237,7 +237,7 @@ dpostmaxstab <- function(par, prior, cov.mod, data, coord,
             as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),
             as.double(par[2 + 1:n.loccoeff]), as.double(par[2 + n.loccoeff + 1:n.scalecoeff]),
             as.double(par[2 + n.loccoeff + n.scalecoeff + 1:n.shapecoeff]), as.double(par[1]),
-            as.double(par[2]), dns = double(1), PACKAGE = "SpatialExtremes")$dns
+            as.double(par[2]), as.double(par[3]), dns = double(1), PACKAGE = "SpatialExtremes")$dns
 
       hessian <- optim(par, schlatherlik, control = list(maxit = 1), hessian = TRUE)$hessian
       jacobian <- .schlathergrad(par, data, dist, cov.mod.num, loc.dsgn.mat, scale.dsgn.mat,
@@ -276,7 +276,7 @@ dpostmaxstab <- function(par, prior, cov.mod, data, coord,
             as.double(dist), as.integer(n.site), as.integer(n.obs),
             as.double(rep(1, n.site)), as.double(rep(1, n.site)),
             as.double(rep(1, n.site)), as.double(par[1]),
-            as.double(par[2]), dns = double(1), PACKAGE =
+            as.double(par[2]), as.double(par[3]), dns = double(1), PACKAGE =
             "SpatialExtremes")$dns
       
       hessian <- optim(par, schlatherlik, control = list(maxit = 1), hessian = TRUE)$hessian

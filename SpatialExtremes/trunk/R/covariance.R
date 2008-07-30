@@ -1,10 +1,10 @@
-covariance <- function(fitted, sill, scale, smooth, cov.mod = "whitmat",
+covariance <- function(fitted, sill, range, smooth, cov.mod = "whitmat",
                        plot = TRUE, dist, ...){
 
   if (!missing(fitted)){
     cov.mod <- fitted$cov.mod
     smooth <- fitted$param["smooth"]
-    scale <- fitted$param["scale"]
+    range <- fitted$param["range"]
     sill <- fitted$param["sill"]
   }
 
@@ -15,32 +15,32 @@ covariance <- function(fitted, sill, scale, smooth, cov.mod = "whitmat",
     stop("Invalid covariance model. ``cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp'")
   
   if (cov.mod == "whitmat"){
-    if ((smooth <= 0) || (scale <= 0) || (smooth > 50) || (sill <= 0) ||
+    if ((smooth <= 0) || (range <= 0) || (smooth > 50) || (sill <= 0) ||
         (sill > 1))
       stop("invalid parameter for the whittle-matern covariance function")
     
     cov.fun <- function(dist) {
       idx <- which(dist == 0)
       
-      ans <- sill * 2^(1-smooth) / gamma(smooth) * (dist / scale)^smooth *
-        besselK(dist / scale, smooth)
+      ans <- sill * 2^(1-smooth) / gamma(smooth) * (dist / range)^smooth *
+        besselK(dist / range, smooth)
       ans[idx] <- 1
       return(ans)
     }
   }
 
   if (cov.mod == "cauchy"){
-    if ((smooth <= 0) || (scale <= 0) || (sill <= 0) || (sill > 1))
+    if ((smooth <= 0) || (range <= 0) || (sill <= 0) || (sill > 1))
       stop("invalid parameter for the cauchy covariance function")
     
-    cov.fun <- function(dist) sill * (1 + (dist / scale)^2)^-smooth
+    cov.fun <- function(dist) sill * (1 + (dist / range)^2)^-smooth
   }
 
   if (cov.mod == "powexp"){
-    if ((smooth < 0) || (smooth > 2) || (scale <= 0) || (sill <= 0) || (sill > 1))
+    if ((smooth < 0) || (smooth > 2) || (range <= 0) || (sill <= 0) || (sill > 1))
       stop("invalid parameter for the powered exponential covariance function")
 
-    cov.fun <- function(dist) sill * exp(-(dist / scale)^smooth)
+    cov.fun <- function(dist) sill * exp(-(dist / range)^smooth)
   }
 
   if (plot){

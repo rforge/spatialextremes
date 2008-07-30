@@ -44,13 +44,13 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
     scale.names <- paste("scale", 1:n.site, sep="")
     shape.names <- paste("shape", 1:n.site, sep="")
     
-    param <- c("sill", "scale", "smooth", loc.names, scale.names, shape.names)
+    param <- c("sill", "range", "smooth", loc.names, scale.names, shape.names)
 
     body(nplk) <- parse(text = paste("-.C('schlatherfull', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs),",
                             paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                            "as.double(sill), as.double(scale), as.double(smooth), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+                            "as.double(sill), as.double(range), as.double(smooth), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
   }
 
   else{
@@ -58,8 +58,8 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
                             paste("as.double(rep(1,", n.site, ")), "),
                             paste("as.double(rep(1,", n.site, ")), "),
                             paste("as.double(rep(1,", n.site, ")), "),
-                            "as.double(sill), as.double(scale), as.double(smooth), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
-    param <- c("sill", "scale", "smooth")
+                            "as.double(sill), as.double(range), as.double(smooth), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+    param <- c("sill", "range", "smooth")
   }
   
   ##Define the formal arguments of the function
@@ -72,7 +72,7 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
   
   if (missing(start)) {
 
-    start <- list(sill = 0.5, scale = max(dist), smooth = .5)
+    start <- list(sill = 0.5, range = max(dist), smooth = .5)
     
     if (fit.marge){
       locs <- scales <- rep(NA, n.site)
@@ -122,13 +122,13 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
   start.arg <- c(list(p = unlist(start)), fixed.param)
 
   init.lik <- do.call("nllh", start.arg)
-  if (warn.inf && (init.lik == 1.0e35)) 
+  if (warn.inf && (init.lik == 1.0e120)) 
     warning("negative log-likelihood is infinite at starting values")
 
   opt <- optim(start, nllh, hessian = hessian, ..., method = method,
                control = control)
   
-  if ((opt$convergence != 0) || (opt$value == 1.0e35)) {
+  if ((opt$convergence != 0) || (opt$value == 1.0e120)) {
     warning("optimization may not have succeeded")
 
     if (opt$convergence == 1) 
@@ -139,13 +139,13 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
 
   if (opt$value == init.lik){
     warning("optimization stayed at the starting values. Consider tweaking the ndeps option.")
-    opt$convergenc <- "Stayed at start. val."
+    opt$convergence <- "Stayed at start. val."
   }
 
   param.names <- param
   param <- c(opt$par, unlist(fixed.param))
 
-  if ((cov.mod == "whitmat") && !("smooth" %in% names(fixed.param))){
+  if ((cov.mod == "whitmat") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
     warning("The Bessel function is not differentiable w.r.t. the ``smooth'' parameter
 Standard errors are not available unless you fix it.")
     std.err.type <- "none"
@@ -205,7 +205,7 @@ Standard errors are not available unless you fix it.")
     var.cov <- ihessian <- jacobian <- NULL
   }
 
-  cov.fun <-  covariance(sill = param["sill"], scale = param["scale"],
+  cov.fun <-  covariance(sill = param["sill"], range = param["range"],
                          smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
   
   ext.coeff <- function(h)
@@ -312,7 +312,7 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   else
     shape.names <- paste("shapeCoeff", 1:n.shapecoeff, sep="")
   
-  param <- c("sill", "scale", "smooth", loc.names, scale.names, shape.names)
+  param <- c("sill", "range", "smooth", loc.names, scale.names, shape.names)
 
   ##First create a "void" function
   nplk <- function(x) x
@@ -323,7 +323,7 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
                           paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                           paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                           paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                         "as.double(sill), as.double(scale), as.double(smooth), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+                         "as.double(sill), as.double(range), as.double(smooth), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
   ##Define the formal arguments of the function
   form.nplk <- NULL
   for (i in 1:length(param))
@@ -371,13 +371,13 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   start.arg <- c(list(p = unlist(start)), fixed.param)
 
   init.lik <- do.call("nllh", start.arg)
-  if (warn.inf && (init.lik == 1.0e35)) 
+  if (warn.inf && (init.lik == 1.0e120)) 
     warning("negative log-likelihood is infinite at starting values")
 
   opt <- optim(start, nllh, hessian = hessian, ..., method = method,
                control = control)
   
-  if ((opt$convergence != 0) || (opt$value == 1.0e35)){
+  if ((opt$convergence != 0) || (opt$value == 1.0e120)){
     warning("optimization may not have succeeded")
 
     if (opt$convergence != 0) 
@@ -388,13 +388,13 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
 
   if (opt$value == init.lik){
     warning("optimization stayed at the starting values. Consider tweaking the ndeps option.")
-    opt$convergenc <- "Stayed at start. val."
+    opt$convergence <- "Stayed at start. val."
   }
 
   param.names <- param
   param <- c(opt$par, unlist(fixed.param))
 
-  if ((cov.mod == "whitmat") && !("smooth" %in% names(fixed.param))){
+  if ((cov.mod == "whitmat") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
     warning("The Bessel function is not differentiable w.r.t. the ``smooth'' parameter
 Standard errors are not available unless you fix it.")
     std.err.type <- "none"
@@ -455,7 +455,7 @@ Standard errors are not available unless you fix it.")
     var.cov <- ihessian <- jacobian <- NULL
   }
 
-  cov.fun <- covariance(sill = param["sill"], scale = param["scale"],
+  cov.fun <- covariance(sill = param["sill"], range = param["range"],
                         smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
   
   ext.coeff <- function(h)
