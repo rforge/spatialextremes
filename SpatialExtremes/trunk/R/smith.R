@@ -7,7 +7,7 @@
 ##location. However, if fit.marge = FALSE, observation are supposed to
 ##be unit Frechet and only the covariance matrix is estimated.
 smithfull <- function(data, coord, start, fit.marge = FALSE,
-                      ..., warn.inf = TRUE, method = "BFGS",
+                      ..., warn = TRUE, method = "BFGS",
                       std.err.type = "none", control = list(),
                       corr = FALSE){
   ##data is a matrix with each column corresponds to one location
@@ -147,14 +147,15 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
   start.arg <- c(list(p = unlist(start)), fixed.param)
 
   init.lik <- do.call("nllh", start.arg)
-  if (warn.inf && (init.lik == 1.0e120)) 
+  if (warn && (init.lik == 1.0e120)) 
     warning("negative log-likelihood is infinite at starting values")
 
   opt <- optim(start, nllh, hessian = hessian, ..., method = method,
                control = control)
 
   if ((opt$convergence != 0) || (opt$value == 1.0e120)) {
-    warning("optimization may not have succeeded")
+    if (warn)
+      warning("optimization may not have succeeded")
 
     if (opt$convergence == 1) 
       opt$convergence <- "iteration limit reached"
@@ -163,7 +164,9 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
   else opt$convergence <- "successful"
 
   if (opt$value == init.lik){
-    warning("optimization stayed at the starting values. Consider tweaking the ndeps option.")
+    if (warn)
+      warning("optimization stayed at the starting values. Consider tweaking the ndeps option.")
+    
     opt$convergenc <- "Stayed at start. val."
   }
 
@@ -175,7 +178,9 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
     var.cov <- try(solve(opt$hessian), silent = TRUE)
 
     if(!is.matrix(var.cov)){
-      warning("observed information matrix is singular; passing std.err.type to ``none''")
+      if (warn)
+        warning("observed information matrix is singular; passing std.err.type to ``none''")
+      
       std.err.type <- "none"
       return
     }
@@ -188,7 +193,9 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
                              param.names = param.names)
 
       if(any(is.na(jacobian))){
-        warning("observed information matrix is singular; passing std.err.type to ``none''")
+        if (warn)
+          warning("observed information matrix is singular; passing std.err.type to ``none''")
+        
         std.err.type <- "none"
         return
       }
@@ -198,7 +205,9 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
       
       std.idx <- which(std.err <= 0)
       if(length(std.idx) > 0){
-        warning("Some (observed) standard errors are negative;\n passing them to NA")
+        if (warn)
+          warning("Some (observed) standard errors are negative;\n passing them to NA")
+        
         std.err[std.idx] <- NA
       }
       
@@ -251,7 +260,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
 ##parameters
 smithform <- function(data, coord, loc.form, scale.form, shape.form,
                       start, fit.marge = TRUE, marg.cov = NULL, ...,
-                      warn.inf = TRUE, method = "BFGS",
+                      warn = TRUE, method = "BFGS",
                       std.err.type = "none", control = list(),
                       corr = FALSE){
   ##data is a matrix with each column corresponds to one location
@@ -399,14 +408,15 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   start.arg <- c(list(p = unlist(start)), fixed.param)
 
   init.lik <- do.call("nllh", start.arg)
-  if (warn.inf && (init.lik == 1.0e120)) 
+  if (warn && (init.lik == 1.0e120)) 
     warning("negative log-likelihood is infinite at starting values")
 
   opt <- optim(start, nllh, hessian = hessian, ..., method = method,
                control = control)
   
   if ((opt$convergence != 0) || (opt$value == 1.0e120)) {
-    warning("optimization may not have succeeded")
+    if (warn)
+      warning("optimization may not have succeeded")
 
     if (opt$convergence != 0) 
       opt$convergence <- "iteration limit reached"
@@ -415,7 +425,9 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   else opt$convergence <- "successful"
 
   if (opt$value == init.lik){
-    warning("optimization stayed at the starting values. Consider tweaking the ndeps option.")
+    if (warn)
+      warning("optimization stayed at the starting values. Consider tweaking the ndeps option.")
+    
     opt$convergenc <- "Stayed at start. val."
   }
 
@@ -425,7 +437,9 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
     
     var.cov <- try(solve(qr(opt$hessian)), silent = TRUE)
     if(!is.matrix(var.cov)){
-      warning("observed information matrix is singular; passing std.err.type to ``none''")
+      if (warn)
+        warning("observed information matrix is singular; passing std.err.type to ``none''")
+      
       std.err.type <- "none"
       return
     }
@@ -439,7 +453,9 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
                              param.names = param.names)
 
       if(any(is.na(jacobian))){
-        warning("observed information matrix is singular; passing std.err.type to ``none''")
+        if (warn)
+          warning("observed information matrix is singular; passing std.err.type to ``none''")
+        
         std.err.type <- "none"
         return
       }
@@ -449,7 +465,9 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
       
       std.idx <- which(std.err <= 0)
       if(length(std.idx) > 0){
-        warning("Some (observed) standard errors are negative;\n passing them to NA")
+        if (warn)
+          warning("Some (observed) standard errors are negative;\n passing them to NA")
+        
         std.err[std.idx] <- NA
       }
       

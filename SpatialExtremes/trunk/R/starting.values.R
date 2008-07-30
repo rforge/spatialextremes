@@ -15,7 +15,8 @@
     data[,i] <- gev2frech(data[,i], loc[i], scale[i], shape[i])
   }
 
-  covs <- smithfull(data, coord, method = method, std.err.type = "none")$param
+  covs <- smithfull(data, coord, method = method, std.err.type = "none",
+                    warn = FALSE)$param
   
   locCoeff <- loc.model$init.fun(loc)
   scaleCoeff <- scale.model$init.fun(scale)
@@ -84,7 +85,7 @@
     scaleCoeff[1] <- scaleCoeff[1] - min(scales.hat) + .1
     
   cov.param <- schlatherfull(data, coord, cov.mod = cov.mod, method = method,
-                             std.err.type = "none")$param
+                             std.err.type = "none", warn = FALSE)$param
   
   start <- as.list(cov.param)
 

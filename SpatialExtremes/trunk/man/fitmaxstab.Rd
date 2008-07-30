@@ -7,7 +7,7 @@
 }
 \usage{fitmaxstab(data,  coord, cov.mod = c("gauss", "whitmat",
 "cauchy", "powexp"), loc.form, scale.form, shape.form, marg.cov = NULL,
-\dots, fit.marge = FALSE, warn.inf = TRUE, method = "BFGS", control =
+\dots, fit.marge = FALSE, warn = TRUE, method = "BFGS", control =
 list(), std.err.type = "score", corr = FALSE)}
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -33,8 +33,9 @@ list(), std.err.type = "score", corr = FALSE)}
     \code{FALSE}, observations are supposed to be unit Frechet
     distributed. Note that when formulas are given, \code{fit.marge} is
     automatically set to \code{TRUE}.}
-  \item{warn.inf}{Logical. If \code{TRUE} (default), users are warned if
-    the log-likelihood is infinite at starting values.}
+  \item{warn}{Logical. If \code{TRUE} (default), users are warned if
+    the log-likelihood is infinite at starting values and/or problems
+    arised while computing the standard errors.}
   \item{method}{The method used for the numerical optimisation
     procedure. Must be one of \code{BFGS}, \code{Nelder-Mead},
     \code{CG}, \code{L-BFGS-B} or \code{SANN}. See \code{\link{optim}}
@@ -72,11 +73,12 @@ list(), std.err.type = "score", corr = FALSE)}
 }
 \details{
   The function is a wrapper to more specialised functions
-  (\code{schlatherfull, schlatherlm, smithfull, smithlm}). As spatial
-  data often deal with a large number of location, it is impossible to
-  write analytically the joint distribution. Consequently, the fitting
-  procedure substitutes the "full likelihood" for the pairwise
-  likelihood.
+  (\code{schlatherfull, schlatherlm, smithfull, smithlm}).
+
+  As spatial data often deal with a large number of locations, it is
+  impossible to write analytically the joint distribution. Consequently,
+  the fitting procedure substitutes the "full likelihood" for the
+  pairwise likelihood.
 
   Let define \eqn{L_{i,j}(x_{i,j}, \theta)}{L_{i,j}(x_{i,j}, theta)} the
   likelihood for site \eqn{i}{i} and \eqn{j}{j}, where \eqn{i = 1,
