@@ -1,6 +1,6 @@
 fitmaxstab <- function(data, coord, cov.mod = c("gauss", "whitmat", "cauchy", "powexp"),
                        loc.form, scale.form, shape.form, marg.cov = NULL, ...,
-                       fit.marge = TRUE, warn.inf = TRUE, method = "BFGS",
+                       fit.marge = FALSE, warn.inf = TRUE, method = "BFGS",
                        control = list(), std.err.type = "score", corr = FALSE){
 
   if (nrow(coord) != ncol(data))

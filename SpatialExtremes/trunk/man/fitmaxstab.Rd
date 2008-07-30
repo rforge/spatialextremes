@@ -7,7 +7,7 @@
 }
 \usage{fitmaxstab(data,  coord, cov.mod = c("gauss", "whitmat",
 "cauchy", "powexp"), loc.form, scale.form, shape.form, marg.cov = NULL,
-\dots, fit.marge = TRUE, warn.inf = TRUE, method = "BFGS", control =
+\dots, fit.marge = FALSE, warn.inf = TRUE, method = "BFGS", control =
 list(), std.err.type = "score", corr = FALSE)}
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -27,11 +27,12 @@ list(), std.err.type = "score", corr = FALSE)}
     used.}
   \item{\dots}{Several arguments to be passed to the \code{\link{optim}}
     function. See section details.}
-  \item{fit.marge}{Logical. If \code{TRUE} (default), the GEV parameters
+  \item{fit.marge}{Logical. If \code{TRUE}, the GEV parameters
     are estimated ``point-wisely'' or using the formulas given by
     \code{loc.form}, \code{scale.form} and \code{shape.form}. If
     \code{FALSE}, observations are supposed to be unit Frechet
-    distributed.}
+    distributed. Note that when formulas are given, \code{fit.marge} is
+    automatically set to \code{TRUE}.}
   \item{warn.inf}{Logical. If \code{TRUE} (default), users are warned if
     the log-likelihood is infinite at starting values.}
   \item{method}{The method used for the numerical optimisation
