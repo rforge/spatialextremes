@@ -147,13 +147,13 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
   start.arg <- c(list(p = unlist(start)), fixed.param)
 
   init.lik <- do.call("nllh", start.arg)
-  if (warn.inf && (init.lik == 1.0e35)) 
+  if (warn.inf && (init.lik == 1.0e120)) 
     warning("negative log-likelihood is infinite at starting values")
 
   opt <- optim(start, nllh, hessian = hessian, ..., method = method,
                control = control)
 
-  if ((opt$convergence != 0) || (opt$value == 1.0e35)) {
+  if ((opt$convergence != 0) || (opt$value == 1.0e120)) {
     warning("optimization may not have succeeded")
 
     if (opt$convergence == 1) 
@@ -399,13 +399,13 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   start.arg <- c(list(p = unlist(start)), fixed.param)
 
   init.lik <- do.call("nllh", start.arg)
-  if (warn.inf && (init.lik == 1.0e35)) 
+  if (warn.inf && (init.lik == 1.0e120)) 
     warning("negative log-likelihood is infinite at starting values")
 
   opt <- optim(start, nllh, hessian = hessian, ..., method = method,
                control = control)
   
-  if ((opt$convergence != 0) || (opt$value == 1.0e35)) {
+  if ((opt$convergence != 0) || (opt$value == 1.0e120)) {
     warning("optimization may not have succeeded")
 
     if (opt$convergence != 0) 
