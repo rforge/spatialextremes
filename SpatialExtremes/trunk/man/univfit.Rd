@@ -7,7 +7,7 @@
 }
 \usage{
 gevmle(x, \dots, method = "BFGS")
-gpdmle(x, \dots, threshold, method = "BFGS")
+gpdmle(x, threshold, \dots, method = "BFGS")
 }
 \arguments{
   \item{x}{Numeric vector of observations}
