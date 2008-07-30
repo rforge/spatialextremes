@@ -577,7 +577,7 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 		   int *nObs, double *locdsgnmat, int *nloccoeff,
 		   double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
 		   int *nshapecoeff, double *loccoeff, double *scalecoeff,
-		   double *shapecoeff, double *sill, double *scale, double *smooth,
+		   double *shapecoeff, double *sill, double *range, double *smooth,
 		   int *fitmarge, double *grad){
 
   //This is the Smith model. It computes the gradient of the pairwise log-likelihood
@@ -606,13 +606,13 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
   //Stage 0: Compute the covariance at each location
   switch (*covmod){
   case 1:
-    flag = whittleMatern(dist, nPairs, *sill, *scale, *smooth, rho);
+    flag = whittleMatern(dist, nPairs, *sill, *range, *smooth, rho);
     break;
   case 2:
-    flag = cauchy(dist, nPairs, *sill, *scale, *smooth, rho);
+    flag = cauchy(dist, nPairs, *sill, *range, *smooth, rho);
     break;
   case 3:
-    flag = powerExp(dist, nPairs, *sill, *scale, *smooth, rho);
+    flag = powerExp(dist, nPairs, *sill, *range, *smooth, rho);
     break;
   }
   
@@ -674,9 +674,9 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 	case 1:
 	  grad[k] = grad[k] + rho[currentPair] / *sill * jacCommonRho;
 	  grad[*nObs + k] = grad[*nObs + k] + rho[currentPair] * 
-	    (-2 * *smooth / *scale* + dist[currentPair] * 
-	     bessel_k(dist[currentPair] / *scale, *smooth + 1, 1) / 
-	     bessel_k(dist[currentPair] / *scale, *smooth, 1) / R_pow_di(*scale, 2)) *
+	    (-2 * *smooth / *range + dist[currentPair] * 
+	     bessel_k(dist[currentPair] / *range, *smooth + 1, 1) / 
+	     bessel_k(dist[currentPair] / *range, *smooth, 1) / R_pow_di(*range, 2)) *
 	    jacCommonRho;
 	  //The Whittle-Matern covariance function is not
 	  //differentiable w.r.t. to the smooth parameter
@@ -685,18 +685,18 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 	case 2:
 	  grad[k] = grad[k] + rho[currentPair] / *sill * jacCommonRho;
 	  grad[*nObs + k] = grad[*nObs + k] + 2 * rho[currentPair] * *smooth *
-	    R_pow_di(dist[currentPair], 2) / *scale / (R_pow_di(*scale, 2) +
+	    R_pow_di(dist[currentPair], 2) / *range / (R_pow_di(*range, 2) +
 						       R_pow_di(*smooth, 2)) *
 	    jacCommonRho; 
 	  grad[2 * *nObs + k] = grad[2 * *nObs + k] - rho[currentPair] * 
-	    log(1 + R_pow_di(dist[currentPair] / *scale, 2)) * jacCommonRho;
+	    log(1 + R_pow_di(dist[currentPair] / *range, 2)) * jacCommonRho;
 	  break;
 	case 3:
 	  grad[k] = grad[k] + rho[currentPair] / *sill * jacCommonRho;
 	  grad[*nObs + k] = grad[*nObs + k] + rho[currentPair] * *smooth /
-	    *scale * R_pow(dist[currentPair] / *scale, *smooth) * jacCommonRho;
+	    *range * R_pow(dist[currentPair] / *range, *smooth) * jacCommonRho;
 	  grad[2 * *nObs + k] = grad[2 * *nObs + k] - rho[currentPair] *
-	    R_pow(dist[currentPair] / *scale, *smooth) * log(dist[currentPair] / *scale) *
+	    R_pow(dist[currentPair] / *range, *smooth) * log(dist[currentPair] / *range) *
 	    jacCommonRho;
 	  break;	   
 	}
