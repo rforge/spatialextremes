@@ -1,7 +1,7 @@
 rbpspline <- function(y, x, knots, degree, penalty, ...){
 
   if ((degree %% 2) == 0)
-    stop("``degree'' must be an odd number")
+    stop("''degree'' must be an odd number")
 
   if (missing(penalty)){
     cv.fit <- cv(y, x, knots, degree, plot = FALSE, ...)
@@ -105,7 +105,7 @@ rb <- function(..., knots, degree, penalty){
   data <- cbind(...)
     
   if ((degree %% 2) == 0)
-    stop("``degree'' must be an odd number")
+    stop("''degree'' must be an odd number")
   
   if (missing(penalty))
     penalty <- NULL
