@@ -25,7 +25,7 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
     hessian <- TRUE
 
   if (!(cov.mod %in% c("whitmat","cauchy","powexp")))
-    stop("``cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp'")
+    stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp'")
 
   if (cov.mod == "whitmat")
     cov.mod.num <- 1
@@ -93,7 +93,7 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
   
 
   if (!is.list(start)) 
-    stop("`start' must be a named list")
+    stop("'start' must be a named list")
 
   if (!length(start)) 
     stop("there are no parameters left to maximize over")
@@ -105,7 +105,7 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
   m <- match(nm, param)
   
   if(any(is.na(m))) 
-    stop("`start' specifies unknown arguments")
+    stop("'start' specifies unknown arguments")
   
   formals(nplk) <- c(f[m], f[-m])
   nllh <- function(p, ...) nplk(p, ...)
@@ -125,19 +125,43 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
   if (warn && (init.lik == 1.0e120)) 
     warning("negative log-likelihood is infinite at starting values")
 
-  opt <- optim(start, nllh, hessian = hessian, ..., method = method,
-               control = control)
-  
-  if ((opt$convergence != 0) || (opt$value == 1.0e120)) {
+  if (method == "nlm"){
+    start <- as.numeric(start)
+    opt <- nlm(nllh, start, hessian = hessian, ...)
+    opt$counts <- opt$iterations
+    names(opt$counts) <- "function"
+    opt$value <- opt$minimum
+    opt$par <- opt$estimate
+    names(opt$par) <- nm
 
-    if (warn)
-      warning("optimization may not have succeeded")
+    if (opt$code <= 2)
+      opt$convergence <- "sucessful"
+    
+    if (opt$code == 3)
+      opt$convergence <- "local minimum or 'steptol' is too small"
 
-    if (opt$convergence == 1) 
+    if (opt$code == 4)
       opt$convergence <- "iteration limit reached"
+
+    if (opt$code == 5)
+      opt$convergence <- "optimization failed"
   }
 
-  else opt$convergence <- "successful"
+  else{
+    opt <- optim(start, nllh, hessian = hessian, ..., method = method,
+                 control = control)
+  
+    if ((opt$convergence != 0) || (opt$value == 1.0e120)) {
+      
+      if (warn)
+        warning("optimization may not have succeeded")
+      
+      if (opt$convergence == 1) 
+        opt$convergence <- "iteration limit reached"
+    }
+
+    else opt$convergence <- "successful"
+  }
 
   if (opt$value == init.lik){
     if (warn)
@@ -148,10 +172,11 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
 
   param.names <- param
   param <- c(opt$par, unlist(fixed.param))
+  param <- param[param.names]
 
   if ((cov.mod == "whitmat") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
     if (warn)
-      warning("The Bessel function is not differentiable w.r.t. the ``smooth'' parameter
+      warning("The Bessel function is not differentiable w.r.t. the ''smooth'' parameter
 Standard errors are not available unless you fix it.")
     
     std.err.type <- "none"
@@ -162,7 +187,7 @@ Standard errors are not available unless you fix it.")
     var.cov <- try(solve(opt$hessian), silent = TRUE)
     if(!is.matrix(var.cov)){
       if (warn)
-        warning("observed information matrix is singular; passing std.err.type to ``none''")
+        warning("observed information matrix is singular; passing std.err.type to ''none''")
       
       std.err.type <- "none"
       return
@@ -177,7 +202,7 @@ Standard errors are not available unless you fix it.")
 
       if(any(is.na(jacobian))){
         if (warn)
-          warning("observed information matrix is singular; passing std.err.type to ``none''")
+          warning("observed information matrix is singular; passing std.err.type to ''none''")
         
         std.err.type <- "none"
         return
@@ -259,7 +284,7 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
     hessian <- TRUE
 
    if (!(cov.mod %in% c("whitmat","cauchy","powexp")))
-    stop("``cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp'")
+    stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp'")
 
   if (cov.mod == "whitmat")
     cov.mod.num <- 1
@@ -347,14 +372,14 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   if (missing(start)) {
 
     start <- .start.schlather(data, coord, cov.mod, loc.model, scale.model,
-                              shape.model, method = method)
+                              shape.model, method = method, ...)
     
     start <- start[!(param %in% names(list(...)))]
   
   }
 
   if (!is.list(start)) 
-    stop("`start' must be a named list")
+    stop("'start' must be a named list")
   
   if (!length(start)) 
     stop("there are no parameters left to maximize over")
@@ -366,7 +391,7 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   m <- match(nm, param)
   
   if(any(is.na(m))) 
-    stop("`start' specifies unknown arguments")
+    stop("'start' specifies unknown arguments")
   
   formals(nplk) <- c(f[m], f[-m])
   nllh <- function(p, ...) nplk(p, ...)
@@ -386,18 +411,43 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   if (warn && (init.lik == 1.0e120)) 
     warning("negative log-likelihood is infinite at starting values")
 
-  opt <- optim(start, nllh, hessian = hessian, ..., method = method,
-               control = control)
-  
-  if ((opt$convergence != 0) || (opt$value == 1.0e120)){
-    if (warn)
-      warning("optimization may not have succeeded")
+  if (method == "nlm"){
+    start <- as.numeric(start)
+    opt <- nlm(nllh, start, hessian = hessian, ...)
+    opt$counts <- opt$iterations
+    names(opt$counts) <- "function"
+    opt$value <- opt$minimum
+    opt$par <- opt$estimate
+    names(opt$par) <- nm
 
-    if (opt$convergence != 0) 
+    if (opt$code <= 2)
+      opt$convergence <- "sucessful"
+    
+    if (opt$code == 3)
+      opt$convergence <- "local minimum or 'steptol' is too small"
+
+    if (opt$code == 4)
       opt$convergence <- "iteration limit reached"
+
+    if (opt$code == 5)
+      opt$convergence <- "optimization failed"
+
   }
 
-  else opt$convergence <- "successful"
+  else{
+    opt <- optim(start, nllh, hessian = hessian, ..., method = method,
+                 control = control)
+    
+    if ((opt$convergence != 0) || (opt$value == 1.0e120)){
+      if (warn)
+        warning("optimization may not have succeeded")
+      
+      if (opt$convergence != 0) 
+        opt$convergence <- "iteration limit reached"
+    }
+
+    else opt$convergence <- "successful"
+  }
 
   if (opt$value == init.lik){
     if (warn)
@@ -408,10 +458,11 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
 
   param.names <- param
   param <- c(opt$par, unlist(fixed.param))
+  param <- param[param.names]
 
   if ((cov.mod == "whitmat") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
     if (warn)
-      warning("The Bessel function is not differentiable w.r.t. the ``smooth'' parameter
+      warning("The Bessel function is not differentiable w.r.t. the ''smooth'' parameter
 Standard errors are not available unless you fix it.")
     
     std.err.type <- "none"
@@ -422,7 +473,7 @@ Standard errors are not available unless you fix it.")
     var.cov <- try(solve(opt$hessian), silent = TRUE)
     if(!is.matrix(var.cov)){
       if (warn)
-        warning("observed information matrix is singular; passing std.err.type to ``none''")
+        warning("observed information matrix is singular; passing std.err.type to ''none''")
       
       std.err.type <- "none"
       return
@@ -438,7 +489,7 @@ Standard errors are not available unless you fix it.")
 
       if(any(is.na(jacobian))){
         if (warn)
-          warning("observed information matrix is singular; passing std.err.type to ``none''")
+          warning("observed information matrix is singular; passing std.err.type to ''none''")
         
         std.err.type <- "none"
         return
