@@ -9,7 +9,7 @@ dpostmaxstab <- function(par, prior, cov.mod, data, coord,
   n.pairs <- n.site * (n.site - 1) / 2
 
   if (!(cov.mod %in% c("none", "gauss", "whitmat","cauchy","powexp")))
-    stop("``cov.mod'' must be one of 'none', 'gauss', 'whitmat', 'cauchy', 'powexp'")
+    stop("''cov.mod'' must be one of 'none', 'gauss', 'whitmat', 'cauchy', 'powexp'")
 
   dprior <- do.call("dpriormaxstab", c(list(par = par), prior))
   
@@ -152,7 +152,7 @@ dpostmaxstab <- function(par, prior, cov.mod, data, coord,
   fixed.param <- NULL
 
   if (!(cov.mod %in% c("gauss", "whitmat","cauchy","powexp")))
-    stop("``cov.mod'' must be one of 'gauss', 'whitmat', 'cauchy', 'powexp'")
+    stop("''cov.mod'' must be one of 'gauss', 'whitmat', 'cauchy', 'powexp'")
 
   if (cov.mod == "gauss")
     distVec <- distance(coord, vec = TRUE)
@@ -354,18 +354,18 @@ posterior <- function(n, init, prior, cov.mod, ...,
 prior <- function(mean, cov){
 
   if(mode(mean) != "numeric")
-    stop("`mean' must be a numeric vector")
+    stop("'mean' must be a numeric vector")
   
   if(!is.matrix(cov) || mode(cov) != "numeric")
-    stop("`cov' must be a symmetric matrix")
+    stop("'cov' must be a symmetric matrix")
   
   if(any(abs(cov - t(cov)) > .Machine$double.eps^0.5))
-    warning("`cov' may not be symmetric")
+    warning("'cov' may not be symmetric")
   
   eg <- eigen(cov, symmetric = TRUE, only.values = TRUE)$values
   
   if(any(eg <= 0))
-    warning("`cov' may not be positive definite")
+    warning("'cov' may not be positive definite")
 
   icov <- solve(cov)
   
