@@ -1,13 +1,13 @@
-madogram <- function(data, coord, n.lag = 100,
+madogram <- function(data, coord, n.lag = 13,
                      gev.param = c(0, 1, 0),
                      which = c("mado", "ext"), ...){
-
-   if (nrow(coord) != ncol(data))
+  
+  if (nrow(coord) != ncol(data))
     stop("'data' and 'coord' don't match")
-
+  
   n.site <- ncol(data)
   dist <- distance(coord)
-
+  
   for (i in 1:n.site){
     param <- gevmle(data[,i])
     data[,i] <- gev2frech(data[,i], param[1], param[2],
@@ -15,29 +15,30 @@ madogram <- function(data, coord, n.lag = 100,
     data[,i] <- frech2gev(data[,i], gev.param[1],
                           gev.param[2], gev.param[3])
   }
-
-  lags <- seq(0, max(dist), length = n.lag)
-  mado <- rep(0, length(lags))
-  k <- 1
-
-  for (lag in lags){
-    idx <- which(dist <= lag)
+  
+  centers <- seq(0, max(dist), length = n.lag - 1)
+  centers[1] <- centers[2] / 4
+  bins <- c(0, (centers[-n.lag] + centers[1]) / 2, Inf)
+  
+  mado <- rep(0, length = n.lag)
+  
+  for (k in 1:n.lag){
+    idx <- which((dist <= bins[k+1]) & (dist > bins[k]))
 
     if (length(idx)>0){
       site1 <- (idx-1) %/% n.site + 1
       site2 <- (idx-1) %% n.site + 1
       
       for (i in 1:length(idx))
-        mado[k] <- mado[k] + mean(abs(data[,site1[i]] -
-                                    data[,site2[i]]))
+        mado[k] <- mado[k] + sum(abs(data[,site1[i]] -
+                                     data[,site2[i]]))
       
-      mado[k] <- mado[k] / 2 / length(idx)
+      mado[k] <- mado[k] / 2 / length(idx) / nrow(data)
     }
-
+    
     else
-      mado[k] <- 0
-
-    k <- k+1
+      mado[k] <- NA
+   
   }
 
   if (gev.param[3] == 0)
@@ -51,12 +52,12 @@ madogram <- function(data, coord, n.lag = 100,
     par(mfrow=c(1,2))
 
   if (any(which == "mado"))
-    plot(lags, mado, ...)
+    plot(bins[-1], mado, ...)
 
   if (any(which == "ext"))
-    plot(lags, ext.coeff, ...)
+    plot(bins[-1], ext.coeff, ...)
   
-  invisible(cbind(lag = lags, madogram = mado, ext.coeff = ext.coeff))
+  invisible(cbind(bins = bins[-1], madogram = mado, ext.coeff = ext.coeff))
 }
 
 extcoeff.emp <- function(data, coord, ..., prob = 0, plot = TRUE, lowess = TRUE){
