@@ -9,10 +9,10 @@ covariance <- function(fitted, sill, range, smooth, cov.mod = "whitmat",
   }
 
   if (cov.mod == "gauss")
-    stop("``covariance'' is not implemented for the Smith's model")
+    stop("''covariance'' is not implemented for the Smith's model")
 
   if (!(cov.mod %in% c("whitmat", "cauchy", "powexp")))
-    stop("Invalid covariance model. ``cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp'")
+    stop("Invalid covariance model. ''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp'")
   
   if (cov.mod == "whitmat"){
     if ((smooth <= 0) || (range <= 0) || (smooth > 50) || (sill <= 0) ||
