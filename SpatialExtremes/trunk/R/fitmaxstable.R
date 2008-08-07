@@ -1,6 +1,6 @@
 fitmaxstab <- function(data, coord, cov.mod = c("gauss", "whitmat", "cauchy", "powexp"),
                        loc.form, scale.form, shape.form, marg.cov = NULL, ...,
-                       fit.marge = FALSE, warn = TRUE, method = "BFGS",
+                       fit.marge = FALSE, warn = TRUE, method = "Nelder",
                        control = list(), std.err.type = "score", corr = FALSE){
 
   if (nrow(coord) != ncol(data))
@@ -21,7 +21,7 @@ fitmaxstab <- function(data, coord, cov.mod = c("gauss", "whitmat", "cauchy", "p
     
     if ((class(loc.form) != "formula") || (class(scale.form) != "formula") ||
         (class(shape.form) != "formula"))
-      stop("``loc.form'', ``scale.form'' and ``shape.form'' must be valid R formulas")
+      stop("''loc.form'', ''scale.form'' and ''shape.form'' must be valid R formulas")
   }
   
   flag <- missing(loc.form) + missing(scale.form)  + missing(shape.form)
@@ -30,6 +30,9 @@ fitmaxstab <- function(data, coord, cov.mod = c("gauss", "whitmat", "cauchy", "p
     stop("if one formula is given for the GEV parameters, then it should
 be given for *ALL* GEV parameters")
 
+  if (is.null(control$maxit))
+    control$maxit <- 10000
+  
   if (cov.mod == "gauss")
     fitted <- switch(reg.mod, "full" = smithfull(data, coord, ..., fit.marge = fit.marge,
                                 warn = warn, method = method, control = control,
