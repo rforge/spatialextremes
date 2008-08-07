@@ -41,7 +41,7 @@ frech2gev <- function(x, loc, scale, shape){
                   lower.tail = TRUE){
   
     if ((min(p, na.rm = TRUE) <= 0) || (max(p, na.rm = TRUE) >=1))
-      stop("`p' must contain probabilities in (0,1)")
+      stop("'p' must contain probabilities in (0,1)")
     
     if (min(scale) < 0)
       warning("There are some invalid scale GEV parameters")
