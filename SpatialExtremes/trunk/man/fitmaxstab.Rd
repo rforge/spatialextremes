@@ -7,7 +7,7 @@
 }
 \usage{fitmaxstab(data,  coord, cov.mod = c("gauss", "whitmat",
 "cauchy", "powexp"), loc.form, scale.form, shape.form, marg.cov = NULL,
-\dots, fit.marge = FALSE, warn = TRUE, method = "BFGS", control =
+\dots, fit.marge = FALSE, warn = TRUE, method = "Nelder", control =
 list(), std.err.type = "score", corr = FALSE)}
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -38,8 +38,9 @@ list(), std.err.type = "score", corr = FALSE)}
     arised while computing the standard errors.}
   \item{method}{The method used for the numerical optimisation
     procedure. Must be one of \code{BFGS}, \code{Nelder-Mead},
-    \code{CG}, \code{L-BFGS-B} or \code{SANN}. See \code{\link{optim}}
-    for details.}
+    \code{CG}, \code{L-BFGS-B}, \code{SANN} or \code{nlm}. See \code{\link{optim}}
+    for details. Please note that passing \code{nlm} will use the
+    \code{\link{nlm}} function instead of \code{\link{optim}}.}
   \item{control}{A list giving the control parameters to be passed to
     the \code{\link{optim}} function.}
   \item{std.err.type}{Character string. Must be one of "none", "score",
