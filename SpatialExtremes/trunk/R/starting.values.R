@@ -1,6 +1,15 @@
 .start.smith <- function(data, coord, loc.model, scale.model, shape.model,
-                         print.start.values = FALSE, method = "BFGS"){
+                         print.start.values = FALSE, method = "Nelder",
+                         ...){
 
+  if (ncol(coord) == 2)
+    param <- c("cov11", "cov12", "cov22")
+
+  else
+    param <- c("cov11", "cov12", "cov13", "cov22", "cov23", "cov33")
+
+  fixed.param <- list(...)[names(list(...)) %in% param]
+  
   if (print.start.values)
     cat("Computing appropriate starting values\n")
   
@@ -15,8 +24,16 @@
     data[,i] <- gev2frech(data[,i], loc[i], scale[i], shape[i])
   }
 
-  covs <- smithfull(data, coord, method = method, std.err.type = "none",
-                    warn = FALSE)$param
+  if (length(fixed.param) > 0)
+    args <- c(list(data = data, coord = coord, method = method,
+                   std.err.type = "none", warn = FALSE), fixed.param)
+
+  else
+    args <- list(data = data, coord = coord, method = method,
+                 std.err.type = "none", warn = FALSE)
+
+  
+  covs <- do.call("smithfull", args)$param
   
   locCoeff <- loc.model$init.fun(loc)
   scaleCoeff <- scale.model$init.fun(scale)
@@ -53,8 +70,12 @@
 
 
 .start.schlather <- function(data, coord, cov.mod, loc.model, scale.model, shape.model,
-                             print.start.values = FALSE, method = "BFGS"){
+                             print.start.values = FALSE, method = "Nelder",
+                             ...){
 
+  param <- c("sill", "range", "smooth")
+  fixed.param <- list(...)[names(list(...)) %in% param]
+  
   if (print.start.values)
     cat("Computing appropriate starting values\n")
   
@@ -83,9 +104,17 @@
 
   if (any(scales.hat <= 0))
     scaleCoeff[1] <- scaleCoeff[1] - min(scales.hat) + .1
-    
-  cov.param <- schlatherfull(data, coord, cov.mod = cov.mod, method = method,
-                             std.err.type = "none", warn = FALSE)$param
+
+  if (length(fixed.param) > 0)
+    args <- c(list(data = data, coord = coord, cov.mod = cov.mod, method = method,
+                   std.err.type = "none", warn = FALSE), fixed.param)
+
+  else
+    args <- list(data = data, coord = coord, cov.mod = cov.mod, method = method,
+                 std.err.type = "none", warn = FALSE)
+
+  
+  cov.param <- do.call("schlatherfull", args)$param
   
   start <- as.list(cov.param)
 
