@@ -3,7 +3,7 @@
 \title{Computes madograms}
 \description{Computes the madogram for max-stable processes.}
 \usage{
-madogram(data, coord, n.lag = 100, gev.param = c(0, 1, 0), which =
+madogram(data, coord, n.lag = 13, gev.param = c(0, 1, 0), which =
 c("mado", "ext"), \dots)
 }
 \arguments{
