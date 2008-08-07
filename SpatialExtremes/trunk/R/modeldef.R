@@ -9,12 +9,12 @@ modeldef <- function(data, formula){
     cov.names <- colnames(data)
 
     if (is.null(cov.names))
-      stop("``coord'' and/or ``marg.cov'' must have named columns")
+      stop("''coord'' and/or ``marg.cov'' must have named columns")
 
     cov.names.uniq <- unique(cov.names)
     
     if (length(cov.names.uniq) != length(cov.names)){
-      warning("``coord'' and/or ``marg.cov'' have duplicates named columns. Omiting.")
+      warning("''coord'' and/or ``marg.cov'' have duplicates named columns. Omiting.")
       data <- data[,cov.names.uniq]
     }
 
@@ -28,7 +28,7 @@ modeldef.lm <- function(data, formula){
   ##This function computes the design matrix from any valid R formula
 
   if (class(formula) != "formula")
-    stop("``loc.form'', ``scale.form'' and ``shape.form'' must be R formulas")
+    stop("''loc.form'', ''scale.form'' and ''shape.form'' must be R formulas")
 
   init.fun <- function(y)
     lm(formula, data = as.data.frame(cbind(y = y, data)))$coeff
