@@ -1422,7 +1422,7 @@ For the Jacobian part $E$, we have:
   \frac{\xi_2-1}{\sigma_2 z_2^{\xi_2}} \cdot X^{(2)}_\mu\\
   dE_\sigma &=& \frac{\partial E}{\partial \beta_\sigma} =  \left(
     \frac{(y_1 - \mu_1)(\xi_1-1)}{\sigma_1z_1^{\xi_1}} +
-    \frac{(y_2-\mu_2)(\xi_2-2)}{\sigma_2 z_2^{\xi_2}} + 2\right)
+    \frac{(y_2-\mu_2)(\xi_2-1)}{\sigma_2 z_2^{\xi_2}} - 2\right)
   \cdot \frac{1}{\beta_\sigma}\\
   dE_\xi &=& \frac{\partial E}{\partial \beta_\xi} =
   \frac{(1-\xi_1)(y_1 - \mu_1)}{\sigma_1 \xi_1 z_1^{\xi_1}} \cdot

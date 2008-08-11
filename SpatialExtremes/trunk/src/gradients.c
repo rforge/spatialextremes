@@ -214,7 +214,7 @@ void smithgrad(double *data, double *distVec, int *nSite,
 	  }
 
 	  for (l=0;l<*nscalecoeff;l++){
-	    dE = (2 + (data[k + i * *nObs] - locs[i]) *
+	    dE = (-2 + (data[k + i * *nObs] - locs[i]) *
 		  (shapes[i] - 1) / scales[i] / 
 		  R_pow(frech[k + i * *nObs], shapes[i]) +
 		  (data[k + j * *nObs] - locs[j]) * (shapes[j] - 1) /
@@ -526,7 +526,7 @@ void smithgrad3d(double *data, double *distVec, int *nSite,
 	  }
 
 	  for (l=0;l<*nscalecoeff;l++){
-	    dE = (2 + (data[k + i * *nObs] - locs[i]) *
+	    dE = (-2 + (data[k + i * *nObs] - locs[i]) *
 		  (shapes[i] - 1) / scales[i] / 
 		  R_pow(frech[k + i * *nObs], shapes[i]) +
 		  (data[k + j * *nObs] - locs[j]) * (shapes[j] - 1) /
