@@ -206,7 +206,8 @@ void smithgrad(double *data, double *distVec, int *nSite,
 	    dz2loc = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) /
 	      scales[j] * locdsgnmat[j + *nSite * l];
 
-	    grad[(3 + l) * *nObs + k] = (dAz1 * dz1loc + dAz2 * dz2loc) +
+	    grad[(3 + l) * *nObs + k] = grad[(3 + l) * *nObs + k] +
+	      (dAz1 * dz1loc + dAz2 * dz2loc) +
 	      ((dBz1 * dz1loc + dBz2 * dz2loc) * C + B * 
 	       (dCz1 * dz1loc + dCz2 * dz2loc)) /
 	      (B * C + D) + dE;
@@ -225,7 +226,8 @@ void smithgrad(double *data, double *distVec, int *nSite,
 	    dz2scale = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) *
 	      (data[k + j * *nObs] - locs[j]) / scales[j] / scalecoeff[l];
 
-	    grad[(3 + *nloccoeff + l) * *nObs + k] = (dAz1 * dz1scale + dAz2 * dz2scale) +
+	    grad[(3 + *nloccoeff + l) * *nObs + k] = grad[(3 + *nloccoeff + l) * *nObs + k] +
+	      (dAz1 * dz1scale + dAz2 * dz2scale) +
 	      ((dBz1 * dz1scale + dBz2 * dz2scale) * C + B * 
 	       (dCz1 * dz1scale + dCz2 * dz2shape)) /
 	      (B * C + D) + dE;
@@ -250,6 +252,7 @@ void smithgrad(double *data, double *distVec, int *nSite,
 	      shapecoeff[l];
 
 	    grad[(3 + *nloccoeff + *nscalecoeff + l) * *nObs + k] = 
+	      grad[(3 + *nloccoeff + *nscalecoeff + l) * *nObs + k] +
 	      (dAz1 * dz1shape + dAz2 * dz2shape) +
 	      ((dBz1 * dz1shape + dBz2 * dz2shape) * C + B * 
 	       (dCz1 * dz1shape + dCz2 * dz2shape)) /
@@ -515,7 +518,8 @@ void smithgrad3d(double *data, double *distVec, int *nSite,
 	    dz2loc = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) /
 	      scales[j] * locdsgnmat[j + *nSite * l];
 
-	    grad[(3 + l) * *nObs + k] = (dAz1 * dz1loc + dAz2 * dz2loc) +
+	    grad[(3 + l) * *nObs + k] = grad[(3 + l) * *nObs + k] +
+	      (dAz1 * dz1loc + dAz2 * dz2loc) +
 	      ((dBz1 * dz1loc + dBz2 * dz2loc) * C + B * 
 	       (dCz1 * dz1loc + dCz2 * dz2loc)) /
 	      (B * C + D) + dE;
@@ -534,7 +538,8 @@ void smithgrad3d(double *data, double *distVec, int *nSite,
 	    dz2scale = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) *
 	      (data[k + j * *nObs] - locs[j]) / scales[j] / scalecoeff[l];
 
-	    grad[(3 + *nloccoeff + l) * *nObs + k] = (dAz1 * dz1scale + dAz2 * dz2scale) +
+	    grad[(3 + *nloccoeff + l) * *nObs + k] = grad[(3 + *nloccoeff + l) * *nObs + k] +
+	      (dAz1 * dz1scale + dAz2 * dz2scale) +
 	      ((dBz1 * dz1scale + dBz2 * dz2scale) * C + B * 
 	       (dCz1 * dz1scale + dCz2 * dz2shape)) /
 	      (B * C + D) + dE;
@@ -559,6 +564,7 @@ void smithgrad3d(double *data, double *distVec, int *nSite,
 	      shapecoeff[l];
 
 	    grad[(3 + *nloccoeff + *nscalecoeff + l) * *nObs + k] = 
+	      grad[(3 + *nloccoeff + *nscalecoeff + l) * *nObs + k] +
 	      (dAz1 * dz1shape + dAz2 * dz2shape) +
 	      ((dBz1 * dz1shape + dBz2 * dz2shape) * C + B * 
 	       (dCz1 * dz1shape + dCz2 * dz2shape)) /
@@ -773,9 +779,9 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 	    dz2loc = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) /
 	      scales[j] * locdsgnmat[j + *nSite * l];
 
-	    grad[(3 + l) * *nObs + k] = (dAz1 * dz1loc + dAz2 * dz2loc) +
-	      ((dBz1 * dz1loc + dBz2 * dz2loc) * C + B * 
-	       (dCz1 * dz1loc + dCz2 * dz2loc)) /
+	    grad[(3 + l) * *nObs + k] = grad[(3 + l) * *nObs + k] +
+	      (dAz1 * dz1loc + dAz2 * dz2loc) + ((dBz1 * dz1loc + dBz2 * dz2loc) * C +
+						 B * (dCz1 * dz1loc + dCz2 * dz2loc)) /
 	      (B * C + D) + dE;
 	  }
 
@@ -792,9 +798,9 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 	    dz2scale = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) *
 	      (data[k + j * *nObs] - locs[j]) / scales[j] / scalecoeff[l];
 
-	    grad[(3 + *nloccoeff + l) * *nObs + k] = (dAz1 * dz1scale + dAz2 * dz2scale) +
-	      ((dBz1 * dz1scale + dBz2 * dz2scale) * C + B * 
-	       (dCz1 * dz1scale + dCz2 * dz2shape)) /
+	    grad[(3 + *nloccoeff + l) * *nObs + k] = grad[(3 + *nloccoeff + l) * *nObs + k] +
+	      (dAz1 * dz1scale + dAz2 * dz2scale) + ((dBz1 * dz1scale + dBz2 * dz2scale) * C +
+						     B * (dCz1 * dz1scale + dCz2 * dz2shape)) /
 	      (B * C + D) + dE;
 	  }
 
@@ -817,6 +823,7 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 	      shapecoeff[l];
 
 	    grad[(3 + *nloccoeff + *nscalecoeff + l) * *nObs + k] = 
+	      grad[(3 + *nloccoeff + *nscalecoeff + l) * *nObs + k] +
 	      (dAz1 * dz1shape + dAz2 * dz2shape) +
 	      ((dBz1 * dz1shape + dBz2 * dz2shape) * C + B * 
 	       (dCz1 * dz1shape + dCz2 * dz2shape)) /
