@@ -30,8 +30,18 @@ fitmaxstab <- function(data, coord, cov.mod = c("gauss", "whitmat", "cauchy", "p
     stop("if one formula is given for the GEV parameters, then it should
 be given for *ALL* GEV parameters")
 
-  if (is.null(control$maxit))
-    control$maxit <- 10000
+  if (method != "nlminb"){
+    if (is.null(control$maxit))
+      control$maxit <- 10000
+  }
+
+  else{
+    if (is.null(control$eval.max))
+      control$eval.max <- 15000
+    
+    if (is.null(control$iter.max))
+      control$iter.max <- 10000
+  }
   
   if (cov.mod == "gauss")
     fitted <- switch(reg.mod, "full" = smithfull(data, coord, ..., fit.marge = fit.marge,

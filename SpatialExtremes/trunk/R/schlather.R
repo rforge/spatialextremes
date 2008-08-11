@@ -122,9 +122,25 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
   start.arg <- c(list(p = unlist(start)), fixed.param)
 
   init.lik <- do.call("nllh", start.arg)
-  if (warn && (init.lik == 1.0e120)) 
+  if (warn && (init.lik >= 1.0e60)) 
     warning("negative log-likelihood is infinite at starting values")
 
+  if (method == "nlminb"){
+    start <- as.numeric(start)
+    opt <- nlminb(start, nllh, ..., control = control)
+    opt$counts <- opt$evaluations
+    opt$value <- opt$objective
+    names(opt$par) <- nm
+    
+    if ((opt$convergence != 0) || (opt$value >= 1.0e60)) {
+      if (warn)
+        warning("optimization may not have succeeded")
+    }
+
+    if (opt$convergence == 0)
+      opt$convergence <- "successful"
+  }
+  
   if (method == "nlm"){
     start <- as.numeric(start)
     opt <- nlm(nllh, start, hessian = hessian, ...)
@@ -147,11 +163,11 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
       opt$convergence <- "optimization failed"
   }
 
-  else{
+  if (!(method %in% c("nlm", "nlminb"))){
     opt <- optim(start, nllh, hessian = hessian, ..., method = method,
                  control = control)
   
-    if ((opt$convergence != 0) || (opt$value == 1.0e120)) {
+    if ((opt$convergence != 0) || (opt$value >= 1.0e60)) {
       
       if (warn)
         warning("optimization may not have succeeded")
@@ -408,9 +424,25 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   start.arg <- c(list(p = unlist(start)), fixed.param)
 
   init.lik <- do.call("nllh", start.arg)
-  if (warn && (init.lik == 1.0e120)) 
+  if (warn && (init.lik >= 1.0e60)) 
     warning("negative log-likelihood is infinite at starting values")
 
+  if (method == "nlminb"){
+    start <- as.numeric(start)
+    opt <- nlminb(start, nllh, ..., control = control)
+    opt$counts <- opt$evaluations
+    opt$value <- opt$objective
+    names(opt$par) <- nm
+    
+    if ((opt$convergence != 0) || (opt$value >= 1.0e60)) {
+      if (warn)
+        warning("optimization may not have succeeded")
+    }
+
+    if (opt$convergence == 0)
+      opt$convergence <- "successful"
+  }
+  
   if (method == "nlm"){
     start <- as.numeric(start)
     opt <- nlm(nllh, start, hessian = hessian, ...)
@@ -434,11 +466,11 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
 
   }
 
-  else{
+  if (!(method %in% c("nlm", "nlminb"))){
     opt <- optim(start, nllh, hessian = hessian, ..., method = method,
                  control = control)
     
-    if ((opt$convergence != 0) || (opt$value == 1.0e120)){
+    if ((opt$convergence != 0) || (opt$value >= 1.0e60)){
       if (warn)
         warning("optimization may not have succeeded")
       
