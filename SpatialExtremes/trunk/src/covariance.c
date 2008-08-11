@@ -1,7 +1,7 @@
 #include "header.h"
 
-int whittleMatern(double *dist, int nPairs, double sill, double range,
-		   double smooth, double *rho){
+double whittleMatern(double *dist, int nPairs, double sill, double range,
+		     double smooth, double *rho){
 
   //This function computes the whittle-matern covariance function
   //between each pair of locations.
@@ -10,15 +10,30 @@ int whittleMatern(double *dist, int nPairs, double sill, double range,
   int i;
 
   //Some preliminary steps: Valid points?
-  if ((smooth <= 0) || (range <= 0) || (sill <= 0) || (sill > 1)){
+  if (smooth <= 0){
     //printf("dependence parameters are ill-defined!\n");
-    return 1;
+    return R_pow_di(1 - smooth, 2) * MINF;
+  }
+
+  if (range <= 0){
+    //printf("dependence parameters are ill-defined!\n");
+    return R_pow_di(1 - range, 2) * MINF;
+  }
+
+  if (sill <= 0){
+    //printf("dependence parameters are ill-defined!\n");
+    return R_pow_di(1 - sill, 2) * MINF;
+  }
+  
+  if (sill > 1){
+    //printf("dependence parameters are ill-defined!\n");
+    return R_pow_di(sill, 2) * MINF;
   }
   
   if (smooth > 50){
     //Required because it could lead to infinite rho values
     //printf("smooth is too large!\n");
-    return 1;
+    return R_pow_di(smooth - 50, 2) * MINF;
   }
   
   for (i=0;i<nPairs;i++){
@@ -29,11 +44,11 @@ int whittleMatern(double *dist, int nPairs, double sill, double range,
 
   }
 
-  return 0;
+  return 0.0;
 }
 
-int cauchy(double *dist, int nPairs, double sill, double range,
-	   double smooth, double *rho){
+double cauchy(double *dist, int nPairs, double sill, double range,
+	      double smooth, double *rho){
 
   //This function computes the cauchy covariance function between each
   //pair of locations.
@@ -42,19 +57,34 @@ int cauchy(double *dist, int nPairs, double sill, double range,
   int i;
 
   //Some preliminary steps: Valid points?
-  if ((smooth <= 0) || (range <= 0) || (sill <= 0) || (sill > 1)){
+  if (smooth <= 0){
     //printf("dependence parameters are ill-defined!\n");
-    return 1;
+    return R_pow_di(1 - smooth, 2) * MINF;
+  }
+
+  if (range <= 0){
+    //printf("dependence parameters are ill-defined!\n");
+    return R_pow_di(1 - range, 2) * MINF;
+  }
+
+  if (sill <= 0){
+    //printf("dependence parameters are ill-defined!\n");
+    return R_pow_di(1 - sill, 2) * MINF;
   }
   
+  if (sill > 1){
+    //printf("dependence parameters are ill-defined!\n");
+    return R_pow_di(sill, 2) * MINF;
+  }
+    
   for (i=0;i<nPairs;i++)
     rho[i] = sill * R_pow(1 + R_pow_di(dist[i] / range, 2), -smooth);
     
-  return 0;
+  return 0.0;
 }
 
-int powerExp(double *dist, int nPairs, double sill, double range,
-	     double smooth, double *rho){
+double powerExp(double *dist, int nPairs, double sill, double range,
+		double smooth, double *rho){
 
   //This function computes the powered exponential covariance function
   //between each pair of locations.
@@ -63,47 +93,40 @@ int powerExp(double *dist, int nPairs, double sill, double range,
   int i;
   
   //Some preliminary steps: Valid points?
-  if ((smooth < 0) || (smooth > 2) || (range <= 0) || (sill <= 0) || (sill > 1)){
+  if (smooth < 0){
     //printf("dependence parameters are ill-defined!\n");
-    return 1;
+    return R_pow_di(1 - smooth, 2) * MINF;
+  }
+
+  if (range <= 0){
+    //printf("dependence parameters are ill-defined!\n");
+    return R_pow_di(1 - range, 2) * MINF;
+  }
+
+  if (sill <= 0){
+    //printf("dependence parameters are ill-defined!\n");
+    return R_pow_di(1 - sill, 2) * MINF;
+  }
+  
+  if (sill > 1){
+    //printf("dependence parameters are ill-defined!\n");
+    return R_pow_di(sill, 2) * MINF;
+  }
+  
+  if (smooth > 2){
+    //Required because it could lead to infinite rho values
+    //printf("smooth is too large!\n");
+    return R_pow_di(smooth - 2, 2) * MINF;
   }
   
   for (i=0;i<nPairs;i++)
     rho[i] = sill * exp(-R_pow(dist[i] / range, smooth));
     
-  return 0;
+  return 0.0;
 }
 
-int genHyper(double *dist, int nPairs, double sill, double range,
-	     double smooth1, double smooth2,
-	     double smooth3, double *rho){
-
-  //This function computes the generalized hyperbolic covariance function
-  //between each pair of locations.
-  //When flag == 1, the generalized hyperbolic parameters are ill-defined.
-
-  int i;
-
-  //Some preliminary steps: Valid points?
-  if (((smooth3 > 0) && ((smooth2 <= 0) || (smooth1 < 0))) ||
-      ((smooth3 == 0) && ((smooth2 <= 0) || (smooth1 <= 0))) ||
-      ((smooth3 < 0) && ((smooth2 < 0) || (smooth1 <= 0))) ||
-      (sill <= 0) || (sill > 1)){
-    //printf("dependence parameters are ill-defined!\n");
-    return 1;
-  }
-  
-  for (i=0;i<nPairs;i++)
-    rho[i] = sill * sqrt(smooth2 / 2 / M_PI) / R_pow(smooth1, smooth3) /
-      bessel_k(smooth1 * smooth2, smooth3, 1) * 
-      R_pow(pythag(smooth1, dist[i]), smooth3 - .5) *
-      bessel_k(smooth2 * pythag(smooth1, dist[i]), smooth3 - .5, 1);
-
-  return 0;
-}
-
-int mahalDistFct(double *distVec, int nPairs, double *cov11,
-		 double *cov12, double *cov22, double *mahal){
+double mahalDistFct(double *distVec, int nPairs, double *cov11,
+		    double *cov12, double *cov22, double *mahal){
   //This function computes the mahalanobis distance between each pair
   //of locations. Currently this function is only valid in 2D
   //When flag == 1, the covariance matrix and/or the mahalanobis
@@ -115,9 +138,14 @@ int mahalDistFct(double *distVec, int nPairs, double *cov11,
   det = *cov11 * *cov22 - R_pow_di(*cov12, 2);
   //We test if the covariance matrix is *not* nonnegative
   //definite e.g. all minor determinant are negative or 0
-  if ((det <= 0) || (*cov11 <= 0)){
+  if (det <= 0){
     //printf("Covariance matrice is singular!\n");
-    return 1;
+    return R_pow_di(1 - det, 2) * MINF;
+  }
+
+  if (*cov11 <= 0){
+    //printf("Covariance matrice is singular!\n");
+    return R_pow_di(1 - *cov11, 2) * MINF;
   }
   
   for (i=0;i<nPairs;i++){
@@ -128,17 +156,17 @@ int mahalDistFct(double *distVec, int nPairs, double *cov11,
     
     //We test if the Mahalanobis distance is singular.
     if (mahal[i] <= 0)
-      return 1;
+      return R_pow_di(1 - mahal[i], 2) * MINF;
     
     mahal[i] = sqrt(mahal[i]);
   }
   
-  return 0;
+  return 0.0;
 }
 
-int mahalDistFct3d(double *distVec, int nPairs, double *cov11,
-		   double *cov12, double *cov13, double *cov22, 
-		   double *cov23, double *cov33, double *mahal){
+double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
+		      double *cov12, double *cov13, double *cov22, 
+		      double *cov23, double *cov33, double *mahal){
   //This function computes the mahalanobis distance between each pair
   //of locations. Currently this function is only valid in 3D
   //When flag == 1, the covariance matrix and/or the mahalanobis
@@ -153,9 +181,19 @@ int mahalDistFct3d(double *distVec, int nPairs, double *cov11,
   detMin = *cov11 * *cov22 - R_pow_di(*cov12, 2);
   //We test if the covariance matrix is *not* nonnegative
   //definite e.g. all minor determinant are negative or 0
-  if ((det <= 0) || (*cov11 <= 0) || (detMin <= 0)){
+  if (det <= 0){
     //printf("Covariance matrice is singular!\n");
-    return 1;
+    return R_pow_di(1 - det, 2) * MINF;
+  }
+
+  if (*cov11 <= 0){
+    //printf("Covariance matrice is singular!\n");
+    return R_pow_di(1 - *cov11, 2) * MINF;
+  }
+
+  if (detMin <= 0){
+    //printf("Covariance matrice is singular!\n");
+    return R_pow_di(1 - detMin, 2) * MINF;
   }
   
   for (i=0;i<nPairs;i++){
@@ -174,10 +212,10 @@ int mahalDistFct3d(double *distVec, int nPairs, double *cov11,
     
     //We test if the Mahalanobis distance is singular.
     if (mahal[i] <= 0)
-      return 1;
+      return R_pow_di(1 - mahal[i], 2) * MINF;
     
     mahal[i] = sqrt(mahal[i]);
   }
   
-  return 0;
+  return 0.0;
 }

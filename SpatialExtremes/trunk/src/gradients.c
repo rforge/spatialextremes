@@ -10,12 +10,12 @@ void smithgrad(double *data, double *distVec, int *nSite,
   //This is the Smith model. It computes the gradient of the pairwise log-likelihood
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
-  int i, j, k, l, currentPair = -1, flag;
+  int i, j, k, l, currentPair = -1;
   double c1, c2, dAa, dAz1, dAz2, B, dBa, dBz1, dBz2, C,
     dCa, dCz1, dCz2, D, dDa, dDz1, dDz2, *mahalDist, *locs,
     *scales, *shapes, jacCommonSigma, jacCommonMarge, det,
     *jac, *frech, dz1loc, dz2loc, dz1scale, dz2scale, dz1shape,
-    dz2shape, dE;
+    dz2shape, dE, flag;
   //c1, c2 are useful quantities
   //A, B, C, D are part of the log-bivariate density
   //dB, dC and dD are their derivatives with respect to the
@@ -273,12 +273,12 @@ void smithgrad3d(double *data, double *distVec, int *nSite,
   //This is the Smith model. It computes the gradient of the pairwise log-likelihood
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
-  int i, j, k, l, currentPair = -1, flag;
+  int i, j, k, l, currentPair = -1;
   double c1, c2, dAa, dAz1, dAz2, B, dBa, dBz1, dBz2, C,
     dCa, dCz1, dCz2, D, dDa, dDz1, dDz2, *mahalDist, *locs,
     *scales, *shapes, jacCommonSigma, jacCommonMarge, det,
     *jac, *frech, dz1loc, dz2loc, dz1scale, dz2scale, dz1shape,
-    dz2shape, dE;
+    dz2shape, dE, flag;
   //c1, c2 are useful quantities
   //A, B, C, D are part of the log-bivariate density
   //dB, dC and dD are their derivatives with respect to the
@@ -583,12 +583,12 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
   //This is the Smith model. It computes the gradient of the pairwise log-likelihood
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
-  int i, j, k, l, currentPair = -1, flag;
+  int i, j, k, l, currentPair = -1;
   double c1, dArho, dAz1, dAz2, B, dBrho, dBz1, dBz2, C,
     dCrho, dCz1, dCz2, D, dDrho, dDz1, dDz2, *rho, *locs,
     *scales, *shapes, jacCommonRho, jacCommonMarge, *jac,
     *frech, dz1loc, dz2loc, dz1scale, dz2scale, dz1shape,
-    dz2shape, dE;;
+    dz2shape, dE, flag;
   //c1 is a useful quantity
   //A, B, C, D are part of the log-bivariate density
   //dB, dC and dD are their derivatives with respect to the
@@ -829,5 +829,3 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 
   return;
 }
-      
-  

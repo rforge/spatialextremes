@@ -42,22 +42,21 @@ void distVecFct(double *coord, int *nSite, int *nDim,
 	
       
 
-int gev2frech(double *data, int nObs, int nSite, double *locs, 
-	      double *scales, double *shapes, double *jac,
-	      double *frech){
+double gev2frech(double *data, int nObs, int nSite, double *locs, 
+		 double *scales, double *shapes, double *jac,
+		 double *frech){
 
   //This function transforms the GEV observations to unit Frechet ones
   //and computes the log of the jacobian of each transformation
   //When flag == 1, the GEV parameters are invalid.
   
   int i, j;
-  const double eps = R_pow(DOUBLE_EPS, 0.3);
   
   for (i=0;i<nSite;i++){
     for (j=0;j<nObs;j++){
       frech[i * nObs + j] = (data[i * nObs + j] - locs[i])/ scales[i];
       
-      if(fabs(shapes[i]) <= eps){
+      if(shapes[i] == 0.0){
 	jac[i * nObs + j] = frech[i * nObs + j] - log(scales[i]);
 	frech[i * nObs + j] = exp(frech[i * nObs + j]);
       }
@@ -67,7 +66,7 @@ int gev2frech(double *data, int nObs, int nSite, double *locs,
 	
 	if (frech[i * nObs + j] <= 0) {
 	  //printf("transformation to Frechet is erradic\n");
-	  return 1;
+	  return R_pow_di(1 - frech[i * nObs + j], 2) * MINF;
 	}
 	
 	else{
@@ -78,15 +77,15 @@ int gev2frech(double *data, int nObs, int nSite, double *locs,
       }
     }
   }
-  return 0;
+  return 0.0;
 }
 
-int dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
-		  double *shapedsgnmat, double *loccoeff, 
-		  double *scalecoeff, double *shapecoeff,
-		  int nSite, int nloccoeff, int nscalecoeff,
-		  int nshapecoeff, double *locs, double *scales,
-		  double *shapes){
+double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
+		     double *shapedsgnmat, double *loccoeff, 
+		     double *scalecoeff, double *shapecoeff,
+		     int nSite, int nloccoeff, int nscalecoeff,
+		     int nshapecoeff, double *locs, double *scales,
+		     double *shapes){
 
   int i, j;
 
@@ -105,13 +104,18 @@ int dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
     for (j=0;j<nshapecoeff;j++)
       shapes[i] = shapes[i] + shapecoeff[j] * shapedsgnmat[i + nSite * j];
     
-    if ((scales[i]<=0) || (shapes[i] <= -1)){
+    if (scales[i]<=0){
       //printf("scales[%i] = %f\n", i, scales[i]);
-      return 1;
+      return R_pow_di(1 - scales[i], 2) * MINF;
+    }
+
+    if (shapes[i] <= -1){
+      //printf("shapes[%i] = %f\n", i, shapes[i]);
+      return R_pow_di(shapes[i], 2) * MINF;
     }
   }
 
-  return 0;
+  return 0.0;
 }
   
 void gev(double *prob, int *n, double *locs, double *scales, double *shapes,

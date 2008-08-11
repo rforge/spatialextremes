@@ -7,28 +7,35 @@ void smithfull3d(double *data, double *distVec, int *nSite,
   //This is the Smith model. It computes the pairwise log-likelihood
 
   const int nPairs = *nSite * (*nSite - 1) / 2;
-  int i, flag = 0;
-  double *jac, *mahalDist, *frech;
+  int i;
+  double *jac, *mahalDist, *frech, flag = 0.0;
   
   jac = (double *)R_alloc(*nSite * *nObs, sizeof(double));
   mahalDist = (double *)R_alloc(nPairs, sizeof(double));
   frech = (double *)R_alloc(*nSite * *nObs, sizeof(double));
 
   //Some preliminary steps: Valid points?
-  for (i=0;i<*nSite;i++)
-    if ((scales[i] <= 0) || (shapes[i] <= -1)){
+   for (i=0;i<*nSite;i++){
+    if (scales[i] <= 0){
       //printf("scales <= 0!!!\n");
-      *dns = MINF;
+      *dns = R_pow_di(1 - scales[i], 2) * MINF;
       return;
     }
+    
+    if (shapes[i] <= -1){
+      //printf("shapes <= -1!!!\n");
+      *dns = R_pow_di(shapes[i], 2) * MINF;
+      return;
+    }
+  }
 
   //Stage 1: Computing the Mahalanobis distance
   flag = mahalDistFct3d(distVec, nPairs, cov11, cov12, cov13,
 			cov22, cov23, cov33, mahalDist);
   
-  if (flag == 1){
+  if (flag != 0.0){
     //printf("Problem with mahal. dist\n");
-    *dns = MINF;
+    *dns = flag;
     return;
   }
 
@@ -36,9 +43,9 @@ void smithfull3d(double *data, double *distVec, int *nSite,
   flag = gev2frech(data, *nObs, *nSite, locs, scales,
 		   shapes, jac, frech);
     
-  if (flag == 1){
+  if (flag != 0.0){
     //printf("problem with conversion to unit frechet\n");
-    *dns = MINF;
+    *dns = flag;
     return;
   }
   
@@ -60,8 +67,9 @@ void smithdsgnmat3d(double *data, double *distVec, int *nSite, int *nObs,
   //This is the Smith model. It computes the pairwise log-likelihood
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
-  int i, j, flag = 0;
-  double *jac, *mahalDist, *locs, *scales, *shapes, *frech;
+  int i, j;
+  double *jac, *mahalDist, *locs, *scales, *shapes, *frech,
+    flag = 0.0;
   
   jac = (double *)R_alloc(*nSite * *nObs, sizeof(double));
   mahalDist = (double *)R_alloc(nPairs, sizeof(double));
@@ -74,9 +82,9 @@ void smithdsgnmat3d(double *data, double *distVec, int *nSite, int *nObs,
   flag = mahalDistFct3d(distVec, nPairs, cov11, cov12, cov13,
 			cov22, cov23, cov33, mahalDist);
 
-  if (flag == 1){
+  if (flag != 0.0){
     //printf("problem with mahal. dist\n");
-    *dns = MINF;
+    *dns = flag;
     return;
   }
 
@@ -86,9 +94,9 @@ void smithdsgnmat3d(double *data, double *distVec, int *nSite, int *nObs,
 		       *nloccoeff, *nscalecoeff, *nshapecoeff,
 		       locs, scales, shapes);
 
-  if (flag == 1){
+  if (flag != 0.0){
     //printf("problem with the GEV parameters\n");
-    *dns = MINF;
+    *dns = flag;
     return;
   }
 
@@ -96,20 +104,15 @@ void smithdsgnmat3d(double *data, double *distVec, int *nSite, int *nObs,
   flag = gev2frech(data, *nObs, *nSite, locs, scales, shapes,
 		   jac, frech);
     
-  if (flag == 1){
+  if (flag != 0.0){
     //printf("problem with conversion to unit frechet\n");
-    *dns = MINF;
+    *dns = flag;
     return;
   }
   
   //Stage 4: Bivariate density computations
   *dns = lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
   
-  if (*dns == MINF){
-    //printf("problem with the pairwise lik.\n");
-    return;
-  }
-
   //Stage 5: Removing the penalizing terms (if any)
   // 1- For the location parameter
   if (*locpenalty > 0)

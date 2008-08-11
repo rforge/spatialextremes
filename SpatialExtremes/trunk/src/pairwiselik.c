@@ -6,7 +6,7 @@ double lplikschlather(double *data, double *rho, double *jac,
   //schalther model.
 
   int i, j, k, currentPair = -1;
-  double c1, dns, lFvec, dvecM1, dvecM2, dvecMixed;
+  double c1, dns, lFvec, dvecM1, dvecM2, dvecMixed, pbm;
   //c1 is a useful quantity - see documentation
 
   dns = 0.0;
@@ -43,11 +43,12 @@ double lplikschlather(double *data, double *rho, double *jac,
 	dvecMixed = (1 - R_pow_di(rho[currentPair], 2)) / 2 / R_pow_di(c1, 3) + 
 	  dvecM1 * dvecM2;
 
+	pbm = (1 + fabs(dvecMixed)) * MINF;
 	dvecMixed = log(dvecMixed);
 
 	if (!R_FINITE(dvecMixed)){
 	  //printf("dvecMixed is erradic\n");
-	  return MINF;
+	  return pbm;
 	}
 
 	//Now the final step, multiplying by Fvec and the gradient
@@ -71,7 +72,7 @@ double lpliksmith(double *data, double *mahalDist, double *jac,
   int i, j, k, currentPair = -1;
   double c1, c2, dns, lFvec, dvecM1, dvecM2, dvecMixed,
     dnormc1, dnormc2, pnormc1, pnormc2, data1Square,
-    data2Square, mahalSquare;
+    data2Square, mahalSquare, pbm;
 
   dns = 0.0;
   for (i=0;i<(nSite-1);i++){
@@ -114,11 +115,12 @@ double lpliksmith(double *data, double *mahalDist, double *jac,
 	  data[k + j * nObs] + c1 * dnormc2 / data2Square / mahalSquare /
 	  data[k + i * nObs];
 	
+	pbm = (1 + fabs(dvecMixed)) * MINF;
 	dvecMixed = log(dvecMixed);
 
 	if (!R_FINITE(dvecMixed)){
 	  //printf("dvecMixed is errradic: dvecMixed = %f\n", dvecMixed);
-	  return MINF;
+	  return pbm;
 	}
 
 	//Now the final step, multiplying by Fvec and the gradient

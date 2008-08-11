@@ -2,7 +2,7 @@
 #include <Rmath.h>
 #include <Rinternals.h>
 
-#define MINF -1.0e120
+#define MINF -1.0e60
 
 ///////////////////////////////////
 //  From schlather.c
@@ -56,14 +56,14 @@ void smithdsgnmat3d(double *data, double *distVec, int *nSite, int *nObs,
 void distance(double *coord, int *nDim, int *nSite,
 	      double *dist);
 void distVecFct(double *coord, int *nSite, int *nDim, double *distVec);
-int gev2frech(double *data, int nObs, int nSite, double *locs,
-	      double *scales, double *shapes, double *jac, double *frech);
-int dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
-		  double *shapedsgnmat, double *loccoeff, 
-		  double *scalecoeff, double *shapecoeff,
-		  int nSite, int nloccoeff, int nscalecoeff,
-		  int nshapecoeff, double *locs, double *scales,
-		  double *shapes);
+double gev2frech(double *data, int nObs, int nSite, double *locs,
+		 double *scales, double *shapes, double *jac, double *frech);
+double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
+		     double *shapedsgnmat, double *loccoeff, 
+		     double *scalecoeff, double *shapecoeff,
+		     int nSite, int nloccoeff, int nscalecoeff,
+		     int nshapecoeff, double *locs, double *scales,
+		     double *shapes);
 void gev(double *prob, int *n, double *locs, double *scales, double *shapes,
 	 double *quant);
 
@@ -78,20 +78,17 @@ void gpdlik(double *exceed, int *n, double *thresh, double *scale,
 ///////////////////////////////////
 //  From covariance.c
 //
-int whittleMatern(double *dist, int nPairs, double sill, double range,
-		  double smooth, double *rho);
-int cauchy(double *dist, int nPairs, double sill, double range,
-	   double smooth, double *rho);
-int powerExp(double *dist, int nPairs, double sill, double range,
-	     double smooth, double *rho);
-int genHyper(double *dist, int nPairs, double sill, double range,
-	     double smooth1, double smooth2,
-	     double smooth3, double *rho);
-int mahalDistFct(double *distVec, int nPairs, double *cov11,
-		 double *cov12, double *cov22, double *mahal);
-int mahalDistFct3d(double *distVec, int nPairs, double *cov11,
-		   double *cov12, double *cov13, double *cov22, 
-		   double *cov23, double *cov33, double *mahal);
+double whittleMatern(double *dist, int nPairs, double sill, double range,
+		     double smooth, double *rho);
+double cauchy(double *dist, int nPairs, double sill, double range,
+	      double smooth, double *rho);
+double powerExp(double *dist, int nPairs, double sill, double range,
+		double smooth, double *rho);
+double mahalDistFct(double *distVec, int nPairs, double *cov11,
+		    double *cov12, double *cov22, double *mahal);
+double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
+		      double *cov12, double *cov13, double *cov22, 
+		      double *cov23, double *cov33, double *mahal);
 
 ///////////////////////////////////
 //  From mcmc.c
