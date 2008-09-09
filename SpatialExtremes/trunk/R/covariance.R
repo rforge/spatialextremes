@@ -1,5 +1,5 @@
 covariance <- function(fitted, sill, range, smooth, cov.mod = "whitmat",
-                       plot = TRUE, dist, ...){
+                       plot = TRUE, dist, xlab, ylab, ...){
 
   if (!missing(fitted)){
     cov.mod <- fitted$cov.mod
@@ -24,7 +24,7 @@ covariance <- function(fitted, sill, range, smooth, cov.mod = "whitmat",
       
       ans <- sill * 2^(1-smooth) / gamma(smooth) * (dist / range)^smooth *
         besselK(dist / range, smooth)
-      ans[idx] <- 1
+      ans[idx] <- sill
       return(ans)
     }
   }
@@ -44,9 +44,17 @@ covariance <- function(fitted, sill, range, smooth, cov.mod = "whitmat",
   }
 
   if (plot){
-    tmp.fun <- function(dist) cov.fun(dist) - 0.05
-    xlimsup <- uniroot(tmp.fun, c(0, 10^16))$root
-    plot(cov.fun, from = 0, to = xlimsup, ...)
+
+    if (missing(xlab))
+      xlab <- "h"
+
+    if (missing(ylab))
+      ylab <- expression(rho(h))
+    
+    tmp.fun <- function(dist) (cov.fun(dist) - 0.05)^2
+
+    xlimsup <- optim(1, tmp.fun, method = "L-BFGS-B", lower = 1e-12)$par
+    plot(cov.fun, from = 0, to = xlimsup, xlab = xlab, ylab = ylab, ...)
   }
 
   if (!missing(dist)){
@@ -55,7 +63,5 @@ covariance <- function(fitted, sill, range, smooth, cov.mod = "whitmat",
   }
 
   else
-    invisible(cov.fun)
-
-  
+    invisible(cov.fun)  
 }
