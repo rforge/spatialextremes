@@ -1,24 +1,90 @@
 profile.maxstab <- function(fitted, param, range, n = 10,
-                            plot = TRUE, ...){
+                            plot = TRUE, conf = 0.90,
+                            method = "RJ", square = "chol", ...){
+
+  if (!(method %in% c("RJ", "CB", "none")))
+    stop("'method' must be one of 'RJ', 'CB' or 'none'")
+
+  if (!(square %in% c("chol", "svd")))
+    stop("'square' must be one of 'chol' or 'svd'")
+  
   param.names <- names(fitted$fitted.values)
   n.param <- length(param.names)
   idx.prof <- which(param.names == param)
   fixed.param <- fitted$fixed
   fixed.names <- names(fixed.param)
+
+  ihessian <- fitted$ihessian
+  var.cov <- fitted$var.cov
+
+  if (method == "CB"){
+    ##Chandler and Bate approach:
+    ivar.cov <- solve(var.cov)
+    hessian <- solve(ihessian)
+
+    if (square == "svd"){
+      svd.hessian <- svd(hessian)
+      svd.ivar.cov <- svd(ivar.cov)
+      M <- svd.hessian$u %*% diag(sqrt(svd.hessian$d)) %*%
+        t(svd.hessian$u)
+      Madj <- svd.ivar.cov$u %*% diag(sqrt(svd.ivar.cov$d)) %*%
+        t(svd.ivar.cov$u)
+    }
+
+    else{
+      M <- chol(hessian)
+      Madj <- chol(ivar.cov)
+    }
+    
+    C <- solve(M) %*% Madj
+    colnames(C) <- rownames(C) <- colnames(ihessian)      
+  }
+
+  if (method == "RJ"){
+    ##Rotnitzky and Jewell approach:
+    hessian <- solve(ihessian[param, param])
+    var.cov <- var.cov[param, param]
+      
+    Q <- var.cov %*% hessian
+    eigen.val <- eigen(Q)$values
+  }
   
   start <- as.list(fitted$fitted.values)
   start <- start[-idx.prof]
 
   fixed.values <- seq(range[1], range[2], length = n)
+  optfun <- fitted$lik.fun
+
+  if (method == "CB"){
+    par <- NULL
+    for (fixed.val in range){
+      if (length(fixed.names) > 0)
+        body(optfun) <- parse(text = paste("nplk(", paste("p[",1:(n.param-1),"]", collapse = ","),
+                                ",", paste(fixed.names, "=", as.numeric(fixed.param),
+                                           collapse = ","), ",", param, "=", fixed.val, ")"))
+      
+      else
+        body(optfun) <- parse(text = paste("nplk(", paste("p[",1:(n.param-1),"]", collapse = ","),
+                                ",", param, "=", fixed.val, ")"))
+
+      par <- rbind(par, optim(start, optfun)$par)
+    }
+
+    par <- cbind(range, par)
+    colnames(par) <- c(param, param.names[-idx.prof])
+    par <- par[,names(fitted$fitted)]
+    par.adj <- t(fitted(fitted) + C %*% (t(par) - fitted(fitted)))
+    range.adj <- par.adj[,param]
+    fixed.values <- seq(range.adj[1], range.adj[2], length = n)
+
+  }
 
   llik <- rep(NA, n)
   par <- matrix(NA, ncol = n.param - 1, nrow = n)
 
-  optfun <- fitted$lik.fun
-  
   for (i in 1:n){
     fixed.val <- fixed.values[i]
-    ##We need to modify the body of optfun for each fixed value
+
     if (length(fixed.names) > 0)
       body(optfun) <- parse(text = paste("nplk(", paste("p[",1:(n.param-1),"]", collapse = ","),
                               ",", paste(fixed.names, "=", as.numeric(fixed.param),
@@ -28,7 +94,6 @@ profile.maxstab <- function(fitted, param, range, n = 10,
       body(optfun) <- parse(text = paste("nplk(", paste("p[",1:(n.param-1),"]", collapse = ","),
                               ",", param, "=", fixed.val, ")"))
 
-  
     opt <- optim(start, optfun)
     llik[i] <- -opt$value
     par[i,] <- opt$par
@@ -36,9 +101,29 @@ profile.maxstab <- function(fitted, param, range, n = 10,
 
   ans <- cbind(fixed.values, llik, par)
   colnames(ans) <- c(param, "llik", param.names[-idx.prof])
+  ans <- ans[,c("llik", names(fitted$fitted))]
 
-  if (plot)
-    plot(ans[,1], ans[,2], xlab = param, ylab = "log-likelihood", ...)
+  if (plot){
+    llikmax <- fitted$logLik
+
+    if (method == "none")
+      plot(ans[,param], ans[,"llik"], xlab = param, ylab = "log-likelihood", ...)
+    
+    if (method == "RJ"){
+      b.conf <- llikmax - .5 * eigen.val * qchisq(conf, 1)
+      plot(ans[,param], ans[,"llik"], xlab = param, ylab = "log-likelihood", ...)
+      abline(h = llikmax)
+      abline(h = b.conf)
+    }
+
+    if (method == "CB"){
+      ans[,-1] <- t(fitted(fitted) + solve(C) %*% (t(ans[,-1]) - fitted(fitted)))
+      b.conf <- llikmax - .5 * qchisq(conf, 1)
+      plot(ans[,param], ans[,"llik"], xlab = param, ylab = "log-likelihood", ...)
+      abline(h = llikmax)
+      abline(h = b.conf)
+    }
+  }
   
   return(ans)
   
