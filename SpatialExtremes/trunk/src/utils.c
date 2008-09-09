@@ -1,46 +1,38 @@
 #include "header.h"
 
 void distance(double *coord, int *nDim, int *nSite,
-	      double *dist){
+	      int *vec, double *dist){
 
-  //This function computes the euclidean distance between each pair of
-  //locations
+  //This function computes either the euclidean distance or the
+  //distance vector between each pair of locations
+  const int nPair = *nSite * (*nSite - 1) / 2;
   int i, j, k, currentPair = 0;
 
-  for (i=0;i<(*nSite-1);i++){
-    for (j=i+1;j<*nSite;j++){
-      for (k=0;k<*nDim;k++)
-	dist[currentPair] = dist[currentPair] + 
-	  R_pow_di(coord[i + k * *nSite] -
-		   coord[j + k * *nSite], 2);
-
-      dist[currentPair] = sqrt(dist[currentPair]);
-      currentPair++;
-    }
-  }
-}
-
-void distVecFct(double *coord, int *nSite, int *nDim, 
-		double *distVec){
-
-  //This function computes the distance vector between each pair of
-  //locations
-  const int nPair = *nSite * (*nSite - 1) / 2;
-  int i, j, k, currentPair = -1;
-  
-  for (i=0;i<(*nSite-1);i++){
-    for (j=i+1;j<*nSite;j++){
-      currentPair++;
-      for (k=0;k<*nDim;k++)
-	distVec[k * nPair + currentPair] = coord[k * *nSite + j] -
-	  coord[k * *nSite + i];
-
-    }
-  }
-  return;
-}
+  if (*vec){
+    for (i=0;i<(*nSite-1);i++){
+      for (j=i+1;j<*nSite;j++){
+	for (k=0;k<*nDim;k++)
+	  dist[k * nPair + currentPair] = coord[k * *nSite + j] -
+	    coord[k * *nSite + i];
 	
-      
+	currentPair++;
+      }
+    }
+  }
+
+  else{
+    for (i=0;i<(*nSite-1);i++){
+      for (j=i+1;j<*nSite;j++){
+	for (k=0;k<*nDim;k++)
+	  dist[currentPair] += R_pow_di(coord[i + k * *nSite] -
+					coord[j + k * *nSite], 2);
+	
+	dist[currentPair] = sqrt(dist[currentPair]);
+	currentPair++;
+      }
+    }
+  }
+} 
 
 double gev2frech(double *data, int nObs, int nSite, double *locs, 
 		 double *scales, double *shapes, double *jac,
@@ -51,6 +43,7 @@ double gev2frech(double *data, int nObs, int nSite, double *locs,
   //When flag == 1, the GEV parameters are invalid.
   
   int i, j;
+  double ans = 0.0;
   
   for (i=0;i<nSite;i++){
     for (j=0;j<nObs;j++){
@@ -65,8 +58,8 @@ double gev2frech(double *data, int nObs, int nSite, double *locs,
 	frech[i * nObs + j] = 1 + shapes[i] * frech[i * nObs + j];
 	
 	if (frech[i * nObs + j] <= 0) {
-	  //printf("transformation to Frechet is erradic\n");
-	  return R_pow_di(1 - frech[i * nObs + j], 2) * MINF;
+	  //printf("1 + shape * (data - loc) <= 0!\n");
+	  ans += R_pow_di(1 - frech[i * nObs + j], 2) * MINF;
 	}
 	
 	else{
@@ -77,7 +70,8 @@ double gev2frech(double *data, int nObs, int nSite, double *locs,
       }
     }
   }
-  return 0.0;
+
+  return ans;
 }
 
 double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
@@ -88,6 +82,7 @@ double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
 		     double *shapes){
 
   int i, j;
+  double ans = 0.0;
 
   for (i=0;i<nSite;i++){
        
@@ -96,26 +91,26 @@ double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
     shapes[i] = 0.0;
     
     for (j=0;j<nloccoeff;j++)
-      locs[i] = locs[i] + loccoeff[j] * locdsgnmat[i + nSite * j];
+      locs[i] += loccoeff[j] * locdsgnmat[i + nSite * j];
     
     for (j=0;j<nscalecoeff;j++)
-      scales[i] = scales[i] + scalecoeff[j] * scaledsgnmat[i + nSite * j];
+      scales[i] += scalecoeff[j] * scaledsgnmat[i + nSite * j];
     
     for (j=0;j<nshapecoeff;j++)
-      shapes[i] = shapes[i] + shapecoeff[j] * shapedsgnmat[i + nSite * j];
+      shapes[i] += shapecoeff[j] * shapedsgnmat[i + nSite * j];
     
     if (scales[i]<=0){
-      //printf("scales[%i] = %f\n", i, scales[i]);
-      return R_pow_di(1 - scales[i], 2) * MINF;
+      //printf("scale <= 0\n");
+      ans += R_pow_di(1 - scales[i], 2) * MINF;
     }
 
     if (shapes[i] <= -1){
-      //printf("shapes[%i] = %f\n", i, shapes[i]);
-      return R_pow_di(shapes[i], 2) * MINF;
+      //printf("shape <= 0\n");
+      ans += R_pow_di(shapes[i], 2) * MINF;
     }
   }
 
-  return 0.0;
+  return ans;
 }
   
 void gev(double *prob, int *n, double *locs, double *scales, double *shapes,
