@@ -1,5 +1,5 @@
 .start.smith <- function(data, coord, loc.model, scale.model, shape.model,
-                         print.start.values = FALSE, method = "Nelder",
+                         print.start.values = TRUE, method = "Nelder",
                          ...){
 
   if (ncol(coord) == 2)
@@ -16,24 +16,23 @@
   n.site <- ncol(data)
 
   loc <- scale <- shape <- rep(NA, n.site)
+  dataFrech <- data
   for (i in 1:n.site){
     marg.param <- gevmle(data[,i])
     loc[i] <- marg.param["loc"]
     scale[i] <- marg.param["scale"]
     shape[i] <- marg.param["shape"]
-    data[,i] <- gev2frech(data[,i], loc[i], scale[i], shape[i])
+    dataFrech[,i] <- gev2frech(dataFrech[,i], loc[i], scale[i], shape[i])
   }
 
-  if (length(fixed.param) > 0)
-    args <- c(list(data = data, coord = coord, method = method,
-                   std.err.type = "none", warn = FALSE), fixed.param)
+  if (length(fixed.param) > 0){
+    args <- c(list(data = dataFrech, coord = coord, method = "Nelder", marge = "frech"),
+              fixed.param)
+    covs <- do.call("fitcovmat", args)$param
+  }
 
   else
-    args <- list(data = data, coord = coord, method = method,
-                 std.err.type = "none", warn = FALSE)
-
-  
-  covs <- do.call("smithfull", args)$param
+    covs <- fitcovmat(dataFrech, coord, method = "Nelder", marge = "frech")$param  
   
   locCoeff <- loc.model$init.fun(loc)
   scaleCoeff <- scale.model$init.fun(scale)
@@ -64,13 +63,13 @@
     cat("Starting values are:\n")
     print(unlist(start))
   }
-  
+
   return(start)
 }
 
 
 .start.schlather <- function(data, coord, cov.mod, loc.model, scale.model, shape.model,
-                             print.start.values = FALSE, method = "Nelder",
+                             print.start.values = TRUE, method = "Nelder",
                              ...){
 
   param <- c("sill", "range", "smooth")
@@ -82,12 +81,13 @@
   n.site <- ncol(data)
 
   loc <- scale <- shape <- rep(NA, n.site)
+  dataFrech <- data
   for (i in 1:n.site){
     marg.param <- gevmle(data[,i])
     loc[i] <- marg.param["loc"]
     scale[i] <- marg.param["scale"]
     shape[i] <- marg.param["shape"]
-    data[,i] <- gev2frech(data[,i], loc[i], scale[i], shape[i])
+    dataFrech[,i] <- gev2frech(dataFrech[,i], loc[i], scale[i], shape[i])
   }
 
   locCoeff <- loc.model$init.fun(loc)
@@ -105,16 +105,15 @@
   if (any(scales.hat <= 0))
     scaleCoeff[1] <- scaleCoeff[1] - min(scales.hat) + .1
 
-  if (length(fixed.param) > 0)
-    args <- c(list(data = data, coord = coord, cov.mod = cov.mod, method = method,
-                   std.err.type = "none", warn = FALSE), fixed.param)
-
-  else
-    args <- list(data = data, coord = coord, cov.mod = cov.mod, method = method,
-                 std.err.type = "none", warn = FALSE)
-
+  if (length(fixed.param) > 0){
+    args <- c(list(data = dataFrech, coord = coord, cov.mod = cov.mod,
+                   method = "Nelder", marge = "frech"), fixed.param)
+    cov.param <- do.call("fitcovariance", args)$param
+  }
   
-  cov.param <- do.call("schlatherfull", args)$param
+  else
+    cov.param <- fitcovariance(dataFrech, coord, cov.mod, method = "Nelder",
+                               marge = "frech")$param
   
   start <- as.list(cov.param)
 
