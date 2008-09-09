@@ -1,0 +1,300 @@
+fitcovmat <- function(data, coord, marge = "mle", method = "Nelder",
+                      control = list(), start, ...){
+
+  n.site <- ncol(data)
+  n.pairs <- n.site * (n.site - 1) / 2
+  dist.dim <- ncol(coord)
+
+  if (is.null(control$maxit))
+    control$maxit <- 10000
+  
+  extcoeff <- fitextcoeff(data, coord, estim = "Smith",
+                          plot = FALSE, loess = FALSE,
+                          marge = marge)
+  weights <- extcoeff[,"std.err"]
+  extcoeff <- extcoeff[,"ext.coeff"]
+
+  idx <- which((extcoeff > 1) & (extcoeff < 2) & (weights > 0))
+  ##idx <- which(weights > 0)
+  extcoeff <- extcoeff[idx]
+  weights <- weights[idx]
+  n.pairs.real <- length(idx)
+  dist <- distance(coord, vec = TRUE)[idx,]
+
+  if (dist.dim == 2){
+    
+    param <- c("cov11", "cov12", "cov22")
+    
+    fun2d <- function(cov11, cov12, cov22)
+      .C("fitcovmat2d", as.double(cov11), as.double(cov12),
+         as.double(cov22), as.integer(n.pairs.real), as.double(dist),
+         as.double(extcoeff), as.double(weights), ans = double(1),
+         PACKAGE = "SpatialExtremes")$ans
+  }
+
+  if (dist.dim == 3){
+    param <- c("cov11", "cov12", "cov13", "cov22", "cov23", "cov33")
+
+    fun3d <- function(cov11, cov12, cov13, cov22, cov23, cov33)
+      .C("fitcovmat3d", as.double(cov11), as.double(cov12), as.double(cov13),
+         as.double(cov22), as.double(cov23), as.double(cov33),
+         as.integer(n.pairs.real), as.double(dist), as.double(extcoeff),
+         as.double(weights), ans = double(1), PACKAGE = "SpatialExtremes")$ans
+  }
+
+  fixed.param <- list(...)[names(list(...)) %in% param]
+
+  if (method == "L-BFGS-B"){
+    if (dist.dim == 2){
+      lower <- c(0, -Inf, 0)
+      upper <- rep(Inf, 3)
+      names(lower) <- names(upper) <- c("cov11", "cov12", "cov22")
+    }
+
+    if (dist.dim == 3){
+      lower <- c(0, rep(-Inf, 2), 0, -Inf, 0)
+      upper <- rep(Inf, 6)
+      names(lower) <- names(upper) <- c("cov11", "cov12", "cov13",
+                                        "cov22", "cov23", "cov33")
+    }
+
+    idx <- which(names(lower) == names(fixed.param))
+
+    if (length(idx) > 0){
+      lower <- lower[-idx]
+      upper <- upper[-idx]
+    }
+  }
+
+  if (missing(start)){
+    if (dist.dim == 2){
+      if (any(names(fixed.param) == "cov12"))
+        start <- list(cov11 = 1 + 2 * abs(list(...)$cov12),
+                      cov12 = list(...)$cov12,
+                      cov22 = 1 + 2 * abs(list(...)$cov12))
+      
+      else{
+        a <- 2 * qnorm(extcoeff / 2)
+        sigma.start <- mean(rowSums(dist^2) / 4 / a)
+        start <- list(cov11 = sigma.start, cov12 = 0, cov22 = sigma.start)
+      }
+    }
+    
+    if (dist.dim == 3){
+      a <- 2 * qnorm(extcoeff / 2)
+      sigma.start <- mean(rowSums(dist^2) / 4 / a)
+      start <- list(cov11 = sigma.start, cov12 = 0, cov13 = 0, cov22 = sigma.start,
+                    cov23 = 0, cov33 = sigma.start)
+    }
+    
+    start <- start[!(param %in% names(list(...)))]
+  }
+
+  if (!is.list(start)) 
+    stop("'start' must be a named list")
+  
+  if (!length(start)) 
+    stop("there are no parameters left to maximize over")
+  
+  nm <- names(start)
+  l <- length(nm)
+
+  if (dist.dim == 2)
+    f <- formals(fun2d)
+
+  if (dist.dim == 3)
+    f <- formals(fun3d)
+  
+  names(f) <- param
+  m <- match(nm, param)
+  
+  if(any(is.na(m))) 
+    stop("'start' specifies unknown arguments")
+
+  if (dist.dim == 2){
+    formals(fun2d) <- c(f[m], f[-m])
+    obj.fun <- function(p, ...) fun2d(p, ...)
+    
+
+    if (l > 1)
+      body(obj.fun) <- parse(text = paste("fun2d(", paste("p[",1:l,
+                               "]", collapse = ", "), ", ...)"))
+  }
+
+  if (dist.dim == 3){
+    formals(fun3d) <- c(f[m], f[-m])
+    obj.fun <- function(p, ...) fun3d(p, ...)
+    
+
+    if (l > 1)
+      body(obj.fun) <- parse(text = paste("fun3d(", paste("p[",1:l,
+                               "]", collapse = ", "), ", ...)"))
+  }
+    
+  if(any(!(param %in% c(nm,names(fixed.param)))))
+    stop("unspecified parameters")
+
+  if (method == "L-BFGS-B")
+    opt <- optim(start, obj.fun, hessian = FALSE, method = method,
+                 control = control, lower = lower, upper = upper, ...)
+
+  else
+    opt <- optim(start, obj.fun, hessian = FALSE, method = method,
+                 control = control, ...)
+
+  if (opt$convergence != 0) 
+    opt$convergence <- "iteration limit reached"
+
+  else
+    opt$convergence <- "successful"
+
+  param.names <- param
+  param <- c(opt$par, unlist(fixed.param))
+  param <- param[param.names]
+
+  if (dist.dim == 2)
+    Sigma <- matrix(c(param["cov11"], param["cov12"], param["cov12"],
+                      param["cov22"]), 2, 2)
+
+  else
+    Sigma <- matrix(c(param["cov11"], param["cov12"], param["cov13"],
+                      param["cov12"], param["cov22"], param["cov23"],
+                      param["cov13"], param["cov23"], param["cov33"]),
+                    3, 3)
+  
+  iSigma <- solve(Sigma)
+
+  ext.coeff <- function(posVec)
+    2 * pnorm(sqrt(posVec %*% iSigma %*% posVec) / 2)
+  
+  fitted <- list(fitted.values = opt$par, fixed = unlist(fixed.param),
+                 param = param, convergence = opt$convergence,
+                 counts = opt$counts, message = opt$message, data = data,
+                 est = "Least Square", opt.value = opt$value, model = "Smith",
+                 coord = coord, fit.marge = FALSE, cov.mod = "Gaussian",
+                 ext.coeff = ext.coeff)
+
+  class(fitted) <- c(fitted$model, "maxstab")
+  return(fitted)
+  
+}
+
+fitcovariance <- function(data, coord, cov.mod, marge = "mle", method = "Nelder",
+                          control = list(), ...){
+
+  n.site <- ncol(data)
+  n.pairs <- n.site * (n.site - 1) / 2
+  dist.dim <- ncol(coord)
+
+  if (is.null(control$maxit))
+    control$maxit <- 10000
+
+  if (!(cov.mod %in% c("whitmat","cauchy","powexp")))
+    stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp'")
+
+  if (cov.mod == "whitmat")
+    cov.mod.num <- 1
+  if (cov.mod == "cauchy")
+    cov.mod.num <- 2
+  if (cov.mod == "powexp")
+    cov.mod.num <- 3
+  
+  extcoeff <- fitextcoeff(data, coord, estim = "Smith",
+                          plot = FALSE, loess = FALSE,
+                          marge = marge)
+  std.err <- extcoeff[,"std.err"]
+  weights <- std.err^2 / sum(std.err^2)
+  extcoeff <- extcoeff[,"ext.coeff"]
+  weights[which(extcoeff >= 1.838)] <- 0
+
+  dist <- distance(coord)
+
+  param <- c("sill", "range", "smooth")
+    
+  fun <- function(sill, range, smooth)
+    .C("fitcovariance", as.integer(cov.mod.num), as.double(sill), as.double(range),
+       as.double(smooth), as.integer(n.pairs), as.double(dist),
+       as.double(extcoeff), as.double(weights), ans = double(1),
+       PACKAGE = "SpatialExtremes")$ans
+
+  fixed.param <- list(...)[names(list(...)) %in% param]
+
+  if (method == "L-BFGS-B"){
+    lower <- rep(0, 3)
+
+    if (cov.mod == "whitmat")
+      upper <- c(1, Inf, 50)
+    if (cov.mod == "cauchy")
+      upper <- c(1, Inf, Inf)
+    if (cov.mod == "powexp")
+      upper <- c(1, Inf, 2)
+
+    names(lower) <- names(upper) <- c("sill", "range", "smooth")
+
+    idx <- which(names(lower) == names(fixed.param))
+
+    if (length(idx) > 0){
+      lower <- lower[-idx]
+      upper <- upper[-idx]
+    }
+  }
+  
+  start <- list(sill = .5, range = 0.75 * max(dist), smooth = .5)
+  start <- start[!(param %in% names(list(...)))]
+
+  nm <- names(start)
+  l <- length(nm)
+  
+  f <- formals(fun)
+  names(f) <- param
+  m <- match(nm, param)
+  
+  if(any(is.na(m))) 
+    stop("'start' specifies unknown arguments")
+
+  formals(fun) <- c(f[m], f[-m])
+  obj.fun <- function(p, ...) fun(p, ...)
+    
+  if (l > 1)
+    body(obj.fun) <- parse(text = paste("fun(", paste("p[",1:l,
+                             "]", collapse = ", "), ", ...)"))
+  
+  if(any(!(param %in% c(nm,names(fixed.param)))))
+    stop("unspecified parameters")
+
+  if (method == "L-BFGS-B")
+    opt <- optim(start, obj.fun, hessian = FALSE, method = method,
+                 control = control, lower = lower, upper = upper,
+                 ...)
+  
+  else
+    opt <- optim(start, obj.fun, hessian = FALSE, method = method,
+                 control = control, ...)
+
+  if (opt$convergence != 0) 
+    opt$convergence <- "iteration limit reached"
+
+  else
+    opt$convergence <- "successful"
+
+  param.names <- param
+  param <- c(opt$par, unlist(fixed.param))
+  param <- param[param.names]
+
+  cov.fun <- covariance(sill = param["sill"], range = param["range"],
+                        smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
+  
+  ext.coeff <- function(h)
+    1 + sqrt(1 - 1/2 * (cov.fun(h) + 1))
+ 
+  fitted <- list(fitted.values = opt$par, fixed = unlist(fixed.param),
+                 param = param, convergence = opt$convergence,
+                 counts = opt$counts, message = opt$message, data = data,
+                 est = "Least Square", opt.value = opt$value, model = "Schlather",
+                 coord = coord, fit.marge = FALSE, cov.mod = cov.mod,
+                 cov.fun = cov.fun, ext.coeff = ext.coeff)
+
+  class(fitted) <- c(fitted$model, "maxstab")
+  return(fitted)
+  
+}
