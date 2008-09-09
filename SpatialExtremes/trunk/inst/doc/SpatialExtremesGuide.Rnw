@@ -23,7 +23,7 @@
   \begin{center}
     \LARGE A User's Guide to the SpatialExtremes Package\\
     \vspace{1em}
-    \Large Mathieu Ribatet$^\dag$ Simone Padoan$^\ast$\\
+    \Large Mathieu Ribatet$^\dag$ \& Simone Padoan$^\ast$\\
     \vspace{1em}
     Copyright \copyright{2008}\\
     \vspace{2em}
@@ -97,20 +97,6 @@ useful functions for prediction and visualizing fitted models. Details
 for the computation of the pairwise density and gradient are reported
 into the Annex~\ref{cha:dens-grad-comp}.
 
-% \section*{Citing the package/guide}
-
-% To cite this guide or the package in publications please use the
-% following bibliographic database entry.
-% \begin{verbatim}
-% `@Manual{your_key,
-%   title = {SpatialExtremes: A R package for Modelling Spatial Extremes},
-%   author = {Ribatet, M. and Padoan, S.},
-%   year = {2008},
-%   month = {May},
-%   url = {http://cran.r-project.org/}
-% }
-% \end{verbatim}
-
 \section*{Caveat}
 
 I have checked these functions as best I can but, as ever, they may
@@ -168,21 +154,19 @@ max-stable process allowing for a random shape.
 
 It is out of the scope of this document to describe fully the main
 differences between the two canonical constructions. We will restrict
-our attention to the analytical definitions of these two
-constructions. 
+our attention to particular cases of these characterisations.
 
 Unfortunately, closed forms for the density of these two models are
 only known for two different points in $\mathbb{R}^d$. Consequently,
 fitting max-stable processes to data is not straightforward and the
 SpatialExtremes package provides convenient tools for it.
 
-\section{The Smith's Characterisation}
+\section{The Smith's Model}
 \label{sec:smiths-char}
 
-The Smith's characterisation\footnote{There's another form of the
-  Smith's model that uses a Student distribution instead of the Normal
-  one. However, it is not currently implemented.} of a max-stable
-process is given by:
+The Smith's model\footnote{There's another form of the Smith's model
+  that uses a Student distribution instead of the Normal one. However,
+  it is not currently implemented.} is given by:
 \begin{equation}
   \label{eq:smith}
   \Pr[Z_1 \leq z_1, Z_2 \leq z_2] = \exp\left[-\frac{1}{z_1} \Phi
@@ -214,10 +198,10 @@ The derivation of the density is reported in section
 \ref{sec:density-computation-smith}. Currenlty, the package only
 handle 2 by 2 or 3 by 3 covariance matrix $\Sigma$.
 
-\section{The Schlather's Characterisation}
+\section{The Schlather's Model}
 \label{sec:schl-char}
 
-The Schlather's characterisation of a max-stable process is given by:
+The Schlather's model is given by:
 \begin{equation}
   \label{eq:schlather}
   \Pr[Z_1 \leq z_1, Z_2 \leq z_2] = \exp\left[-\frac{1}{2}
@@ -232,20 +216,21 @@ Currently, there is three types of covariance functions implemented:
 
 \bigskip
 \begin{tabular}{ll}
-  \textbf{Whittle-Matérn} & $\rho(h) =
+  \textbf{Whittle-Matérn} & $\rho(h) = sill
   \frac{2^{1-smooth}}{\Gamma(smooth)} \left(\frac{h}{range}
   \right)^{smooth} K_{smooth}\left(\frac{h}{range} \right)$\\ 
-  \textbf{Cauchy} & $\rho(h) = \left[1 + \left(\frac{h}{range}
+  \textbf{Cauchy} & $\rho(h) = sill \left[1 + \left(\frac{h}{range}
     \right)^2 \right]^{-smooth}$\\
-  \textbf{Powered Exponential} & $\rho(h) = \exp\left[-
+  \textbf{Powered Exponential} & $\rho(h) = sill \exp\left[-
     \left(\frac{h}{range} \right)^{smooth} \right]$
 \end{tabular}
 \bigskip
 
-where $h$ is the distance between locations \#1 and \#2, $range$ and
-$smooth$ are the range and smooth parameter of the covariance
-function, $\Gamma$ is the gamma function and $K_{smooth}$ is the
-modified Bessel function of the third kind with order $smooth$.
+where $h$ is the distance between locations \#1 and \#2, $sill$,
+$range$ and $smooth$ are the sill, the range and the smooth parameters
+of the covariance function, $\Gamma$ is the gamma function and
+$K_{smooth}$ is the modified Bessel function of the third kind with
+order $smooth$.
 
 The derivation of the density is reported in section
 \ref{sec:density-computation-schlather}.
@@ -278,6 +263,12 @@ composite likelihood estimator\footnote{In our case, the maximum
 score equation is unbiased, the sum of these score equations is
 unbiased too and leads to consistent estimations.
 
+If one is interested only in fitting the covariance matrix $\Sigma$ or
+the covariance function $\rho$ to data, another fitting procedure is
+available. The strategy is estimate the extremal coefficient and to
+fit either the Smith's or the Schlather's models using a least square
+criterion.
+
 \section{Assuming Unit Fréchet Margins}
 \label{sec:simple-case-study}
 
@@ -296,17 +287,17 @@ locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
 ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
-param=c(0,1,0,3, 1.2), maxstable="extr", n = 80)
+param=c(0,1,.2,3, 1.2), maxstable="extr", n = 80)
 ms0 <- t(ms0)
 @
 
 For this application, the covariance function is taken to be the
-Whittle-Matérn covariance function with range and smooth parameters
-equal to 3 and 1.2 respectively. The locations are distributed
-uniformly on the square $[0,10]^2$.
+Whittle-Matérn covariance function with sill, range and smooth
+parameters equal to 0.8 (1 - 0.2), 3 and 1.2 respectively. The
+locations are distributed uniformly on the square $[0,10]^2$.
 
-To fit a max-stable process assuming unit Fréchet margins, all we have
-to do is to invoke:
+To fit a max-stable process using pairwise likelihood and assuming
+unit Fréchet margins, all we have to do is to invoke:
 <<>>=
 fitmaxstab(ms0, locations, cov.mod = "whitmat", fit.marge = FALSE)
 @ 
@@ -342,8 +333,15 @@ fitmaxstab(ms0, locations, cov.mod = "powexp", fit.marge = FALSE)
 
 One may also consider the Smith's characterisation instead of the
 Schlather's one:
-<<eval=FALSE>>=
-fitmaxstab(ms0, locations, cov.mod = "gauss", fit.marge = FALSE)
+<<>>=
+sigma = matrix(c(100, 25, 25, 220),ncol = 2)
+sigma.inv = solve(sigma)
+sqrtCinv = t(chol(sigma.inv))
+model = list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
+msSmith <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model,
+maxstable="Bool", n = 50)
+msSmith <- t(msSmith)                   
+fitmaxstab(msSmith, locations, cov.mod = "gauss", fit.marge = FALSE)
 @ 
 
 Obvisously, for each covariance model, one can fix any parameter; so
@@ -358,6 +356,24 @@ will result in fitting the GEV parameters for each location. However,
 be careful as it will be really CPU demanding as there will be
 \verb|3 n.site + p| parameters to estimate - where \verb|p| is the
 number of parameters for the covariance part.
+
+It is also possible to used different optimization routines to fit the
+model to data. This is achieved by passing the \verb|method|
+argument. For instance, if one want to use the \verb|BFGS| method:
+<<eval=FALSE>>=
+fitmaxstab(ms0, locations, cov.mod = "gauss", cov12 = 0, fit.marge = FALSE, method = "BFGS")
+@
+Instead of using the \verb|optim| function, one may want to use the
+\verb|nlm| or \verb|nlminb| functions. This is done as before using
+the \verb|method = "nlm"| or \verb|method = "nlminb"| option.
+
+If now, we want to fit the model using the least square criterion:
+<<>>=
+##Smith's model
+fitcovmat(ms0, locations)
+##Schlather's model with Powered exponential covariance function
+fitcovariance(ms0, locations, "whitmat")
+@ 
 
 \section{With Unknown GEV Margins}
 \label{sec:with-unknown-gev}
@@ -449,7 +465,7 @@ preserving the polynomials for the scale and shape parameters, this
 will require a little more steps as the knots and the penalty
 coefficient must be defined\footnote{Currently, an automatic criteria
   for defining the ``best'' penalty coefficient does not exist.}.
-<<>>=
+<<eval = FALSE>>=
 n.knots <- 5
 knots <- quantile(locations[,2], 1:n.knots/(n.knots+1))
 loc.form <- y ~ rb(lat, knots = knots, degree = 3, penalty = .5)
@@ -457,9 +473,9 @@ fitmaxstab(ms1, locations, "gauss", loc.form = loc.form, scale.form = scale.form
 @ 
 
 Obviously, all these steps still remain valid when fitting the
-Schlather's characterisation. Note that you can fix any parameter as
-before for example, if one want to suppose that \verb|scaleCoeff3 = 1|,
-this is done by invoking the following line:
+Schlather's model. Note that you can fix any parameter as before for
+example, if one want to suppose that \verb|scaleCoeff3 = 1|, this is
+done by invoking the following line:
 <<eval=FALSE>>=
 fitmaxstab(ms1, locations, "powexp", loc.form = loc.form, scale.form = scale.form,
            shape.form= shape.form, scaleCoeff3 = 1)
@@ -467,11 +483,12 @@ fitmaxstab(ms1, locations, "powexp", loc.form = loc.form, scale.form = scale.for
 
 Please note that when using 3 smoothing splines for the GEV
 parameters, you might have to tweak the \verb|ndeps| option in the
-\verb|optim| function:
+\verb|optim| function if you use the \verb|BFGS| optimization
+procedure:
 <<eval=FALSE>>=
 fitmaxstab(ms1, locations, "powexp", loc.form = loc.form,
            scale.form = scale.form, shape.form= shape.form,
-           control = list(ndeps = rep(10^-4, n.par)))
+           control = list(ndeps = rep(10^-6, n.par)), method = "BFGS")
 @ 
 where \verb|n.par| is the number of parameters to be estimated.
 
@@ -492,8 +509,8 @@ following relation:
 \end{equation}
 where $H(\psi) = \mathbb{E}[\nabla^2 \ell_p(\psi;\mathbf{Y})]$ (the
 Hessian matrix) and $J(\psi) = \mbox{Var}[\nabla
-\ell_p(\psi;\mathbf{Y})]$ (the Jacobian matrix), where the
-expectations are with respect to the ``full'' density.
+\ell_p(\psi;\mathbf{Y})]$, where the expectations are with respect to
+the ``full'' density.
 
 In practice, to get the standard errors we need to get efficient
 estimates of $H(\psi)$ and $J(\psi)$. The estimation of the former is
@@ -558,13 +575,56 @@ In practice, one can have a look at the output of the
 \verb|fitmaxstab| function or use the \verb|TIC| function.
 
 <<>>=
-model1 <- fitmaxstab(ms0, locations, cov.mod = "gauss", fit.marge = FALSE)
-model2 <- fitmaxstab(ms0, locations, cov.mod = "powexp", fit.marge = FALSE)
+n.site <- 40
+locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
+colnames(locations) <- c("lon", "lat")
+
+ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="stable",
+                   param=c(0,1,0,3, 1.2), maxstable="extr", n = 80)
+ms0 <- t(ms0)
+model1 <- fitmaxstab(ms0, locations, cov.mod = "powexp", fit.marge = FALSE, sill = 1)
+model2 <- fitmaxstab(ms0, locations, cov.mod = "cauchy", fit.marge = FALSE, sill = 1)
 TIC(model1, model2)
 @ 
 
 Fortunately, with this simulated application, we clearly see that our
 \verb|model1| is the best model.
+
+TIC is useful when comparing different models. However, it may lack of
+power if the two models are nested. When dealing with nested models,
+one may prefer using the so called likelihood ratio statistics.
+
+Because we are working with a misspecified model, the usual asymptotic
+$\chi^2_p$ distribution, where $p$ is the number of parameter to be
+estimated, doesn't hold anymore. There's two way to solve this issue:
+(a) adjusting the $\chi^2$ distribution or (b) adjusting the composite
+likelihood so that the usual $\chi^2_p$ holds - see \citet{Cox2004}.
+
+<<>>=
+require(RandomFields)
+
+##Define the coordinates of each location
+n.site <- 30
+locations <- matrix(rnorm(2*n.site, sd = sqrt(.2)), ncol = 2)
+colnames(locations) <- c("lon", "lat")
+
+##Simulate a max-stable process - with unit Frechet margins
+sigma <- matrix(c(100, 25, 25, 220),ncol = 2)
+sigma.inv <- solve(sigma)
+sqrtCinv <- t(chol(sigma.inv))
+model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
+ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model,
+                   maxstable = "Bool", n = 50)
+ms0 <- t(ms0)
+
+##Fit three nested models
+M0 <- fitmaxstab(ms0, locations, "gauss", fit.marge = FALSE)
+M1 <- fitmaxstab(ms0, locations, "gauss", fit.marge = FALSE, cov11 =
+100)
+anova(M0, M1)
+@ 
+
+From this output, we can see that M1 seems to be a better model than M0.
 
 \chapter{Manipulating and Visualising Fitted Models}
 \label{cha:manip-visu-fitt}
@@ -619,7 +679,7 @@ predict(fitted, new.coord)
 The extremal coefficient is a useful quantity to assess the dependence
 between two locations $x_1$ and $x_2 \in \mathbb{R}^d$. Assuming that
 the data could be modeled by a max-stable process with unit Fréchet
-margin, the extremal coefficient $\theta(||x_1 - x_2||)$ satisfies:
+margin, the extremal coefficient $\theta(x_1 - x_2)$ satisfies:
 \begin{equation}
   \label{eq:extcoeff}
   \Pr\left[Z(x_1) \leq z, Z(x_2) \leq z\right] = \exp\left(-
@@ -634,19 +694,20 @@ natural way to know how evolves the dependence between extremes in
 space.
 
 The SpatialExtremes package proposes two way to plot the evolution of
-the extremal coefficient as the (euclidean) distance increase. The
-first one is to use an empirical estimation of the extremal
-coefficient; while the second use a parametric estimation using the
-Smith's and Schlather's models.
+the extremal coefficient as the distance increases. The first one is
+to use an empirical estimation of the extremal coefficient; while the
+second uses a parametric estimation using the Smith's and Schlather's
+models.
 
-\citet{Schlather2003} introduce a methodology to estimate non
-parametrically the extremal coefficient. The \verb|extcoeff.emp|
+\citet{Schlather2003} introduced a methodology to estimate non
+parametrically the extremal coefficient. The \verb|fitextcoeff|
 function uses this methodology to get estimates for each pair of
 stations within the region and plots the evolution of these estimates
 as the distance increases. In addition, by default, a \emph{lowess}
 curve can also be plotted to help detecting trends. This is done using
-the following lines and Figure plots the resulting output.
-<<label=extcoeff.emp>>=
+the following lines and Figure~\ref{fig:fitextcoeff} plots the
+resulting output.
+<<label=fitextcoeff>>=
 n.site <- 30
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
@@ -658,27 +719,26 @@ ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
 ms0 <- t(ms0)
 
 ##Plots the extremal coefficient function
-extcoeff.emp(ms0, locations)
+exco <- fitextcoeff(ms0, locations)
 @ 
 
 \begin{figure}
   \centering
 <<fig=TRUE,echo=FALSE>>=
-<<extcoeff.emp>>
+<<fitextcoeff>>
 @   
   \caption{Evolution of the (non-parametric) estimates of the extremal
     coefficient as the distance increases.}
-  \label{fig:extcoeff.emp}
+  \label{fig:fitextcoeff}
 \end{figure}
 
 The closed form of the extremal coefficient function is known for both
-Smith's and Schlather's characterisations. Namely, the function is
-given by:
+Smith's and Schlather's models. Namely, the function is given by:
 
 \bigskip
 \begin{tabular}{ll}
   \textbf{Smith} & $\theta(x_1 - x_2) = 2
-  \Phi\left(\frac{\sqrt{(x_1 - x_2)^T \Sigma^-1 (x_1 - x_2)}}{2}
+  \Phi\left(\frac{\sqrt{(x_1 - x_2)^T \Sigma^{-1} (x_1 - x_2)}}{2}
   \right)$\\
   \textbf{Schlather} & $\theta(||x_1 - x_2||) = 1 + \sqrt{\frac{1 -
       \rho(||x_1 - x_2||)}{2}}$
@@ -708,7 +768,7 @@ extcoeff(fitted)
 Another way to assess how evolves the dependence between extremes as
 the distance increases is to plot the covariance function. This is
 done using the \verb|covariance| function. Note that this function is
-only available for the Schlather's characterisation.
+(currently) only available for the Schlather's model.
 
 Basically, there are two ways to call the \verb|covariance|
 function. We can call it once we have fitted a max-stable process or
@@ -744,7 +804,7 @@ scale.form <- scale ~ lon + I(lat^2)
 shape.form <- shape ~ 1
 
 fitted <- fitmaxstab(ms1, locations, "cauchy", loc.form, scale.form,
-shape.form)
+                     shape.form)
 
 covariance(fitted, ylim = c(0,1))
 covariance(sill = 1, range = 3, smooth = 1.2, cov.mod = "cauchy", col = 3, add = TRUE)
@@ -816,7 +876,7 @@ shape.form <- shape ~ rb(lon, degree = 3, knots = knots.lon,
 
 ##  1- Fit a max-stable process
 schlather <- fitmaxstab(ms1, locations, "whitmat", loc.form, scale.form,
-                        shape.form, control = list(ndeps = rep(10^-4, 30)))
+                        shape.form)
 @ 
 
 One can have a contour plot (Fig.~\ref{fig:mapGEV}) for the evolution
@@ -867,11 +927,10 @@ map(schlather, "quant", ret.per = 50 , ranges = new.ranges)
 \chapter{Density and Gradient Computations}
 \label{cha:dens-grad-comp}
 
-\section{The Smith's Characterisation}
+\section{The Smith's Model}
 \label{sec:smith-char}
 
-Let us recall that the Smith's characterisation of a max-stable
-process is given by:
+Let us recall that the Smith's model is given by:
 \begin{equation}
   \label{eq:smith}
   \Pr[Z_1 \leq z_1, Z_2 \leq z_2] = \exp\left[-\frac{1}{z_1} \Phi
@@ -1033,10 +1092,9 @@ likelihood estimator $\psi_p$ satisfies:
 \begin{equation*}
   \psi_p \sim \mathcal{N}\left(\psi, H^{-1} J H^{-1}\right)
 \end{equation*}
-where $H$ is the Fisher information matrix and $J$ the gradient of the
-log pairwise likelihood.
-
-This section aims to derive analytical form for $J$.
+where $H$ is the Fisher information matrix and $J$ as defined in
+Section~\ref{sec:assess-uncert}. This section aims to derive
+analytical form for $J$.
 
 Let us recall that the log pairwise likelihood is defined by:
 \begin{equation*}
@@ -1151,7 +1209,7 @@ supposed to be ordinary GEV.
 We have to be aware that the bivariate density changes when we do not
 suppose unit Fréchet margins anymore. For instance, the bivariate
 density evaluated at two observations $y_1$ and $y_2$ with ordinary
-GEV margins is given by:
+GEV margins is now given by:
 \begin{equation}
   \label{eq:densSmithOrdGEV}
   f(y_1,y_2) = f(z_1, z_2) |J(y_1, y_2)|
@@ -1443,10 +1501,10 @@ where
 \end{equation*}
 
 
-\section{The Schlather's Characterisation}
+\section{The Schlather's Model}
 \label{sec:schlather-char}
 
-The Schlather's characterisation of a max-stable process is given by:
+The Schlather's model is given by:
 \begin{equation}
   \label{eq:schlather}
   \Pr[Z_1 \leq z_1, Z_2 \leq z_2] = \exp\left[-\frac{1}{2}
@@ -1598,7 +1656,7 @@ where $\frac{\partial A}{\partial \beta}$, $\frac{\partial B}{\partial
   D}{\partial \beta}$ and $\frac{\partial E}{\partial \beta}$ have
 been already defined in Section~\ref{sec:with-ordinary-gev}.
 
-\bibliography{references}
+\bibliography{./references}
 \bibliographystyle{kluwer}
 \end{document}
 
