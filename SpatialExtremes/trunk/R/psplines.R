@@ -79,7 +79,7 @@ cv <- function(y, x, knots, degree, plot = TRUE, n.points = 150, ...){
     return(cv)
   }
 
-  opt <- nlm(obj.fun, 500, ...)
+  opt <- nlm(obj.fun, sd(y), ...)
 
   if (opt$code >= 3)
     warning("Optimization may have not succeeded")
