@@ -7,6 +7,8 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
     cat("   Pair. Deviance:", x$deviance, "\n")
     cat("              TIC:", TIC(x), "\n")
   }
+  if (x$est == "Least Square")
+    cat("  Objective Value:", x$opt.value, "\n")
   if (x$model == "Schlather"){
 
     if (x$cov.mod == "emp")
