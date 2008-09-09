@@ -1,11 +1,49 @@
-extcoeff <- function(fitted, n = 200, ...){
+extcoeff <- function(fitted, cov.mod, param,
+                     n = 200, xlab, ylab, ...){
 
-  if (ncol(fitted$coord) > 2)
-    stop("It's not possible to use this function when the coordinate space has a dimension >= 2")
+  if (all(class(fitted) != "maxstab"))
+    stop("The 'extcoeff' function is only available for object of class 'maxstab'")
   
-  model <- fitted$model
-  extCoeff <- fitted$ext.coeff
-  param <- fitted$param
+  if (missing(fitted) && (missing(cov.mod) || missing(param)))
+    stop("You must specify either 'fitted' either 'cov.mod' AND 'param'")
+
+  if (!missing(fitted)){
+    if (ncol(fitted$coord) > 2)
+      stop("It's not possible to use this function when the coordinate space has a dimension > 2")
+  
+    model <- fitted$model
+    extCoeff <- fitted$ext.coeff
+    param <- fitted$param
+  }
+
+  else{
+    if (length(param) != 3)
+      stop("You must specify all parameters in the Smith's or Schalther's model")
+  
+    if (cov.mod == "gauss"){
+      model <- "Smith"
+      names(param) <- c("cov11", "cov12", "cov22")
+      Sigma <- matrix(c(param[1:2], param[2:3]), 2, 2)
+      iSigma <- try(solve(Sigma), silent = TRUE)
+      
+      if (!is.matrix(iSigma) || (det(Sigma) <= 0) ||
+          (param[1] <= 0))
+        stop("You defined a non semi-definite positive matrix")
+      
+      extCoeff <- function(h)
+        2 * pnorm(sqrt(h %*% iSigma %*% h) / 2)
+    }
+    
+    else{
+      model <- "Schlather"
+      names(param) <- c("sill", "range", "smooth")
+      extCoeff <- function(h)
+        1 + sqrt(1 - .5 * (covariance(sill = param[1], range = param[2],
+                                      smooth = param[3], cov.mod = cov.mod,
+                                      plot = FALSE, dist = h)))
+    }
+  }
+  
   ##Define an appropriate range for the x-y axis
   if (model == "Smith"){
     A <- matrix(c(param["cov11"], param["cov12"], param["cov12"],
@@ -15,24 +53,23 @@ extcoeff <- function(fitted, n = 200, ...){
     eigen.vectors <- eigen.values$vectors
     eigen.values <- eigen.values$values
 
-    r <- qnorm(.9999999)^2 / sqrt(2)
+    r <- 25 / sqrt(2)
     axis1 <- eigen.vectors %*% c(r / sqrt(eigen.values[1]), 0)
     axis2 <- eigen.vectors %*% c(0, r / sqrt(eigen.values[2]))
 
     x.max <- max(abs(axis1[1]), abs(axis2[1]))
     y.max <- max(abs(axis1[2]), abs(axis2[2]))
     
-    x.range <- 1.2 * c(-x.max, x.max)
-    y.range <- 1.2 * c(-y.max, y.max)
+    x.range <- 1.3 * c(-x.max, x.max)
+    y.range <- 1.3 * c(-y.max, y.max)
     
   }
 
   if (model == "Schlather"){
-    fun <- function(h) abs(2 - extCoeff(h))
-    init <- sqrt(sum(colMeans(fitted$coord)^2))
-    opt1 <- optim(init, fun, method = "BFGS")$par
+    fun <- function(h) abs(1.838 - extCoeff(h))
+    opt1 <- optim(param[2], fun, method = "BFGS")$par
 
-    y.range <- x.range <- 1.2 * c(-abs(opt1), abs(opt1))
+    y.range <- x.range <- c(-abs(opt1), abs(opt1))
   }
 
   extcoeff.hat <- matrix(NA, nrow = n, ncol = n)
@@ -54,9 +91,18 @@ extcoeff <- function(fitted, n = 200, ...){
       }
   }
 
-  coord.names <- colnames(fitted$coord)
-  xlab <- coord.names[1]
-  ylab <- coord.names[2]
+  if (missing(fitted))
+    coord.names <- c("x", "y")
+
+  else
+    coord.names <- colnames(fitted$coord)
+
+  if (missing(xlab))
+    xlab <- coord.names[1]
+
+  if (missing(ylab))
+    ylab <- coord.names[2]
+  
   contour(xs, ys, extcoeff.hat, xlab = xlab, ylab = ylab, ...)
 }
     
