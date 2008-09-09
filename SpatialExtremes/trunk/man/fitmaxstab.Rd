@@ -7,7 +7,7 @@
 }
 \usage{fitmaxstab(data,  coord, cov.mod = c("gauss", "whitmat",
 "cauchy", "powexp"), loc.form, scale.form, shape.form, marg.cov = NULL,
-\dots, fit.marge = FALSE, warn = TRUE, method = "Nelder", control =
+\dots, fit.marge = FALSE, warn = TRUE, method = "Nelder", start, control =
 list(), std.err.type = "score", corr = FALSE)}
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -16,9 +16,9 @@ list(), std.err.type = "score", corr = FALSE)}
     location. Each row corresponds to one location.}
   \item{cov.mod}{A character string corresponding the the covariance
     model in the max-stable representation. Must be one of "gauss" for
-    the Smith's characterisation; or "whitmat", "cauchy" or "powexp" for
+    the Smith's model; or "whitmat", "cauchy" or "powexp" for
     the Whittle-Matern, the Cauchy and the Powered Exponential
-    covariance family with the Schlather's characterisation.} 
+    covariance family with the Schlather's model.} 
   \item{loc.form, scale.form, shape.form}{R formulas defining the
     spatial linear model for the GEV parameters. May be missing. See
     section details.}
@@ -41,6 +41,10 @@ list(), std.err.type = "score", corr = FALSE)}
     \code{CG}, \code{L-BFGS-B}, \code{SANN} or \code{nlm}. See \code{\link{optim}}
     for details. Please note that passing \code{nlm} will use the
     \code{\link{nlm}} function instead of \code{\link{optim}}.}
+  \item{start}{A named list giving the initial values for the
+    parameters over which the pairwise likelihood is to be minimized. If
+    \code{start} is omitted the routine attempts to find good starting
+    values - but might fail.}
   \item{control}{A list giving the control parameters to be passed to
     the \code{\link{optim}} function.}
   \item{std.err.type}{Character string. Must be one of "none", "score",
@@ -158,35 +162,29 @@ loc.form <- loc ~ lat
 scale.form <- scale ~ lon + I(lat^2)
 shape.form <- shape ~ 1
 
-##Fit a max-stable process
-##  1- using the Schlather representation
+##Fit a max-stable process using the Schlather's model
 fitmaxstab(ms1, locations, "whitmat", loc.form, scale.form,
            shape.form)
 
-##  2- using the Smith representation
-fitmaxstab(ms1, locations, "gauss", loc.form, scale.form,
-           shape.form)
-
-##  3- without any spatial model for the GEV parameters
+## Model without any spatial structure for the GEV parameters
 ## Be careful this could be *REALLY* time consuming
 \dontrun{fitmaxstab(ms1, locations, "whitmat")}
 
-##  4- Fixing the smooth parameter of the Whittle-Matern family
-##     to 0.5 - e.g. considering exponential family. We suppose the date
-##     are unit Frechet here.
+##  Fixing the smooth parameter of the Whittle-Matern family
+##  to 0.5 - e.g. considering exponential family. We suppose the date
+##  are unit Frechet here.
 fitmaxstab(ms0, locations, "whitmat", smooth = 0.5, fit.marge = FALSE)
 
-##  5- Fitting a penalized smoothing splines for the margins.
-##     We need to re-simulate a new max-stable process.
-sigma = matrix(c(100, 25, 25, 220),ncol = 2)
-sigma.inv = solve(sigma)
-sqrtCinv = t(chol(sigma.inv))
-model = list(list(model = "gauss", var = 1,
-  aniso = sqrtCinv / 2))
+##  Fitting a penalized smoothing splines for the margins with the
+##     Smith's model
+
+sigma <- matrix(c(100, 25, 25, 220),ncol = 2)
+sigma.inv <- solve(sigma)
+sqrtCinv <- t(chol(sigma.inv))
+model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
 ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model,
                    maxstable="Bool", n = 40)
 ms1 <- t(ms0)
-
 
 ##     And transform it to ordinary GEV margins with a non-linear
 ##     function
@@ -218,9 +216,39 @@ loc.form <- y ~ rb(lat, knots = knots, degree = 3, penalty = .5)
 scale.form <- y ~ rb(lat, knots = knots, degree = 3, penalty = .5)
 shape.form <- y ~ rb(lon, knots = knots2, degree = 3, penalty = .5)
 
-fitmaxstab(ms1, locations, "gauss", loc.form, scale.form, shape.form,
-                   control = list(ndeps = rep(1e-4, 24), trace = 10),
-           std.err.type = "none")
+fitted <- fitmaxstab(ms1, locations, "gauss", loc.form, scale.form, shape.form,
+                     control = list(ndeps = rep(1e-6, 24), trace = 10),
+                     std.err.type = "none", method = "BFGS")
+fitted
+op <- par(mfrow=c(1,3))
+plot(locations[,2], param.loc, col = 2, ylim = c(7, 14),
+     ylab = "location parameter", xlab = "latitude")
+plot(fun, from = 0, to = 10, add = TRUE, col = 2)
+points(locations[,2], predict(fitted)[,"loc"], col = "blue", pch = 5)
+new.data <- cbind(lon = seq(0, 10, length = 100), lat = seq(0, 10, length = 100))
+lines(new.data[,1], predict(fitted, new.data)[,"loc"], col = "blue")
+legend("topleft", c("true values", "predict. values", "true curve", "predict. curve"),
+       col = c("red", "blue", "red", "blue"), pch = c(1, 5, NA, NA), inset = 0.05,
+       lty = c(0, 0, 1, 1), ncol = 2)
+
+plot(locations[,2], param.scale, col = 2, ylim = c(7, 14),
+     ylab = "scale parameter", xlab = "latitude")
+plot(fun, from = 0, to = 10, add = TRUE, col = 2)
+points(locations[,2], predict(fitted)[,"scale"], col = "blue", pch = 5)
+lines(new.data[,1], predict(fitted, new.data)[,"scale"], col = "blue")
+legend("topleft", c("true values", "predict. values", "true curve", "predict. curve"),
+       col = c("red", "blue", "red", "blue"), pch = c(1, 5, NA, NA), inset = 0.05,
+       lty = c(0, 0, 1, 1), ncol = 2)
+
+plot(locations[,1], param.shape, col = 2,
+     ylab = "shape parameter", xlab = "longitude")
+plot(fun2, from = 0, to = 10, add = TRUE, col = 2)
+points(locations[,1], predict(fitted)[,"shape"], col = "blue", pch = 5)
+lines(new.data[,1], predict(fitted, new.data)[,"shape"], col = "blue")
+legend("topleft", c("true values", "predict. values", "true curve", "predict. curve"),
+       col = c("red", "blue", "red", "blue"), pch = c(1, 5, NA, NA), inset = 0.05,
+       lty = c(0, 0, 1, 1), ncol = 2)
+par(op)
 }
 \author{Mathieu Ribatet}
 \keyword{htest}
