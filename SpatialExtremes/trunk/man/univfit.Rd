@@ -6,8 +6,8 @@
   generalised Pareto distribution to data using maximum likelihood.
 }
 \usage{
-gevmle(x, \dots, method = "BFGS")
-gpdmle(x, threshold, \dots, method = "BFGS")
+gevmle(x, \dots, method = "Nelder")
+gpdmle(x, threshold, \dots, method = "Nelder")
 }
 \arguments{
   \item{x}{Numeric vector of observations}

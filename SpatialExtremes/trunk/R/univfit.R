@@ -1,4 +1,4 @@
-gevmle <- function(x, ..., method = "BFGS"){
+gevmle <- function(x, ..., method = "Nelder"){
 
   n <- length(x)
   param <- c("loc", "scale", "shape")
@@ -41,19 +41,18 @@ gevmle <- function(x, ..., method = "BFGS"){
 }
 
 
-gpdmle <- function(x, threshold, ..., method = "BFGS"){
+gpdmle <- function(x, threshold, ..., method = "Nelder"){
 
   param <- c("scale", "shape")
   
-  nlgpd <- function(scale, shape){
+  nlgpd <- function(scale, shape)
     -.C("gpdlik", as.double(exceed), as.integer(nat), as.double(threshold),
         as.double(scale), as.double(shape), dns = double(1),
         PACKAGE = "SpatialExtremes")$dns
-  }
 
   high <- (x > threshold) & !is.na(x)
   exceed <- as.double(x[high])
-  nat <- as.integer(exceed)
+  nat <- as.integer(length(exceed))
 
   start <- c(scale = mean(exceed) - min(threshold), shape = 0.0)
 
