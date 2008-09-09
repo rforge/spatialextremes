@@ -6,22 +6,30 @@ distance <- function(coord, vec = FALSE){
   dist.dim <- ncol(coord)
   n.pairs <- n.site * (n.site - 1) / 2
 
+  
   if (vec){
-    dist <- .C("distVecFct", as.double(coord), as.integer(n.site),
-               as.integer(dist.dim), distVec = double(dist.dim * n.pairs),
-               PACKAGE = "SpatialExtremes")$distVec
+    dist <- .C("distance", as.double(coord), as.integer(dist.dim),
+               as.integer(n.site), vec, dist = double(dist.dim * n.pairs),
+               PACKAGE = "SpatialExtremes")$dist
     dist <- matrix(dist, ncol = dist.dim, nrow = n.pairs)
   }
 
   else    
     dist <- .C("distance", as.double(coord), as.integer(dist.dim),
-               as.integer(n.site), dist = double(n.pairs),
+               as.integer(n.site), vec, dist = double(n.pairs),
                PACKAGE = "SpatialExtremes")$dist
   
   return(dist)
 }
 
-gev2frech <- function(x, loc, scale, shape){
+gev2frech <- function(x, loc, scale, shape, emp = FALSE){
+
+  if (emp){
+    probs <- ppoints(x)
+    x[order(x)] <- - 1 / log(probs)
+    return(x)
+  }
+  
   if (shape == 0)
     exp((x - loc)/scale)
   

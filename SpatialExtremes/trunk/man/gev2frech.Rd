@@ -6,7 +6,7 @@
   Transforms GEV data to unit Frechet ones and vice versa
 }
 \usage{
-gev2frech(x, loc, scale, shape)
+gev2frech(x, loc, scale, shape, emp = FALSE)
 frech2gev(x, loc, scale, shape)
 }
 \arguments{
@@ -14,6 +14,8 @@ frech2gev(x, loc, scale, shape)
     margins}
   \item{loc, scale, shape}{The location, scale and shape parameters of
     the GEV.}
+  \item{emp}{Logical. If \code{TRUE}, data are transformed to unit
+    Frechet margins using the empirical CDF.}
 }
 \value{
   Returns a numeric vector with the same length of \code{x}

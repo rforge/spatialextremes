@@ -7,20 +7,20 @@ void gevlik(double *data, int *n, double *loc, double *scale,
   
   dvec = (double *)R_alloc(*n, sizeof(double));
 
-  if(*scale <= 0) {
-    *dns = MINF;
+  if( (*scale <= 0) & (*shape < -1)) {
+    *dns = -1e6;
     return;
   }
 
   for(i=0;i<*n;i++)  {
     data[i] = (data[i] - *loc) / *scale;
     
-    if(*shape == 0) 
+    if(*shape == 0.0) 
       dvec[i] = -log(*scale) - data[i] - exp(-data[i]);
     else {
       data[i] = 1 + *shape * data[i];
       if(data[i] <= 0) {
-	*dns = MINF;
+	*dns = -1e6;
 	return;
       }
       dvec[i] = -log(*scale) - R_pow(data[i], -1 / *shape) -
@@ -41,25 +41,30 @@ void gpdlik(double *exceed, int *n, double *thresh, double *scale,
   
   dvec = (double *)R_alloc(*n, sizeof(double));
 
-  if(*scale <= 0) {
-    *dns = MINF;
+  if ((*scale <= 0) && (*shape < -1)) {
+    *dns = -1e6;
     return;
   }
 
-  for(i=0;i<*n;i++)  {
+  for (i=0;i<*n;i++) {
     exceed[i] = (exceed[i] - *thresh) / *scale;
+    
     if (exceed[i] <= 0) {
-      *dns = MINF;
+      *dns = -1e6;
       return;
     }
-    if(*shape == 0) 
+
+    if(*shape == 0.0) 
       dvec[i] = -log(*scale) - exceed[i];
+
     else {
       exceed[i] = 1 + *shape * exceed[i];
-      if(exceed[i] <= 0) {
-	*dns = MINF;
+      
+      if (exceed[i] <= 0) {
+	*dns = -1e6;
 	return;
       }
+      
       dvec[i] = -log(*scale) - (1 / *shape + 1) * log(exceed[i]);
     }
   }

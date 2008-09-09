@@ -2,14 +2,15 @@
 #include <Rmath.h>
 #include <Rinternals.h>
 
-#define MINF -1.0e60
+#define MINF -1.0e15
+#define EPS DBL_EPSILON
 
 ///////////////////////////////////
 //  From schlather.c
 //
 void schlatherfull(int *covmod, double *data, double *dist, int *nSite, int *nObs,
 		   double *locs, double *scales, double *shapes, double *sill,
-		   double *range, double *smooth, double *dns);
+		   double *range, double *smooth, int *fitmarge, double *dns);
 void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
 		      double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
 		      double *locpenalty, double *scaledsgnmat, double *scalepenmat,
@@ -23,7 +24,8 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 //
 void smithfull(double *data, double *distVec, int *nSite,
 	       int *nObs, double *locs, double *scales, double *shapes,
-	       double *cov11, double *cov12, double *cov22, double *dns);
+	       double *cov11, double *cov12, double *cov22, int *fitmarge,
+	       double *dns);
 void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs, 
 		  double *locdsgnmat, double *locpenmat, int *nloccoeff,
 		  int *npparloc, double *locpenalty, double *scaledsgnmat,
@@ -39,7 +41,7 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs,
 void smithfull3d(double *data, double *distVec, int *nSite,
 		 int *nObs, double *locs, double *scales, double *shapes,
 		 double *cov11, double *cov12, double *cov13, double *cov22,
-		 double *cov23, double *cov33, double *dns);
+		 double *cov23, double *cov33, int *fitmarge, double *dns);
 void smithdsgnmat3d(double *data, double *distVec, int *nSite, int *nObs, 
 		    double *locdsgnmat, double *locpenmat, int *nloccoeff,
 		    int *npparloc, double *locpenalty, double *scaledsgnmat,
@@ -54,8 +56,7 @@ void smithdsgnmat3d(double *data, double *distVec, int *nSite, int *nObs,
 //  From utils.c
 //
 void distance(double *coord, int *nDim, int *nSite,
-	      double *dist);
-void distVecFct(double *coord, int *nSite, int *nDim, double *distVec);
+	      int *vec, double *dist);
 double gev2frech(double *data, int nObs, int nSite, double *locs,
 		 double *scales, double *shapes, double *jac, double *frech);
 double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
@@ -132,3 +133,26 @@ double penalization(double *penmat, double *beta, double pencoeff, int n,
 		    int nppar);
 double penalization2(double *penmat, double *beta, double pencoeff, int n,
 		     int nppar);
+
+
+///////////////////////////////////
+//  From extcoeff.c
+//
+void extCoeffSmith(double *frech, int *nObs, int *nSite,
+		   double *extCoeff);
+void extCoeffST(double *frech, double *xBar, double *z, double *theta,
+		int *nObs, double *dns);
+
+///////////////////////////////////
+//  From fitcovmat.c
+//
+void fitcovmat2d(double *cov11, double *cov12, double *cov22,
+		 int *nPairs, double *dist, double *extcoeff,
+		 double *weights, double *ans);
+void fitcovmat3d(double *cov11, double *cov12, double *cov13,
+		 double *cov22, double *cov23, double *cov33,
+		 int *nPairs, double *dist, double *extcoeff,
+		 double *weights, double *ans);
+void fitcovariance(int *covmod, double *sill, double *range, double *smooth,
+		   int *nPairs, double *distVec, double *extcoeff,
+		   double *weights, double *ans);
