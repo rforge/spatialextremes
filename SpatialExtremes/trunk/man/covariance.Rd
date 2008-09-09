@@ -7,7 +7,7 @@
 }
 \usage{
 covariance(fitted, sill, range, smooth, cov.mod = "whitmat", plot = TRUE,
-dist, ...)
+dist, xlab, ylab, ...)
 }
 \arguments{
   \item{fitted}{An object of class ``maxstab''. Most often this will be
@@ -22,6 +22,7 @@ dist, ...)
     is plotted.} 
   \item{dist}{A numeric vector corresponding to the distance at which
     the covariance function should be evaluated. May be missing.}
+  \item{xlab,ylab}{The x-axis and y-axis labels. May be missing.}
   \item{\dots}{Several option to be passed to the \code{\link{plot}}
     function.}
 }
@@ -61,7 +62,7 @@ for (i in 1:n.site)
   param.shape[i] + param.loc[i]
 
 ##Define a model for the GEV margins to be fitted
-##shape ~ 1 stands for the GEV shape parameter is constant
+##shape ~ 1 stands for a constant GEV shape parameter
 ##over the region
 loc.form <- loc ~ lat
 scale.form <- scale ~ lon + I(lat^2)
@@ -69,7 +70,7 @@ shape.form <- shape ~ 1
 
 fitted <- fitmaxstab(ms1, locations, "whitmat", loc.form, scale.form,
                shape.form)
-covariance(fitted, xlab = "Distance", ylab = "Covariance")
+covariance(fitted, ylim = c(0, 1))
 covariance(sill = 1, range = 3, smooth = .5, cov.mod = "whitmat", add = TRUE, col
                = 3)
 title("Whittle-Matern covariance function")

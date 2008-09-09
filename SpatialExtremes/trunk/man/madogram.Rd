@@ -4,7 +4,7 @@
 \description{Computes the madogram for max-stable processes.}
 \usage{
 madogram(data, coord, n.lag = 13, gev.param = c(0, 1, 0), which =
-c("mado", "ext"), \dots)
+c("mado", "ext"), xlab, ylab, \dots)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -18,6 +18,8 @@ c("mado", "ext"), \dots)
   \item{which}{A character vector of maximum size 2. It specifies if the
     madogram and/or the extremal coefficient functions have to be
     plotted.}
+  \item{xlab,ylab}{The x-axis and y-axis labels. May be missing. Note
+    that \code{ylab} must have the same length has \code{which}.}
   \item{\dots}{Additional options to be passed to the \code{\link{plot}}
     function.} 
 }
@@ -55,7 +57,7 @@ c("mado", "ext"), \dots)
     Statistics}, 373--390.
 }
 \seealso{
-  \code{\link{extcoeff.emp}}
+  \code{\link{fitextcoeff}}
 }
 \examples{
 require(RandomFields)
@@ -68,10 +70,9 @@ ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
                    param=c(0,1,0,30, .5), maxstable="extr",
                    n = 40)
 ms0 <- t(ms0)
-ms1 <- ms0
 
 ##Compute the madogram
-madogram(ms1, locations)
+madogram(ms0, locations)
 }
 \author{Mathieu Ribatet}
 \keyword{hplot}

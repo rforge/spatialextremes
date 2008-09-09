@@ -6,7 +6,7 @@
 }
 \usage{
 \method{profile}{maxstab}(fitted, param, range, n = 10, plot = TRUE,
-\dots)
+conf = 0.90, method = "RJ", square = "chol", \dots)
 }
 \arguments{
   \item{fitted}{An object of class ``maxstab''. Most often, it will be
@@ -19,6 +19,14 @@
     considered.}
   \item{plot}{Logical. If \code{TRUE} (default), the profile trace is
     plotted.}
+  \item{conf}{Numeric giving the confidence interval level.}
+  \item{method}{Character string. Must be one of "CB", "RJ" or "none" for the
+    Chandler and Bate or the Rotnitzky and Jewell approaches
+    respectively. The "none" method simply plots the profile of the
+    log-composite likelihood. See details.}
+  \item{square}{The choice for the matrix square root. This is only
+    useful for the 'CB' method. Must be one of 'chol' (Cholesky) or
+    'svd' (Singular Value Decomposition).}
   \item{\dots}{Extra options that must be passed to the
     \code{\link{plot}} function.}
 }
@@ -32,6 +40,26 @@
   constrained maximum likelihood estimates for the remaining model
   parameters.
 }
+\details{
+  The Rotnitzky and Jewell approach consists in adjusting the
+  distribution of the likelihood ratio statistics - which under
+  misspecification is no longer \eqn{\chi^2}{\chi^2} distributed.
+
+  The Chandler and Bate approach adjusts the composite likelihood itself
+  is such a way that the usual asymptotic \eqn{\chi^2}{\chi^2} null
+  distribution is preserved. Note that in the current code, we use the
+  singular value decomposition for the computation of matrix square
+  roots to preserve asymmetry in the profile composite likelihood.
+}
+\references{
+  Chandler, R. E. and Bate, S. (2007) Inference for clustered data using
+  the independence loglikelihood \emph{Biometrika}, \bold{94},
+  167--183.
+
+  Rotnitzky, A. and Jewell, N. (1990) Hypothesis testing of regression
+  parameters in semiparametric generalized linear models for cluster
+  correlated data. \emph{Biometrika} \bold{77}, 485--97.
+}
 \examples{
 require(RandomFields)
 
@@ -41,38 +69,19 @@ locations <- matrix(rnorm(2*n.site, sd = sqrt(.2)), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
 ##Simulate a max-stable process - with unit Frechet margins
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
-                   param=c(0,1,0,30, .5), maxstable="extr",
-                   n = 30)
-ms1 <- t(ms0)
-
-##Now define the spatial model for the GEV parameters
-param.loc <- -10 + 2 * locations[,2]
-param.scale <- 5 + 2 * locations[,1] + locations[,2]^2
-param.shape <- rep(0.2, n.site)
-##Transform the unit Frechet margins to GEV 
-for (i in 1:n.site)
-  ms1[,i] <- param.scale[i] * (ms1[,i]^param.shape[i] - 1) /
-  param.shape[i] + param.loc[i]
-
-##Define a model for the GEV margins to be fitted
-##shape ~ 1 stands for the GEV shape parameter is constant
-##over the region
-loc.form <- loc ~ lat
-scale.form <- scale ~ lon + I(lat^2)
-shape.form <- shape ~ 1
-
+sigma <- matrix(c(100, 25, 25, 220),ncol = 2)
+sigma.inv <- solve(sigma)
+sqrtCinv <- t(chol(sigma.inv))
+model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
+ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model,
+                   maxstable="Bool", n = 50)
+ms0 <- t(ms0)
 ##Fit a max-stable process
-##  1- using the Schlather representation
-\dontrun{
-fitted <- fitmaxstab(ms1, locations, "schlather", loc.form, scale.form,
-                     shape.form)
-}
+##  1- using the Smith's model
+fitted <- fitmaxstab(ms0, locations, "gauss", fit.marge = FALSE)
 
-##Plot the profile pairwise log-likelihood for the smooth parameter
-\dontrun{
-profile(fitted, "smooth", range = c(.1, 1))
-}
+##Plot the profile pairwise log-likelihood for the ''cov11'' parameter
+profile(fitted, "cov11", range = c(20, 180))
 }
 \author{Mathieu Ribatet}
 \keyword{models}
