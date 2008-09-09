@@ -50,7 +50,7 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
                             paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                            "as.double(sill), as.double(range), as.double(smooth), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+                            "as.double(sill), as.double(range), as.double(smooth), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
   }
 
   else{
@@ -58,9 +58,11 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
                             paste("as.double(rep(1,", n.site, ")), "),
                             paste("as.double(rep(1,", n.site, ")), "),
                             paste("as.double(rep(1,", n.site, ")), "),
-                            "as.double(sill), as.double(range), as.double(smooth), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+                            "as.double(sill), as.double(range), as.double(smooth), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
     param <- c("sill", "range", "smooth")
   }
+
+  fixed.param <- list(...)[names(list(...)) %in% param]
   
   ##Define the formal arguments of the function
   form.nplk <- NULL
@@ -72,8 +74,7 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
   
   if (missing(start)) {
 
-    start <- list(sill = 0.5, range = max(dist), smooth = .5)
-    
+    start <- list()
     if (fit.marge){
       locs <- scales <- rep(NA, n.site)
       shapes <- rep(0, n.site)
@@ -85,9 +86,19 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
         shapes[i] <- marg.param["shape"]
       }
       
-      start <- c(start, as.list(unlist(list(loc = locs, scale = scales, shape = shapes))))
+      start <- as.list(unlist(list(loc = locs, scale = scales, shape = shapes)))
     }
 
+    if (length(fixed.param) > 0){
+      args <- c(list(data = data, coord = coord, cov.mod = cov.mod,
+                     method = method, marge = "emp"), fixed.param)
+      cov.start <- do.call("fitcovariance", args)$param
+    }
+
+    else
+      cov.start <- fitcovariance(data, coord, cov.mod, method = method, marge = "emp")$param
+
+    start <- c(as.list(cov.start), start)
     start <- start[!(param %in% names(list(...)))]
   }
   
@@ -114,15 +125,13 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
     body(nllh) <- parse(text = paste("nplk(", paste("p[",1:l,
                             "]", collapse = ", "), ", ...)"))
   
-  fixed.param <- list(...)[names(list(...)) %in% param]
-  
   if(any(!(param %in% c(nm,names(fixed.param)))))
     stop("unspecified parameters")
   
   start.arg <- c(list(p = unlist(start)), fixed.param)
 
   init.lik <- do.call("nllh", start.arg)
-  if (warn && (init.lik >= 1.0e60)) 
+  if (warn && (init.lik >= 1.0e15)) 
     warning("negative log-likelihood is infinite at starting values")
 
   if (method == "nlminb"){
@@ -132,7 +141,7 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
     opt$value <- opt$objective
     names(opt$par) <- nm
     
-    if ((opt$convergence != 0) || (opt$value >= 1.0e60)) {
+    if ((opt$convergence != 0) || (opt$value >= 1.0e15)) {
       if (warn)
         warning("optimization may not have succeeded")
     }
@@ -167,7 +176,7 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
     opt <- optim(start, nllh, hessian = hessian, ..., method = method,
                  control = control)
   
-    if ((opt$convergence != 0) || (opt$value >= 1.0e60)) {
+    if ((opt$convergence != 0) || (opt$value >= 1.0e15)) {
       
       if (warn)
         warning("optimization may not have succeeded")
@@ -181,7 +190,7 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
 
   if (opt$value == init.lik){
     if (warn)
-      warning("optimization stayed at the starting values. Consider tweaking the ndeps option.")
+      warning("optimization stayed at the starting values.")
     
     opt$convergence <- "Stayed at start. val."
   }
@@ -221,9 +230,10 @@ Standard errors are not available unless you fix it.")
           warning("observed information matrix is singular; passing std.err.type to ''none''")
         
         std.err.type <- "none"
-        return
       }
-      
+    }
+
+    if (std.err.type != "none"){      
       var.cov <- var.cov %*% jacobian %*% var.cov
       std.err <- diag(var.cov)
 
@@ -234,7 +244,6 @@ Standard errors are not available unless you fix it.")
         
         std.err[std.idx] <- NA
       }
-
       
       std.err <- sqrt(std.err)
       
@@ -271,7 +280,7 @@ Standard errors are not available unless you fix it.")
                  logLik = -opt$value, opt.value = opt$value, model = "Schlather",
                  cov.mod = cov.mod, fit.marge = fit.marge, ext.coeff = ext.coeff,
                  hessian = opt$hessian, lik.fun = nllh, coord = coord, ihessian = ihessian,
-                 jacobian = jacobian, marg.cov = NULL)
+                 jacobian = jacobian, marg.cov = NULL, nllh = nllh)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
@@ -299,7 +308,7 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   else
     hessian <- TRUE
 
-   if (!(cov.mod %in% c("whitmat","cauchy","powexp")))
+  if (!(cov.mod %in% c("whitmat","cauchy","powexp")))
     stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp'")
 
   if (cov.mod == "whitmat")
@@ -314,9 +323,15 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   scale.form <- update(scale.form, y ~ .)
   shape.form <- update(shape.form, y ~ .)
 
-  loc.model <- modeldef(cbind(coord, marg.cov), loc.form)
-  scale.model <- modeldef(cbind(coord, marg.cov), scale.form)
-  shape.model <- modeldef(cbind(coord, marg.cov), shape.form)
+   if (is.null(marg.cov))
+    covariables <- data.frame(coord)
+
+  else
+    covariables <- data.frame(coord, marg.cov)
+  
+  loc.model <- modeldef(covariables, loc.form)
+  scale.model <- modeldef(covariables, scale.form)
+  shape.model <- modeldef(covariables, shape.form)
 
   loc.dsgn.mat <- loc.model$dsgn.mat
   scale.dsgn.mat <- scale.model$dsgn.mat
@@ -424,7 +439,7 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   start.arg <- c(list(p = unlist(start)), fixed.param)
 
   init.lik <- do.call("nllh", start.arg)
-  if (warn && (init.lik >= 1.0e60)) 
+  if (warn && (init.lik >= 1.0e15)) 
     warning("negative log-likelihood is infinite at starting values")
 
   if (method == "nlminb"){
@@ -434,7 +449,7 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
     opt$value <- opt$objective
     names(opt$par) <- nm
     
-    if ((opt$convergence != 0) || (opt$value >= 1.0e60)) {
+    if ((opt$convergence != 0) || (opt$value >= 1.0e15)) {
       if (warn)
         warning("optimization may not have succeeded")
     }
@@ -470,7 +485,7 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
     opt <- optim(start, nllh, hessian = hessian, ..., method = method,
                  control = control)
     
-    if ((opt$convergence != 0) || (opt$value >= 1.0e60)){
+    if ((opt$convergence != 0) || (opt$value >= 1.0e15)){
       if (warn)
         warning("optimization may not have succeeded")
       
@@ -483,7 +498,7 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
 
   if (opt$value == init.lik){
     if (warn)
-      warning("optimization stayed at the starting values. Consider tweaking the ndeps option.")
+      warning("optimization stayed at the starting values.")
     
     opt$convergence <- "Stayed at start. val."
   }
@@ -524,9 +539,10 @@ Standard errors are not available unless you fix it.")
           warning("observed information matrix is singular; passing std.err.type to ''none''")
         
         std.err.type <- "none"
-        return
       }
-      
+    }
+
+    if (std.err.type != "none"){      
       var.cov <- var.cov %*% jacobian %*% var.cov
       
       std.err <- diag(var.cov)
@@ -576,7 +592,7 @@ Standard errors are not available unless you fix it.")
                  loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                  lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
                  shape.type = shape.type, ihessian = ihessian, jacobian = jacobian,
-                 marg.cov = marg.cov)
+                 marg.cov = marg.cov, nllh = nllh)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)

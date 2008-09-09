@@ -42,7 +42,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
                             paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                            "as.double(cov11), as.double(cov12), as.double(cov22), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+                            "as.double(cov11), as.double(cov12), as.double(cov22), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
     }
 
     else{
@@ -51,7 +51,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
                             paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                            "as.double(cov11), as.double(cov12), as.double(cov13), as.double(cov22), as.double(cov23), as.double(cov33), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+                            "as.double(cov11), as.double(cov12), as.double(cov13), as.double(cov22), as.double(cov23), as.double(cov33), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
     }
   }
   
@@ -63,7 +63,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
                             paste("as.double(rep(1,", n.site, ")), "),
                             paste("as.double(rep(1,", n.site, ")), "),
                             paste("as.double(rep(1,", n.site, ")), "),
-                            "as.double(cov11), as.double(cov12), as.double(cov22), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+                            "as.double(cov11), as.double(cov12), as.double(cov22), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
     }
 
     else{
@@ -72,10 +72,12 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
                             paste("as.double(rep(1,", n.site, ")), "),
                             paste("as.double(rep(1,", n.site, ")), "),
                             paste("as.double(rep(1,", n.site, ")), "),
-                            "as.double(cov11), as.double(cov12), as.double(cov13), as.double(cov22), as.double(cov23), as.double(cov33), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+                            "as.double(cov11), as.double(cov12), as.double(cov13), as.double(cov22), as.double(cov23), as.double(cov33), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
     }
   }
- 
+
+  fixed.param <- list(...)[names(list(...)) %in% param]
+  
   ##Define the formal arguments of the function
   form.nplk <- NULL
   for (i in 1:length(param))
@@ -86,8 +88,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
 
   if (missing(start)) {
 
-    start <- NULL
-    dataFrech <- data
+    start <- list()
     if (fit.marge){
       locs <- scales <- rep(NA, n.site)
       shapes <- rep(0, n.site)
@@ -102,17 +103,15 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
       start <- as.list(unlist(list(loc = locs, scale = scales, shape = shapes)))
     }
 
-    if (dist.dim == 2){
-      med <- abs(apply(distVec, 2, median))
-      start <- c(list(cov11 = med[1], cov12 = 0, cov22 = med[2]), start)
+    if (length(fixed.param) > 0){
+      args <- c(list(data = data, coord = coord, method = method, marge = "emp"), fixed.param)
+      cov.start <- do.call("fitcovmat", args)$param
     }
-    
-    else{
-      med <- apply(coord, 2, median)
-      start <- c(list(cov11 = med[1], cov12 = 0, cov13 = 0, cov22 = med[2],
-                      cov23 = 0, cov33 = med[3]), start)
-    }
-    
+      
+    else
+      cov.start <- fitcovmat(data, coord, method = method, marge = "emp")$param
+
+    start <- c(as.list(cov.start), start)
     start <- start[!(param %in% names(list(...)))]
   }
     
@@ -139,15 +138,13 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
     body(nllh) <- parse(text = paste("nplk(", paste("p[",1:l,
                             "]", collapse = ", "), ", ...)"))
   
-  fixed.param <- list(...)[names(list(...)) %in% param]
-  
   if(any(!(param %in% c(nm,names(fixed.param)))))
     stop("unspecified parameters")
   
   start.arg <- c(list(p = unlist(start)), fixed.param)
 
   init.lik <- do.call("nllh", start.arg)
-  if (warn && (init.lik == 1.0e120)) 
+  if (warn && (init.lik >= 1.0e15)) 
     warning("negative log-likelihood is infinite at starting values")
 
   if (method == "nlminb"){
@@ -157,7 +154,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
     opt$value <- opt$objective
     names(opt$par) <- nm
     
-    if ((opt$convergence != 0) || (opt$value >= 1.0e60)) {
+    if ((opt$convergence != 0) || (opt$value >= 1.0e15)) {
       if (warn)
         warning("optimization may not have succeeded")
     }
@@ -192,7 +189,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
     opt <- optim(start, nllh, hessian = hessian, ..., method = method,
                  control = control)
 
-    if ((opt$convergence != 0) || (opt$value >= 1.0e60)) {
+    if ((opt$convergence != 0) || (opt$value >= 1.0e15)) {
       if (warn)
         warning("optimization may not have succeeded")
 
@@ -205,7 +202,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
 
   if (opt$value == init.lik){
     if (warn)
-      warning("optimization stayed at the starting values. Consider tweaking the ndeps option.")
+      warning("optimization stayed at the starting values.")
     
     opt$convergence <- "Stayed at start. val."
   }
@@ -233,14 +230,15 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
                              std.err.type, fixed.param = names(fixed.param),
                              param.names = param.names)
 
-      if(any(is.na(jacobian))){
+      if (any(is.na(jacobian))){
         if (warn)
           warning("observed information matrix is singular; passing std.err.type to ''none''")
         
         std.err.type <- "none"
-        return
       }
-      
+    }
+
+    if (std.err.type != "none"){      
       var.cov <- var.cov %*% jacobian %*% var.cov
       std.err <- diag(var.cov)
       
@@ -269,14 +267,22 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
       names(std.err) <- nm
     }
   }
-
+  
   if (std.err.type == "none"){
     std.err <- std.err.type <- corr.mat <- NULL
     var.cov <- ihessian <- jacobian <- NULL
   }
-    
-  Sigma <- matrix(c(param["cov11"], param["cov12"], param["cov12"],
-                    param["cov22"]), 2, 2)
+  
+  if (dist.dim == 2)
+    Sigma <- matrix(c(param["cov11"], param["cov12"], param["cov12"],
+                      param["cov22"]), 2, 2)
+
+  else
+    Sigma <- matrix(c(param["cov11"], param["cov12"], param["cov13"],
+                      param["cov12"], param["cov22"], param["cov23"],
+                      param["cov13"], param["cov23"], param["cov33"]),
+                    3, 3)
+  
   iSigma <- solve(Sigma)
   
   ext.coeff <- function(posVec)
@@ -289,7 +295,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
                  logLik = -opt$value, opt.value = opt$value, model = "Smith",
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = "Gaussian",
                  lik.fun = nllh, coord = coord, ihessian = ihessian, jacobian = jacobian,
-                 marg.cov = NULL)
+                 marg.cov = NULL, nllh = nllh)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
@@ -324,9 +330,15 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   scale.form <- update(scale.form, y ~ .)
   shape.form <- update(shape.form, y ~ .)
 
-  loc.model <- modeldef(cbind(coord, marg.cov), loc.form)
-  scale.model <- modeldef(cbind(coord, marg.cov), scale.form)
-  shape.model <- modeldef(cbind(coord, marg.cov), shape.form)
+  if (is.null(marg.cov))
+    covariables <- data.frame(coord)
+
+  else
+    covariables <- data.frame(coord, marg.cov)
+  
+  loc.model <- modeldef(covariables, loc.form)
+  scale.model <- modeldef(covariables, scale.form)
+  shape.model <- modeldef(covariables, shape.form)
 
   loc.dsgn.mat <- loc.model$dsgn.mat
   scale.dsgn.mat <- scale.model$dsgn.mat
@@ -449,7 +461,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   start.arg <- c(list(p = unlist(start)), fixed.param)
 
   init.lik <- do.call("nllh", start.arg)
-  if (warn && (init.lik >= 1.0e60)) 
+  if (warn && (init.lik >= 1.0e15)) 
     warning("negative log-likelihood is infinite at starting values")
 
   if (method == "nlminb"){
@@ -459,7 +471,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
     opt$value <- opt$objective
     names(opt$par) <- nm
 
-    if ((opt$convergence != 0) || (opt$value >= 1.0e60)) {
+    if ((opt$convergence != 0) || (opt$value >= 1.0e15)) {
       if (warn)
         warning("optimization may not have succeeded")
     }
@@ -495,7 +507,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
     opt <- optim(start, nllh, hessian = hessian, ..., method = method,
                  control = control)
     
-    if ((opt$convergence != 0) || (opt$value >= 1.0e60)) {
+    if ((opt$convergence != 0) || (opt$value >= 1.0e15)) {
       if (warn)
         warning("optimization may not have succeeded")
       
@@ -508,7 +520,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
 
   if (opt$value == init.lik){
     if (warn)
-      warning("optimization stayed at the starting values. Consider tweaking the ndeps option.")
+      warning("optimization stayed at the starting values.")
     
     opt$convergence <- "Stayed at start. val."
   }
@@ -540,9 +552,10 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
           warning("observed information matrix is singular; passing std.err.type to ''none''")
         
         std.err.type <- "none"
-        return
       }
-      
+    }
+
+    if (std.err.type != "none"){      
       var.cov <- var.cov %*% jacobian %*% var.cov
       std.err <- diag(var.cov)
       
@@ -600,7 +613,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
                  loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                  lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
                  shape.type = shape.type, ihessian = ihessian, jacobian = jacobian,
-                 marg.cov = marg.cov)
+                 marg.cov = marg.cov, nllh = nllh)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
