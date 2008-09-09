@@ -2,7 +2,8 @@
 
 void schlatherfull(int *covmod, double *data, double *dist, int *nSite,
 		   int *nObs, double *locs, double *scales, double *shapes,
-		   double *sill, double *range, double *smooth, double *dns){
+		   double *sill, double *range, double *smooth,
+		   int *fitmarge,double *dns){
   //This is the schlater model. It computes the pairwise log-likelihood
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
@@ -14,17 +15,17 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite,
   frech = (double *)R_alloc(*nSite * *nObs, sizeof(double));
 
   //Some preliminary steps: Valid points?
-   for (i=0;i<*nSite;i++){
-    if (scales[i] <= 0){
-      //printf("scales <= 0!!!\n");
-      *dns = R_pow_di(1 - scales[i], 2) * MINF;
-      return;
-    }
-    
-    if (shapes[i] <= -1){
-      //printf("shapes <= -1!!!\n");
-      *dns = R_pow_di(shapes[i], 2) * MINF;
-      return;
+  if (*fitmarge){
+    for (i=0;i<*nSite;i++){
+      if (scales[i] <= 0){
+	//printf("scales <= 0!!!\n");
+	*dns += R_pow_di(1 - scales[i], 2) * MINF;
+      }
+      
+      if (shapes[i] <= -1){
+	//printf("shapes <= -1!!!\n");
+	*dns += R_pow_di(shapes[i], 2) * MINF;
+      }
     }
   }
    
@@ -43,22 +44,31 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite,
   
   if (flag != 0.0){
     //printf("covariance is singular!\n");
-    *dns = flag;
-    return;
+    *dns += flag;
   }
   
   //Stage 1: Transformation to unit Frechet
-  flag = gev2frech(data, *nObs, *nSite, locs, scales, shapes,
-		   jac, frech);
+  if (*fitmarge){
+    flag = gev2frech(data, *nObs, *nSite, locs, scales, shapes,
+		     jac, frech);
     
-  if (flag != 0.0){
-    //printf("transformation to unit Frechet erradic!\n");
-    *dns = flag;
-    return;
+    if (flag != 0.0){
+      //printf("transformation to unit Frechet erradic!\n");
+      *dns += flag;
+    }
   }
 
-  //Stage 2: Bivariate density computations
-  *dns = lplikschlather(frech, rho, jac, *nObs, *nSite);
+  else {
+    for (i=0;i<(*nSite * *nObs);i++){
+      frech[i] = data[i];
+      jac[i] = 0.0;
+    }
+  }
+  
+  if (*dns == 0.0){
+    //Stage 2: Bivariate density computations
+    *dns = lplikschlather(frech, rho, jac, *nObs, *nSite);
+  }  
 
   return;
 
@@ -113,8 +123,7 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 
   if (flag != 0.0){
     //printf("problem with GEV param.\n");
-    *dns = flag;
-    return;
+    *dns += flag;
   }
 
   //Stage 3: Transformation to unit Frechet
@@ -123,29 +132,31 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
     
   if (flag != 0.0){
     //printf("problem with transf. to Frechet\n");
-    *dns = flag;
-    return;
+    *dns += flag;
   }
 
-  //Stage 4: Bivariate density computations
-  *dns = lplikschlather(frech, rho, jac, *nObs, *nSite);
+  if (*dns == 0.0){
 
-  //Stage 5: Removing the penalizing terms (if any)
-  // 1- For the location parameter
-  if (*locpenalty > 0)
-    *dns = *dns - penalization(locpenmat, loccoeff, *locpenalty,
-			       *nloccoeff, *npparloc);
- 
-  // 2- For the scale parameter
-  if (*scalepenalty > 0)    
-    *dns = *dns - penalization(scalepenmat, scalecoeff, *scalepenalty,
-			       *nscalecoeff, *npparscale);
+    //Stage 4: Bivariate density computations
+    *dns = lplikschlather(frech, rho, jac, *nObs, *nSite);
     
-  // 3- For the shape parameter
-  if (*shapepenalty > 0)
-    *dns = *dns - penalization(shapepenmat, shapecoeff, *shapepenalty,
-			       *nshapecoeff, *npparshape);
-
+    //Stage 5: Removing the penalizing terms (if any)
+    // 1- For the location parameter
+    if (*locpenalty > 0)
+      *dns -= penalization(locpenmat, loccoeff, *locpenalty,
+			   *nloccoeff, *npparloc);
+    
+    // 2- For the scale parameter
+    if (*scalepenalty > 0)    
+      *dns -= penalization(scalepenmat, scalecoeff, *scalepenalty,
+			   *nscalecoeff, *npparscale);
+    
+    // 3- For the shape parameter
+    if (*shapepenalty > 0)
+      *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty,
+			   *nshapecoeff, *npparshape);
+  }
+  
   return;
   
 }
