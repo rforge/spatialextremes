@@ -1,13 +1,9 @@
-fitcovmat <- function(data, coord, marge = "mle", method = "Nelder",
-                      control = list(), start, ...){
+fitcovmat <- function(data, coord, marge = "mle", start, ...){
 
   n.site <- ncol(data)
   n.pairs <- n.site * (n.site - 1) / 2
   dist.dim <- ncol(coord)
 
-  if (is.null(control$maxit))
-    control$maxit <- 10000
-  
   extcoeff <- fitextcoeff(data, coord, estim = "Smith",
                           plot = FALSE, loess = FALSE,
                           marge = marge)
@@ -15,7 +11,6 @@ fitcovmat <- function(data, coord, marge = "mle", method = "Nelder",
   extcoeff <- extcoeff[,"ext.coeff"]
 
   idx <- which((extcoeff > 1) & (extcoeff < 2) & (weights > 0))
-  ##idx <- which(weights > 0)
   extcoeff <- extcoeff[idx]
   weights <- weights[idx]
   n.pairs.real <- length(idx)
@@ -44,28 +39,6 @@ fitcovmat <- function(data, coord, marge = "mle", method = "Nelder",
 
   fixed.param <- list(...)[names(list(...)) %in% param]
 
-  if (method == "L-BFGS-B"){
-    if (dist.dim == 2){
-      lower <- c(0, -Inf, 0)
-      upper <- rep(Inf, 3)
-      names(lower) <- names(upper) <- c("cov11", "cov12", "cov22")
-    }
-
-    if (dist.dim == 3){
-      lower <- c(0, rep(-Inf, 2), 0, -Inf, 0)
-      upper <- rep(Inf, 6)
-      names(lower) <- names(upper) <- c("cov11", "cov12", "cov13",
-                                        "cov22", "cov23", "cov33")
-    }
-
-    idx <- which(names(lower) == names(fixed.param))
-
-    if (length(idx) > 0){
-      lower <- lower[-idx]
-      upper <- upper[-idx]
-    }
-  }
-
   if (missing(start)){
     if (dist.dim == 2){
       if (any(names(fixed.param) == "cov12"))
@@ -86,9 +59,9 @@ fitcovmat <- function(data, coord, marge = "mle", method = "Nelder",
       start <- list(cov11 = sigma.start, cov12 = 0, cov13 = 0, cov22 = sigma.start,
                     cov23 = 0, cov33 = sigma.start)
     }
-    
-    start <- start[!(param %in% names(list(...)))]
   }
+
+  start <- start[!(param %in% names(list(...)))]
 
   if (!is.list(start)) 
     stop("'start' must be a named list")
@@ -134,22 +107,20 @@ fitcovmat <- function(data, coord, marge = "mle", method = "Nelder",
   if(any(!(param %in% c(nm,names(fixed.param)))))
     stop("unspecified parameters")
 
-  if (method == "L-BFGS-B")
-    opt <- optim(start, obj.fun, hessian = FALSE, method = method,
-                 control = control, lower = lower, upper = upper, ...)
+  opt <- nlm(obj.fun, unlist(start), hessian = FALSE, ...)
 
-  else
-    opt <- optim(start, obj.fun, hessian = FALSE, method = method,
-                 control = control, ...)
-
-  if (opt$convergence != 0) 
+  if (opt$code == 4) 
     opt$convergence <- "iteration limit reached"
 
-  else
+  if (opt$code <= 2)
     opt$convergence <- "successful"
 
+  if (opt$code %in% c(3,5))
+    opt$convergence <- "Optimization may have failed"
+
   param.names <- param
-  param <- c(opt$par, unlist(fixed.param))
+  names(opt$estimate) <- names(start)
+  param <- c(opt$estimate, unlist(fixed.param))
   param <- param[param.names]
 
   if (dist.dim == 2)
@@ -166,11 +137,12 @@ fitcovmat <- function(data, coord, marge = "mle", method = "Nelder",
 
   ext.coeff <- function(posVec)
     2 * pnorm(sqrt(posVec %*% iSigma %*% posVec) / 2)
-  
-  fitted <- list(fitted.values = opt$par, fixed = unlist(fixed.param),
+
+  names(opt$iterations) <- "function"
+  fitted <- list(fitted.values = opt$estimate, fixed = unlist(fixed.param),
                  param = param, convergence = opt$convergence,
-                 counts = opt$counts, message = opt$message, data = data,
-                 est = "Least Square", opt.value = opt$value, model = "Smith",
+                 counts = opt$iterations, message = opt$message, data = data,
+                 est = "Least Square", opt.value = opt$minimum, model = "Smith",
                  coord = coord, fit.marge = FALSE, cov.mod = "Gaussian",
                  ext.coeff = ext.coeff)
 
@@ -179,15 +151,12 @@ fitcovmat <- function(data, coord, marge = "mle", method = "Nelder",
   
 }
 
-fitcovariance <- function(data, coord, cov.mod, marge = "mle", method = "Nelder",
-                          control = list(), ...){
+fitcovariance <- function(data, coord, cov.mod, marge = "mle", start,
+                          ...){
 
   n.site <- ncol(data)
   n.pairs <- n.site * (n.site - 1) / 2
   dist.dim <- ncol(coord)
-
-  if (is.null(control$maxit))
-    control$maxit <- 10000
 
   if (!(cov.mod %in% c("whitmat","cauchy","powexp")))
     stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp'")
@@ -219,29 +188,17 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", method = "Nelder"
 
   fixed.param <- list(...)[names(list(...)) %in% param]
 
-  if (method == "L-BFGS-B"){
-    lower <- rep(0, 3)
-
-    if (cov.mod == "whitmat")
-      upper <- c(1, Inf, 50)
-    if (cov.mod == "cauchy")
-      upper <- c(1, Inf, Inf)
-    if (cov.mod == "powexp")
-      upper <- c(1, Inf, 2)
-
-    names(lower) <- names(upper) <- c("sill", "range", "smooth")
-
-    idx <- which(names(lower) == names(fixed.param))
-
-    if (length(idx) > 0){
-      lower <- lower[-idx]
-      upper <- upper[-idx]
-    }
-  }
+  if (missing(start))
+    start <- list(sill = .5, range = 0.75 * max(dist), smooth = .5)
   
-  start <- list(sill = .5, range = 0.75 * max(dist), smooth = .5)
   start <- start[!(param %in% names(list(...)))]
 
+  if (!is.list(start)) 
+    stop("'start' must be a named list")
+  
+  if (!length(start)) 
+    stop("there are no parameters left to maximize over")
+  
   nm <- names(start)
   l <- length(nm)
   
@@ -262,23 +219,20 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", method = "Nelder"
   if(any(!(param %in% c(nm,names(fixed.param)))))
     stop("unspecified parameters")
 
-  if (method == "L-BFGS-B")
-    opt <- optim(start, obj.fun, hessian = FALSE, method = method,
-                 control = control, lower = lower, upper = upper,
-                 ...)
-  
-  else
-    opt <- optim(start, obj.fun, hessian = FALSE, method = method,
-                 control = control, ...)
+  opt <- nlm(obj.fun, unlist(start), hessian = FALSE, ...)
 
-  if (opt$convergence != 0) 
+  if (opt$code == 4) 
     opt$convergence <- "iteration limit reached"
 
-  else
+  if (opt$code <= 2)
     opt$convergence <- "successful"
 
+  if (opt$code %in% c(3,5))
+    opt$convergence <- "Optimization may have failed"
+
   param.names <- param
-  param <- c(opt$par, unlist(fixed.param))
+  names(opt$estimate) <- names(start)
+  param <- c(opt$estimate, unlist(fixed.param))
   param <- param[param.names]
 
   cov.fun <- covariance(sill = param["sill"], range = param["range"],
@@ -286,11 +240,12 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", method = "Nelder"
   
   ext.coeff <- function(h)
     1 + sqrt(1 - 1/2 * (cov.fun(h) + 1))
- 
-  fitted <- list(fitted.values = opt$par, fixed = unlist(fixed.param),
+
+  names(opt$iterations) <- "function"
+  fitted <- list(fitted.values = opt$estimate, fixed = unlist(fixed.param),
                  param = param, convergence = opt$convergence,
-                 counts = opt$counts, message = opt$message, data = data,
-                 est = "Least Square", opt.value = opt$value, model = "Schlather",
+                 counts = opt$iterations, message = opt$message, data = data,
+                 est = "Least Square", opt.value = opt$minimum, model = "Schlather",
                  coord = coord, fit.marge = FALSE, cov.mod = cov.mod,
                  cov.fun = cov.fun, ext.coeff = ext.coeff)
 

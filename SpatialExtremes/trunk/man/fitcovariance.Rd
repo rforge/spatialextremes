@@ -6,8 +6,7 @@
   non-parametric estimates of the pairwise extremal coefficients.
 }
 \usage{
-fitcovariance(data, coord, cov.mod, marge = "mle", method = "Nelder",
-control = list(), \dots)
+fitcovariance(data, coord, cov.mod, marge = "mle", start, \dots)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -19,16 +18,15 @@ control = list(), \dots)
     Smith's characterisation; or "whitmat", "cauchy" or "powexp" for the
     Whittle-Matern, the Cauchy and the Powered Exponential covariance
     family.}
-   \item{marge}{Character string specifying how margins are transformed
+  \item{marge}{Character string specifying how margins are transformed
     to unit Frechet. Must be one of "emp", "frech" or "mle" - see
     function \code{\link{fitextcoeff}}.}
-  \item{method}{The optimizer used when fitting the GEV distribution to
-    data and when minimizing the least square criteria. See function
-    \code{\link{gevmle}}.}
-  \item{control}{Control arguments to be passed to the
-    \code{\link{optim}} function.}
-  \item{\dots}{Optional arguments to be passed to the
-    \code{\link{optim}} function.}
+  \item{start}{A named list giving the initial values for the
+    parameters over which the weighted sum of square is to be
+    minimized. If \code{start} is omitted the routine attempts to find
+    good starting values.}
+  \item{\dots}{Optional arguments to be passed to the \code{\link{nlm}}
+    function.}
 }
 \details{
   The fitting procedure is based on weighted least squares. More
