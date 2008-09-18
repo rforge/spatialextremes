@@ -131,8 +131,7 @@ void smithgrad(double *data, double *distVec, int *nSite,
 	 
 	  c1 = log(frech[k + j * *nObs] / frech[k + i * *nObs]) /
 	    mahalDist[currentPair] + mahalDist[currentPair] / 2;
-	  c2 = log(frech[k + i * *nObs] / frech[k + j * *nObs]) /
-	    mahalDist[currentPair] + mahalDist[currentPair] / 2;
+	  c2 = mahalDist[currentPair] - c1;
 	 
 	  //A = - pnorm(c1, 0., 1., 1, 0) / frech[k + i * *nObs] -
 	  //  - pnorm(c2, 0., 1., 1, 0) / frech[k + j * *nObs];
