@@ -28,7 +28,7 @@ anova.maxstab <- function(object, object2, method = "RJ",
                           square = "chol", ...){
 
   if (is.null(object$var.cov) || is.null(object2$var.cov))
-    stop("Standard errors must be available for both fitted models.")
+    return("Standard errors must be available for both fitted models.")
 
   if (!(method %in% c("RJ", "CB")))
     stop("'method' must be one of 'RJ' or 'CB'")
