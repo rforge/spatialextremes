@@ -10,7 +10,9 @@ fitcovmat <- function(data, coord, marge = "mle", start, ...){
   weights <- extcoeff[,"std.err"]
   extcoeff <- extcoeff[,"ext.coeff"]
 
-  idx <- which((extcoeff > 1) & (extcoeff < 2) & (weights > 0))
+  ##This is required otherwise we'll give to much weight this observations or because
+  ##starting values could not be computed
+  idx <- which((extcoeff > 1) & (extcoeff < 2) & (weights > (1e-3 * median(weights))))
   extcoeff <- extcoeff[idx]
   weights <- weights[idx]
   n.pairs.real <- length(idx)
@@ -48,14 +50,14 @@ fitcovmat <- function(data, coord, marge = "mle", start, ...){
       
       else{
         a <- 2 * qnorm(extcoeff / 2)
-        sigma.start <- mean(rowSums(dist^2) / 4 / a)
+        sigma.start <- mean(rowSums(dist^2) / a)
         start <- list(cov11 = sigma.start, cov12 = 0, cov22 = sigma.start)
       }
     }
     
     if (dist.dim == 3){
       a <- 2 * qnorm(extcoeff / 2)
-      sigma.start <- mean(rowSums(dist^2) / 4 / a)
+      sigma.start <- mean(rowSums(dist^2) / a)
       start <- list(cov11 = sigma.start, cov12 = 0, cov13 = 0, cov22 = sigma.start,
                     cov23 = 0, cov33 = sigma.start)
     }
@@ -171,18 +173,21 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", start,
   extcoeff <- fitextcoeff(data, coord, estim = "Smith",
                           plot = FALSE, loess = FALSE,
                           marge = marge)
-  std.err <- extcoeff[,"std.err"]
-  weights <- std.err^2 / sum(std.err^2)
+  weights <- extcoeff[,"std.err"]
   extcoeff <- extcoeff[,"ext.coeff"]
-  weights[which(extcoeff >= 1.838)] <- 0
 
-  dist <- distance(coord)
+  ##This is required otherwise we'll give to much weight this observations
+  idx <- which(weights > (1e-3 * median(weights)))
+  weights <- weights[idx]
+  extcoeff <- extcoeff[idx]  
+  dist <- distance(coord)[idx]
+  n.pairs.real <- length(idx)
 
   param <- c("sill", "range", "smooth")
     
   fun <- function(sill, range, smooth)
     .C("fitcovariance", as.integer(cov.mod.num), as.double(sill), as.double(range),
-       as.double(smooth), as.integer(n.pairs), as.double(dist),
+       as.double(smooth), as.integer(n.pairs.real), as.double(dist),
        as.double(extcoeff), as.double(weights), ans = double(1),
        PACKAGE = "SpatialExtremes")$ans
 
