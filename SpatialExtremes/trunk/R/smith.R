@@ -104,12 +104,12 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
     }
 
     if (length(fixed.param) > 0){
-      args <- c(list(data = data, coord = coord, method = method, marge = "emp"), fixed.param)
+      args <- c(list(data = data, coord = coord, marge = "emp"), fixed.param)
       cov.start <- do.call("fitcovmat", args)$param
     }
       
     else
-      cov.start <- fitcovmat(data, coord, method = method, marge = "emp")$param
+      cov.start <- fitcovmat(data, coord, marge = "emp")$param
 
     start <- c(as.list(cov.start), start)
     start <- start[!(param %in% names(list(...)))]
@@ -212,7 +212,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
   param <- param[param.names]
   
   if (std.err.type != "none"){
-    
+
     var.cov <- try(solve(opt$hessian), silent = TRUE)
 
     if(!is.matrix(var.cov)){
@@ -262,9 +262,8 @@ smithfull <- function(data, coord, start, fit.marge = FALSE,
       else
         corr.mat <- NULL
       
-      colnames(var.cov) <- nm
-      rownames(var.cov) <- nm
-      names(std.err) <- nm
+      colnames(var.cov) <- colnames(ihessian) <- rownames(var.cov) <-
+        rownames(ihessian) <- names(std.err) <- nm
     }
   }
   
@@ -580,7 +579,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
         corr.mat <- NULL
       
       colnames(var.cov) <- rownames(var.cov) <- 
-        names(std.err) <- nm
+        colnames(ihessian) <- rownames(ihessian) <- names(std.err) <- nm
     }
   }
 

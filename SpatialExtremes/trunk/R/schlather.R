@@ -90,13 +90,12 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
     }
 
     if (length(fixed.param) > 0){
-      args <- c(list(data = data, coord = coord, cov.mod = cov.mod,
-                     method = method, marge = "emp"), fixed.param)
+      args <- c(list(data = data, coord = coord, cov.mod = cov.mod, marge = "emp"), fixed.param)
       cov.start <- do.call("fitcovariance", args)$param
     }
 
     else
-      cov.start <- fitcovariance(data, coord, cov.mod, method = method, marge = "emp")$param
+      cov.start <- fitcovariance(data, coord, cov.mod, marge = "emp")$param
 
     start <- c(as.list(cov.start), start)
     start <- start[!(param %in% names(list(...)))]
@@ -256,9 +255,8 @@ Standard errors are not available unless you fix it.")
       else
         corr.mat <- NULL
       
-      colnames(var.cov) <- nm
-      rownames(var.cov) <- nm
-      names(std.err) <- nm
+      colnames(var.cov) <- rownames(var.cov) <- colnames(ihessian) <- 
+        rownames(ihessian) <- names(std.err) <- nm
     }
   }
 
@@ -567,8 +565,8 @@ Standard errors are not available unless you fix it.")
       else
         corr.mat <- NULL
       
-      colnames(var.cov) <- rownames(var.cov) <- 
-        names(std.err) <- nm
+      colnames(var.cov) <- rownames(var.cov) <- colnames(ihessian) <- 
+        rownames(ihessian) <- names(std.err) <- nm
     }
   }
 
