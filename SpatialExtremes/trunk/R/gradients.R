@@ -83,6 +83,7 @@
       jacobian <- var(grad) * n.obs
     
     if (std.err.type == "grad"){
+      gradient <- colSums(grad)
       jacobian <- 0
       for (i in 1:n.obs){
         grad.vec <- matrix(grad[i,], ncol = 1)
