@@ -13,17 +13,17 @@ double whittleMatern(double *dist, int nPairs, double sill, double range,
   //Some preliminary steps: Valid points?
   if (smooth <= EPS){
     //printf("dependence parameters are ill-defined!\n");
-    ans = R_pow_di(1 - smooth, 2) * MINF;
+    ans = R_pow_di(1 - smooth + EPS, 2) * MINF;
   }
 
   if (range <= EPS){
     //printf("dependence parameters are ill-defined!\n");
-    ans += R_pow_di(1 - range, 2) * MINF;
+    ans += R_pow_di(1 - range + EPS, 2) * MINF;
   }
 
   if (sill <= EPS){
     //printf("dependence parameters are ill-defined!\n");
-    ans += R_pow_di(1 - sill, 2) * MINF;
+    ans += R_pow_di(1 - sill + EPS, 2) * MINF;
   }
   
   if (sill > 1){
@@ -34,7 +34,7 @@ double whittleMatern(double *dist, int nPairs, double sill, double range,
   if (smooth > 50){
     //Required because it could lead to infinite rho values
     //printf("smooth is too large!\n");
-    ans += R_pow_di(smooth - 50, 2) * MINF;
+    ans += R_pow_di(smooth - 49, 2) * MINF;
   }
 
   if (ans != 0.0)
@@ -69,12 +69,12 @@ double cauchy(double *dist, int nPairs, double sill, double range,
 
   if (range <= EPS){
     //printf("dependence parameters are ill-defined!\n");
-    ans += R_pow_di(1 - range, 2) * MINF;
+    ans += R_pow_di(1 - range + EPS, 2) * MINF;
   }
 
   if (sill <= EPS){
     //printf("dependence parameters are ill-defined!\n");
-    ans += R_pow_di(1 - sill, 2) * MINF;
+    ans += R_pow_di(1 - sill + EPS, 2) * MINF;
   }
   
   if (sill > 1){
@@ -109,12 +109,12 @@ double powerExp(double *dist, int nPairs, double sill, double range,
 
   if (range <= EPS){
     //printf("dependence parameters are ill-defined!\n");
-    ans += R_pow_di(1 - range, 2) * MINF;
+    ans += R_pow_di(1 - range + EPS, 2) * MINF;
   }
 
   if (sill <= EPS){
     //printf("dependence parameters are ill-defined!\n");
-    ans += R_pow_di(1 - sill, 2) * MINF;
+    ans += R_pow_di(1 - sill + EPS, 2) * MINF;
   }
   
   if (sill > 1){
@@ -150,9 +150,9 @@ double mahalDistFct(double *distVec, int nPairs, double *cov11,
   det = *cov11 * *cov22 - R_pow_di(*cov12, 2);
   //We test if the covariance matrix is *not* nonnegative
   //definite e.g. all minor determinant are negative or 0
-  if (det <= 0){
+  if (det <= 1e-10){
     //printf("Det of Sigma <= 0!\n");
-    return R_pow_di(1 - det, 2) * MINF;
+    return R_pow_di(1 - det + 1e-10, 2) * MINF;
   }
 
   if (*cov11 <= 0){
@@ -166,12 +166,13 @@ double mahalDistFct(double *distVec, int nPairs, double *cov11,
 		2 * *cov12 * distVec[i] * distVec[nPairs + i] +
 		*cov22 * R_pow_di(distVec[i], 2)) / det;
     
-    mahal[i] = sqrt(mahal[i]);
     //We test if the Mahalanobis distance is singular.
-    if (!R_FINITE(mahal[i])){
+    if (!R_FINITE(sqrt(mahal[i]))){
       //printf("sqrt(mahal) = %f\n", mahal[i]);
-      return R_pow_di(1 - mahal[i], 2) * MINF;
+      return R_pow_di(1 + fabs(mahal[i]), 2) * MINF;
     }
+
+    mahal[i] = sqrt(mahal[i]);
   }
   
   return 0.0;
@@ -194,9 +195,9 @@ double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
   detMin = *cov11 * *cov22 - R_pow_di(*cov12, 2);
   //We test if the covariance matrix is *not* nonnegative
   //definite e.g. all minor determinant are negative or 0
-  if (det <= 0){
+  if (det <= 1e-10){
     //printf("Covariance matrice is singular!\n");
-    return R_pow_di(1 - det, 2) * MINF;
+    return R_pow_di(1 - det + 1e-10, 2) * MINF;
   }
 
   if (*cov11 <= 0){
@@ -223,10 +224,11 @@ double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
 		distVec[i] * distVec[nPairs + i] + *cov22 * *cov33 * 
 		R_pow_di(distVec[i], 2) - R_pow_di(*cov23 * distVec[i], 2)) / det;
 
-    mahal[i] = sqrt(mahal[i]);
     //We test if the Mahalanobis distance is singular.
-    if (!R_FINITE(mahal[i]))
-      return R_pow_di(1 - mahal[i], 2) * MINF;
+    if (!R_FINITE(sqrt(mahal[i])))
+      return R_pow_di(1 + fabs(mahal[i]), 2) * MINF;
+
+    mahal[i] = sqrt(mahal[i]);
   }
   
   return 0.0;
