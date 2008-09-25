@@ -3,6 +3,9 @@ fitmaxstab <- function(data, coord, cov.mod = c("gauss", "whitmat", "cauchy", "p
                        fit.marge = FALSE, warn = TRUE, method = "Nelder",
                        start, control = list(), std.err.type = "score", corr = FALSE){
 
+  if (!(std.err.type) %in% c("none", "score", "grad"))
+    stop("'std.err.type' must be one of 'none', 'score' or 'grad'")
+  
   if (nrow(coord) != ncol(data))
     stop("'data' and 'coord' don't match")
 
