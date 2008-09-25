@@ -20,6 +20,21 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 		      double *range, double *smooth, double *dns);
 
 ///////////////////////////////////
+//  From schlatherind.c
+//
+void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
+		      int *nObs, double *locs, double *scales, double *shapes,
+		      double *alpha, double *sill, double *range, double *smooth,
+		      int *fitmarge,double *dns);
+void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
+			 double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
+			 double *locpenalty, double *scaledsgnmat, double *scalepenmat,
+			 int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
+			 double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
+			 double *loccoeff, double *scalecoeff, double *shapecoeff, double *alpha,
+			 double *sill, double *range, double *smooth, double *dns);
+
+///////////////////////////////////
 //  From smith.c
 //
 void smithfull(double *data, double *distVec, int *nSite,
@@ -125,6 +140,8 @@ double lpliksmith(double *data, double *rho, double *jac,
 		  int nObs, int nSite);
 double lplikschlather(double *data, double *rho, double *jac,
 		      int nObs, int nSite);
+double lplikschlatherind(double *data, double alpha, double *rho,
+			 double *jac, int nObs, int nSite);
 
 ///////////////////////////////////
 //  From penalizations.c
