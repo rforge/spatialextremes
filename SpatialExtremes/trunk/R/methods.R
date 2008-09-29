@@ -30,7 +30,8 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
     cat("  Marginal Parameters:\n")
 
     if (x$fit.marge){
-      idx <- which(names(x$fitted.values) == "sill")
+      idx <- which(names(x$fitted.values) == "alpha")
+      idx <- c(idx, which(names(x$fitted.values) == "sill"))
       idx <- c(idx, which(names(x$fitted.values) == "range"))
       idx <- c(idx, which(names(x$fitted.values) == "smooth"))
       

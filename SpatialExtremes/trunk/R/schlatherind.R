@@ -400,10 +400,9 @@ schlatherindform <- function(data, coord, cov.mod, loc.form, scale.form, shape.f
 
   if (missing(start)) {
 
-    start <- .start.schlather(data, coord, cov.mod, loc.model, scale.model,
-                              shape.model, method = method, ...)
+    start <- .start.schlatherind(data, coord, cov.mod, loc.model, scale.model,
+                                 shape.model, method = method, ...)
 
-    start <- c(list(alpha = 0.5), start)    
     start <- start[!(param %in% names(list(...)))]
   
   }

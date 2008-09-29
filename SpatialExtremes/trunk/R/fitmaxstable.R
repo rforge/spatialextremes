@@ -56,16 +56,30 @@ be given for *ALL* GEV parameters")
                        std.err.type, corr = corr, start = start))
   
   
-  else
-    fitted <- switch(reg.mod, "full" = schlatherfull(data, coord, cov.mod = cov.mod,
-                                ..., fit.marge = fit.marge, warn = warn,
-                                method = method, control = control, std.err.type = std.err.type,
-                                corr = corr, start = start),
-                     "spatgev" = schlatherform(data, coord, cov.mod = cov.mod, ...,
-                       loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
-                       fit.marge = fit.marge, marg.cov = marg.cov, warn = warn,
-                       method = method, control = control, std.err.type = std.err.type, corr = corr,
-                       start = start))
+  else{
+
+    if (substr(cov.mod, 1, 1) == "i")
+      fitted <- switch(reg.mod, "full" = schlatherindfull(data, coord, cov.mod = substr(cov.mod, 2, 8),
+                                    ..., fit.marge = fit.marge, warn = warn,
+                                    method = method, control = control, std.err.type = std.err.type,
+                                    corr = corr, start = start),
+                         "spatgev" = schlatherindform(data, coord, cov.mod = substr(cov.mod, 2, 8), ...,
+                           loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
+                           fit.marge = fit.marge, marg.cov = marg.cov, warn = warn,
+                           method = method, control = control, std.err.type = std.err.type, corr = corr,
+                           start = start))
+
+      else
+        fitted <- switch(reg.mod, "full" = schlatherfull(data, coord, cov.mod = cov.mod,
+                                    ..., fit.marge = fit.marge, warn = warn,
+                                    method = method, control = control, std.err.type = std.err.type,
+                                    corr = corr, start = start),
+                         "spatgev" = schlatherform(data, coord, cov.mod = cov.mod, ...,
+                           loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
+                           fit.marge = fit.marge, marg.cov = marg.cov, warn = warn,
+                           method = method, control = control, std.err.type = std.err.type, corr = corr,
+                           start = start))
+  }
   
   return(fitted)
 }
