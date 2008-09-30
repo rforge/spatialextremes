@@ -674,6 +674,7 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 	 
 	switch (*covmod){
 	case 1:
+	  //i.e. Whittle-Matern
 	  grad[k] = grad[k] + rho[currentPair] / *sill * jacCommonRho;
 	  grad[*nObs + k] = grad[*nObs + k] + rho[currentPair] * 
 	    (-2 * *smooth / *range + dist[currentPair] * 
@@ -685,6 +686,7 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 	  grad[2 * *nObs + k] = R_NaReal;
 	  break;
 	case 2:
+	  //i.e. cauchy
 	  grad[k] = grad[k] + rho[currentPair] / *sill * jacCommonRho;
 	  grad[*nObs + k] = grad[*nObs + k] + 2 * R_pow_di(dist[currentPair], 2) *
 	    *sill * *smooth / R_pow_di(*range, 3) * 
@@ -694,6 +696,7 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 	    log(1 + R_pow_di(dist[currentPair] / *range, 2)) * jacCommonRho;
 	  break;
 	case 3:
+	  //i.e. powered exponential
 	  grad[k] = grad[k] + rho[currentPair] / *sill * jacCommonRho;
 	  grad[*nObs + k] = grad[*nObs + k] + rho[currentPair] * *smooth /
 	    *range * R_pow(dist[currentPair] / *range, *smooth) * jacCommonRho;
@@ -731,11 +734,9 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 	    R_pow_di(frech[k + j * *nObs], 2);
 	  
 	  dAz1 = (frech[k + j * *nObs] + c1 - rho[currentPair] * 
-		  frech[k + i * *nObs]) / 2 / c1 /
-	    R_pow_di(frech[k + i * *nObs], 2);
+		  frech[k + i * *nObs]) / 2 / c1 / R_pow_di(frech[k + i * *nObs], 2);
 	  dAz2 = (frech[k + i * *nObs] + c1 - rho[currentPair] * 
-		  frech[k + j * *nObs]) / 2 / c1 /
-	    R_pow_di(frech[k + j * *nObs], 2);
+		  frech[k + j * *nObs]) / 2 / c1 / R_pow_di(frech[k + j * *nObs], 2);
 	  dBz1 = 3 * (R_pow_di(rho[currentPair], 2) - 1) * 
 	    (frech[k + i * *nObs] - rho[currentPair] * 
 	     frech[k + j * *nObs]) / 2 / R_pow_di(c1, 5);
@@ -844,8 +845,8 @@ void schlatherindgrad(int *covmod, double *data, double *dist, int *nSite,
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
   int i, j, k, l, currentPair = -1;
-  double c1, dArho, dAz1, dAz2, B, dBrho, dBz1, dBz2, C,
-    dCrho, dCz1, dCz2, D, dDrho, dDz1, dDz2, *rho, *locs,
+  double c1, dArho, dAz1, dAz2, Borig, B, dBrho, dBz1, dBz2, Corig,
+    C, dCrho, dCz1, dCz2, Dorig, D, dDrho, dDz1, dDz2, *rho, *locs,
     *scales, *shapes, jacCommonRho, jacCommonMarge, *jac,
     *frech, dz1loc, dz2loc, dz1scale, dz2scale, dz1shape,
     dz2shape, dE, flag;
@@ -909,19 +910,22 @@ void schlatherindgrad(int *covmod, double *data, double *dist, int *nSite,
 		  2 * frech[k + i * *nObs] * frech[k + j * *nObs] *
 		  rho[currentPair]);
 
-	B = (1 - *alpha) * (1 - R_pow_di(rho[currentPair], 2)) / 2 /
+	Borig = (1 - R_pow_di(rho[currentPair], 2)) / 2 /
 	  R_pow_di(c1, 3);
-	C = (*alpha - 1) * (rho[currentPair] * frech[k + i * *nObs] - c1 -
-	       frech[k + j * *nObs]) / 2 / c1 /
+	B = (1 - *alpha) * Borig;
+	Corig =  - (rho[currentPair] * frech[k + i * *nObs] - c1 -
+		    frech[k + j * *nObs]) / 2 / c1 /
 	  R_pow_di(frech[k + i * *nObs], 2);
-	D = (*alpha - 1) * (rho[currentPair] * frech[k + j * *nObs] - c1 -
-	       frech[k + i * *nObs]) / 2 / c1 /
+	C = (1 - *alpha) * Corig + *alpha / R_pow_di(frech[k + i * *nObs], 2);
+	Dorig = - (rho[currentPair] * frech[k + j * *nObs] - c1 -
+		   frech[k + i * *nObs]) / 2 / c1 /
 	  R_pow_di(frech[k + j * *nObs], 2);
+	D = (1 - *alpha) * Dorig + *alpha / R_pow_di(frech[k + j * *nObs], 2);
 
 	dArho =  (1 - *alpha) / 2 / c1;
-	dBrho = (*alpha - 1) * rho[currentPair] / R_pow_di(c1, 3) + 3 * 
-	  (1 - rho[currentPair]) * frech[k + i * *nObs] *
-	  frech[k + j * *nObs] / R_pow_di(c1, 5);
+	dBrho = (1 - *alpha) * (-rho[currentPair] / R_pow_di(c1, 3) + 3 * 
+				(1 - rho[currentPair]) * frech[k + i * *nObs] *
+				frech[k + j * *nObs] / R_pow_di(c1, 5));
 	dCrho = (*alpha - 1) * (frech[k + i * *nObs] - frech[k + j * *nObs] *
 		rho[currentPair]) / 2 / R_pow_di(c1, 3);
 	dDrho = (*alpha - 1) * (frech[k + j * *nObs] - frech[k + i * *nObs] *
@@ -930,20 +934,15 @@ void schlatherindgrad(int *covmod, double *data, double *dist, int *nSite,
 
 	jacCommonRho = dArho + (dBrho * C + B * dCrho + dDrho) / (B*C + D);
 
-	grad[k] += .5 * (1/frech[k + i * *nObs] + 1/frech[k + j * *nObs]) *
-	  (-1 + sqrt(1 - 2 * (rho[currentPair] + 1) * frech[k + i * *nObs] *
-		     frech[k + j * *nObs] / R_pow_di(frech[k + i * *nObs] +
-						     frech[k + i * *nObs], 2))) +
-	  ((1 / R_pow_di(frech[k + i * *nObs], 2) - C) + 
-	   (*alpha / R_pow_di(frech[k + j * *nObs], 2) + (1 - *alpha) * D) +
-	   (*alpha / R_pow_di(frech[k + i * *nObs], 2) + (1 - *alpha) * C) *
-	   (1 / R_pow_di(frech[k + j * *nObs], 2) - D)) /
-	  ((1 - *alpha) * B + (*alpha / R_pow_di(frech[k + i * *nObs], 2) +
-			       (1 - *alpha) * C) *
-	   (*alpha / R_pow_di(frech[k + j * *nObs], 2) + (1 - *alpha) * D));
+	grad[k] += (-1 + sqrt(1 - 2 * (rho[currentPair] + 1) * frech[k + i * *nObs] *
+			      frech[k + j * *nObs] / 
+			      R_pow_di(frech[k + i * *nObs] + frech[k + j * *nObs], 2))) +
+	  (-Borig + (R_pow_di(frech[k + i * *nObs], -2) - Corig) * D + C *
+	   (R_pow_di(frech[k + j * *nObs], -2) - Dorig)) / (B + C * D);
  
 	switch (*covmod){
 	case 1:
+	  //i.e. Whittle-Matern
 	  grad[*nObs + k] += rho[currentPair] / *sill * jacCommonRho;
 	  grad[2 * *nObs + k] += rho[currentPair] * 
 	    (-2 * *smooth / *range + dist[currentPair] * 
@@ -955,19 +954,21 @@ void schlatherindgrad(int *covmod, double *data, double *dist, int *nSite,
 	  grad[3 * *nObs + k] = R_NaReal;
 	  break;
 	case 2:
+	  //i.e. cauchy
 	  grad[*nObs + k] += rho[currentPair] / *sill * jacCommonRho;
-	  grad[2 * *nObs + k] = 2 * R_pow_di(dist[currentPair], 2) *
+	  grad[2 * *nObs + k] += 2 * R_pow_di(dist[currentPair], 2) *
 	    *sill * *smooth / R_pow_di(*range, 3) * 
 	    R_pow(R_pow_di(dist[currentPair] / *range, 2) + 1, - *smooth - 1) *
 	    jacCommonRho; 
-	  grad[3 * *nObs + k] -= -rho[currentPair] * 
+	  grad[3 * *nObs + k] -= rho[currentPair] * 
 	    log(1 + R_pow_di(dist[currentPair] / *range, 2)) * jacCommonRho;
 	  break;
 	case 3:
+	  //i.e. powered exponential
 	  grad[*nObs + k] = rho[currentPair] / *sill * jacCommonRho;
 	  grad[2 * *nObs + k] += rho[currentPair] * *smooth /
 	    *range * R_pow(dist[currentPair] / *range, *smooth) * jacCommonRho;
-	  grad[3 * *nObs + k] -= -rho[currentPair] *
+	  grad[3 * *nObs + k] -= rho[currentPair] *
 	    R_pow(dist[currentPair] / *range, *smooth) * log(dist[currentPair] / *range) *
 	    jacCommonRho;
 	  break;	   
@@ -991,49 +992,49 @@ void schlatherindgrad(int *covmod, double *data, double *dist, int *nSite,
 		    2 * frech[k + i * *nObs] * frech[k + j * *nObs] *
 		    rho[currentPair]);
 	  
-	  B = (1 - *alpha) *(1 - R_pow_di(rho[currentPair], 2)) / 2 /
+	  B = (1 - *alpha) * (1 - R_pow_di(rho[currentPair], 2)) / 2 /
 	    R_pow_di(c1, 3);
 	  C = (*alpha - 1) * (rho[currentPair] * frech[k + i * *nObs] - c1 -
-		 frech[k + j * *nObs]) / 2 / c1 /
-	    R_pow_di(frech[k + i * *nObs], 2);
+			      frech[k + j * *nObs]) / 2 / c1 /
+	    R_pow_di(frech[k + i * *nObs], 2) + *alpha / R_pow_di(frech[k + i * *nObs], 2);
 	  D = (*alpha - 1) * (rho[currentPair] * frech[k + j * *nObs] - c1 -
-		 frech[k + i * *nObs]) / 2 / c1 /
-	    R_pow_di(frech[k + j * *nObs], 2);
+			      frech[k + i * *nObs]) / 2 / c1 /
+	    R_pow_di(frech[k + j * *nObs], 2) + *alpha / R_pow_di(frech[k + j * *nObs], 2);
 	  
 	  dAz1 = (1 - *alpha) * (frech[k + j * *nObs] + c1 - rho[currentPair] * 
-		  frech[k + i * *nObs]) / 2 / c1 /
-	    R_pow_di(frech[k + i * *nObs], 2);
+				 frech[k + i * *nObs]) / 2 / c1 /
+	    R_pow_di(frech[k + i * *nObs], 2) + *alpha / R_pow_di(frech[k + i * *nObs], 2);
 	  dAz2 = (1 - *alpha) * (frech[k + i * *nObs] + c1 - rho[currentPair] * 
 		  frech[k + j * *nObs]) / 2 / c1 /
-	    R_pow_di(frech[k + j * *nObs], 2);
-	  dBz1 = (1 - *alpha) * 3 * (R_pow_di(rho[currentPair], 2) - 1) * 
+	    R_pow_di(frech[k + j * *nObs], 2) + *alpha / R_pow_di(frech[k + j * *nObs], 2);
+	  dBz1 = 3 * (1 - *alpha) * (R_pow_di(rho[currentPair], 2) - 1) * 
 	    (frech[k + i * *nObs] - rho[currentPair] * 
 	     frech[k + j * *nObs]) / 2 / R_pow_di(c1, 5);
-	  dBz2 = (1 - *alpha) * 3 * (R_pow_di(rho[currentPair], 2) - 1) * 
+	  dBz2 = 3 * (1 - *alpha) * (R_pow_di(rho[currentPair], 2) - 1) * 
 	    (frech[k + j * *nObs] - rho[currentPair] * 
 	     frech[k + i * *nObs]) / 2 / R_pow_di(c1, 5);
 	  dCz1 = (1 - *alpha) * (2 * rho[currentPair] * R_pow_di(frech[k + i * *nObs], 3) +
-		  6 * frech[k + i * *nObs] * R_pow_di(frech[k + j * *nObs] * 
-						      rho[currentPair], 2) -
-		  3 * R_pow_di(frech[k + i * *nObs], 2) * 
-		  frech[k + j * *nObs] * (1 + R_pow_di(rho[currentPair], 2)) -
-		  2 * R_pow_di(c1, 3) - 2 * R_pow_di(frech[k + j * *nObs], 3)) / 2 /
-	    R_pow_di(c1 * frech[k + i * *nObs], 3);
+				 6 * frech[k + i * *nObs] * R_pow_di(frech[k + j * *nObs] * 
+								     rho[currentPair], 2) -
+				 3 * R_pow_di(frech[k + i * *nObs], 2) * 
+				 frech[k + j * *nObs] * (1 + R_pow_di(rho[currentPair], 2)) -
+				 2 * R_pow_di(c1, 3) - 2 * R_pow_di(frech[k + j * *nObs], 3)) / 2 /
+	    R_pow_di(c1 * frech[k + i * *nObs], 3) - 2 * *alpha / R_pow_di(frech[k + i * *nObs], 3);
 	  dCz2 = (*alpha - 1) * (frech[k + i * *nObs] * rho[currentPair] - c1 - 
-		    frech[k + j * *nObs]) * 
+				 frech[k + j * *nObs]) * 
 	    (frech[k + i * *nObs] * rho[currentPair] + c1 - frech[k + j * *nObs]) /
 	    2 / R_pow_di(c1, 3) / R_pow_di(frech[k + i * *nObs], 2);
 	  dDz1 = (*alpha - 1) * (frech[k + j * *nObs] * rho[currentPair] - c1 - 
-		    frech[k + i * *nObs]) * 
+				 frech[k + i * *nObs]) * 
 	    (frech[k + j * *nObs] * rho[currentPair] + c1 - frech[k + i * *nObs]) /
 	    2 / R_pow_di(c1, 3) / R_pow_di(frech[k + j * *nObs], 2);
 	  dDz2 = (1 - *alpha) * (2 * rho[currentPair] * R_pow_di(frech[k + j * *nObs], 3) +
-		  6 * frech[k + j * *nObs] * R_pow_di(frech[k + i * *nObs] * 
-						      rho[currentPair], 2) -
-		  3 * R_pow_di(frech[k + j * *nObs], 2) * frech[k + i * *nObs] *
-		  (1 + R_pow_di(rho[currentPair], 2)) - 2 * R_pow_di(c1, 3) -
-		  2 * R_pow_di(frech[k + i * *nObs], 3)) / 2 /
-	    R_pow_di(c1 * frech[k + j * *nObs], 3);
+				 6 * frech[k + j * *nObs] * R_pow_di(frech[k + i * *nObs] * 
+								     rho[currentPair], 2) -
+				 3 * R_pow_di(frech[k + j * *nObs], 2) * frech[k + i * *nObs] *
+				 (1 + R_pow_di(rho[currentPair], 2)) - 2 * R_pow_di(c1, 3) -
+				 2 * R_pow_di(frech[k + i * *nObs], 3)) / 2 /
+	    R_pow_di(c1 * frech[k + j * *nObs], 3) - 2 * *alpha / R_pow_di(frech[k + j * *nObs], 3);
 	  	 
 	  for (l=0;l<*nloccoeff;l++){
 	    dE = (shapes[i] - 1) / R_pow(frech[k + i * *nObs], shapes[i]) /
@@ -1045,10 +1046,9 @@ void schlatherindgrad(int *covmod, double *data, double *dist, int *nSite,
 	    dz2loc = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) /
 	      scales[j] * locdsgnmat[j + *nSite * l];
 
-	    grad[(3 + l) * *nObs + k] = grad[(3 + l) * *nObs + k] +
-	      (dAz1 * dz1loc + dAz2 * dz2loc) + ((dBz1 * dz1loc + dBz2 * dz2loc) * C +
-						 B * (dCz1 * dz1loc + dCz2 * dz2loc)) /
-	      (B * C + D) + dE;
+	    grad[(4 + l) * *nObs + k] += (dAz1 * dz1loc + dAz2 * dz2loc) + 
+	      ((dBz1 * dz1loc + dBz2 * dz2loc) * C +
+	       B * (dCz1 * dz1loc + dCz2 * dz2loc)) / (B * C + D) + dE;
 	  }
 
 	  for (l=0;l<*nscalecoeff;l++){
@@ -1064,7 +1064,7 @@ void schlatherindgrad(int *covmod, double *data, double *dist, int *nSite,
 	    dz2scale = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) *
 	      (data[k + j * *nObs] - locs[j]) / scales[j] / scalecoeff[l];
 
-	    grad[(3 + *nloccoeff + l) * *nObs + k] = grad[(3 + *nloccoeff + l) * *nObs + k] +
+	    grad[(4 + *nloccoeff + l) * *nObs + k] +=
 	      (dAz1 * dz1scale + dAz2 * dz2scale) + ((dBz1 * dz1scale + dBz2 * dz2scale) * C +
 						     B * (dCz1 * dz1scale + dCz2 * dz2shape)) /
 	      (B * C + D) + dE;
@@ -1088,8 +1088,7 @@ void schlatherindgrad(int *covmod, double *data, double *dist, int *nSite,
 			frech[k + j * *nObs] * log(frech[k + j * *nObs])) /
 	      shapecoeff[l];
 
-	    grad[(3 + *nloccoeff + *nscalecoeff + l) * *nObs + k] = 
-	      grad[(3 + *nloccoeff + *nscalecoeff + l) * *nObs + k] +
+	    grad[(4 + *nloccoeff + *nscalecoeff + l) * *nObs + k] += 
 	      (dAz1 * dz1shape + dAz2 * dz2shape) +
 	      ((dBz1 * dz1shape + dBz2 * dz2shape) * C + B * 
 	       (dCz1 * dz1shape + dCz2 * dz2shape)) /

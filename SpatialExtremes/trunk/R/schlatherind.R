@@ -219,10 +219,10 @@ Standard errors are not available unless you fix it.")
 
     else{
       ihessian <- var.cov
-      jacobian <- .schlathergrad(param, data, dist, cov.mod.num, as.double(0),
-                                 as.double(0), as.double(0), fit.marge = fit.marge,
-                                 std.err.type = std.err.type, fixed.param = names(fixed.param),
-                                 param.names = param.names)
+      jacobian <- .schlatherindgrad(param, data, dist, cov.mod.num, as.double(0),
+                                    as.double(0), as.double(0), fit.marge = fit.marge,
+                                    std.err.type = std.err.type, fixed.param = names(fixed.param),
+                                    param.names = param.names)
 
       if(any(is.na(jacobian))){
         if (warn)
@@ -526,11 +526,11 @@ Standard errors are not available unless you fix it.")
 
     else{
       ihessian <- var.cov
-      jacobian <- .schlathergrad(param, data, dist, cov.mod.num, loc.dsgn.mat,
-                                 scale.dsgn.mat, shape.dsgn.mat,
-                                 fit.marge = fit.marge, std.err.type = std.err.type,
-                                 fixed.param = names(fixed.param), param.names =
-                                 param.names)
+      jacobian <- .schlatherindgrad(param, data, dist, cov.mod.num, loc.dsgn.mat,
+                                    scale.dsgn.mat, shape.dsgn.mat,
+                                    fit.marge = fit.marge, std.err.type = std.err.type,
+                                    fixed.param = names(fixed.param), param.names =
+                                    param.names)
 
       if(any(is.na(jacobian))){
         if (warn)
@@ -579,7 +579,7 @@ Standard errors are not available unless you fix it.")
                         smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
   
   ext.coeff <- function(h)
-    1 + sqrt(1 - 1/2 * (cov.fun(h) + 1))
+    1 + param["alpha"] + (1 - param["alpha"]) * sqrt(1 - 1/2 * (cov.fun(h) + 1))
   
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
                  var.cov = var.cov, fixed = unlist(fixed.param), param = param,
