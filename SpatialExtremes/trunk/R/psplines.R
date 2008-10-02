@@ -1,15 +1,24 @@
-rbpspline <- function(y, x, knots, degree, penalty, ...){
+rbpspline <- function(y, x, knots, degree, penalty = "gcv", ...){
 
   if ((degree %% 2) == 0)
     stop("''degree'' must be an odd number")
 
-  if (missing(penalty)){
+  if (!is.numeric(penalty) && (penalty != "cv") && (penalty != "gcv"))
+    stop("'penalty' must be either a numeric value, either 'cv' or 'gcv'")
+
+  if (penalty == "cv"){
     cv.fit <- cv(y, x, knots, degree, plot = FALSE, ...)
     penalty <- cv.fit$penalty
     cv.hat <- cv.fit$cv
   }
 
-  else
+  if (penalty == "gcv"){
+    gcv.fit <- gcv(y, x, knots, degree, plot = FALSE, ...)
+    penalty <- gcv.fit$penalty
+    cv.hat <- gcv.fit$gcv
+  }
+
+  if (is.numeric(penalty))
     cv.hat <- NA
 
   if (is.null(dim(x))){
@@ -97,6 +106,55 @@ cv <- function(y, x, knots, degree, plot = TRUE, n.points = 150, ...){
   }
   
   return(list(cv = opt$minimum, penalty = opt$estimate, nlm.code = opt$code))    
+
+}
+
+gcv <- function(y, x, knots, degree, plot = TRUE, n.points = 150, ...){
+
+  dsgn.mat <- rb(x, degree = degree, knots = knots, penalty = NULL)
+  pen.mat <- dsgn.mat$pen.mat
+  dsgn.mat <- dsgn.mat$dsgn.mat
+
+  ##To compute the beta vector, we use the Demmler-Reinch
+  ##orthogonalization
+  chol.mat <- chol(crossprod(dsgn.mat))
+  chol.mat.inv <- solve(chol.mat)
+  svd.mat <- svd(t(chol.mat.inv) %*% pen.mat %*% chol.mat.inv)
+
+  A <- dsgn.mat %*% chol.mat.inv %*% svd.mat$u
+  b <- t(A) %*% y
+  n <- length(y)
+  
+  obj.fun <- function(penalty){
+
+    if (penalty < 0)
+      return(1e6)
+
+    fitted.values <- A %*% (b / (1 + penalty^degree * svd.mat$d))
+    smooth.mat <- A %*% diag(1 / (1 + penalty^degree * svd.mat$d)) %*% t(A)
+    
+    gcv <- n * sum((y - fitted.values)^2) / (n - sum(diag(smooth.mat)))^2
+    return(gcv)
+  }
+
+  opt <- nlm(obj.fun, sd(y), ...)
+
+  if (opt$code >= 3)
+    warning("Optimization may have not succeeded")
+
+  if (plot){
+    gcv.val <- NULL
+    lambda.vals <- seq(0, 2 * opt$estimate, length = n.points)
+    for (lambda in lambda.vals)
+      gcv.val <- c(gcv.val, obj.fun(lambda))
+
+    gcv.val[gcv.val == 1e6] <- NA
+         
+    plot(lambda.vals, gcv.val, xlab = expression(lambda), ylab = "GCV",
+         type = "l")
+  }
+  
+  return(list(gcv = opt$minimum, penalty = opt$estimate, nlm.code = opt$code))    
 
 }
 
