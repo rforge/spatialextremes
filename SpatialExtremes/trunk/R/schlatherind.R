@@ -18,12 +18,6 @@ schlatherindfull <- function(data, coord, start, cov.mod = "whitmat", ...,
 
   dist <- distance(coord)
   
-  if (std.err.type == "none")
-    hessian <- FALSE
-
-  else
-    hessian <- TRUE
-
   if (!(cov.mod %in% c("whitmat","cauchy","powexp")))
     stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp'")
 
@@ -63,6 +57,20 @@ schlatherindfull <- function(data, coord, start, cov.mod = "whitmat", ...,
   }
 
   fixed.param <- list(...)[names(list(...)) %in% param]
+
+  if ((cov.mod == "whitmat") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
+    if (warn)
+      warning("The Whittle-Matern covariance function is not differentiable w.r.t. the ''smooth'' parameter
+Standard errors are not available unless you fix it.")
+    
+    std.err.type <- "none"
+  }
+  
+  if (std.err.type == "none")
+    hessian <- FALSE
+  
+  else
+    hessian <- TRUE
   
   ##Define the formal arguments of the function
   form.nplk <- NULL
@@ -197,14 +205,6 @@ schlatherindfull <- function(data, coord, start, cov.mod = "whitmat", ...,
   param.names <- param
   param <- c(opt$par, unlist(fixed.param))
   param <- param[param.names]
-
-  if ((cov.mod == "whitmat") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
-    if (warn)
-      warning("The Bessel function is not differentiable w.r.t. the ''smooth'' parameter
-Standard errors are not available unless you fix it.")
-    
-    std.err.type <- "none"
-  }
   
   if (std.err.type != "none"){
     
@@ -300,12 +300,6 @@ schlatherindform <- function(data, coord, cov.mod, loc.form, scale.form, shape.f
 
   dist <- distance(coord)
      
-  if (std.err.type == "none")
-    hessian <- FALSE
-
-  else
-    hessian <- TRUE
-
   if (!(cov.mod %in% c("whitmat","cauchy","powexp")))
     stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp'")
 
@@ -430,7 +424,21 @@ schlatherindform <- function(data, coord, cov.mod, loc.form, scale.form, shape.f
                             "]", collapse = ", "), ", ...)"))
   
   fixed.param <- list(...)[names(list(...)) %in% param]
+
+  if ((cov.mod == "whitmat") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
+    if (warn)
+      warning("The Whittle-Matern covariance function is not differentiable w.r.t. the ''smooth'' parameter
+Standard errors are not available unless you fix it.")
+    
+    std.err.type <- "none"
+  }
   
+  if (std.err.type == "none")
+    hessian <- FALSE
+  
+  else
+    hessian <- TRUE
+
   if(any(!(param %in% c(nm,names(fixed.param)))))
     stop("unspecified parameters")
   
@@ -504,14 +512,6 @@ schlatherindform <- function(data, coord, cov.mod, loc.form, scale.form, shape.f
   param.names <- param
   param <- c(opt$par, unlist(fixed.param))
   param <- param[param.names]
-
-  if ((cov.mod == "whitmat") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
-    if (warn)
-      warning("The Bessel function is not differentiable w.r.t. the ''smooth'' parameter
-Standard errors are not available unless you fix it.")
-    
-    std.err.type <- "none"
-  }
   
   if (std.err.type != "none"){
     

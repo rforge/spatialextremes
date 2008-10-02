@@ -195,3 +195,128 @@
   
   return(start)
 }
+
+
+.start.schlatherind <- function(data, coord, cov.mod, loc.model, scale.model, shape.model,
+                                print.start.values = TRUE, method = "Nelder",
+                                ...){
+
+  param <- c("alpha", "sill", "range", "smooth")
+  fixed.param <- list(...)[names(list(...)) %in% param]
+  
+  if (print.start.values)
+    cat("Computing appropriate starting values\n")
+  
+  n.site <- ncol(data)
+
+  loc <- scale <- shape <- rep(NA, n.site)
+  dataFrech <- data
+  for (i in 1:n.site){
+    marg.param <- gevmle(data[,i])
+    loc[i] <- marg.param["loc"]
+    scale[i] <- marg.param["scale"]
+    shape[i] <- marg.param["shape"]
+    dataFrech[,i] <- gev2frech(dataFrech[,i], loc[i], scale[i], shape[i])
+  }
+
+  locCoeff <- loc.model$init.fun(loc)
+  scaleCoeff <- scale.model$init.fun(scale)
+  shapeCoeff <- shape.model$init.fun(shape)
+  
+  locCoeff[is.na(locCoeff)] <- 0
+  scaleCoeff[is.na(scaleCoeff)] <- 0
+  shapeCoeff[is.na(shapeCoeff)] <- 0
+  
+  if (length(fixed.param) > 0){
+    args <- c(list(data = data, coord = coord, cov.mod = cov.mod,
+                   marge = "emp"), fixed.param)
+    cov.param <- do.call("fitcovariance", args)$param
+  }
+  
+  else
+    cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp")$param
+
+  cov.param <- geomgaussfull(dataFrech, coord, start = c(list(alpha = .5), as.list(cov.param)),
+                             cov.mod = cov.mod, fit.marge = FALSE, method = method,
+                             warn = FALSE)$param
+  
+  start <- as.list(cov.param)
+
+  names(locCoeff) <- names(scaleCoeff) <- names(shapeCoeff) <- NULL
+  
+  start <- c(start, as.list(unlist(list(locCoeff = locCoeff,
+                                        scaleCoeff = scaleCoeff,
+                                        shapeCoeff = shapeCoeff))))
+
+  if (print.start.values)
+    cat("Starting values are defined\n")
+
+  if (print.start.values){
+    cat("Starting values are:\n")
+    print(unlist(start))
+  }
+  
+  return(start)
+}
+
+.start.geomgauss <- function(data, coord, cov.mod, loc.model, scale.model, shape.model,
+                             print.start.values = TRUE, method = "Nelder",
+                             ...){
+
+  param <- c("sigma2", "sill", "range", "smooth")
+  fixed.param <- list(...)[names(list(...)) %in% param]
+  
+  if (print.start.values)
+    cat("Computing appropriate starting values\n")
+  
+  n.site <- ncol(data)
+
+  loc <- scale <- shape <- rep(NA, n.site)
+  dataFrech <- data
+  for (i in 1:n.site){
+    marg.param <- gevmle(data[,i])
+    loc[i] <- marg.param["loc"]
+    scale[i] <- marg.param["scale"]
+    shape[i] <- marg.param["shape"]
+    dataFrech[,i] <- gev2frech(dataFrech[,i], loc[i], scale[i], shape[i])
+  }
+
+  locCoeff <- loc.model$init.fun(loc)
+  scaleCoeff <- scale.model$init.fun(scale)
+  shapeCoeff <- shape.model$init.fun(shape)
+  
+  locCoeff[is.na(locCoeff)] <- 0
+  scaleCoeff[is.na(scaleCoeff)] <- 0
+  shapeCoeff[is.na(shapeCoeff)] <- 0
+  
+  if (length(fixed.param) > 0){
+    args <- c(list(data = data, coord = coord, cov.mod = cov.mod,
+                   marge = "emp"), fixed.param)
+    cov.param <- do.call("fitcovariance", args)$param
+  }
+  
+  else
+    cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp")$param
+
+  cov.param <- geomgaussfull(dataFrech, coord, start = c(list(sigma2 = 1), as.list(cov.param)),
+                             cov.mod = cov.mod, fit.marge = FALSE, method = method,
+                             warn = FALSE)$param
+  
+  start <- as.list(cov.param)
+
+  names(locCoeff) <- names(scaleCoeff) <- names(shapeCoeff) <- NULL
+  
+  start <- c(start, as.list(unlist(list(locCoeff = locCoeff,
+                                        scaleCoeff = scaleCoeff,
+                                        shapeCoeff = shapeCoeff))))
+
+  if (print.start.values)
+    cat("Starting values are defined\n")
+
+  if (print.start.values){
+    cat("Starting values are:\n")
+    print(unlist(start))
+  }
+  
+  return(start)
+}
