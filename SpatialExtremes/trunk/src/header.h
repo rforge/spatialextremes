@@ -105,6 +105,9 @@ double mahalDistFct(double *distVec, int nPairs, double *cov11,
 double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
 		      double *cov12, double *cov13, double *cov22, 
 		      double *cov23, double *cov33, double *mahal);
+double geomCovariance(double *dist, int nPairs, int covmod,
+		      double sigma2, double sill, double range,
+		      double smooth, double *rho);
 
 ///////////////////////////////////
 //  From mcmc.c

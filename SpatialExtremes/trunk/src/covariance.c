@@ -31,10 +31,10 @@ double whittleMatern(double *dist, int nPairs, double sill, double range,
     ans += R_pow_di(sill, 2) * MINF;
   }
   
-  if (smooth > 50){
+  if (smooth > 150){
     //Required because it could lead to infinite rho values
     //printf("smooth is too large!\n");
-    ans += R_pow_di(smooth - 49, 2) * MINF;
+    ans += R_pow_di(smooth - 149, 2) * MINF;
   }
 
   if (ans != 0.0)
@@ -233,3 +233,32 @@ double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
   
   return 0.0;
 }
+
+double geomCovariance(double *dist, int nPairs, int covmod,
+		      double sigma2, double sill, double range,
+		      double smooth, double *rho){
+  int i;
+  double ans;
+
+  switch (covmod){
+  case 1:
+    ans = whittleMatern(dist, nPairs, sill, range, smooth, rho);
+    break;
+  case 2:
+    ans = cauchy(dist, nPairs, sill, range, smooth, rho);
+    break;
+  case 3:
+    ans = powerExp(dist, nPairs, sill, range, smooth, rho);
+    break;
+  }
+
+  for (i=0;i<nPairs;i++)
+    rho[i] = 2 * sigma2 * (1 - rho[i]);
+
+  return ans;
+}
+
+      
+
+  
+  

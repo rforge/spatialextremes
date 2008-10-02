@@ -9,7 +9,7 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
   }
   if (x$est == "Least Square")
     cat("  Objective Value:", x$opt.value, "\n")
-  if (x$model == "Schlather"){
+  if ((x$model == "Schlather") || (x$model == "Geometric")){
 
     if (x$cov.mod == "emp")
       cov.mod <- "Empirical"
@@ -31,6 +31,7 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
 
     if (x$fit.marge){
       idx <- which(names(x$fitted.values) == "alpha")
+      idx <- c(idx, which(names(x$fitted.values) == "sigma2"))
       idx <- c(idx, which(names(x$fitted.values) == "sill"))
       idx <- c(idx, which(names(x$fitted.values) == "range"))
       idx <- c(idx, which(names(x$fitted.values) == "smooth"))
@@ -139,7 +140,7 @@ print.pspline <- function(x, ...){
   cat("Call:\n")
   print(x$call)
 
-  cat("\n  Rank:", x$rank, "\tCV Score:", round(x$cv, 3),
+  cat("\n  Rank:", x$rank, "\t(G)CV Score:", round(x$cv, 3),
       "\n")
   cat("Degree:", x$degree, "\t Penalty: ",
       round(x$penalty, 3), "\n")
