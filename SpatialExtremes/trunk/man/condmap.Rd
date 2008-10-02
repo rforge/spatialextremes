@@ -1,25 +1,23 @@
-\name{map}
-\alias{map}
-\title{Produces a 2D map from a fitted max-stable process}
+\name{condmap}
+\alias{condmap}
+\title{Produces a conditional 2D map from a fitted max-stable process}
 \description{
-  Produces a 2D map from a fitted max-stable process.
+  Produces a conditional 2D map from a fitted max-stable process.
 }
 \usage{
-map(fitted, param = "quant", \dots, ret.per = 100, ranges =
-apply(fitted$coord, 2, range), n = 80, col = terrain.colors(n),
+condmap(fitted, fix.coord, \dots, ret.per1 = 100, ret.per2 = ret.per1,
+ranges = apply(fitted$coord, 2, range), n = 80, col = terrain.colors(n),
 plot.contour = TRUE)
 }
 \arguments{
   \item{fitted}{An object of class \code{maxstab}. Most often, it will
     be the output of the function \code{\link{fitmaxstab}}.}
-  \item{param}{A character string. Must be one of "loc", "scale",
-    "shape" or "quant" for a map of the location, scale, shape
-    parameters or for a map of a specified quantile.}
+  \item{fix.coord}{The spatial coordinates of the location from which
+    the conditional quantile is computed.}
   \item{\dots}{Several arguments to be passed to the \code{link{image}}
     and \code{\link{contour}} functions.}
-  \item{ret.per}{A numeric giving the return period for which the
-    quantile map is plotted. It is only required if \code{param =
-      "quant"}.}
+  \item{ret.per1,ret.per2}{Numerics giving the return period for which
+    the quantile map is plotted. See details.}
   \item{ranges}{A 2 by 2 matrix gving the ranges for the x and y
     axis. Each column corresponds to one axis.}
   \item{n}{Integer giving the grid size for the map. It will need
@@ -34,8 +32,20 @@ plot.contour = TRUE)
   A plot. Additionally, a list with the details for plotting the map is
   returned invisibly.
 }
+\details{
+  The function solves the following equation:
+
+  \deqn{\Pr\left[Z(x_2) > z_2 | Z(x_1) > z_1 \right] =
+    \frac{1}{ret.per2}}{Pr[Z(x_2) > z_2 | Z(x_1) > z_1] = 1 / ret.per2}
+  where \eqn{z_1 = -1 / \log(1 - 1/ret.per1)}{z_1 = -1 / \log(1 -
+    1/ret.per1)}.
+
+  In other words, it computes, given that at location \eqn{x_1}{x_1} we
+  exceed the level \eqn{z_1}{z_1}, the levels which is expected to be
+  exceeded in average every \code{ret.per2} year.
+}
 \seealso{
-  \code{\link{condmap}}, \code{\link{filled.contour}},
+  \code{\link{map}}, \code{\link{filled.contour}},
   \code{\link{heatmap}}, \code{\link{heat.colors}},
   \code{\link{topo.colors}}, \code{\link{terrain.colors}},
   \code{\link{rainbow}}
@@ -76,20 +86,7 @@ shape.form <- shape ~ lat + lon
 schlather <- fitmaxstab(ms1, locations, "whitmat", loc.form, scale.form,
                         shape.form)
 
-##  2- Produce a map of the location, scale and shape parameters
-map(schlather, "loc", col = rainbow(80))
-title("Location")
-map(schlather, "scale", col = heat.colors(80))
-title("Scale")
-map(schlather, "shape", col = topo.colors(100))
-title("Shape")
-
-##  3- Produce a map for the 50 years return level
-new.ranges <- cbind(c(0, 15), c(0, 15))
-colnames(new.ranges) <- c("lon", "lat")
-
-map(schlather, "quant", ret.per = 50 , ranges = new.ranges)
-title("50-year return level")
+condmap(schlather, c(1, 1))
 }
 \author{Mathieu Ribatet}
 \keyword{hplot}

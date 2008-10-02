@@ -106,9 +106,9 @@ extcoeff <- function(fitted, cov.mod, param,
   contour(xs, ys, extcoeff.hat, xlab = xlab, ylab = ylab, ...)
 }
     
-map <- function(fitted, param = c("loc", "scale", "shape", "quant"),
-                ..., ret.per = 100, ranges = apply(fitted$coord, 2, range),
-                n = 80, col = terrain.colors(n), plot.contour = TRUE){
+map <- function(fitted, param = "quant", ..., ret.per = 100,
+                ranges = apply(fitted$coord, 2, range), n = 80,
+                col = terrain.colors(n), plot.contour = TRUE){
 
   if (ncol(fitted$coord) > 2)
     stop("It's not possible to use this function when the coordinate space has a dimension >= 2")
@@ -120,26 +120,103 @@ map <- function(fitted, param = c("loc", "scale", "shape", "quant"),
 
   xs <- seq(x.range[1], x.range[2], length = n)
   ys <- seq(y.range[1], y.range[2], length = n)
+
+  if (param == "loc")
+    fun <- function(x) x[,"loc"]
+
+  if (param == "scale")
+    fun <- function(x) x[,"scale"]
+
+  if (param == "shape")
+    fun <- function(x) x[,"scale"]
+
+  if (param == "quant")
+    fun <- function(x)
+      .qgev(1 - 1/ret.per, x[,"loc"], x[,"scale"], x[,"shape"])
   
   for (i in 1:n){
     new.data <- cbind(xs[i], ys)
     colnames(new.data) <- colnames(fitted$coord)
     param.hat <- predict(fitted, new.data)
 
-    if (param == "loc")
-      ans[,i] <- param.hat[,"loc"]
-    
-    if (param == "scale")
-      ans[i,] <- param.hat[,"scale"]
-  
-    if (param == "shape")
-      ans[i,] <- param.hat[,"shape"]
-  
-    if (param == "quant")
-      ans[i,] <- .qgev(1 - 1/ret.per, param.hat[,"loc"],
-                       param.hat[,"scale"], param.hat[,"shape"])
+    ans[i,] <- fun(param.hat)
   }
 
+  coord.names <- colnames(fitted$coord)
+  xlab <- coord.names[1]
+  ylab <- coord.names[2]
+  
+  image(xs, ys, ans, ..., col = col, xlab = xlab, ylab = ylab)
+
+  if (plot.contour)
+    contour(xs, ys, ans, add = TRUE)
+
+  invisible(list(x = xs, y = ys, z = ans))
+}
+
+
+condmap <- function(fitted, fix.coord, ..., ret.per1 = 100, ret.per2 = ret.per1,
+                    ranges = apply(fitted$coord, 2, range), n = 80,
+                    col = terrain.colors(n), plot.contour = TRUE){
+
+  if (ncol(fitted$coord) > 2)
+    stop("It's not possible to use this function when the coordinate space has a dimension >= 2")
+  
+  x.range <- ranges[,1]
+  y.range <- ranges[,2]
+
+  ans <- matrix(NA, nrow = n, ncol = n)
+  xs <- seq(x.range[1], x.range[2], length = n)
+  ys <- seq(y.range[1], y.range[2], length = n)
+
+  ##z1: quantile related to ret.per1
+  z1 <- - 1 / log(1 - 1/ret.per1)
+  Sigma <- matrix(c(fitted$param[1:2], fitted$param[2:3]), 2)
+  iSigma <- solve(Sigma)
+
+  new.data <- rep(NA, 2)
+  names(new.data) <- colnames(fitted$coord)
+  
+  if (fitted$model == "Smith"){
+    cond.prob <- function(z2)
+      1 - 1/ret.per2 + (exp(-1/z1 * pnorm(a/2 + 1/a * log(z2/z1)) -
+                            1/z2 * pnorm(a/2 + 1/a * log(z1/z2))) -
+                        exp(-1/z2)) / (1 - exp(-1/z1))
+
+    for (i in 1:n){
+      for (j in 1:n){
+        new.data[1:2] <- c(xs[i], ys[j]) 
+        delta <- fix.coord - new.data
+        a <- sqrt(delta %*% iSigma %*% delta)
+        ans[i,j] <- uniroot(cond.prob, c(1e-4, 1e5), ...)$root
+        param <- predict(fitted, new.data)
+        
+        ans[i,j] <- frech2gev(ans[i,j], param[,"loc"], param[,"scale"],
+                              param[,"shape"])
+      }
+    }
+  }    
+
+  if (fitted$model == "Schlather"){
+    cond.prob <- function(z2)
+      1 - 1/ret.per2 +
+        (exp(-0.5 * (1/z1 + 1/z2) *
+             (1 + sqrt(1 - 2 * (fitted$cov.fun(h) + 1) * z1 * z2 /
+                       (z1 + z2)^2))) - exp(-1/z2)) / (1 - exp(-1/z1))
+
+    for (i in 1:n){
+      for (j in 1:n){
+        new.data[1:2] <- c(xs[i], ys[j]) 
+        h <- sum((fix.coord - new.data)^2)
+        ans[i,j] <- uniroot(cond.prob, c(1e-4, 1e5), ...)$root
+        param <- predict(fitted, new.data)
+        
+        ans[i,j] <- frech2gev(ans[i,j], param[,"loc"], param[,"scale"],
+                              param[,"shape"])
+      }
+    }
+  }    
+  
   coord.names <- colnames(fitted$coord)
   xlab <- coord.names[1]
   ylab <- coord.names[2]
