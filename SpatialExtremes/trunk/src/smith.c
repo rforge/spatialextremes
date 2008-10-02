@@ -8,7 +8,7 @@ void smithfull(double *data, double *distVec, int *nSite,
 
   const int nPairs = *nSite * (*nSite - 1) / 2;
   int i;
-  double *jac, *mahalDist, *frech, flag = 0.0;
+  double *jac, *mahalDist, *frech;
   
   jac = (double *)R_alloc(*nSite * *nObs, sizeof(double));
   mahalDist = (double *)R_alloc(nPairs, sizeof(double));
@@ -30,32 +30,20 @@ void smithfull(double *data, double *distVec, int *nSite,
   }
   
   //Stage 1: Computing the Mahalanobis distance
-  flag = mahalDistFct(distVec, nPairs, cov11,
-		      cov12, cov22, mahalDist);
-  
-  if (flag != 0.0){
-    //printf("Problem with mahal. dist\n");
-    *dns += flag;
-  }
+  *dns += mahalDistFct(distVec, nPairs, cov11,
+		       cov12, cov22, mahalDist);
   
   //Stage 2: Transformation to unit Frechet
-  if (*fitmarge){
-    flag = gev2frech(data, *nObs, *nSite, locs, scales,
-		     shapes, jac, frech);
-    
-    if (flag != 0.0){
-      //printf("problem with conversion to unit frechet\n");
-      *dns += flag;
-    }
-  }
-
+  if (*fitmarge)
+    *dns += gev2frech(data, *nObs, *nSite, locs, scales,
+		      shapes, jac, frech);
   else {
     for (i=0;i<(*nSite * *nObs);i++){
       frech[i] = data[i];
       jac[i] = 0.0;    
     }
   }
-    
+  
   if (*dns == 0.0){
     //Stage 3: Bivariate density computations
     *dns = lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
@@ -76,8 +64,7 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs,
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
   int i, j;
-  double *jac, *mahalDist, *locs, *scales, *shapes, *frech,
-    flag = 0.0;
+  double *jac, *mahalDist, *locs, *scales, *shapes, *frech;
   
   jac = (double *)R_alloc(*nSite * *nObs, sizeof(double));
   mahalDist = (double *)R_alloc(nPairs, sizeof(double));
@@ -87,34 +74,19 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs,
   frech = (double *)R_alloc(*nSite * *nObs, sizeof(double));
   
   //Stage 1: Computing the Mahalanobis distance
-  flag = mahalDistFct(distVec, nPairs, cov11, cov12,
+  *dns = mahalDistFct(distVec, nPairs, cov11, cov12,
 		      cov22, mahalDist);
 
-  if (flag != 0.0){
-    //printf("problem with mahal. dist\n");
-    *dns = flag;
-  }
-
   //Stage 2: Computing the GEV parameters using the design matrix
-  flag = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
-		       loccoeff, scalecoeff, shapecoeff, *nSite,
-		       *nloccoeff, *nscalecoeff, *nshapecoeff,
-		       locs, scales, shapes);
-
-  if (flag != 0.0){
-    //printf("problem with the GEV parameters\n");
-    *dns += flag;
-  }
-
-  //Stage 3: Transformation to unit Frechet
-  flag = gev2frech(data, *nObs, *nSite, locs, scales, shapes,
-		   jac, frech);
-    
-  if (flag != 0.0){
-    //printf("problem with conversion to unit frechet\n");
-    *dns += flag;
-  }
+  *dns += dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
+			loccoeff, scalecoeff, shapecoeff, *nSite,
+			*nloccoeff, *nscalecoeff, *nshapecoeff,
+			locs, scales, shapes);
   
+  //Stage 3: Transformation to unit Frechet
+  *dns += gev2frech(data, *nObs, *nSite, locs, scales, shapes,
+		    jac, frech);
+    
   if (*dns == 0.0){
     //Stage 4: Bivariate density computations
     *dns = lpliksmith(frech, mahalDist, jac, *nObs, *nSite);

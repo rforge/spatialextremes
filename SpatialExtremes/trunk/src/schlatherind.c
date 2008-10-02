@@ -8,7 +8,7 @@ void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
   int i;
-  double *jac, *rho, *frech, flag = 0.0;
+  double *jac, *rho, *frech;
   
   jac = (double *)R_alloc(*nSite * *nObs, sizeof(double));
   rho = (double *)R_alloc(nPairs, sizeof(double));
@@ -40,32 +40,21 @@ void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
   //Stage 0: Compute the covariance at each location
   switch (*covmod){
   case 1:
-    flag = whittleMatern(dist, nPairs, *sill, *range, *smooth, rho);
+    *dns += whittleMatern(dist, nPairs, *sill, *range, *smooth, rho);
     break;
   case 2:
-    flag = cauchy(dist, nPairs, *sill, *range, *smooth, rho);
+    *dns += cauchy(dist, nPairs, *sill, *range, *smooth, rho);
     break;
   case 3:
-    flag = powerExp(dist, nPairs, *sill, *range, *smooth, rho);
+    *dns += powerExp(dist, nPairs, *sill, *range, *smooth, rho);
     break;
-  }
-  
-  if (flag != 0.0){
-    //printf("covariance is singular!\n");
-    *dns += flag;
   }
   
   //Stage 1: Transformation to unit Frechet
-  if (*fitmarge){
-    flag = gev2frech(data, *nObs, *nSite, locs, scales, shapes,
-		     jac, frech);
+  if (*fitmarge)
+    *dns += gev2frech(data, *nObs, *nSite, locs, scales, shapes,
+		      jac, frech);
     
-    if (flag != 0.0){
-      //printf("transformation to unit Frechet erradic!\n");
-      *dns += flag;
-    }
-  }
-
   else {
     for (i=0;i<(*nSite * *nObs);i++){
       frech[i] = data[i];
@@ -94,8 +83,7 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
   
   int i;
   const int nPairs = *nSite * (*nSite - 1) / 2;
-  double *jac, *rho, *locs, *scales, *shapes, *frech,
-    flag = 0.0;
+  double *jac, *rho, *locs, *scales, *shapes, *frech;
     
   jac = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   rho = (double *)R_alloc(nPairs, sizeof(double));
@@ -113,42 +101,31 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
   //Stage 1: Compute the covariance at each location
   switch (*covmod){
   case 1:
-    flag = whittleMatern(dist, nPairs, *sill, *range, *smooth, rho);
+    *dns += whittleMatern(dist, nPairs, *sill, *range, *smooth, rho);
     break;
   case 2:
-    flag = cauchy(dist, nPairs, *sill, *range, *smooth, rho);
+    *dns += cauchy(dist, nPairs, *sill, *range, *smooth, rho);
     break;
   case 3:
-    flag = powerExp(dist, nPairs, *sill, *range, *smooth, rho);
+    *dns += powerExp(dist, nPairs, *sill, *range, *smooth, rho);
     break;
   }
   
-  if (flag != 0.0){
+  if (*dns != 0.0){
     //printf("problem with covariance param.\n");
-    *dns += flag;
     return;
   }
 
   //Stage 2: Compute the GEV parameters using the design matrix
-  flag = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
-		       loccoeff, scalecoeff, shapecoeff, *nSite,
-		       *nloccoeff, *nscalecoeff, *nshapecoeff,
-		       locs, scales, shapes);
-
-  if (flag != 0.0){
-    //printf("problem with GEV param.\n");
-    *dns += flag;
-  }
+  *dns += dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
+			loccoeff, scalecoeff, shapecoeff, *nSite,
+			*nloccoeff, *nscalecoeff, *nshapecoeff,
+			locs, scales, shapes);
 
   //Stage 3: Transformation to unit Frechet
-  flag = gev2frech(data, *nObs, *nSite, locs, scales, shapes,
-		   jac, frech);
+  *dns += gev2frech(data, *nObs, *nSite, locs, scales, shapes,
+		    jac, frech);
     
-  if (flag != 0.0){
-    //printf("problem with transf. to Frechet\n");
-    *dns += flag;
-  }
-
   if (*dns == 0.0){
 
     //Stage 4: Bivariate density computations
