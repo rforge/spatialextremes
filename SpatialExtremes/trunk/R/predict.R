@@ -2,10 +2,7 @@ predict.maxstab <- function(object, newdata, ret.per = NULL,
                             ...){
   
   param <- object$param
-  loc.form <- object$loc.form
-  scale.form <- object$scale.form
-  shape.form <- object$shape.form
-  
+    
   if (!missing(newdata)){
     data <- newdata
     marg.cov <- NULL
@@ -22,17 +19,26 @@ predict.maxstab <- function(object, newdata, ret.per = NULL,
   if (!is.null(marg.cov))
     data <- cbind(data, marg.cov)
 
-  loc.dsgnmat <- modeldef(data, loc.form)$dsgn.mat
-  scale.dsgnmat <- modeldef(data, scale.form)$dsgn.mat
-  shape.dsgnmat <- modeldef(data, shape.form)$dsgn.mat
-                          
-  idx.loc <- which(substr(names(param), 1, 8) == "locCoeff")
-  idx.scale <- which(substr(names(param), 1, 10) == "scaleCoeff")
-  idx.shape <- which(substr(names(param), 1, 10) == "shapeCoeff")
+  if (object$fit.marge){
+    loc.form <- object$loc.form
+    scale.form <- object$scale.form
+    shape.form <- object$shape.form
+    
+    loc.dsgnmat <- modeldef(data, loc.form)$dsgn.mat
+    scale.dsgnmat <- modeldef(data, scale.form)$dsgn.mat
+    shape.dsgnmat <- modeldef(data, shape.form)$dsgn.mat
+    
+    idx.loc <- which(substr(names(param), 1, 8) == "locCoeff")
+    idx.scale <- which(substr(names(param), 1, 10) == "scaleCoeff")
+    idx.shape <- which(substr(names(param), 1, 10) == "shapeCoeff")
+    
+    loc.pred <- loc.dsgnmat %*% param[idx.loc]
+    scale.pred <- scale.dsgnmat %*% param[idx.scale]
+    shape.pred <- shape.dsgnmat %*% param[idx.shape]
+  }
 
-  loc.pred <- loc.dsgnmat %*% param[idx.loc]
-  scale.pred <- scale.dsgnmat %*% param[idx.scale]
-  shape.pred <- shape.dsgnmat %*% param[idx.shape]
+  else
+    loc.pred <- scale.pred <- shape.pred <- rep(1, nrow(data))
 
   ans <- cbind(loc.pred, scale.pred, shape.pred)
   colnames(ans) <- c("loc", "scale", "shape")
