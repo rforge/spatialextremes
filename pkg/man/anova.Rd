@@ -13,7 +13,8 @@
   \item{object, object2}{Two objects of class 'maxstab'.}
   \item{method}{Character string. Must be one of "CB" or "RJ" for the
     Chandler and Bate or the Rotnitzky and Jewell approaches
-    respectively. See function \code{\link{profile.maxstab}}.}
+    respectively. See function
+    \code{\link[=profile.maxstab]{profile}}.}
   \item{square}{The choice for the matrix square root. This is only
     useful for the 'CB' method. Must be one of 'chol' (Cholesky) or
     'svd' (Singular Value Decomposition).}
@@ -41,8 +42,8 @@ represent analysis-of-deviance tables.
   correlated data. \emph{Biometrika} \bold{77}, 485--97.
 }
 \author{Mathieu Ribatet}
-\seealso{\code{\link{fitmaxstab}}, \code{\link{profile.maxstab}},
-  \code{\link{TIC}}}
+\seealso{\code{\link{fitmaxstab}},
+  \code{\link[=profile.maxstab]{profile}}, \code{\link{TIC}}}
 \examples{
 require(RandomFields)
 

@@ -155,38 +155,48 @@ map <- function(fitted, param = "quant", ..., ret.per = 100,
 }
 
 
-condmap <- function(fitted, fix.coord, ..., ret.per1 = 100, ret.per2 = ret.per1,
-                    ranges = apply(fitted$coord, 2, range), n = 80,
-                    col = terrain.colors(n), plot.contour = TRUE){
+condmap <- function(fitted, fix.coord, x, y, marg.cov = NULL, ...,
+                    ret.per1 = 100, ret.per2 = ret.per1,
+                    col = terrain.colors(length(x)), plot.contour = TRUE){
 
   if (ncol(fitted$coord) > 2)
     stop("It's not possible to use this function when the coordinate space has a dimension >= 2")
   
-  x.range <- ranges[,1]
-  y.range <- ranges[,2]
+  n.x <- length(x)
+  n.y <- length(y)
 
-  ans <- matrix(NA, nrow = n, ncol = n)
-  xs <- seq(x.range[1], x.range[2], length = n)
-  ys <- seq(y.range[1], y.range[2], length = n)
+  if (!is.null(marg.cov)){
+    idx.na <- which(is.na(marg.cov) | is.nan(marg.cov))
+    marg.cov[idx.na] <- 0
+  }
+  
+  ans <- matrix(NA, nrow = n.x, ncol = n.y)
 
   ##z1: quantile related to ret.per1
   z1 <- - 1 / log(1 - 1/ret.per1)
-  Sigma <- matrix(c(fitted$param[1:2], fitted$param[2:3]), 2)
-  iSigma <- solve(Sigma)
 
-  new.data <- rep(NA, 2)
-  names(new.data) <- colnames(fitted$coord)
+  new.data <- rep(NA, 3)
+  n.new.data <- 2
+  names(new.data)[1:2] <- colnames(fitted$coord)
+
+  if (!is.null(marg.cov)){
+    n.new.data <- 3
+    names(new.data)[3] <- colnames(fitted$marg.cov)
+  }
   
   if (fitted$model == "Smith"){
+    Sigma <- matrix(c(fitted$param[1:2], fitted$param[2:3]), 2)
+    iSigma <- solve(Sigma)
+
     cond.prob <- function(z2)
       1 - 1/ret.per2 + (exp(-1/z1 * pnorm(a/2 + 1/a * log(z2/z1)) -
                             1/z2 * pnorm(a/2 + 1/a * log(z1/z2))) -
                         exp(-1/z2)) / (1 - exp(-1/z1))
 
-    for (i in 1:n){
-      for (j in 1:n){
-        new.data[1:2] <- c(xs[i], ys[j]) 
-        delta <- fix.coord - new.data
+    for (i in 1:n.x){
+      for (j in 1:n.y){
+        new.data[1:n.new.data] <- c(x[i], y[j], marg.cov[i,j]) 
+        delta <- fix.coord - new.data[1:2]
         a <- sqrt(delta %*% iSigma %*% delta)
         ans[i,j] <- uniroot(cond.prob, c(1e-4, 1e5), ...)$root
         param <- predict(fitted, new.data)
@@ -204,9 +214,9 @@ condmap <- function(fitted, fix.coord, ..., ret.per1 = 100, ret.per2 = ret.per1,
              (1 + sqrt(1 - 2 * (fitted$cov.fun(h) + 1) * z1 * z2 /
                        (z1 + z2)^2))) - exp(-1/z2)) / (1 - exp(-1/z1))
 
-    for (i in 1:n){
-      for (j in 1:n){
-        new.data[1:2] <- c(xs[i], ys[j]) 
+    for (i in 1:n.x){
+      for (j in 1:n.y){
+        new.data[1:2] <- c(x[i], y[j]) 
         h <- sum((fix.coord - new.data)^2)
         ans[i,j] <- uniroot(cond.prob, c(1e-4, 1e5), ...)$root
         param <- predict(fitted, new.data)
@@ -216,15 +226,18 @@ condmap <- function(fitted, fix.coord, ..., ret.per1 = 100, ret.per2 = ret.per1,
       }
     }
   }    
+
+  if (!is.null(marg.cov))
+    ans[idx.na] <- NA
   
   coord.names <- colnames(fitted$coord)
   xlab <- coord.names[1]
   ylab <- coord.names[2]
   
-  image(xs, ys, ans, ..., col = col, xlab = xlab, ylab = ylab)
+  image(x, y, ans, ..., col = col, xlab = xlab, ylab = ylab)
 
   if (plot.contour)
-    contour(xs, ys, ans, add = TRUE)
+    contour(x, y, ans, add = TRUE)
 
-  invisible(list(x = xs, y = ys, z = ans))
+  invisible(list(x = x, y = y, z = ans))
 }

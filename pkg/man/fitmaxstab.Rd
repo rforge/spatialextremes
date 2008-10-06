@@ -5,10 +5,10 @@
   pairwise likelihood. Two max-stable characterisations are available:
   the Smith and Schlather representations.
 }
-\usage{fitmaxstab(data,  coord, cov.mod = c("gauss", "whitmat",
-"cauchy", "powexp"), loc.form, scale.form, shape.form, marg.cov = NULL,
-\dots, fit.marge = FALSE, warn = TRUE, method = "Nelder", start, control =
-list(), std.err.type = "score", corr = FALSE)}
+\usage{fitmaxstab(data,  coord, cov.mod, loc.form, scale.form,
+shape.form, marg.cov = NULL, \dots, fit.marge = FALSE, warn = TRUE,
+method = "Nelder", start, control = list(), std.err.type = "score", corr
+= FALSE)}
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
     one location.}
@@ -18,7 +18,10 @@ list(), std.err.type = "score", corr = FALSE)}
     model in the max-stable representation. Must be one of "gauss" for
     the Smith's model; or "whitmat", "cauchy" or "powexp" for
     the Whittle-Matern, the Cauchy and the Powered Exponential
-    covariance family with the Schlather's model.} 
+    covariance family with the Schlather's model. These 3 last
+    covariance models could have an additional prefix "i" or "g" for the
+    mixture of independent Frechet field and Schlather's model or the
+    geometric gaussian model.} 
   \item{loc.form, scale.form, shape.form}{R formulas defining the
     spatial linear model for the GEV parameters. May be missing. See
     section details.}
