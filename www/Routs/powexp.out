@@ -1,0 +1,19 @@
+        Estimator: MPLE<br/> 
+            Model: Schlather <br/>
+   Pair. Deviance: 154654.7 <br/>
+              TIC: 154744 <br/>
+Covariance Family: Powered Exponential <br/>
+<br/>
+Estimates<br/>
+  Marginal Parameters:<br/>
+  Assuming unit Frechet.<br/>
+  Dependence Parameters:<br/>
+  sill   range  smooth  <br/>
+ 0.790  17.519   1.664  <br/>
+<br/>
+Standard Error Type: score <br/>
+<br/>
+Standard Errors<br/>
+   sill    range   smooth  <br/>
+0.02183  3.05162  0.24029  <br/>
+...

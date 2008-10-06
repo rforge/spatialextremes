@@ -1,0 +1,205 @@
+/* CSS issu des tutoriels css.alsacreations.com */
+body {
+       font-family:Verdana, Arial, Helvetica, sans-serif;
+       font-size: .8em;
+       margin: 15px;
+       padding: 0;
+       text-align: justify;
+       background-color: #e1ed92;
+       background-image: url("../images/background.png");
+       background-repeat: repeat-y;
+       }
+
+div#conteneur
+{
+  width: 770px ;
+  margin: 0 auto ;
+  text-align: left ;
+  border: 2px solid #ab4 ;
+  background: #fff ;
+  }
+
+h1#header
+{
+  height: 180px ;
+  background: url("../images/title.png") no-repeat center top ;
+  margin: 0;
+  }
+
+ul#menu
+{
+  height: 35px ;
+  margin: 0 ;
+  margin-bottom: 35px;
+  padding: 0 ;
+  background: url("../images/bg_menu.gif") repeat-x 0 -25px ;
+  list-style-type: none ;
+  }
+/* On donne une hauteur au menu, correspondant a
+   la taille de l'image utilisée en fond, on met ensuite l'image de fond
+   avec un décalage de 25 pixels vers le haut pour utiliser la technique de roll over expliquée dans un autre tutoriel; */
+ul#menu li
+{
+  float: left ;
+  text-align: center ;
+  }/* On rend les li en flottant pour pouvoir les
+      afficher horizontalement, on cache les puces, et on centre le texte */
+
+ul#menu li a
+{
+  width: 150px;
+  line-height: 25px ;
+  font-size: 1em ;
+  font-weight: bold ;
+  letter-spacing: 2px ;
+  color: #fff ;
+  display: block ;
+  text-decoration: none ;
+  border-right: 2px solid #dea ;
+  border-left: 2px solid #dea ;
+  }/* C'est sur les liens que le gros du travail est
+      effectué, largeur, hauteur de ligne, taille de police, graisse de police,
+      espacement des lettres, couleur, bordure et decoration du texte. 
+      Nous pouvons dimensionner les a grâce à la propriété display: block ; */
+
+ul#menu li a:hover
+{
+  background: url("../images/bg_menu.gif") repeat-x 0 0 ;
+  }/* Et pour finir on décale l'image de fond au passage
+      de la souris pour laisser aparaître l'état survolé de l'image, 
+      voir le tutoriel sur les roll over pour plus de détails */
+
+div#contenu
+{
+  padding: 0 25px 0 25px ;
+  /*background: url(bg_page.gif) no-repeat 15px 15px ;*/
+  }
+
+div#contenu h2
+{
+  padding-left: 25px ;
+  line-height: 25px ;
+  font-size: 1.4em ;
+  /*background: url(little_apple.gif) no-repeat left bottom ; */
+  color: #9b2 ;
+  border-bottom: 1px solid #9b2 ;
+  }
+
+div#contenu h3
+{
+  margin-left: 15px ;
+  padding-left: 5px ;
+  border-bottom: 1px solid #9b2 ;
+  border-left: 3px solid #9b2 ;
+  color: #9b2 ;
+  }
+
+div#contenu p
+{
+  text-align: justify ;
+  text-indent: 2em ;
+  line-height: 1.7em ;
+  }
+
+div#contenu a
+{
+  color: #8a0 ;
+  }
+
+div#contenu a:hover
+{
+  color: #9b2 ;
+  }
+
+p#footer
+{
+  margin: 0 ;
+  padding-right: 10px ;
+  line-height: 30px ;
+  text-align: right ;
+  color: #8a0 ;
+  }
+
+pre
+{
+  overflow: auto ;
+  background: #dea ;
+  border: 2px solid #9b2 ;
+  padding: 5px 0 0 5px ;
+  font-size: 1.2em ;
+  }
+
+
+pre span
+{
+  color: #560 ;
+  }
+
+pre span.comment
+{
+  color: #b30000 ;
+  }
+
+#footnote {
+            padding: 2em;
+            text-align: center;
+            height: 30px;
+            }
+
+/* My configuration not alsa one */
+h2, h4{ 
+        color: #6c6e6f;
+        }
+/*R Comments style */
+.Rcomments {
+             color: gray;
+             }
+
+/* R code blocks */
+.Rcodes{ 
+         background-color: #effff2;
+         border: 1px dashed gray;
+         margin-left: 2em;
+         padding: 4px;
+         }
+
+/*R outputs style*/
+.Routs {
+         color: black;
+         text-decoration: none;
+         }
+
+a.Routs, code.Routs {
+                      position: relative;
+                      color: black;
+                      }
+a.Routs span, code.Routs span {
+                                color: black;
+                                display: none;
+                                }
+a.Routs:hover, code.Routs:hover {
+                                  background: none; /* correction d'un bug IE */
+                                  z-index: 500; /* on définit une valeur pour l'ordre d'affichage */
+                                  color: teal;
+                                  }
+a.Routs:hover span, code.Routs:hover span {
+                                            display: inline; /* on affiche l'infobulle */
+                                            position: absolute;
+
+                                            white-space: nowrap; /* on change la valeur de la propriété white-space pour qu'il n'y ait pas de retour à la ligne non-désiré */
+
+                                            top: 30px;  /*on positionne notre infobulle */
+                                            left: 20px;
+
+                                            background: white;
+
+                                            color: teal;
+                                            padding: 3px;
+
+                                            border: 1px solid teal;
+                                            border-left: 4px solid teal;
+                                            }
+
+img { 
+      border: none;
+      }
