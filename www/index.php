@@ -36,7 +36,7 @@
 	<h2 id="features">Features</h2>
 	<?php include "phpPages/features.php"; ?>
 	<h2 id="spatialextremes_few_lines">The SpatialExtremes Package
-	in a Few Lines</h2>
+	  in a Few Lines</h2>
 	<?php include "phpPages/spatialextremes_few_lines.php"; ?>
 	<h2 id="manuals">Manuals</h2> 
 	<?php include "phpPages/manuals.php"; ?>
@@ -61,12 +61,12 @@
 	<a href="http://validator.w3.org/check?uri=referer">
 	  <img src="http://www.w3.org/Icons/valid-xhtml10-blue"
 	       alt="Valid XHTML 1.0 Transitional" height="31"
-	       width="88" margins="5px"/>
+	       width="88"/>
 	</a>
 	<a href="http://validator.w3.org/check?uri=referer">
 	  <img src="http://www.w3.org/Icons/valid-css"
 	       alt="Valid CSS" height="31"
-	       width="88" margins="5px"/>
+	       width="88"/>
 	</a>
       </p>
     </div>
