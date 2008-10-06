@@ -2,8 +2,7 @@ Currently, the SpatialExtremes package models spatial extremes by
 fitting max-stable processes to data using composite likelihood
 maximisation. Many tools to characterize the spatial behaviour are
 also implemented.
-
-<p>
+<br/>
 In a nutshell, the SpatialExtremes packages can:
 <ul>
   <li>Fit max-stable processes to data</li>
