@@ -1,0 +1,23 @@
+        Estimator: MPLE <br/>
+            Model: Smith<br/> 
+   Pair. Deviance: 325981.1 <br/>
+              TIC: 16548523 <br/>
+Covariance Family: Gaussian <br/>
+<br/>
+Estimates<br/>
+  Marginal Parameters:<br/>
+    Location Parameters:<br/>
+locCoeff1  locCoeff2  <br/>
+    5.560      1.962  <br/>
+       Scale Parameters:<br/>
+scaleCoeff1  scaleCoeff2  <br/>
+     3.9727       0.9228  <br/>
+       Shape Parameters:<br/>
+shapeCoeff  <br/>
+    0.2017  <br/>
+  Dependence Parameters:<br/>
+cov11  cov12  cov22  <br/>
+8.862  4.187  3.470  <br/>
+<br/>
+Standard Error Type: score <br/>
+...

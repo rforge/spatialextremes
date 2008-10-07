@@ -34,8 +34,13 @@ package.
     ##With linear models for the GEV parameters:<br/>
   </span>
   <a  href="#linearModGEV" class="Routs">
-    <code>fitmaxstab(data, coord, loc.form = y ~ lon, scale.form = y ~
-      lat, shape.form = y ~ 1)</code>
+    <code>
+      fitmaxstab(data, coord, "gauss", loc.form = y ~ lon, scale.form
+      = y ~ lat, shape.form = y ~ 1)
+    </code>
+    <span class="Rcomments">
+      <?php $tab = include "Routs/linearModGEV.out"; ?>
+    </span>
   </a>
   <br/>
   <span class="Rcomments">
@@ -45,7 +50,11 @@ package.
     <code>
       loc.form &lt;- y ~ rb(lon, knots, degree, penalty)<br/>
       fitmaxstab(data, coord, "gauss", loc.form = loc.form, scale.form =
-      y ~ lat, shape.form = y ~ 1)</code>
+      y ~ lat, shape.form = y ~ 1)
+    </code>
+    <span class="Rcomments">
+      <?php $tab = include "Routs/linearModGEV.out"; ?>
+    </span>
   </a>
 </div>  
 <h4 id="pspline">Fit a p-spline</h4>
@@ -73,6 +82,32 @@ package.
     </code>
     <span class="Rcomments">
       <?php $tab = include "Routs/spline.out"; ?>
+    </span>
+  </a>
+</div>  
+<h4 id="pspline">Model selection</h4>
+<div class="Rcodes">
+  <span class="Rcomments">
+    ##Using the TIC as an analogue of AIC under misspecification:<br/>
+  </span>
+  <a  href="#TIC" class="Routs">
+    <code>
+      TIC(fitted1, fitted2)
+    </code>
+    <span class="Rcomments">
+      <?php $tab = include "Routs/TIC.out"; ?>
+    </span>
+  </a>
+  <br/>
+  <span class="Rcomments">
+    ##Anova (nested models) under misspecifications:<br/>
+  </span>
+  <a href="#anova" class="Routs">
+    <code>
+      anova(fitted1, fitted2); anova(fitted1, fitted2, method = "CB")
+    </code>
+    <span class="Rcomments">
+      <?php $tab = include "Routs/anova.out"; ?>
     </span>
   </a>
 </div>  
