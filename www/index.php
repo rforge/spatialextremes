@@ -55,8 +55,6 @@
     </div>
     <!-- footnote part -->
     <div id="footnote">
-      <p>$LastChangedDate: 2007-11-07 11:56:13 +0100 (mer, 07 nov
-	2007) $</p>
       <p>
 	<a href="http://validator.w3.org/check?uri=referer">
 	  <img src="http://www.w3.org/Icons/valid-xhtml10-blue"
