@@ -85,7 +85,7 @@ package.
     </span>
   </a>
 </div>  
-<h4 id="pspline">Model selection</h4>
+<h4 id="ModelSelection">Model selection</h4>
 <div class="Rcodes">
   <span class="Rcomments">
     ##Using the TIC as an analogue of AIC under misspecification:<br/>
