@@ -6,6 +6,9 @@ rbpspline <- function(y, x, knots, degree, penalty = "gcv", ...){
   if (!is.numeric(penalty) && (penalty != "cv") && (penalty != "gcv"))
     stop("'penalty' must be either a numeric value, either 'cv' or 'gcv'")
 
+  if (is.numeric(penalty))
+    cv.hat <- NA
+
   if (penalty == "cv"){
     cv.fit <- cv(y, x, knots, degree, plot = FALSE, ...)
     penalty <- cv.fit$penalty
@@ -17,9 +20,6 @@ rbpspline <- function(y, x, knots, degree, penalty = "gcv", ...){
     penalty <- gcv.fit$penalty
     cv.hat <- gcv.fit$gcv
   }
-
-  if (is.numeric(penalty))
-    cv.hat <- NA
 
   if (is.null(dim(x))){
     idx <- order(x)
