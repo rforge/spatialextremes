@@ -48,6 +48,34 @@ package.
       y ~ lat, shape.form = y ~ 1)</code>
   </a>
 </div>  
+<h4 id="pspline">Fit a p-spline</h4>
+<div class="Rcodes">
+  <span class="Rcomments">
+    ##Setting up the smoothing parameter using CV/GCV:<br/>
+  </span>
+  <a  href="#smoothPar" class="Routs">
+    <code>
+      cv(y, x, knots, degree); gcv(y, x, knots, degree); 
+    </code>
+    <span class="Rcomments">
+      <?php $tab = include "Routs/cv.out"; ?>
+    </span>
+  </a>
+  <br/>
+  <span class="Rcomments">
+    ##Fit a p-spline using different smoothing parameters:<br/>
+  </span>
+  <a href="#spline" class="Routs">
+    <code>
+      rbpspline(y, x, knots, degree, penalty = "gcv");<br/>
+      rbpspline(y, x, knots, degree, penalty = "cv");<br/>
+      rbpspline(y, x, knots, degree, penalty = .2);
+    </code>
+    <span class="Rcomments">
+      <?php $tab = include "Routs/spline.out"; ?>
+    </span>
+  </a>
+</div>  
 <h4 id="plots">Plots</h4>
 <div class="Rcodes">
   <span class="Rcomments">
@@ -116,6 +144,21 @@ package.
     <span>
       <img src="images/proflik.png"
 	   alt="Profile composite likelihood"
+	   height="300"/>
+    </span>
+  </a>
+  <br/>
+  <span class="Rcomments">
+    ##Plot a p-spline:<br/> 
+  </span>
+  <a class="Routs" href="images/spline.png">
+    <code>
+      fitted &lt;- rbpspline(y, x, knots, degree); lines(fitted, col =
+      2)
+    </code>
+    <span>
+      <img src="images/spline.png"
+	   alt="Plot a p-spline"
 	   height="300"/>
     </span>
   </a>
