@@ -19,8 +19,9 @@
 	  content="The SpatialExtremes package aims to provide tools 
 		   to model spatial extremes."/>
     <meta name="keywords" 
-	  content="extreme value theory, max-stable processes,
-		   composite likelihood, latent variable, copula"/>
+	  content="spatial extremes, extreme value theory, max-stable
+		   processes, composite likelihood, latent variable,
+		   copula"/>
   </head>
   <body>
     <div id="conteneur">
