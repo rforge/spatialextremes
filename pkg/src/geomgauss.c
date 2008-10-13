@@ -63,10 +63,8 @@ void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   //This is the schlater model
   //The GEV parameters are defined using a polynomial response surface
   
-  int i;
   const int nPairs = *nSite * (*nSite - 1) / 2;
-  double *jac, *rho, *locs, *scales, *shapes, *frech,
-    flag = 0.0;
+  double *jac, *rho, *locs, *scales, *shapes, *frech;
     
   jac = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   rho = (double *)R_alloc(nPairs, sizeof(double));

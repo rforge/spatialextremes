@@ -64,7 +64,6 @@ void smithdsgnmat3d(double *data, double *distVec, int *nSite, int *nObs,
   //This is the Smith model. It computes the pairwise log-likelihood
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
-  int i, j;
   double *jac, *mahalDist, *locs, *scales, *shapes, *frech;
   
   jac = (double *)R_alloc(*nSite * *nObs, sizeof(double));

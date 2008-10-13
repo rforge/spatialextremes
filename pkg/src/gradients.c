@@ -13,9 +13,8 @@ void smithgrad(double *data, double *distVec, int *nSite,
   int i, j, k, l, currentPair = -1;
   double c1, c2, dAa, dAz1, dAz2, B, dBa, dBz1, dBz2, C,
     dCa, dCz1, dCz2, D, dDa, dDz1, dDz2, *mahalDist, *locs,
-    *scales, *shapes, jacCommonSigma, jacCommonMarge, det,
-    *jac, *frech, dz1loc, dz2loc, dz1scale, dz2scale, dz1shape,
-    dz2shape, dE, flag;
+    *scales, *shapes, jacCommonSigma, det, *jac, *frech,
+    dz1loc, dz2loc, dz1scale, dz2scale, dz1shape, dz2shape, dE, flag;
   //c1, c2 are useful quantities
   //A, B, C, D are part of the log-bivariate density
   //dB, dC and dD are their derivatives with respect to the
@@ -226,7 +225,7 @@ void smithgrad(double *data, double *distVec, int *nSite,
 	    grad[(3 + *nloccoeff + l) * *nObs + k] = grad[(3 + *nloccoeff + l) * *nObs + k] +
 	      (dAz1 * dz1scale + dAz2 * dz2scale) +
 	      ((dBz1 * dz1scale + dBz2 * dz2scale) * C + B * 
-	       (dCz1 * dz1scale + dCz2 * dz2shape)) /
+	       (dCz1 * dz1scale + dCz2 * dz2scale)) /
 	      (B * C + D) + dE;
 	  }
 
@@ -276,9 +275,8 @@ void smithgrad3d(double *data, double *distVec, int *nSite,
   int i, j, k, l, currentPair = -1;
   double c1, c2, dAa, dAz1, dAz2, B, dBa, dBz1, dBz2, C,
     dCa, dCz1, dCz2, D, dDa, dDz1, dDz2, *mahalDist, *locs,
-    *scales, *shapes, jacCommonSigma, jacCommonMarge, det,
-    *jac, *frech, dz1loc, dz2loc, dz1scale, dz2scale, dz1shape,
-    dz2shape, dE, flag;
+    *scales, *shapes, jacCommonSigma, det, *jac, *frech,
+    dz1loc, dz2loc, dz1scale, dz2scale, dz1shape, dz2shape, dE, flag;
   //c1, c2 are useful quantities
   //A, B, C, D are part of the log-bivariate density
   //dB, dC and dD are their derivatives with respect to the
@@ -537,7 +535,7 @@ void smithgrad3d(double *data, double *distVec, int *nSite,
 	    grad[(5 + *nloccoeff + l) * *nObs + k] = grad[(5 + *nloccoeff + l) * *nObs + k] +
 	      (dAz1 * dz1scale + dAz2 * dz2scale) +
 	      ((dBz1 * dz1scale + dBz2 * dz2scale) * C + B * 
-	       (dCz1 * dz1scale + dCz2 * dz2shape)) /
+	       (dCz1 * dz1scale + dCz2 * dz2scale)) /
 	      (B * C + D) + dE;
 	  }
 
@@ -588,9 +586,8 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
   int i, j, k, l, currentPair = -1;
   double c1, dArho, dAz1, dAz2, B, dBrho, dBz1, dBz2, C,
     dCrho, dCz1, dCz2, D, dDrho, dDz1, dDz2, *rho, *locs,
-    *scales, *shapes, jacCommonRho, jacCommonMarge, *jac,
-    *frech, dz1loc, dz2loc, dz1scale, dz2scale, dz1shape,
-    dz2shape, dE, flag;
+    *scales, *shapes, jacCommonRho, *jac, *frech, dz1loc,
+    dz2loc, dz1scale, dz2scale, dz1shape, dz2shape, dE, flag;
   //c1 is a useful quantity
   //A, B, C, D are part of the log-bivariate density
   //dB, dC and dD are their derivatives with respect to the
@@ -797,7 +794,7 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 
 	    grad[(3 + *nloccoeff + l) * *nObs + k] = grad[(3 + *nloccoeff + l) * *nObs + k] +
 	      (dAz1 * dz1scale + dAz2 * dz2scale) + ((dBz1 * dz1scale + dBz2 * dz2scale) * C +
-						     B * (dCz1 * dz1scale + dCz2 * dz2shape)) /
+						     B * (dCz1 * dz1scale + dCz2 * dz2scale)) /
 	      (B * C + D) + dE;
 	  }
 
@@ -847,9 +844,8 @@ void schlatherindgrad(int *covmod, double *data, double *dist, int *nSite,
   int i, j, k, l, currentPair = -1;
   double c1, dArho, dAz1, dAz2, Borig, B, dBrho, dBz1, dBz2, Corig,
     C, dCrho, dCz1, dCz2, Dorig, D, dDrho, dDz1, dDz2, *rho, *locs,
-    *scales, *shapes, jacCommonRho, jacCommonMarge, *jac,
-    *frech, dz1loc, dz2loc, dz1scale, dz2scale, dz1shape,
-    dz2shape, dE, flag;
+    *scales, *shapes, jacCommonRho, *jac, *frech, dz1loc, dz2loc,
+    dz1scale, dz2scale, dz1shape, dz2shape, dE, flag;
   //c1 is a useful quantity
   //A, B, C, D are part of the log-bivariate density
   //dB, dC and dD are their derivatives with respect to the
@@ -1066,7 +1062,7 @@ void schlatherindgrad(int *covmod, double *data, double *dist, int *nSite,
 
 	    grad[(4 + *nloccoeff + l) * *nObs + k] +=
 	      (dAz1 * dz1scale + dAz2 * dz2scale) + ((dBz1 * dz1scale + dBz2 * dz2scale) * C +
-						     B * (dCz1 * dz1scale + dCz2 * dz2shape)) /
+						     B * (dCz1 * dz1scale + dCz2 * dz2scale)) /
 	      (B * C + D) + dE;
 	  }
 

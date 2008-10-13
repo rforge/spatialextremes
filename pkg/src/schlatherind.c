@@ -81,7 +81,6 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
   //This is the schlater model
   //The GEV parameters are defined using a polynomial response surface
   
-  int i;
   const int nPairs = *nSite * (*nSite - 1) / 2;
   double *jac, *rho, *locs, *scales, *shapes, *frech;
     
