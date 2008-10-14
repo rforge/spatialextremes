@@ -68,6 +68,23 @@
 	       width="88"/>
 	</a>
       </p>
+      <p>
+	<?php
+	   //-----------------------------------------------------//
+	   // Compteur v1 //
+	   // © Nicolas Picot //
+	   // toophp@free.fr //
+	   //-----------------------------------------------------//
+	   $fp = fopen("counter.txt","r+");
+	   $nbvisites = fgets($fp,10);
+	   if ($nbvisites=="") $nbvisites = 0;
+	   $nbvisites++;
+	   fseek($fp,0);
+	   fputs($fp,$nbvisites);
+	   fclose($fp);
+	   echo "Visits: $nbvisites";
+	   ?> 
+      </p>
     </div>
   </body>
 </html>
