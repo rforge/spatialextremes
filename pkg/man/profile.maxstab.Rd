@@ -78,10 +78,12 @@ ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model,
 ms0 <- t(ms0)
 ##Fit a max-stable process
 ##  1- using the Smith's model
+\dontrun{
 fitted <- fitmaxstab(ms0, locations, "gauss", fit.marge = FALSE)
+}
 
 ##Plot the profile pairwise log-likelihood for the ''cov11'' parameter
-profile(fitted, "cov11", range = c(20, 180))
+\dontrun{profile(fitted, "cov11", range = c(20, 180))}
 }
 \author{Mathieu Ribatet}
 \keyword{models}

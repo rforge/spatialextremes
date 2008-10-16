@@ -72,7 +72,7 @@ ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
 ms0 <- t(ms0)
 
 ##Compute the madogram
-madogram(ms0, locations)
+\dontrun{madogram(ms0, locations)}
 }
 \author{Mathieu Ribatet}
 \keyword{hplot}

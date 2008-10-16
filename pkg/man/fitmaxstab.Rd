@@ -176,11 +176,11 @@ fitmaxstab(ms1, locations, "whitmat", loc.form, scale.form,
 ##  Fixing the smooth parameter of the Whittle-Matern family
 ##  to 0.5 - e.g. considering exponential family. We suppose the date
 ##  are unit Frechet here.
-fitmaxstab(ms0, locations, "whitmat", smooth = 0.5, fit.marge = FALSE)
+\dontrun{fitmaxstab(ms0, locations, "whitmat", smooth = 0.5, fit.marge = FALSE)}
 
 ##  Fitting a penalized smoothing splines for the margins with the
 ##     Smith's model
-
+\dontrun{
 sigma <- matrix(c(100, 25, 25, 220),ncol = 2)
 sigma.inv <- solve(sigma)
 sqrtCinv <- t(chol(sigma.inv))
@@ -188,10 +188,10 @@ model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
 ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model,
                    maxstable="Bool", n = 40)
 ms1 <- t(ms0)
-
+}
 ##     And transform it to ordinary GEV margins with a non-linear
 ##     function
-
+\dontrun{
 fun <- function(x)
   2 * sin(pi * x / 4) + 10
 fun2 <- function(x)
@@ -200,21 +200,27 @@ fun2 <- function(x)
 param.loc <- fun(locations[,2])
 param.scale <- fun(locations[,2])
 param.shape <- fun2(locations[,1])
+}
 
 ##Transformation from unit Frechet to common GEV margins
+\dontrun{
 for (i in 1:n.site)
   ms1[,i] <- param.scale[i] * (ms1[,i]^param.shape[i] - 1) / param.shape[i] + param.loc[i]
+}
 
 ##Defining the knots, penalty, degree for the splines
+\dontrun{
 n.knots <- 5
 knots <- quantile(locations[,2], prob = 1:n.knots/(n.knots+1))
 knots2 <- quantile(locations[,1], prob = 1:n.knots/(n.knots+1))
+}
 
 ##Be careful the choice of the penalty (i.e. the smoothing parameter)
 ##may strongly affect the result Here we use p-splines for each GEV
 ##parameter - so it's really CPU demanding but one can use 1 p-spline
 ##and 2 linear models.
 ##A simple linear model will be clearly faster...
+\dontrun{
 loc.form <- y ~ rb(lat, knots = knots, degree = 3, penalty = .5)
 scale.form <- y ~ rb(lat, knots = knots, degree = 3, penalty = .5)
 shape.form <- y ~ rb(lon, knots = knots2, degree = 3, penalty = .5)
@@ -252,6 +258,7 @@ legend("topleft", c("true values", "predict. values", "true curve", "predict. cu
        col = c("red", "blue", "red", "blue"), pch = c(1, 5, NA, NA), inset = 0.05,
        lty = c(0, 0, 1, 1), ncol = 2)
 par(op)
+}
 }
 \author{Mathieu Ribatet}
 \keyword{htest}

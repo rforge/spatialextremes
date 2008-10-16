@@ -316,12 +316,9 @@ range and smooth estimates may be totally different while leading
 When using the Whittle-Matérn covariance function, it is sometimes
 preferable to fix the smooth parameter using prior knowledge on the
 process smoothness \citep{Diggle2007}. This can be done by:
-<<>>=
+<<eval=FALSE>>=
 fitmaxstab(ms0, locations, cov.mod = "whitmat", smooth = 1.2, fit.marge = FALSE)
 @ 
-
-Now we can see that only the range parameter was estimated and
-standard errors as well as the TIC are available.
 
 Despite the Whittle-Matérn is a flexible covariance function, one may
 want to consider other types of covariance functions. This is achieved
@@ -333,7 +330,7 @@ fitmaxstab(ms0, locations, cov.mod = "powexp", fit.marge = FALSE)
 
 One may also consider the Smith's characterisation instead of the
 Schlather's one:
-<<>>=
+<<eval=FALSE>>=
 sigma = matrix(c(100, 25, 25, 220),ncol = 2)
 sigma.inv = solve(sigma)
 sqrtCinv = t(chol(sigma.inv))
@@ -368,7 +365,7 @@ Instead of using the \verb|optim| function, one may want to use the
 the \verb|method = "nlm"| or \verb|method = "nlminb"| option.
 
 If now, we want to fit the model using the least square criterion:
-<<>>=
+<<eval=FALSE>>=
 ##Smith's model
 fitcovmat(ms0, locations)
 ##Schlather's model with Powered exponential covariance function
@@ -424,7 +421,7 @@ penalty coefficient (also known as the smoothing parameter) equals to
 Let start with a simple polynomial surface. For this purpose, we need
 to simulate a max-stable process and then transform the observations
 to the desired GEV scale. This could be done by the following lines:
-<<>>=
+<<eval=FALSE>>=
 n.site <- 20
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
@@ -450,13 +447,13 @@ ms1[,i] <- param.scale[i] * (ms1[,i]^param.shape[i] - 1) / param.shape[i] + para
 Once the data are appropriately generated, we need to define the
 response surface for the fitted max-stable model. This is done
 invoking:
-<<>>=
+<<eval=FALSE>>=
 loc.form <- y ~ lat
 scale.form <- y ~ lon + I(lat^2)
 shape.form <- y ~ 1
 @ 
 Lastly, one can easily fit the model to data using:
-<<>>=
+<<eval=FALSE>>=
 fitmaxstab(ms1, locations, "gauss", loc.form = loc.form, scale.form = scale.form, shape.form= shape.form)
 @ 
 
@@ -532,7 +529,8 @@ estimator is only accessible if independent replications of
 $\mathbf{Y}$ are available\footnote{which will mostly be the case for
   spatial extremes.}.
 
-The standard errors are available by invoking the following two lines:
+These two types of standard errors are available by invoking the
+following two lines:
 <<echo=FALSE>>=
 n.site <- 20
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
@@ -546,11 +544,8 @@ ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model,
                    maxstable="Bool", n = 50)
 ms0 <- t(ms0)
 @ 
-<<>>=
-fitmaxstab(ms0, locations, cov.mod = "gauss", fit.marge = FALSE, std.err.type = "score")
-@ 
-
 <<eval=FALSE>>=
+fitmaxstab(ms0, locations, cov.mod = "gauss", fit.marge = FALSE, std.err.type = "score")
 fitmaxstab(ms0, locations, cov.mod = "gauss", fit.marge = FALSE, std.err.type = "grad")
 @ 
 
@@ -574,7 +569,7 @@ that minimizes equation~\eqref{eq:TIC}.
 In practice, one can have a look at the output of the
 \verb|fitmaxstab| function or use the \verb|TIC| function.
 
-<<>>=
+<<eval=FALSE>>=
 n.site <- 40
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
@@ -587,9 +582,6 @@ model2 <- fitmaxstab(ms0, locations, cov.mod = "cauchy", fit.marge = FALSE, sill
 TIC(model1, model2)
 @ 
 
-Fortunately, with this simulated application, we clearly see that our
-\verb|model1| is the best model.
-
 TIC is useful when comparing different models. However, it may lack of
 power if the two models are nested. When dealing with nested models,
 one may prefer using the so called likelihood ratio statistics.
@@ -600,7 +592,7 @@ estimated, doesn't hold anymore. There's two way to solve this issue:
 (a) adjusting the $\chi^2$ distribution or (b) adjusting the composite
 likelihood so that the usual $\chi^2_p$ holds - see \citet{Cox2004}.
 
-<<>>=
+<<eval=FALSE>>=
 require(RandomFields)
 
 ##Define the coordinates of each location
@@ -624,8 +616,6 @@ M1 <- fitmaxstab(ms0, locations, "gauss", fit.marge = FALSE, cov11 =
 anova(M0, M1)
 @ 
 
-From this output, we can see that M1 seems to be a better model than M0.
-
 \chapter{Manipulating and Visualising Fitted Models}
 \label{cha:manip-visu-fitt}
 
@@ -635,7 +625,7 @@ From this output, we can see that M1 seems to be a better model than M0.
 Once the model is fitted, one may want to get the estimates of the GEV
 parameters at any locations. This is achieved using the
 \textsl{predict} function:
-<<echo=FALSE>>=
+<<echo=FALSE,eval=FALSE>>=
 n.site <- 20
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
@@ -657,7 +647,7 @@ loc.form <- y ~ lat
 scale.form <- y ~ lon + I(lat^2)
 shape.form <- y ~ 1
 @ 
-<<>>=
+<<eval=FALSE>>=
 fitted <- fitmaxstab(ms1, locations, "gauss", loc.form = loc.form, scale.form = scale.form, shape.form = shape.form)
 predict(fitted)
 @ 
@@ -667,7 +657,7 @@ locations, this is done by adding a matrix giving the new
 coordinates. Be careful, if new coordinates are supplied, the column
 names of the new coordinates should match with the ones of the original
 coordinates. For our application, this could be done as follows:
-<<>>=
+<<eval=FALSE>>=
 new.coord <- cbind(3:6, 7:10)
 colnames(new.coord) <- c("lon", "lat")
 predict(fitted, new.coord)
@@ -719,7 +709,7 @@ ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
 ms0 <- t(ms0)
 
 ##Plots the extremal coefficient function
-exco <- fitextcoeff(ms0, locations)
+exco <- fitextcoeff(ms0, locations, estim = "Smith")
 @ 
 
 \begin{figure}
@@ -775,39 +765,11 @@ function. We can call it once we have fitted a max-stable process or
 by specifying directly the covariance parameters.
 
 For illustration purpose, Fig.~\ref{fig:covfun} compares the fitted
-covariance function to the theoretical one on a new artificial
-example.
+covariance function to the theoretical one.
 
 <<label=covfun>>=
-n.site <- 30
-locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
-colnames(locations) <- c("lon", "lat")
-
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="cauchy",
-param=c(0,1,0,3, 1.2), maxstable="extr", n = 60)
-ms1 <- t(ms0)
-
-param.loc <- -10 + 2 * locations[,2]
-param.scale <- 5 + 2 * locations[,1] + locations[,2]^2
-param.shape <- rep(0.2, n.site)
-
-##Transform the unit Frechet margins to GEV 
-for (i in 1:n.site)
-ms1[,i] <- param.scale[i] * (ms1[,i]^param.shape[i] - 1) /
-param.shape[i] + param.loc[i]
-
-##Define a model for the GEV margins to be fitted
-##shape ~ 1 stands for the GEV shape parameter is constant
-##over the region
-loc.form <- loc ~ lat
-scale.form <- scale ~ lon + I(lat^2)
-shape.form <- shape ~ 1
-
-fitted <- fitmaxstab(ms1, locations, "cauchy", loc.form, scale.form,
-                     shape.form)
-
 covariance(fitted, ylim = c(0,1))
-covariance(sill = 1, range = 3, smooth = 1.2, cov.mod = "cauchy", col = 3, add = TRUE)
+covariance(sill = 1, range = 30, smooth = 0.5, cov.mod = "whitmat", col = 3, add = TRUE)
 legend("topright", c("Fitted","Theo"), lty = 1, col = c(1,3), inset = .05)
 @ 
 
@@ -824,7 +786,7 @@ legend("topright", c("Fitted","Theo"), lty = 1, col = c(1,3), inset = .05)
 Note that one can also compute the covariance at a given distance by invoking:
 <<>>=
 rbind(fitted = covariance(fitted, dist = seq(0,10, 3))$cov.val,
-      theo = covariance(sill = 1, range = 3, smooth = 1.2, cov.mod = "cauchy", dist = seq(0,10, 3))$cov.val)
+      theo = covariance(sill = 1, range = 30, smooth = 0.5, cov.mod = "whitmat", dist = seq(0,10, 3))$cov.val)
 @ 
 
 \section{Producing a map of the GEV parameters and return levels}
@@ -834,93 +796,30 @@ Most often, practitioners will like to have a map of the GEV
 parameters or a map of return levels with a given return period. This
 is done using the \verb|map| function.
 
-To illustrate this feature, let start with a brand new application.
-<<>>=
-n.site <- 30
-locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
-colnames(locations) <- c("lon", "lat")
-
-##Simulate a max-stable process - with unit Fréchet margins
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
-                   param=c(0,1,0,3, .5), maxstable="extr", n = 40)
-ms0 <- t(ms0)
-ms1 <- ms0
-
-##Now define the spatial model for the GEV parameters
-fun.loc <- function(x)
-  4.26 * exp(-x) * (1 - exp(-x)) * (1 - 3 * exp(-x))
-fun.scale <- function(x)
-   2 * sin(pi * x / 4) + 10
-fun.shape <- function(x)
-  (fun.scale(x) - 7) / 15
-
-param.loc <- fun.loc(locations[,1])
-param.scale <- fun.scale(locations[,2])
-param.shape <- fun.shape(locations[,1])
-
-##Transform the unit Fréchet margins to GEV 
-for (i in 1:n.site)
-  ms1[,i] <- param.scale[i] * (ms1[,i]^param.shape[i] - 1) /
-  param.shape[i] + param.loc[i]
-
-##Define a model for the GEV margins to be fitted
-n.knots <- 7
-knots.lon <- quantile(locations[,1], 1:n.knots / (n.knots+1))
-knots.lat <- quantile(locations[,2], 1:n.knots / (n.knots+1))
-loc.form <- loc ~ rb(lon, degree = 3, knots = knots.lon,
-                     penalty = .2)
-scale.form <- scale ~ rb(lat, degree = 3, knots = knots.lat,
-                         penalty = .5)
-shape.form <- shape ~ rb(lon, degree = 3, knots = knots.lon,
-                         penalty = .4)
-
-##  1- Fit a max-stable process
-schlather <- fitmaxstab(ms1, locations, "whitmat", loc.form, scale.form,
-                        shape.form)
-@ 
-
-One can have a contour plot (Fig.~\ref{fig:mapGEV}) for the evolution
-of the GEV parameters in $\mathbb{R}^d$ by invoking the following
-code:
+To illustrate this feature, let use the previous fitted model.  One
+can have a contour plot the evolution of the GEV parameters in
+$\mathbb{R}^d$ by invoking the following code:
 <<eval=FALSE,label=mapGEV>>=
 par(mfrow=c(1,3))
-map(schlather, "loc", col = rainbow(80))
+map(fitted, "loc", col = rainbow(80))
 title("Location")
-map(schlather, "scale", col = heat.colors(80))
+map(fitted, "scale", col = heat.colors(80))
 title("Scale")
-map(schlather, "shape", col = topo.colors(100))
+map(fitted, "shape", col = topo.colors(100))
 title("Shape")
 @ 
 
-\begin{figure}
-  \centering
-<<fig=TRUE,echo=FALSE,height=6,width=8>>=
-<<mapGEV>>
-@ 
-  \caption{Contour plots of the GEV parameters.}
-  \label{fig:mapGEV}
-\end{figure}
 Note that tuning the option \verb|col| will allow users to choose an
 appropriate color palette.
 
-Fig.~\ref{fig:mapQ50} plots a map of the 50-year return level while
-focusing on a specific part of the region under study:
+In addition, it is possible to plot a map of the 50-year return level
+while focusing on a specific part of the region under study:
 <<eval=FALSE,label=mapQ50>>=
 new.ranges <- cbind(c(3, 9), c(2, 10))
 colnames(new.ranges) <- c("lon", "lat")
 
-map(schlather, "quant", ret.per = 50 , ranges = new.ranges)
+map(fitted, "quant", ret.per = 50 , ranges = new.ranges)
 @ 
-\begin{figure}
-  \centering
-<<fig=TRUE,echo=FALSE>>=
-<<mapQ50>>
-@ 
-  \caption{Contour plot of the 50-year return level.}
-  \label{fig:mapQ50}
-\end{figure}
-
-
 
 \appendix
 

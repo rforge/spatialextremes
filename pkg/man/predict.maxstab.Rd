@@ -35,7 +35,7 @@ ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
 ## 2- Transformation to non unit Frechet margins
 ms1 <- t(ms0)
 param.loc <- -10 + 2 * locations[,2]
-param.scale <- 5 + 2 * locations[,1] + locations[,2]^2
+param.scale <- 5 + 2 * locations[,1]
 param.shape <- rep(0.2, n.site)
 for (i in 1:n.site)
   ms1[,i] <- param.scale[i] * (ms1[,i]^param.shape[i] - 1) /
@@ -44,8 +44,8 @@ for (i in 1:n.site)
 ## 3- Fit a max-stable process with the following model for
 ##    the GEV parameters
 form.loc <- loc ~ lat
-form.scale <- scale ~ lon + I(lat^2)
-form.shape <- shape ~ lat
+form.scale <- scale ~ lon
+form.shape <- shape ~ 1
 
 schlather <- fitmaxstab(ms1, locations, "whitmat", loc.form = form.loc,
                         scale.form = form.scale, shape.form =

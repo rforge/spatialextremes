@@ -52,6 +52,7 @@ TRUE)
   \code{\link{rainbow}}
 }
 \examples{
+\dontrun{
 require(RandomFields)
 
 ##Define the coordinate of each location
@@ -91,7 +92,9 @@ shape.form <- shape ~ lat + lon
 fitted <- fitmaxstab(ms1, locations, "gauss", loc.form, scale.form,
                      shape.form, std.err.type = "none")
 
-condmap(fitted, c(1, 1), seq(0, 10, length = 25), seq(0,10, length = 25))
+condmap(fitted, c(1, 1), seq(0, 10, length = 25), seq(0,10, length =
+25))
+}
 }
 \author{Mathieu Ribatet}
 \keyword{hplot}

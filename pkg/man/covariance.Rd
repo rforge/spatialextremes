@@ -39,6 +39,7 @@ covariance(sill = 0.5, range = 1, smooth = 0.5, cov.mod = "whitmat",
   dist = seq(0,5, 0.2), plot = FALSE)
 
 ## 2- Calling covariance from a fitted model
+\dontrun{
 require(RandomFields)
 
 ##Define the coordinate of each location
@@ -74,7 +75,9 @@ covariance(fitted, ylim = c(0, 1))
 covariance(sill = 1, range = 3, smooth = .5, cov.mod = "whitmat", add = TRUE, col
                = 3)
 title("Whittle-Matern covariance function")
-legend("topright", c("Theo.", "Fitted"), lty = 1, col = c(3,1), inset = .05)
+legend("topright", c("Theo.", "Fitted"), lty = 1, col = c(3,1), inset =
+           .05)
+}
 }
 \author{Mathieu Ribatet}
 \keyword{htest}

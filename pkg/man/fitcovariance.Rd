@@ -64,12 +64,7 @@ ms0 <- MaxStableRF(locations, grid=FALSE, model="wh",
                    n = 100)
 ms0 <- t(ms0)
 
-##Fit the covariance matrix:
-## 1. General model
 fitcovariance(ms0, locations, "whitmat", marge = "emp")
-
-##2. Assuming the smooth parameter equals to 1
-fitcovariance(ms0, locations, "whitmat", smooth = 1, marge = "emp")
 }
 \keyword{htest}
 

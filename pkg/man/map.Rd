@@ -41,6 +41,7 @@ plot.contour = TRUE)
   \code{\link{rainbow}}
 }
 \examples{
+\dontrun{
 require(RandomFields)
 
 ##Define the coordinate of each location
@@ -83,13 +84,13 @@ map(schlather, "scale", col = heat.colors(80))
 title("Scale")
 map(schlather, "shape", col = topo.colors(100))
 title("Shape")
-
 ##  3- Produce a map for the 50 years return level
 new.ranges <- cbind(c(0, 15), c(0, 15))
 colnames(new.ranges) <- c("lon", "lat")
 
 map(schlather, "quant", ret.per = 50 , ranges = new.ranges)
 title("50-year return level")
+}
 }
 \author{Mathieu Ribatet}
 \keyword{hplot}

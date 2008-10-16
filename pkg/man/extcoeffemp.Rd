@@ -97,8 +97,8 @@ ms0 <- t(ms0)
 
 ##Plot the extremal coefficient function
 op <- par(mfrow=c(1,2))
-fitextcoeff(ms0, locations)
-fitextcoeff(ms0, locations, angles = seq(-pi, pi, length = 4))
+fitextcoeff(ms0, locations, estim = "Smith")
+fitextcoeff(ms0, locations, angles = seq(-pi, pi, length = 4), estim = "Smith")
 par(op)
 }
 \author{Mathieu Ribatet}
