@@ -49,7 +49,8 @@ double gev2frech(double *data, int nObs, int nSite, double *locs,
     for (j=0;j<nObs;j++){
       frech[i * nObs + j] = (data[i * nObs + j] - locs[i])/ scales[i];
       
-      if(shapes[i] == 0.0){
+      if(fabs(shapes[i]) <= 1e-6){
+	shapes[i] = 0.0;
 	jac[i * nObs + j] = frech[i * nObs + j] - log(scales[i]);
 	frech[i * nObs + j] = exp(frech[i * nObs + j]);
       }
