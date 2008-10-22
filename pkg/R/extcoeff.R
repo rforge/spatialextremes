@@ -1,4 +1,4 @@
-madogram <- function(data, coord, n.lag = 13, gev.param = c(0, 1, 0),
+madogram <- function(data, coord, bins, gev.param = c(0, 1, 0),
                      which = c("mado", "ext"), xlab, ylab, ...){
   
   if (nrow(coord) != ncol(data))
@@ -14,30 +14,39 @@ madogram <- function(data, coord, n.lag = 13, gev.param = c(0, 1, 0),
     data[,i] <- frech2gev(data[,i], gev.param[1],
                           gev.param[2], gev.param[3])
   }
-  
-  centers <- seq(0, max(dist), length = n.lag - 1)
-  centers[1] <- centers[2] / 4
-  bins <- c(0, (centers[-n.lag] + centers[1]) / 2, Inf)
-  
-  mado <- rep(0, length = n.lag)
-  
-  for (k in 1:n.lag){
-    idx <- which((dist <= bins[k+1]) & (dist > bins[k]))
 
-    if (length(idx)>0){
-      site1 <- (idx-1) %/% n.site + 1
-      site2 <- (idx-1) %% n.site + 1
-      
-      for (i in 1:length(idx))
-        mado[k] <- mado[k] + sum(abs(data[,site1[i]] -
-                                     data[,site2[i]]))
-      
-      mado[k] <- mado[k] / 2 / length(idx) / nrow(data)
+  if (missing(bins)){
+    k <- 1
+    mado <- rep(NA, length = n.site * (n.site-1)/2)
+    for (i in 1:(n.site-1)){
+      for (j in (i+1):n.site){
+        mado[k] <- mean(abs(data[,i] - data[,j])) / 2
+        k <- k + 1
+      }
     }
-    
-    else
-      mado[k] <- NA
-   
+  }
+
+  else{
+    bins <- unique(c(0, bins, Inf))  
+    mado <- rep(0, length = length(bins)-1)
+      
+    for (k in 1:(length(bins)-1)){
+      idx <- which((dist <= bins[k+1]) & (dist > bins[k]))
+      
+      if (length(idx)>0){
+        site1 <- (idx-1) %/% n.site + 1
+        site2 <- (idx-1) %% n.site + 1
+        
+        for (i in 1:length(idx))
+          mado[k] <- mado[k] + sum(abs(data[,site1[i]] -
+                                       data[,site2[i]]))
+        
+        mado[k] <- mado[k] / 2 / length(idx) / nrow(data)
+      }
+
+      else
+        mado[k] <- NA
+    }
   }
 
   if (gev.param[3] == 0)
@@ -56,11 +65,24 @@ madogram <- function(data, coord, n.lag = 13, gev.param = c(0, 1, 0),
   if (missing(ylab))
       ylab <- c(expression(eta(h)), expression(theta(h)))
     
-  if (any(which == "mado"))    
-    plot(bins[-1], mado, xlab = xlab, ylab = ylab[1], ...)
+  if (any(which == "mado")){
+    if (missing(bins))
+      plot(dist, mado, xlab = xlab, ylab = ylab[1], ...)
+
+    else
+      plot(bins[-1], mado, xlab = xlab, ylab = ylab[1], ...)
+  }
   
-  if (any(which == "ext"))
-    plot(bins[-1], ext.coeff, xlab = xlab, ylab = ylab[2], ...)
+  if (any(which == "ext")){
+    if (missing(bins))
+      plot(dist, ext.coeff, xlab = xlab, ylab = ylab[2], ...)
+
+    else
+      plot(bins[-1], ext.coeff, xlab = xlab, ylab = ylab[2], ...)
+  }
+
+  if (missing(bins))
+    bins <- c(0, dist)
   
   invisible(cbind(bins = bins[-1], madogram = mado, ext.coeff = ext.coeff))
 }
