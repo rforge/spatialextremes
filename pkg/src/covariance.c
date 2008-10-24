@@ -21,9 +21,9 @@ double whittleMatern(double *dist, int nPairs, double sill, double range,
     ans += R_pow_di(1 - range + EPS, 2) * MINF;
   }
 
-  if (sill <= EPS){
+  if (sill <= 1e-3){
     //printf("dependence parameters are ill-defined!\n");
-    ans += R_pow_di(1 - sill + EPS, 2) * MINF;
+    ans += R_pow_di(1 - sill + 1e-3, 2) * MINF;
   }
   
   if (sill > 1){
@@ -72,9 +72,9 @@ double cauchy(double *dist, int nPairs, double sill, double range,
     ans += R_pow_di(1 - range + EPS, 2) * MINF;
   }
 
-  if (sill <= EPS){
+  if (sill <= 1e-3){
     //printf("dependence parameters are ill-defined!\n");
-    ans += R_pow_di(1 - sill + EPS, 2) * MINF;
+    ans += R_pow_di(1 - sill + 1e-3, 2) * MINF;
   }
   
   if (sill > 1){
@@ -112,9 +112,9 @@ double powerExp(double *dist, int nPairs, double sill, double range,
     ans += R_pow_di(1 - range + EPS, 2) * MINF;
   }
 
-  if (sill <= EPS){
+  if (sill <= 1e-3){
     //printf("dependence parameters are ill-defined!\n");
-    ans += R_pow_di(1 - sill + EPS, 2) * MINF;
+    ans += R_pow_di(1 - sill + 1e-3, 2) * MINF;
   }
   
   if (sill > 1){
@@ -122,7 +122,7 @@ double powerExp(double *dist, int nPairs, double sill, double range,
     ans += R_pow_di(sill, 2) * MINF;
   }
   
-  if (smooth > 2){
+  if (smooth >= 2){
     //Required because it could lead to infinite rho values
     //printf("smooth is too large!\n");
     ans += R_pow_di(smooth - 1, 2) * MINF;
