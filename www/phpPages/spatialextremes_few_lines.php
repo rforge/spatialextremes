@@ -125,6 +125,18 @@ package.
   </a>
   <br/>
   <span class="Rcomments">
+    ##Madogram:<br/>
+  </span>
+  <a href="images/madogram.png" class="Routs">
+    <code>madogram(data, coord, which = "mado")</code>
+    <span>
+      <img src="images/madogram.png"
+	   alt="madogram"
+	   height="300"/>
+    </span>
+  </a>
+  <br/>
+  <span class="Rcomments">
     ##Extremal coefficient:<br/> </span>
   <a class="Routs" href="images/extcoeff.png">
     <code>extcoeff(fitted.object);</code>
