@@ -252,8 +252,12 @@ double geomCovariance(double *dist, int nPairs, int covmod,
     break;
   }
 
-  for (i=0;i<nPairs;i++)
-    rho[i] = 2 * sigma2 * (1 - rho[i]);
+  if (sigma2 >= 3)
+    ans += R_pow_di(ans-2, 2) * MINF;
+
+  else
+    for (i=0;i<nPairs;i++)
+      rho[i] = 2 * sigma2 * (1 - rho[i]);
 
   return ans;
 }
