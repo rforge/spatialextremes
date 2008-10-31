@@ -19,22 +19,28 @@ void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
     for (i=0;i<*nSite;i++){
       if (scales[i] <= 0){
 	//printf("scales <= 0!!!\n");
-	*dns += R_pow_di(1 - scales[i], 2) * MINF;
+	*dns += R_pow_di(1 - scales[i], 2);
+	scales[i] = 1e-3;
       }
       
       if (shapes[i] <= -1){
 	//printf("shapes <= -1!!!\n");
-	*dns += R_pow_di(shapes[i], 2) * MINF;
+	*dns += R_pow_di(shapes[i], 2);
+	shapes[i] = -0.9;
       }
     }
   }
 
   if ((*alpha < 0) || (*alpha > 1)){
-    if (*alpha < 0)
-      *dns += R_pow_di(1 - *alpha, 2) * MINF;
+    if (*alpha < 0){
+      *dns += R_pow_di(1 - *alpha, 2);
+      *alpha = 0.0;
+    }
 
-    else
-      *dns += R_pow_di(*alpha, 2) * MINF;
+    else{
+      *dns += R_pow_di(*alpha, 2);
+      *alpha = 1.0;
+    }
   }    
    
   //Stage 0: Compute the covariance at each location
@@ -67,6 +73,9 @@ void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
     *dns = lplikschlatherind(frech, *alpha, rho, jac, *nObs, *nSite);
   }  
 
+  else
+    *dns = *dns * lplikschlatherind(frech, *alpha, rho, jac, *nObs, *nSite);
+
   return;
 
 }
@@ -91,11 +100,15 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
   shapes = (double *)R_alloc(*nSite, sizeof(double));
   frech = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   
-  if (*alpha < 0)
-    *dns += R_pow_di(1 - *alpha, 2) * MINF;
+  if (*alpha < 0){
+    *dns += R_pow_di(1 - *alpha, 2);
+    *alpha = 0;
+  }
 
-  if (*alpha > 1)
-    *dns += R_pow_di(*alpha, 2) * MINF;
+  if (*alpha > 1){
+    *dns += R_pow_di(*alpha, 2);
+    *alpha = 1.0;
+  }
 
   //Stage 1: Compute the covariance at each location
   switch (*covmod){
@@ -126,26 +139,28 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
 		    jac, frech);
     
   if (*dns == 0.0){
-
     //Stage 4: Bivariate density computations
     *dns = lplikschlatherind(frech, *alpha, rho, jac, *nObs, *nSite);
-    
-    //Stage 5: Removing the penalizing terms (if any)
-    // 1- For the location parameter
-    if (*locpenalty > 0)
-      *dns -= penalization(locpenmat, loccoeff, *locpenalty,
-			   *nloccoeff, *npparloc);
-    
-    // 2- For the scale parameter
-    if (*scalepenalty > 0)    
-      *dns -= penalization(scalepenmat, scalecoeff, *scalepenalty,
-			   *nscalecoeff, *npparscale);
-    
-    // 3- For the shape parameter
-    if (*shapepenalty > 0)
-      *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty,
-			   *nshapecoeff, *npparshape);
   }
+  
+  else
+    *dns = *dns * lplikschlatherind(frech, *alpha, rho, jac, *nObs, *nSite);
+    
+  //Stage 5: Removing the penalizing terms (if any)
+  // 1- For the location parameter
+  if (*locpenalty > 0)
+    *dns -= penalization(locpenmat, loccoeff, *locpenalty,
+			 *nloccoeff, *npparloc);
+  
+  // 2- For the scale parameter
+  if (*scalepenalty > 0)    
+    *dns -= penalization(scalepenmat, scalecoeff, *scalepenalty,
+			 *nscalecoeff, *npparscale);
+  
+  // 3- For the shape parameter
+  if (*shapepenalty > 0)
+    *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty,
+			 *nshapecoeff, *npparshape);
   
   return;
   

@@ -60,14 +60,14 @@ double gev2frech(double *data, int nObs, int nSite, double *locs,
 	
 	if (frech[i * nObs + j] <= 0) {
 	  //printf("1 + shape * (data - loc) <= 0!\n");
-	  ans += R_pow_di(1 - frech[i * nObs + j], 2) * MINF;
+	  ans += R_pow_di(1 - frech[i * nObs + j] + EPS, 2);
+	  frech[i * nObs + j] = 1e-3;
 	}
 	
-	else{
-	  jac[i * nObs + j] = (1/ shapes[i] -1) * 
-	    log(frech[i * nObs + j]) - log(scales[i]);
-	  frech[i * nObs + j] = R_pow(frech[i * nObs + j], 1/ shapes[i]);
-	}
+	jac[i * nObs + j] = (1/ shapes[i] -1) * 
+	  log(frech[i * nObs + j]) - log(scales[i]);
+	frech[i * nObs + j] = R_pow(frech[i * nObs + j], 1/ shapes[i]);
+	
       }
     }
   }
@@ -82,6 +82,7 @@ double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
 		     int nshapecoeff, double *locs, double *scales,
 		     double *shapes){
 
+  //This function computes the GEV parameters from the design matrix
   int i, j;
   double ans = 0.0;
 
@@ -102,12 +103,21 @@ double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
     
     if (scales[i]<=0){
       //printf("scale <= 0\n");
-      ans += R_pow_di(1 - scales[i], 2) * MINF;
+      ans += R_pow_di(1 - scales[i] + EPS, 2);
+      scales[i] = 1e-3;
+
+      /*for (j=0;j<=i;j++)
+	scales[j] += 1e-3 - scales[i];  */
     }
 
     if (shapes[i] <= -1){
       //printf("shape <= 0\n");
-      ans += R_pow_di(shapes[i], 2) * MINF;
+      ans += R_pow_di(shapes[i] - EPS, 2);
+      //shapecoeff[0] += 0.05 - shapes[i] - 1;
+      shapes[i] = -0.95;
+      
+      /*for (j=0;j<=i;j++)
+	shapes[j] += 0.05 - shapes[i] - 1;  */
     }
   }
 
@@ -116,6 +126,8 @@ double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
   
 void gev(double *prob, int *n, double *locs, double *scales, double *shapes,
 	 double *quant){
+
+  //This function computes the GEV quantiles
   
   int i;
   
@@ -136,3 +148,25 @@ void gev(double *prob, int *n, double *locs, double *scales, double *shapes,
 }
 
 	
+void dsgnmat2Alpha(double *alphadsgnmat, double *alphacoeff, 
+		   int nSite, int nalphacoeff, double *alphas){
+
+  //This function computes the 'alpha' values from the design matrix
+  //the 'alphas' are used in the schlatherind model
+  int i, j;
+  double ans = 0.0;
+
+  for (i=0;i<nSite;i++){
+       
+    alphas[i] = 0.0;
+        
+    for (j=0;j<nalphacoeff;j++)
+      alphas[i] += alphacoeff[j] * alphadsgnmat[i + nSite * j];
+
+    //We use the expit function to ensure that the alphas lie in [0,1]
+    alphas[i] = exp(alphas[i]) / (1 + exp(alphas[i]));
+  
+  }
+    
+  return;
+}

@@ -35,6 +35,15 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
 			 double *sill, double *range, double *smooth, double *dns);
 
 ///////////////////////////////////
+//  From schlathernsind.c
+//
+void schlathernsindfull(int *covmod, double *data, double *dist, int *nSite,
+			int *nObs, double *locs, double *scales, double *shapes,
+			double *alphadsgnmat, double *alphapenmat, int *nalphacoeff,
+			int npparalpha, double *locpenalty, double *sill, double *range,
+			double *smooth, int *fitmarge, double *dns);
+
+///////////////////////////////////
 //  From smith.c
 //
 void smithfull(double *data, double *distVec, int *nSite,
@@ -80,6 +89,8 @@ double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
 		     int nSite, int nloccoeff, int nscalecoeff,
 		     int nshapecoeff, double *locs, double *scales,
 		     double *shapes);
+void dsgnmat2Alpha(double *alphadsgnmat, double *alphacoeff, 
+		   int nSite, int nalphacoeff, double *alphas);
 void gev(double *prob, int *n, double *locs, double *scales, double *shapes,
 	 double *quant);
 

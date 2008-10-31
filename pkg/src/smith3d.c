@@ -19,12 +19,14 @@ void smithfull3d(double *data, double *distVec, int *nSite,
     for (i=0;i<*nSite;i++){
       if (scales[i] <= 0){
 	//printf("scales <= 0!!!\n");
-	*dns += R_pow_di(1 - scales[i], 2) * MINF;
+	*dns += R_pow_di(1 - scales[i], 2);
+	scales[i] = 1e-3;
       }
       
       if (shapes[i] <= -1){
 	//printf("shapes <= -1!!!\n");
-	*dns += *dns + R_pow_di(shapes[i], 2) * MINF;
+	*dns += *dns + R_pow_di(shapes[i], 2);
+	shapes[i] = -0.9;
       }
     }
   }
@@ -48,6 +50,9 @@ void smithfull3d(double *data, double *distVec, int *nSite,
   if (*dns == 0.0)
     //Stage 3: Bivariate density computations
     *dns = lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
+
+  else
+    *dns = *dns * lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
 
   return;
 }
@@ -87,26 +92,28 @@ void smithdsgnmat3d(double *data, double *distVec, int *nSite, int *nObs,
   *dns += gev2frech(data, *nObs, *nSite, locs, scales, shapes,
 		    jac, frech);
     
-  if (*dns == 0.0){
+  if (*dns == 0.0)
     //Stage 4: Bivariate density computations
     *dns = lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
+
+  else
+    *dns = *dns * lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
     
-    //Stage 5: Removing the penalizing terms (if any)
-    // 1- For the location parameter
-    if (*locpenalty > 0)
-      *dns -= penalization(locpenmat, loccoeff, *locpenalty,
-			   *nloccoeff, *npparloc);
-    
-    // 2- For the scale parameter
-    if (*scalepenalty > 0)    
-      *dns -= penalization(scalepenmat, scalecoeff, *scalepenalty,
-			   *nscalecoeff, *npparscale);
-    
-    // 3- For the shape parameter
-    if (*shapepenalty > 0)
-      *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty,
-			   *nshapecoeff, *npparshape);
-  }
+  //Stage 5: Removing the penalizing terms (if any)
+  // 1- For the location parameter
+  if (*locpenalty > 0)
+    *dns -= penalization(locpenmat, loccoeff, *locpenalty,
+			 *nloccoeff, *npparloc);
   
+  // 2- For the scale parameter
+  if (*scalepenalty > 0)    
+    *dns -= penalization(scalepenmat, scalecoeff, *scalepenalty,
+			 *nscalecoeff, *npparscale);
+  
+  // 3- For the shape parameter
+  if (*shapepenalty > 0)
+    *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty,
+			 *nshapecoeff, *npparshape);
+
   return;
 }
