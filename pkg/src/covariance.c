@@ -131,11 +131,11 @@ double powerExp(double *dist, int nPairs, double sill, double range,
     sill = 1.0;
   }
   
-  if (smooth > 2){
+  if (smooth >= 2.0){
     //Required because it could lead to infinite rho values
     //printf("smooth is too large!\n");
-    ans += R_pow_di(smooth - 1, 2);
-    smooth = 2.0;
+    ans += smooth - .99999;
+    smooth = 1.995;
   }
 
   for (i=0;i<nPairs;i++)
