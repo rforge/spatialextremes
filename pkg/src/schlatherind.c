@@ -123,11 +123,6 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
     break;
   }
   
-  if (*dns != 0.0){
-    //printf("problem with covariance param.\n");
-    return;
-  }
-
   //Stage 2: Compute the GEV parameters using the design matrix
   *dns += dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
 			loccoeff, scalecoeff, shapecoeff, *nSite,
