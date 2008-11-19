@@ -4,7 +4,8 @@ void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
 		   int *nObs, double *locs, double *scales, double *shapes,
 		   double *sigma2, double *sill, double *range, double *smooth,
 		   int *fitmarge,double *dns){
-  //This is the schlater model. It computes the pairwise log-likelihood
+  //This is the geometric gaussian model. It computes the pairwise
+  //log-likelihood
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
   int i;
@@ -65,7 +66,7 @@ void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 		      double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
 		      double *loccoeff, double *scalecoeff, double *shapecoeff, double *sigma2,
 		      double *sill, double *range, double *smooth, double *dns){
-  //This is the schlater model
+  //This is the geometric gaussian model
   //The GEV parameters are defined using a polynomial response surface
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
