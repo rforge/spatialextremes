@@ -1,11 +1,29 @@
 madogram <- function(data, coord, bins, gev.param = c(0, 1, 0),
-                     which = c("mado", "ext"), xlab, ylab, ...){
+                     which = c("mado", "ext"), xlab, ylab,
+                     angles = NULL, ...){
   
   if (nrow(coord) != ncol(data))
     stop("'data' and 'coord' don't match")
   
   n.site <- ncol(data)
   dist <- distance(coord)
+
+  if (!is.null(angles)){
+    distVec <- distance(coord, vec = TRUE)
+    n.angles <- length(angles)
+    angles.coord <- atan2(distVec[,2], distVec[,1])
+
+    col <- rep(NA, n.site * (n.site - 1) / 2)
+    idx.angles <- list()
+    for (i in 2:n.angles){
+      idx <- which((angles.coord < angles[i]) & (angles.coord >= angles[i-1]))
+      idx.angles <- c(idx.angles, list(idx))
+      col[idx] <- i-1
+    }
+  }
+
+  else
+    col <- 1
  
   for (i in 1:n.site){
     param <- gevmle(data[,i])
@@ -56,8 +74,10 @@ madogram <- function(data, coord, bins, gev.param = c(0, 1, 0),
     ext.coeff <- gev2frech(gev.param[1] + mado / gamma(1 - gev.param[3]),
                            gev.param[1], gev.param[2], gev.param[3])
 
-  if (length(which) == 2)
-    par(mfrow=c(1,2))
+  if (length(which) == 2){
+    op <- par(mfrow=c(1,2))
+    on.exit(par(op))
+  }
 
   if (missing(xlab))
     xlab <- "h"
@@ -67,18 +87,22 @@ madogram <- function(data, coord, bins, gev.param = c(0, 1, 0),
     
   if (any(which == "mado")){
     if (missing(bins))
-      plot(dist, mado, xlab = xlab, ylab = ylab[1], ...)
+      plot(dist, mado, xlab = xlab, ylab = ylab[1], col = col,
+           pch = col, ...)
 
     else
-      plot(bins[-1], mado, xlab = xlab, ylab = ylab[1], ...)
+      plot(bins[-1], mado, xlab = xlab, ylab = ylab[1], col = col,
+           pch = col, ...)
   }
   
   if (any(which == "ext")){
     if (missing(bins))
-      plot(dist, ext.coeff, xlab = xlab, ylab = ylab[2], ...)
+      plot(dist, ext.coeff, xlab = xlab, ylab = ylab[2], col = col,
+           pch = col, ...)
 
     else
-      plot(bins[-1], ext.coeff, xlab = xlab, ylab = ylab[2], ...)
+      plot(bins[-1], ext.coeff, xlab = xlab, ylab = ylab[2], col = col,
+           pch = col, ...)
   }
 
   if (missing(bins))

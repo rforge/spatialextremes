@@ -4,7 +4,7 @@
 \description{Computes the madogram for max-stable processes.}
 \usage{
 madogram(data, coord, bins, gev.param = c(0, 1, 0), which =
-c("mado", "ext"), xlab, ylab, \dots)
+c("mado", "ext"), xlab, ylab, angles = NULL, \dots)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -20,6 +20,8 @@ c("mado", "ext"), xlab, ylab, \dots)
     plotted.}
   \item{xlab,ylab}{The x-axis and y-axis labels. May be missing. Note
     that \code{ylab} must have the same length has \code{which}.}
+  \item{angles}{A numeric vector. A partition of the interval
+    \eqn{(-\pi, \pi)}{(-\pi, \pi)} to help detecting anisotropy.}
   \item{\dots}{Additional options to be passed to the \code{\link{plot}}
     function.} 
 }
@@ -72,7 +74,7 @@ ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
 ms0 <- t(ms0)
 
 ##Compute the madogram
-\dontrun{madogram(ms0, locations)}
+madogram(ms0, locations, angles = seq(-pi,pi, pi/4))
 }
 \author{Mathieu Ribatet}
 \keyword{hplot}
