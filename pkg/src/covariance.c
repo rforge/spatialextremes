@@ -264,7 +264,7 @@ double geomCovariance(double *dist, int nPairs, int covmod,
 
   if (sigma2 > 3){
     ans += R_pow_di(ans-2, 2);
-    ans = 3.0;
+    sigma2 = 3.0;
   }
 
   else
