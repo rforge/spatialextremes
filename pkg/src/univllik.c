@@ -2,6 +2,8 @@
 
 void gevlik(double *data, int *n, double *loc, double *scale,
 	    double *shape, double *dns){
+
+  //It computes the log-likelihood for the GEV
   int i;
   double *dvec;
   
@@ -39,6 +41,7 @@ void gevlik(double *data, int *n, double *loc, double *scale,
 
 void gpdlik(double *exceed, int *n, double *thresh, double *scale,
 	    double *shape, double *dns){
+  //It computes the log-likelihood for the GPD
   int i;
   double *dvec;
   

@@ -4,7 +4,10 @@ void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
 		      int *nObs, double *locs, double *scales, double *shapes,
 		      double *alpha, double *sill, double *range, double *smooth,
 		      int *fitmarge,double *dns){
-  //This is the schlater model. It computes the pairwise log-likelihood
+  //This is the independent Schlater's model. It's a wrapper to several
+  //sub-functions. It's named xxxfull as it either assume that the
+  //margins are unit Frechet, or the GEV parameters are estimated at
+  //each locations.
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
   int i;
@@ -20,13 +23,13 @@ void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
       if (scales[i] <= 0){
 	//printf("scales <= 0!!!\n");
 	*dns += R_pow_di(1 - scales[i], 2);
-	scales[i] = 1e-3;
+	scales[i] = 1;
       }
       
       if (shapes[i] <= -1){
 	//printf("shapes <= -1!!!\n");
 	*dns += R_pow_di(shapes[i], 2);
-	shapes[i] = -0.9;
+	shapes[i] = 0.0;
       }
     }
   }
@@ -87,8 +90,9 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
 			 double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
 			 double *loccoeff, double *scalecoeff, double *shapecoeff, double *alpha,
 			 double *sill, double *range, double *smooth, double *dns){
-  //This is the schlater model
+  //This is the independent Schlater's model.
   //The GEV parameters are defined using a polynomial response surface
+  //or p-splines.
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
   double *jac, *rho, *locs, *scales, *shapes, *frech;

@@ -4,7 +4,10 @@ void smithfull3d(double *data, double *distVec, int *nSite,
 		 int *nObs, double *locs, double *scales, double *shapes,
 		 double *cov11, double *cov12, double *cov13, double *cov22,
 		 double *cov23, double *cov33, int *fitmarge, double *dns){
-  //This is the Smith model. It computes the pairwise log-likelihood
+  //This is the Smith model - 3d case. It's a wrapper to several
+  //sub-functions. It's named xxxfull as it either assume that the
+  //margins are unit Frechet, or the GEV parameters are estimated at
+  //each locations.
 
   const int nPairs = *nSite * (*nSite - 1) / 2;
   int i;
@@ -20,13 +23,13 @@ void smithfull3d(double *data, double *distVec, int *nSite,
       if (scales[i] <= 0){
 	//printf("scales <= 0!!!\n");
 	*dns += R_pow_di(1 - scales[i], 2);
-	scales[i] = 1e-3;
+	scales[i] = 1.0;
       }
       
       if (shapes[i] <= -1){
 	//printf("shapes <= -1!!!\n");
 	*dns += *dns + R_pow_di(shapes[i], 2);
-	shapes[i] = -0.9;
+	shapes[i] = 0.0;
       }
     }
   }
@@ -66,7 +69,8 @@ void smithdsgnmat3d(double *data, double *distVec, int *nSite, int *nObs,
 		    double *loccoeff, double *scalecoeff, double *shapecoeff,
 		    double *cov11, double *cov12, double *cov13, double *cov22,
 		    double *cov23, double *cov33, double *dns){
-  //This is the Smith model. It computes the pairwise log-likelihood
+  //This is the Smith's model - 3d case. It's named xxxdsgnmat as
+  //either linear models or p-splines are used for the gev parameters.
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
   double *jac, *mahalDist, *locs, *scales, *shapes, *frech;

@@ -40,7 +40,7 @@ double gev2frech(double *data, int nObs, int nSite, double *locs,
 
   //This function transforms the GEV observations to unit Frechet ones
   //and computes the log of the jacobian of each transformation
-  //When flag == 1, the GEV parameters are invalid.
+  //When ans > 0.0, the GEV parameters are invalid.
   
   int i, j;
   double ans = 0.0;
@@ -60,7 +60,7 @@ double gev2frech(double *data, int nObs, int nSite, double *locs,
 	
 	if (frech[i * nObs + j] <= 0) {
 	  //printf("1 + shape * (data - loc) <= 0!\n");
-	  ans += R_pow_di(1 - frech[i * nObs + j] + EPS, 2);
+	  ans += R_pow_di(1.01 - frech[i * nObs + j], 2);
 	  frech[i * nObs + j] = 1e-3;
 	}
 	
@@ -83,6 +83,7 @@ double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
 		     double *shapes){
 
   //This function computes the GEV parameters from the design matrix
+  //when ans > 0.0, the GEV parameters are invalid
   int i, j;
   double ans = 0.0;
 
@@ -102,22 +103,13 @@ double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
       shapes[i] += shapecoeff[j] * shapedsgnmat[i + nSite * j];
     
     if (scales[i]<=0){
-      //printf("scale <= 0\n");
-      ans += R_pow_di(1 - scales[i] + EPS, 2);
-      scales[i] = 1e-3;
-
-      /*for (j=0;j<=i;j++)
-	scales[j] += 1e-3 - scales[i];  */
+      ans += R_pow_di(1.01 - scales[i], 2);
+      scales[i] = 1.0;
     }
 
     if (shapes[i] <= -1){
-      //printf("shape <= 0\n");
-      ans += R_pow_di(shapes[i] - EPS, 2);
-      //shapecoeff[0] += 0.05 - shapes[i] - 1;
-      shapes[i] = -0.95;
-      
-      /*for (j=0;j<=i;j++)
-	shapes[j] += 0.05 - shapes[i] - 1;  */
+      ans += R_pow_di(shapes[i] - 0.02, 2);
+      shapes[i] = 0.0;
     }
   }
 
@@ -153,6 +145,8 @@ void dsgnmat2Alpha(double *alphadsgnmat, double *alphacoeff,
 
   //This function computes the 'alpha' values from the design matrix
   //the 'alphas' are used in the schlatherind model
+  //We use the expit function to ensure that the alphas always lie in
+  //(0,1)
   int i, j;
   double ans = 0.0;
 

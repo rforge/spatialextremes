@@ -247,6 +247,10 @@ double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
 double geomCovariance(double *dist, int nPairs, int covmod,
 		      double sigma2, double sill, double range,
 		      double smooth, double *rho){
+
+  //This function computes the geometric gaussian covariance function
+  //between each pair of locations.
+  //When ans != 0.0, the parameters are ill-defined.
   int i;
   double ans;
 

@@ -4,7 +4,10 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite,
 		   int *nObs, double *locs, double *scales, double *shapes,
 		   double *sill, double *range, double *smooth,
 		   int *fitmarge,double *dns){
-  //This is the schlater model. It computes the pairwise log-likelihood
+  //This is the schlather's model. It's a wrapper to several
+  //sub-functions. It's named xxxfull as it either assume that the
+  //margins are unit Frechet, or the GEV parameters are estimated at
+  //each locations.
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
   int i;
@@ -20,13 +23,13 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite,
       if (scales[i] <= 0){
 	//printf("scales <= 0!!!\n");
 	*dns += R_pow_di(1 - scales[i], 2);
-	scales[i] = 1e-3;
+	scales[i] = 1.0;
       }
       
       if (shapes[i] <= -1){
 	//printf("shapes <= -1!!!\n");
 	*dns += R_pow_di(shapes[i], 2);
-	shapes[i] = -0.9;
+	shapes[i] = 0.0;
       }
     }
   }
@@ -75,7 +78,7 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 		      double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
 		      double *loccoeff, double *scalecoeff, double *shapecoeff, double *sill,
 		      double *range, double *smooth, double *dns){
-  //This is the schlater model
+  //This is the Schlather's model.
   //The GEV parameters are defined using a polynomial response surface
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
@@ -100,7 +103,7 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
     *dns = powerExp(dist, nPairs, *sill, *range, *smooth, rho);
     break;
   }
-  
+
   //Stage 2: Compute the GEV parameters using the design matrix
   *dns += dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
 			loccoeff, scalecoeff, shapecoeff, *nSite,
@@ -110,7 +113,7 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   //Stage 3: Transformation to unit Frechet
   *dns += gev2frech(data, *nObs, *nSite, locs, scales, shapes,
 		    jac, frech);
-    
+
   if (*dns == 0.0)
     //Stage 4: Bivariate density computations
     *dns = lplikschlather(frech, rho, jac, *nObs, *nSite);

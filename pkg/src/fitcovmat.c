@@ -1,5 +1,10 @@
 #include "header.h"
 
+/* These functions estimate the spatial dependence parameters by using
+   a least square optimization. More precisely, it compares the
+   expected extremal coefficients to the "observed" ones.
+*/
+
 void fitcovmat2d(double *cov11, double *cov12, double *cov22,
 		 int *nPairs, double *distVec, double *extcoeff,
 		 double *weights, double *ans){
