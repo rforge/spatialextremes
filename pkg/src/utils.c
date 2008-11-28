@@ -164,3 +164,26 @@ void dsgnmat2Alpha(double *alphadsgnmat, double *alphacoeff,
     
   return;
 }
+
+void dsgnmat2Sigma2(double *sigma2dsgnmat, double *sigma2coeff, 
+		    int nSite, int nsigma2coeff, double *sigma2){
+
+  //This function computes the 'sigma2' values from the design matrix
+  //the 'sigma2' are used in the non-stationary geometric gaussian model
+  int i, j;
+  double ans = 0.0;
+
+  for (i=0;i<nSite;i++){
+       
+    sigma2[i] = 0.0;
+        
+    for (j=0;j<nsigma2coeff;j++)
+      sigma2[i] += sigma2coeff[j] * sigma2dsgnmat[i + nSite * j];
+
+    //We use a log link function to ensure that the sigma2s lie are positive
+    sigma2[i] = exp(sigma2[i]);
+  
+  }
+    
+  return;
+}

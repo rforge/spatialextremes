@@ -25,7 +25,7 @@ double whittleMatern(double *dist, int nPairs, double sill, double range,
 
   if (sill < 1e-3){
     //printf("dependence parameters are ill-defined!\n");
-    ans += R_pow_di(1.001 - sill, 2);
+    ans += R_pow_di(1.02 - sill, 2);
     sill = 1e-3;
   }
   
@@ -75,12 +75,12 @@ double cauchy(double *dist, int nPairs, double sill, double range,
   if (range < EPS){
     //printf("dependence parameters are ill-defined!\n");
     ans += R_pow_di(1 - range + EPS, 2);
-    range = EPS;
+    //range = EPS;
   }
 
   if (sill < 1e-3){
     //printf("dependence parameters are ill-defined!\n");
-    ans += R_pow_di(1.001 - sill, 2);
+    ans += R_pow_di(1.02 - sill, 2);
     sill = 1e-3;
   }
   
@@ -121,7 +121,7 @@ double powerExp(double *dist, int nPairs, double sill, double range,
 
   if (sill < 1e-3){
     //printf("dependence parameters are ill-defined!\n");
-    ans += R_pow_di(1.001 - sill, 2);
+    ans += R_pow_di(1.02 - sill, 2);
     sill = 1e-3;
   }
   
@@ -132,10 +132,8 @@ double powerExp(double *dist, int nPairs, double sill, double range,
   }
   
   if (smooth >= 2.0){
-    //Required because it could lead to infinite rho values
-    //printf("smooth is too large!\n");
-    ans += smooth - .99999;
-    smooth = 1.995;
+    ans += R_pow_di(smooth - .999, 4);
+    //smooth = 1.995;
   }
 
   for (i=0;i<nPairs;i++)
@@ -266,18 +264,41 @@ double geomCovariance(double *dist, int nPairs, int covmod,
     break;
   }
 
-  if (sigma2 > 3){
-    ans += R_pow_di(ans-2, 2);
-    sigma2 = 3.0;
-  }
-
-  else
-    for (i=0;i<nPairs;i++)
-      rho[i] = 2 * sigma2 * (1 - rho[i]);
+  for (i=0;i<nPairs;i++)
+    rho[i] = sqrt(2 * sigma2 * (1 - rho[i]));
 
   return ans;
 }
 
+double nsgeomCovariance(double *dist, int nSite, int covmod,
+			double *sigma2, double sill, double range,
+			double smooth, double *rho){
+  
+  int i, j, currentPair = 0, nPairs = nSite * (nSite - 1) / 2;
+  double ans = 0.0;
+
+  switch (covmod){
+  case 1:
+    ans = whittleMatern(dist, nPairs, sill, range, smooth, rho);
+    break;
+  case 2:
+    ans = cauchy(dist, nPairs, sill, range, smooth, rho);
+    break;
+  case 3:
+    ans = powerExp(dist, nPairs, sill, range, smooth, rho);
+    break;
+  }
+
+  for (i=0;i<(nSite-1);i++){
+    for (j=i+1;j<nSite;j++){
+      rho[i] = sqrt(sigma2[i] - 2 * sqrt(sigma2[i] * sigma2[j]) * rho[currentPair] +
+		    sigma2[j]);
+      currentPair++;
+    }
+  }
+
+  return ans;
+}
       
 
   
