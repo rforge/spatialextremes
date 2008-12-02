@@ -17,6 +17,7 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite,
   rho = (double *)R_alloc(nPairs, sizeof(double));
   frech = (double *)R_alloc(*nSite * *nObs, sizeof(double));
 
+  *dns = 1.0;
   //Some preliminary steps: Valid points?
   if (*fitmarge){
     for (i=0;i<*nSite;i++){
@@ -58,15 +59,12 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite,
       jac[i] = 0.0;
     }
   }
+
+  *dns *= lplikschlather(frech, rho, jac, *nObs, *nSite);
+
+  if (!R_FINITE(*dns))
+    *dns = MINF;
   
-  if (*dns == 0.0){
-    //Stage 2: Bivariate density computations
-    *dns = lplikschlather(frech, rho, jac, *nObs, *nSite);
-  } 
-
-  else
-    *dns = *dns * lplikschlather(frech, rho, jac, *nObs, *nSite);
-
   return;
 
 }
@@ -91,36 +89,32 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   shapes = (double *)R_alloc(*nSite, sizeof(double));
   frech = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   
+  *dns = 1.0;
   //Stage 1: Compute the covariance at each location
   switch (*covmod){
   case 1:
-    *dns = whittleMatern(dist, nPairs, *sill, *range, *smooth, rho);
+    *dns += whittleMatern(dist, nPairs, *sill, *range, *smooth, rho);
     break;
   case 2:
-    *dns = cauchy(dist, nPairs, *sill, *range, *smooth, rho);
+    *dns += cauchy(dist, nPairs, *sill, *range, *smooth, rho);
     break;
   case 3:
-    *dns = powerExp(dist, nPairs, *sill, *range, *smooth, rho);
+    *dns += powerExp(dist, nPairs, *sill, *range, *smooth, rho);
     break;
   }
 
   //Stage 2: Compute the GEV parameters using the design matrix
   *dns += dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
-			loccoeff, scalecoeff, shapecoeff, *nSite,
-			*nloccoeff, *nscalecoeff, *nshapecoeff,
-			locs, scales, shapes);
+		      loccoeff, scalecoeff, shapecoeff, *nSite,
+		      *nloccoeff, *nscalecoeff, *nshapecoeff,
+		      locs, scales, shapes);
 
   //Stage 3: Transformation to unit Frechet
   *dns += gev2frech(data, *nObs, *nSite, locs, scales, shapes,
 		    jac, frech);
 
-  if (*dns == 0.0)
-    //Stage 4: Bivariate density computations
-    *dns = lplikschlather(frech, rho, jac, *nObs, *nSite);
+  *dns *= lplikschlather(frech, rho, jac, *nObs, *nSite);
 
-  else
-    *dns = *dns * lplikschlather(frech, rho, jac, *nObs, *nSite);
-    
   //Stage 5: Removing the penalizing terms (if any)
   // 1- For the location parameter
   if (*locpenalty > 0)
@@ -136,6 +130,9 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   if (*shapepenalty > 0)
     *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty,
 			 *nshapecoeff, *npparshape);
+
+  if (!R_FINITE(*dns))
+    *dns = MINF;
 
   return;
   

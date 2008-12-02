@@ -17,6 +17,7 @@ void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
   rho = (double *)R_alloc(nPairs, sizeof(double));
   frech = (double *)R_alloc(*nSite * *nObs, sizeof(double));
 
+  *dns = 1.0;
   //Some preliminary steps: Valid points?
   if (*fitmarge){
     for (i=0;i<*nSite;i++){
@@ -71,13 +72,10 @@ void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
     }
   }
   
-  if (*dns == 0.0){
-    //Stage 2: Bivariate density computations
-    *dns = lplikschlatherind(frech, *alpha, rho, jac, *nObs, *nSite);
-  }  
+  *dns *= lplikschlatherind(frech, *alpha, rho, jac, *nObs, *nSite);
 
-  else
-    *dns = *dns * lplikschlatherind(frech, *alpha, rho, jac, *nObs, *nSite);
+  if (!R_FINITE(*dns))
+    *dns = MINF;
 
   return;
 
@@ -104,9 +102,11 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
   shapes = (double *)R_alloc(*nSite, sizeof(double));
   frech = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   
+  *dns = 1.0;
+
   if (*alpha < 0){
     *dns += R_pow_di(1 - *alpha, 2);
-    *alpha = 0;
+    *alpha = 0.0;
   }
 
   if (*alpha > 1){
@@ -134,16 +134,10 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
 			locs, scales, shapes);
 
   //Stage 3: Transformation to unit Frechet
-  *dns += gev2frech(data, *nObs, *nSite, locs, scales, shapes,
+  *dns -= gev2frech(data, *nObs, *nSite, locs, scales, shapes,
 		    jac, frech);
-    
-  if (*dns == 0.0){
-    //Stage 4: Bivariate density computations
-    *dns = lplikschlatherind(frech, *alpha, rho, jac, *nObs, *nSite);
-  }
-  
-  else
-    *dns = *dns * lplikschlatherind(frech, *alpha, rho, jac, *nObs, *nSite);
+
+  *dns *= lplikschlatherind(frech, *alpha, rho, jac, *nObs, *nSite);
     
   //Stage 5: Removing the penalizing terms (if any)
   // 1- For the location parameter
@@ -161,6 +155,9 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
     *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty,
 			 *nshapecoeff, *npparshape);
   
+  if (!R_FINITE(*dns))
+    *dns = MINF;
+
   return;
   
 }

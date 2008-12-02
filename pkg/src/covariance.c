@@ -23,10 +23,10 @@ double whittleMatern(double *dist, int nPairs, double sill, double range,
     range = EPS;
   }
 
-  if (sill < 1e-3){
+  if (sill < 0.0){
     //printf("dependence parameters are ill-defined!\n");
-    ans += R_pow_di(1.02 - sill, 2);
-    sill = 1e-3;
+    ans += 1.5 * R_pow_di(1.02 - sill, 2);
+    sill = -sill;
   }
   
   if (sill > 1){
@@ -75,13 +75,13 @@ double cauchy(double *dist, int nPairs, double sill, double range,
   if (range < EPS){
     //printf("dependence parameters are ill-defined!\n");
     ans += R_pow_di(1 - range + EPS, 2);
-    //range = EPS;
+    range = EPS;
   }
 
-  if (sill < 1e-3){
+  if (sill < 0.0){
     //printf("dependence parameters are ill-defined!\n");
-    ans += R_pow_di(1.02 - sill, 2);
-    sill = 1e-3;
+    ans += 1.5 * R_pow_di(1.02 - sill, 2);
+    sill = -sill;
   }
   
   if (sill > 1){
@@ -119,10 +119,10 @@ double powerExp(double *dist, int nPairs, double sill, double range,
     range = EPS;
   }
 
-  if (sill < 1e-3){
+  if (sill < 0.0){
     //printf("dependence parameters are ill-defined!\n");
-    ans += R_pow_di(1.02 - sill, 2);
-    sill = 1e-3;
+    ans += 1.5 * R_pow_di(1.02 - sill, 2);
+    sill = -sill;
   }
   
   if (sill > 1){
@@ -132,8 +132,8 @@ double powerExp(double *dist, int nPairs, double sill, double range,
   }
   
   if (smooth >= 2.0){
-    ans += R_pow_di(smooth - .999, 4);
-    //smooth = 1.995;
+    ans += R_pow_di(smooth - .999, 2);
+    smooth = 1.999;
   }
 
   for (i=0;i<nPairs;i++)
@@ -155,15 +155,24 @@ double mahalDistFct(double *distVec, int nPairs, double *cov11,
   det = *cov11 * *cov22 - R_pow_di(*cov12, 2);
   //We test if the covariance matrix is *not* nonnegative
   //definite e.g. all minor determinant are negative or 0
-  if (det <= 1e-10){
-    //printf("Det of Sigma <= 0!\n");
-    ans += R_pow_di(1 - det + 1e-10, 2);
-  }
-
   if (*cov11 <= 0){
     //printf("Cov11 is <=0!\n");
     ans += R_pow_di(1 - *cov11, 2);
+    *cov11 = .01;
   }
+
+  if (*cov22 <= 0){
+    //printf("Cov11 is <=0!\n");
+    ans += R_pow_di(1 - *cov22, 2);
+    *cov22 = .01;
+  }
+  
+  if (det <= 1e-10){
+    //printf("Det of Sigma <= 0!\n");
+    ans += R_pow_di(1 - det + 1e-10, 2);
+    *cov12 = sign(*cov12) * (fmin2(*cov11, *cov12) - .1);
+  }
+
   
   for (i=0;i<nPairs;i++){
 

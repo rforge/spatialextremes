@@ -17,13 +17,14 @@ void smithfull(double *data, double *distVec, int *nSite,
   mahalDist = (double *)R_alloc(nPairs, sizeof(double));
   frech = (double *)R_alloc(*nSite * *nObs, sizeof(double));
   
+  *dns = 1.0;
   //Some preliminary steps: Valid points?
   if (*fitmarge){
     for (i=0;i<*nSite;i++){
       if (scales[i] <= 0){
 	//printf("scales <= 0!!!\n");
 	*dns += R_pow_di(1 - scales[i], 2);
-	scales[i] = 1;
+	scales[i] = .1;
       }
       
       if (shapes[i] <= -1){
@@ -49,13 +50,10 @@ void smithfull(double *data, double *distVec, int *nSite,
     }
   }
   
-  if (*dns == 0.0){
-    //Stage 3: Bivariate density computations
-    *dns = lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
-  }  
+  *dns *= lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
 
-  else
-    *dns = *dns * lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
+  if (!R_FINITE(*dns))
+    *dns = MINF;
 
   return;
 }
@@ -81,26 +79,22 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs,
   shapes = (double *)R_alloc(*nSite, sizeof(double));
   frech = (double *)R_alloc(*nSite * *nObs, sizeof(double));
   
+  *dns = 1.0;
   //Stage 1: Computing the Mahalanobis distance
-  *dns = mahalDistFct(distVec, nPairs, cov11, cov12,
-		      cov22, mahalDist);
+  *dns += mahalDistFct(distVec, nPairs, cov11, cov12,
+		       cov22, mahalDist);
 
   //Stage 2: Computing the GEV parameters using the design matrix
   *dns += dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
 			loccoeff, scalecoeff, shapecoeff, *nSite,
 			*nloccoeff, *nscalecoeff, *nshapecoeff,
 			locs, scales, shapes);
-  
+
   //Stage 3: Transformation to unit Frechet
   *dns += gev2frech(data, *nObs, *nSite, locs, scales, shapes,
 		    jac, frech);
-    
-  if (*dns == 0.0)
-    //Stage 4: Bivariate density computations
-    *dns = lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
-
-  else
-    *dns = *dns * lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
+  
+  *dns *= lpliksmith(frech, mahalDist, jac, *nObs, *nSite);
     
   //Stage 5: Removing the penalizing terms (if any)
   // 1- For the location parameter
@@ -117,6 +111,9 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs,
   if (*shapepenalty > 0)
     *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty,
 			 *nshapecoeff, *npparshape);
+
+  if (!R_FINITE(*dns))
+    *dns = MINF;
   
   return;
 }

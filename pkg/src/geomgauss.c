@@ -15,6 +15,8 @@ void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
   rho = (double *)R_alloc(nPairs, sizeof(double));
   frech = (double *)R_alloc(*nSite * *nObs, sizeof(double));
 
+  *dns = 1.0;
+  
   //Some preliminary steps: Valid points?
   if (*fitmarge){
     for (i=0;i<*nSite;i++){
@@ -47,13 +49,11 @@ void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
       jac[i] = 0.0;
     }
   }
-  
-  if (*dns == 0.0)
-    //Stage 2: Bivariate density computations
-    *dns = lpliksmith(frech, rho, jac, *nObs, *nSite);
 
-  else
-    *dns = *dns * lpliksmith(frech, rho, jac, *nObs, *nSite);
+  *dns *= lpliksmith(frech, rho, jac, *nObs, *nSite);
+  
+  if (!R_FINITE(*dns))
+    *dns = MINF;
 
   return;
 
@@ -79,8 +79,10 @@ void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   shapes = (double *)R_alloc(*nSite, sizeof(double));
   frech = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   
+  *dns = 1.0;
+
   //Stage 1: Compute the covariance at each location
-  *dns = geomCovariance(dist, nPairs, *covmod, *sigma2, *sill, *range,
+  *dns += geomCovariance(dist, nPairs, *covmod, *sigma2, *sill, *range,
 			*smooth, rho);
     
   //Stage 2: Compute the GEV parameters using the design matrix
@@ -93,13 +95,7 @@ void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   *dns += gev2frech(data, *nObs, *nSite, locs, scales, shapes,
 		    jac, frech);
     
-  if (*dns == 0.0){
-    //Stage 4: Bivariate density computations
-    *dns = lpliksmith(frech, rho, jac, *nObs, *nSite);
-  }
-
-  else
-    *dns = *dns * lpliksmith(frech, rho, jac, *nObs, *nSite);
+  *dns *= lpliksmith(frech, rho, jac, *nObs, *nSite);
     
   //Stage 5: Removing the penalizing terms (if any)
   // 1- For the location parameter
@@ -117,6 +113,9 @@ void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
     *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty,
 			 *nshapecoeff, *npparshape);
   
+  if (!R_FINITE(*dns))
+    *dns = MINF;
+
   return;
   
 }

@@ -44,7 +44,7 @@
   locCoeff[is.na(locCoeff)] <- 0
   scaleCoeff[is.na(scaleCoeff)] <- 0
   shapeCoeff[is.na(shapeCoeff)] <- 0
-  
+    
   ##To be sure that the scale parameter is always positive at starting
   ##values
   scales.hat <- scale.model$dsgn.mat %*% scaleCoeff
@@ -96,19 +96,26 @@
   locCoeff <- loc.model$init.fun(loc)
   scaleCoeff <- scale.model$init.fun(scale)
   shapeCoeff <- shape.model$init.fun(shape)
-  
+    
   locCoeff[is.na(locCoeff)] <- 0
   scaleCoeff[is.na(scaleCoeff)] <- 0
   shapeCoeff[is.na(shapeCoeff)] <- 0
+
+  ##To be sure that the scale parameter is always positive at starting
+  ##values
+  scales.hat <- scale.model$dsgn.mat %*% scaleCoeff
+  
+  if (any(scales.hat <= 0))
+    scaleCoeff[1] <- scaleCoeff[1] - 1.001 * min(scales.hat)
   
   if (length(fixed.param) > 0){
     args <- c(list(data = data, coord = coord, cov.mod = cov.mod,
-                   marge = "emp"), fixed.param)
+                   marge = "emp", sill = 1), fixed.param)
     cov.param <- do.call("fitcovariance", args)$param
   }
   
   else
-    cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp")$param
+    cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp", sill = 1)$param
 
   cov.param <- schlatherfull(dataFrech, coord, start = as.list(cov.param),
                              cov.mod = cov.mod, fit.marge = FALSE, method = method,
@@ -163,15 +170,22 @@
   locCoeff[is.na(locCoeff)] <- 0
   scaleCoeff[is.na(scaleCoeff)] <- 0
   shapeCoeff[is.na(shapeCoeff)] <- 0
+
+  ##To be sure that the scale parameter is always positive at starting
+  ##values
+  scales.hat <- scale.model$dsgn.mat %*% scaleCoeff
+  
+  if (any(scales.hat <= 0))
+    scaleCoeff[1] <- scaleCoeff[1] - 1.001 * min(scales.hat)
   
   if (length(fixed.param) > 0){
     args <- c(list(data = data, coord = coord, cov.mod = cov.mod,
-                   marge = "emp"), fixed.param)
+                   marge = "emp", sill = 1), fixed.param)
     cov.param <- do.call("fitcovariance", args)$param
   }
   
   else
-    cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp")$param
+    cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp", sill = 1)$param
 
   cov.param <- schlatherindfull(dataFrech, coord, start = c(list(alpha = .5), as.list(cov.param)),
                                 cov.mod = cov.mod, fit.marge = FALSE, method = method,
@@ -225,15 +239,22 @@
   locCoeff[is.na(locCoeff)] <- 0
   scaleCoeff[is.na(scaleCoeff)] <- 0
   shapeCoeff[is.na(shapeCoeff)] <- 0
+
+  ##To be sure that the scale parameter is always positive at starting
+  ##values
+  scales.hat <- scale.model$dsgn.mat %*% scaleCoeff
+  
+  if (any(scales.hat <= 0))
+    scaleCoeff[1] <- scaleCoeff[1] - 1.001 * min(scales.hat)
   
   if (length(fixed.param) > 0){
     args <- c(list(data = data, coord = coord, cov.mod = cov.mod,
-                   marge = "emp"), fixed.param)
+                   marge = "emp", sill = 1), fixed.param)
     cov.param <- do.call("fitcovariance", args)$param
   }
   
   else
-    cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp")$param
+    cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp", sill = 1)$param
 
   cov.param <- geomgaussfull(dataFrech, coord, start = c(list(sigma2 = 1), as.list(cov.param)),
                              cov.mod = cov.mod, fit.marge = FALSE, method = method,

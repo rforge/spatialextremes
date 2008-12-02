@@ -22,13 +22,13 @@ void nsgeomgaussfull(int *covmod, double *data, double *dist, int *nSite,
     for (i=0;i<*nSite;i++){
       if (scales[i] <= 0){
 	//printf("scales <= 0!!!\n");
-	*dns += R_pow_di(1 - scales[i], 2);
+	*dns -= R_pow_di(1 - scales[i], 2);
 	scales[i] = 1e-3;
       }
       
       if (shapes[i] <= -1){
 	//printf("shapes <= -1!!!\n");
-	*dns += R_pow_di(shapes[i], 2);
+	*dns -= R_pow_di(shapes[i], 2);
 	shapes[i] = -0.9;
       }
     }
@@ -39,12 +39,12 @@ void nsgeomgaussfull(int *covmod, double *data, double *dist, int *nSite,
 		 *nsigma2coeff, sigma2);
    
   //Stage 1: Compute the covariance at each location
-  *dns += nsgeomCovariance(dist, *nSite, *covmod, sigma2, *sill, *range,
+  *dns -= nsgeomCovariance(dist, *nSite, *covmod, sigma2, *sill, *range,
 			   *smooth, rho);
     
   //Stage 2: Transformation to unit Frechet
   if (*fitmarge)
-    *dns += gev2frech(data, *nObs, *nSite, locs, scales, shapes,
+    *dns -= gev2frech(data, *nObs, *nSite, locs, scales, shapes,
 		      jac, frech);
     
   else {
@@ -53,13 +53,8 @@ void nsgeomgaussfull(int *covmod, double *data, double *dist, int *nSite,
       jac[i] = 0.0;
     }
   }
-  
-  if (*dns == 0.0)
-    //Stage 3: Bivariate density computations
-    *dns = lpliksmith(frech, rho, jac, *nObs, *nSite);
 
-  else
-    *dns = *dns * lpliksmith(frech, rho, jac, *nObs, *nSite);
+  *dns += lpliksmith(frech, rho, jac, *nObs, *nSite);
 
   return;
 
