@@ -1,6 +1,6 @@
 .start.smith <- function(data, coord, loc.model, scale.model, shape.model,
                          print.start.values = TRUE, method = "Nelder",
-                         ...){
+                         iso = TRUE, ...){
 
   if (ncol(coord) == 2)
     param <- c("cov11", "cov12", "cov22")
@@ -26,16 +26,27 @@
   }
 
   if (length(fixed.param) > 0){
-    args <- c(list(data = data, coord = coord, marge = "emp"),
+    args <- c(list(data = data, coord = coord, marge = "emp", iso = iso),
               fixed.param)
     covs <- do.call("fitcovmat", args)$param
   }
 
   else
-    covs <- fitcovmat(data, coord, marge = "emp")$param  
+    covs <- fitcovmat(data, coord, marge = "emp", iso = iso)$param
+
+  if (iso){
+    covs <- covs[1]
+    names(covs) <- "cov"
+  }    
 
   covs <- smithfull(dataFrech, coord, start = as.list(covs),
-                    fit.marge = FALSE, method = method, warn = FALSE)$param
+                    fit.marge = FALSE, method = method, warn = FALSE,
+                    iso = iso)$param
+
+  if (iso){
+    covs <- covs[1]
+    names(covs) <- "cov"
+  } 
   
   locCoeff <- loc.model$init.fun(loc)
   scaleCoeff <- scale.model$init.fun(scale)

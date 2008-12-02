@@ -1,5 +1,5 @@
 fitmaxstab <- function(data, coord, cov.mod, loc.form, scale.form, shape.form,
-                       marg.cov = NULL, ..., fit.marge = FALSE, warn = TRUE,
+                       marg.cov = NULL, iso = FALSE, ..., fit.marge = FALSE, warn = TRUE,
                        method = "Nelder", start, control = list(),
                        std.err.type = "score", corr = FALSE){
 
@@ -48,10 +48,10 @@ be given for *ALL* GEV parameters")
   
   if (cov.mod == "gauss")
     fitted <- switch(reg.mod, "full" = smithfull(data, coord, ..., fit.marge = fit.marge,
-                                warn = warn, method = method, control = control,
+                                iso = iso, warn = warn, method = method, control = control,
                                 std.err.type = std.err.type, corr = corr, start = start),
                      "spatgev" = smithform(data, coord, ..., loc.form = loc.form, scale.form = scale.form,
-                       shape.form = shape.form, fit.marge = fit.marge, marg.cov = marg.cov,
+                       shape.form = shape.form, fit.marge = fit.marge, iso = iso, marg.cov = marg.cov,
                        warn = warn, method = method, control = control, std.err.type =
                        std.err.type, corr = corr, start = start))
   
