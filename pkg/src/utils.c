@@ -148,7 +148,6 @@ void dsgnmat2Alpha(double *alphadsgnmat, double *alphacoeff,
   //We use the expit function to ensure that the alphas always lie in
   //(0,1)
   int i, j;
-  double ans = 0.0;
 
   for (i=0;i<nSite;i++){
        
@@ -171,8 +170,7 @@ void dsgnmat2Sigma2(double *sigma2dsgnmat, double *sigma2coeff,
   //This function computes the 'sigma2' values from the design matrix
   //the 'sigma2' are used in the non-stationary geometric gaussian model
   int i, j;
-  double ans = 0.0;
-
+  
   for (i=0;i<nSite;i++){
        
     sigma2[i] = 0.0;
