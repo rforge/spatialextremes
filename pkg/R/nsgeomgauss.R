@@ -312,3 +312,12 @@ Standard errors are not available unless you fix it.")
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
 }
+
+nsgeomgaussform <- function(data, coord, cov.mod = cov.mod, sigma2.form, ...,
+                            loc.form = loc.form, scale.form = scale.form,
+                            shape.form = shape.form, fit.marge = fit.marge,
+                            marg.cov = marg.cov, warn = warn, method = method,
+                            control = control, std.err.type = std.err.type,
+                            corr = corr, start = start){
+
+}
