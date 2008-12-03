@@ -259,7 +259,7 @@ double geomCovariance(double *dist, int nPairs, int covmod,
   //between each pair of locations.
   //When ans != 0.0, the parameters are ill-defined.
   int i;
-  double ans;
+  double ans = 0.0;
 
   switch (covmod){
   case 1:
