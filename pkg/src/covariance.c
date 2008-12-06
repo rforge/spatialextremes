@@ -300,8 +300,8 @@ double nsgeomCovariance(double *dist, int nSite, int covmod,
 
   for (i=0;i<(nSite-1);i++){
     for (j=i+1;j<nSite;j++){
-      rho[i] = sqrt(sigma2[i] - 2 * sqrt(sigma2[i] * sigma2[j]) * rho[currentPair] +
-		    sigma2[j]);
+      rho[currentPair] = sqrt(sigma2[i] - 2 * sqrt(sigma2[i] * sigma2[j]) * 
+			      rho[currentPair] + sigma2[j]);
       currentPair++;
     }
   }
