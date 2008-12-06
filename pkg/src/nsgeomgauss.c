@@ -25,13 +25,13 @@ void nsgeomgaussfull(int *covmod, double *data, double *dist, int *nSite,
       if (scales[i] <= 0){
 	//printf("scales <= 0!!!\n");
 	*dns += R_pow_di(1 - scales[i], 2);
-	scales[i] = 1e-3;
+	scales[i] = .1;
       }
       
       if (shapes[i] <= -1){
 	//printf("shapes <= -1!!!\n");
 	*dns += R_pow_di(shapes[i], 2);
-	shapes[i] = -0.9;
+	shapes[i] = 0.0;
       }
     }
   }
@@ -57,6 +57,9 @@ void nsgeomgaussfull(int *covmod, double *data, double *dist, int *nSite,
   }
 
   *dns *= lpliksmith(frech, rho, jac, *nObs, *nSite);
+
+  if (!R_FINITE(*dns))
+    *dns = MINF;
 
   return;
 
