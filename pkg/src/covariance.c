@@ -24,13 +24,13 @@ double whittleMatern(double *dist, int nPairs, double sill, double range,
     smooth = 150;
   }
 
-  if (range < EPS){
+  if (range <= 0.0){
     //printf("dependence parameters are ill-defined!\n");
     ans += R_pow_di(1 - range + EPS, 2);
     range = EPS;
   }
 
-  if (sill < 0.0){
+  if (sill <= 0.0){
     //printf("dependence parameters are ill-defined!\n");
     ans += 1.5 * R_pow_di(1.02 - sill, 2);
     sill = -sill;
@@ -72,13 +72,13 @@ double cauchy(double *dist, int nPairs, double sill, double range,
     smooth = 1e-3;
   }
 
-  if (range < EPS){
+  if (range <= 0.0){
     //printf("dependence parameters are ill-defined!\n");
     ans += R_pow_di(1 - range + EPS, 2);
     range = EPS;
   }
 
-  if (sill < 0.0){
+  if (sill <= 0.0){
     //printf("dependence parameters are ill-defined!\n");
     ans += 1.5 * R_pow_di(1.02 - sill, 2);
     sill = -sill;
@@ -118,13 +118,13 @@ double powerExp(double *dist, int nPairs, double sill, double range,
     smooth = 1.999;
   }
 
-  if (range < EPS){
+  if (range <= 0.0){
     //printf("dependence parameters are ill-defined!\n");
     ans += R_pow_di(1 - range + EPS, 2);
     range = EPS;
   }
 
-  if (sill < 0.0){
+  if (sill <= 0.0){
     //printf("dependence parameters are ill-defined!\n");
     ans += 1.5 * R_pow_di(1.02 - sill, 2);
     sill = -sill;
