@@ -31,10 +31,11 @@ shape.form, marg.cov = NULL, iso = FALSE, \dots, fit.marge = FALSE, warn
   \item{iso}{Logical. If \code{TRUE} an isotropic model is fitted to
     data. Otherwise (default), anisotropy is allowed. Currently, this is
     only implemented for the Smith's model.}
-  \item{\dots}{Several arguments to be passed to the \code{\link{optim}}
-    function. See section details.}
+  \item{\dots}{Several arguments to be passed to the
+    \code{\link{optim}}, \code{\link{nlm}} or \code{\link{nlminb}}
+    functions. See section details.}
   \item{fit.marge}{Logical. If \code{TRUE}, the GEV parameters
-    are estimated ``point-wisely'' or using the formulas given by
+    are estimated pointwise or using the formulas given by
     \code{loc.form}, \code{scale.form} and \code{shape.form}. If
     \code{FALSE}, observations are supposed to be unit Frechet
     distributed. Note that when formulas are given, \code{fit.marge} is
@@ -44,9 +45,10 @@ shape.form, marg.cov = NULL, iso = FALSE, \dots, fit.marge = FALSE, warn
     arised while computing the standard errors.}
   \item{method}{The method used for the numerical optimisation
     procedure. Must be one of \code{BFGS}, \code{Nelder-Mead},
-    \code{CG}, \code{L-BFGS-B}, \code{SANN} or \code{nlm}. See \code{\link{optim}}
-    for details. Please note that passing \code{nlm} will use the
-    \code{\link{nlm}} function instead of \code{\link{optim}}.}
+    \code{CG}, \code{L-BFGS-B}, \code{SANN}, \code{nlm} or
+    \code{nlminb}. See \code{\link{optim}} for details. Please note that
+    passing \code{nlm} or \code{nlminb} will use the \code{\link{nlm}}
+    or \code{\link{nlminb}} functions instead of \code{\link{optim}}.}
   \item{start}{A named list giving the initial values for the
     parameters over which the pairwise likelihood is to be minimized. If
     \code{start} is omitted the routine attempts to find good starting
@@ -121,7 +123,8 @@ shape.form, marg.cov = NULL, iso = FALSE, \dots, fit.marge = FALSE, warn
 
   \describe{
     \item{\code{grad}}{\eqn{J} is estimated from the gradient e.g. \eqn{J
-	= \nabla \ell_P \nabla \ell_P^T}{J = grad(llik_P) grad(llik_P)^T}}
+	= \nabla \ell_P \nabla \ell_P^T}{J = grad(llik_P)
+    grad(llik_P)^T}.}
     \item{\code{score}}{\eqn{J} is estimated directly from the variance of
       the observed score function.}
   }

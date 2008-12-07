@@ -15,9 +15,9 @@
   other approaches to model spatial extremes; namely latent variable and
   copula based approaches.
 
-  A package vignette has been writen to help new users. It can be viewed
-  by invoking \command{vignette("SpatialExtremesGuide")} from the R
-  console.
+  A package vignette has been writen to help new users. It can be
+  viewed, from the R console, by invoking
+  \command{vignette("SpatialExtremesGuide")}.
 }
 \details{
   The package provides the following main tools:

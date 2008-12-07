@@ -9,7 +9,7 @@ extcoeff(fitted, cov.mod, param, n = 200, xlab, ylab, \dots)
 }
 \arguments{
   \item{fitted}{A object of class "\code{maxstab}". Most often, it will
-    be the output of the function \code{\link{fitmaxstab}}}
+    be the output of the function \code{\link{fitmaxstab}}.}
   \item{cov.mod}{A character string corresponding the the covariance
     model in the max-stable representation. Must be one of "gauss" for
     the Smith's model; or "whitmat", "cauchy" or "powexp" for

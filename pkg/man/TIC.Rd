@@ -11,7 +11,7 @@ TIC(object, \dots)
 }
 \arguments{
   \item{object}{An object of class \code{maxstab}. Often, it will be the
-    output of function \code{\link{fitmaxstab}}}
+    output of function \code{\link{fitmaxstab}}.}
   \item{\dots}{Additional objects of class \code{maxstab} for which TIC
     should be computed.}
 }
