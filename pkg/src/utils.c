@@ -46,17 +46,20 @@ double gev2frech(double *data, int nObs, int nSite, double *locs,
   double ans = 0.0;
   
   for (i=0;i<nSite;i++){
-    for (j=0;j<nObs;j++){
-      frech[i * nObs + j] = (data[i * nObs + j] - locs[i])/ scales[i];
+    if (fabs(shapes[i]) <= 1e-6){
+      shapes[i] = 0.0;
       
-      if(fabs(shapes[i]) <= 1e-6){
-	shapes[i] = 0.0;
+      for (j=0;j<nObs;j++){
+	frech[i * nObs + j] = (data[i * nObs + j] - locs[i])/ scales[i];
 	jac[i * nObs + j] = frech[i * nObs + j] - log(scales[i]);
 	frech[i * nObs + j] = exp(frech[i * nObs + j]);
       }
+    }
       
-      else {
-	frech[i * nObs + j] = 1 + shapes[i] * frech[i * nObs + j];
+    else {
+      for (j=0;j<nObs;j++){
+	frech[i * nObs + j] = 1 + shapes[i] * (data[i * nObs + j] - locs[i]) /
+	  scales[i];
 	
 	if (frech[i * nObs + j] <= 0) {
 	  //printf("1 + shape * (data - loc) <= 0!\n");
@@ -71,7 +74,7 @@ double gev2frech(double *data, int nObs, int nSite, double *locs,
       }
     }
   }
-
+  
   return ans;
 }
 

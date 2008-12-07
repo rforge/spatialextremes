@@ -17,6 +17,13 @@ double whittleMatern(double *dist, int nPairs, double sill, double range,
     smooth = EPS;
   }
 
+  else if (smooth > 150){
+    //Required because it could lead to infinite rho values
+    //printf("smooth is too large!\n");
+    ans += R_pow_di(smooth - 150, 2);
+    smooth = 150;
+  }
+
   if (range < EPS){
     //printf("dependence parameters are ill-defined!\n");
     ans += R_pow_di(1 - range + EPS, 2);
@@ -29,7 +36,7 @@ double whittleMatern(double *dist, int nPairs, double sill, double range,
     sill = -sill;
   }
   
-  if (sill > 1){
+  else if (sill > 1){
     //printf("dependence parameters are ill-defined!\n");
     //the 1.02 factor is here to avoid problem with non
     //feasible region
@@ -37,13 +44,6 @@ double whittleMatern(double *dist, int nPairs, double sill, double range,
     sill = 1.0;
   }
   
-  if (smooth > 150){
-    //Required because it could lead to infinite rho values
-    //printf("smooth is too large!\n");
-    ans += R_pow_di(smooth - 150, 2);
-    smooth = 150;
-  }
-
   for (i=0;i<nPairs;i++){
 
     rho[i] = sill * R_pow(2, 1 - smooth) / gammafn(smooth) *
@@ -84,7 +84,7 @@ double cauchy(double *dist, int nPairs, double sill, double range,
     sill = -sill;
   }
   
-  if (sill > 1){
+  else if (sill > 1){
     //printf("dependence parameters are ill-defined!\n");
     ans += R_pow_di(1.02 * sill, 2);
     sill = 1.0;
@@ -113,6 +113,11 @@ double powerExp(double *dist, int nPairs, double sill, double range,
     smooth = 1e-3;
   }
 
+  else if (smooth >= 2.0){
+    ans += R_pow_di(smooth - .999, 2);
+    smooth = 1.999;
+  }
+
   if (range < EPS){
     //printf("dependence parameters are ill-defined!\n");
     ans += R_pow_di(1 - range + EPS, 2);
@@ -125,17 +130,12 @@ double powerExp(double *dist, int nPairs, double sill, double range,
     sill = -sill;
   }
   
-  if (sill > 1){
+  else if (sill > 1){
     //printf("dependence parameters are ill-defined!\n");
     ans += R_pow_di(1.02 * sill, 2);
     sill = 1.0;
   }
   
-  if (smooth >= 2.0){
-    ans += R_pow_di(smooth - .999, 2);
-    smooth = 1.999;
-  }
-
   for (i=0;i<nPairs;i++)
     rho[i] = sill * exp(-R_pow(dist[i] / range, smooth));
     
