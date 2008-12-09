@@ -64,3 +64,70 @@ void nsgeomgaussfull(int *covmod, double *data, double *dist, int *nSite,
   return;
 
 }
+
+void nsgeomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
+			double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
+			double *locpenalty, double *scaledsgnmat, double *scalepenmat,
+			int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
+			double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
+			double *sigma2dsgnmat, int *nsigma2coeff, double *loccoeff, double *scalecoeff,
+			double *shapecoeff, double *sigma2coeff, double *sill, double *range,
+			double *smooth, double *dns){
+  //This is the geometric gaussian model
+  //The GEV parameters are defined using a polynomial response surface
+  
+  const int nPairs = *nSite * (*nSite - 1) / 2;
+  double *jac, *rho, *locs, *scales, *shapes, *frech, *sigma2;
+    
+  jac = (double *)R_alloc(*nObs * *nSite, sizeof(double));
+  rho = (double *)R_alloc(nPairs, sizeof(double));
+  locs = (double *)R_alloc(*nSite, sizeof(double));
+  scales = (double *)R_alloc(*nSite, sizeof(double));
+  shapes = (double *)R_alloc(*nSite, sizeof(double));
+  frech = (double *)R_alloc(*nObs * *nSite, sizeof(double));
+  sigma2 = (double *)R_alloc(*nSite, sizeof(double));
+  
+  *dns = 1.0;
+
+  //Stage 0: Compute the sigma2 at each location
+  dsgnmat2Sigma2(sigma2dsgnmat, sigma2coeff, *nSite,
+		 *nsigma2coeff, sigma2);
+  
+  //Stage 1: Compute the covariance at each location
+  *dns += nsgeomCovariance(dist, *nSite, *covmod, sigma2, *sill, *range,
+			   *smooth, rho);
+    
+  //Stage 2: Compute the GEV parameters using the design matrix
+  *dns += dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
+			loccoeff, scalecoeff, shapecoeff, *nSite,
+			*nloccoeff, *nscalecoeff, *nshapecoeff,
+			locs, scales, shapes);
+
+  //Stage 3: Transformation to unit Frechet
+  *dns += gev2frech(data, *nObs, *nSite, locs, scales, shapes,
+		    jac, frech);
+    
+  *dns *= lpliksmith(frech, rho, jac, *nObs, *nSite);
+    
+  //Stage 5: Removing the penalizing terms (if any)
+  // 1- For the location parameter
+  if (*locpenalty > 0)
+    *dns -= penalization(locpenmat, loccoeff, *locpenalty,
+			 *nloccoeff, *npparloc);
+  
+  // 2- For the scale parameter
+  if (*scalepenalty > 0)    
+    *dns -= penalization(scalepenmat, scalecoeff, *scalepenalty,
+			 *nscalecoeff, *npparscale);
+  
+  // 3- For the shape parameter
+  if (*shapepenalty > 0)
+    *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty,
+			 *nshapecoeff, *npparshape);
+  
+  if (!R_FINITE(*dns))
+    *dns = MINF;
+
+  return;
+  
+}

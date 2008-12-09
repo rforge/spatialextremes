@@ -289,3 +289,84 @@
   
   return(start)
 }
+
+.start.nsgeomgauss <- function(data, coord, cov.mod, loc.model, scale.model, shape.model,
+                               sigma2.model, print.start.values = TRUE, method = "Nelder",
+                               ...){
+
+  n.sigma2coeff <- ncol(sigma2.model$dsgn.mat)
+
+  if (n.sigma2coeff == 1)
+    sigma2.names <- "sigma2"
+
+  else
+    sigma2.names <- paste("sigma2Coeff", 1:n.sigma2coeff, sep="")
+
+  param <- c(sigma2.names, "sill", "range", "smooth")
+  fixed.param <- list(...)[names(list(...)) %in% param]
+  
+  if (print.start.values)
+    cat("Computing appropriate starting values\n")
+  
+  n.site <- ncol(data)
+
+  loc <- scale <- shape <- rep(NA, n.site)
+  dataFrech <- data
+  for (i in 1:n.site){
+    marg.param <- gevmle(data[,i])
+    loc[i] <- marg.param["loc"]
+    scale[i] <- marg.param["scale"]
+    shape[i] <- marg.param["shape"]
+    dataFrech[,i] <- gev2frech(dataFrech[,i], loc[i], scale[i], shape[i])
+  }
+
+  locCoeff <- loc.model$init.fun(loc)
+  scaleCoeff <- scale.model$init.fun(scale)
+  shapeCoeff <- shape.model$init.fun(shape)
+  
+  locCoeff[is.na(locCoeff)] <- 0
+  scaleCoeff[is.na(scaleCoeff)] <- 0
+  shapeCoeff[is.na(shapeCoeff)] <- 0
+
+  ##To be sure that the scale parameter is always positive at starting
+  ##values
+  scales.hat <- scale.model$dsgn.mat %*% scaleCoeff
+  
+  if (any(scales.hat <= 0))
+    scaleCoeff[1] <- scaleCoeff[1] - 1.001 * min(scales.hat)
+  
+  if (length(fixed.param) > 0){
+    args <- c(list(data = data, coord = coord, cov.mod = cov.mod,
+                   marge = "emp", sill = 1), fixed.param)
+    cov.param <- do.call("fitcovariance", args)$param
+  }
+  
+  else
+    cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp", sill = 1)$param
+
+  sigma2.start <- c(1, rep(0, n.sigma2coeff-1))
+  names(sigma2.start) <- sigma2.names
+  
+  cov.param <- geomgaussfull(dataFrech, coord, start = c(as.list(sigma2.start), as.list(cov.param)),
+                             cov.mod = cov.mod, fit.marge = FALSE, method = method,
+                             warn = FALSE)$param
+  
+  start <- as.list(cov.param)
+
+  names(locCoeff) <- names(scaleCoeff) <- names(shapeCoeff) <- NULL
+  
+  start <- c(start, as.list(unlist(list(locCoeff = locCoeff,
+                                        scaleCoeff = scaleCoeff,
+                                        shapeCoeff = shapeCoeff))))
+
+  if (print.start.values)
+    cat("Starting values are defined\n")
+
+  if (print.start.values){
+    cat("Starting values are:\n")
+    print(unlist(start))
+  }
+  
+  return(start)
+}
+
