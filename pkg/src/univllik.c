@@ -9,7 +9,7 @@ void gevlik(double *data, int *n, double *loc, double *scale,
   
   dvec = (double *)R_alloc(*n, sizeof(double));
 
-  if( (*scale <= 0) & (*shape < -1)) {
+  if( (*scale <= 0) | (*shape < -1)) {
     *dns = -1e6;
     return;
   }
