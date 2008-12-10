@@ -221,3 +221,15 @@ void fitcovmat3d(double *cov11, double *cov12, double *cov13,
 void fitcovariance(int *covmod, double *sill, double *range, double *smooth,
 		   int *nPairs, double *distVec, double *extcoeff,
 		   double *weights, double *ans);
+
+///////////////////////////////////
+//  From spatgevlik.c
+//
+void spatgevlik(double *data, double *covariables, int *nSite, int *nObs,
+		double *locdsgnmat, double *locpenmat, int *nloccoeff,
+		int *npparloc, double *locpenalty, double *scaledsgnmat,
+		double *scalepenmat, int *nscalecoeff, int *npparscale,
+		double *scalepenalty, double *shapedsgnmat, double *shapepenmat,
+		int *nshapecoeff, int *npparshape, double *shapepenalty,
+		double *loccoeff, double *scalecoeff, double *shapecoeff,
+		double *dns);
