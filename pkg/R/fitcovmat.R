@@ -68,7 +68,7 @@ fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, start, ...){
 
   if (missing(start)){
     if (iso){
-      a <- 2 * qnorm(extcoeff / 2)
+      a <- 4 * qnorm(extcoeff / 2)^2
       sigma.start <- mean(rowSums(dist^2) / a)
       start <- list(cov = sigma.start)
     }
@@ -81,14 +81,14 @@ fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, start, ...){
                         cov22 = 1 + 2 * abs(list(...)$cov12))
         
         else{
-          a <- 2 * qnorm(extcoeff / 2)
+          a <- 4 * qnorm(extcoeff / 2)^2
           sigma.start <- mean(rowSums(dist^2) / a)
           start <- list(cov11 = sigma.start, cov12 = 0, cov22 = sigma.start)
         }
       }
     
       if (dist.dim == 3){
-        a <- 2 * qnorm(extcoeff / 2)
+        a <- 4 * qnorm(extcoeff / 2)^2
         sigma.start <- mean(rowSums(dist^2) / a)
         start <- list(cov11 = sigma.start, cov12 = 0, cov13 = 0, cov22 = sigma.start,
                       cov23 = 0, cov33 = sigma.start)
