@@ -25,7 +25,7 @@ fitcovariance(data, coord, cov.mod, marge = "mle", start, \dots)
     parameters over which the weighted sum of square is to be
     minimized. If \code{start} is omitted the routine attempts to find
     good starting values.}
-  \item{\dots}{Optional arguments to be passed to the \code{\link{nlm}}
+  \item{\dots}{Optional arguments to be passed to the \code{\link{optim}}
     function.}
 }
 \details{

@@ -176,20 +176,20 @@ fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, start, ...){
   if(any(!(param %in% c(nm,names(fixed.param)))))
     stop("unspecified parameters")
 
-  opt <- nlm(obj.fun, unlist(start), hessian = FALSE, ...)
+  opt <- optim(unlist(start), obj.fun, hessian = FALSE, ...)
 
-  if (opt$code == 4) 
-    opt$convergence <- "iteration limit reached"
-
-  if (opt$code <= 2)
+  if (opt$convergence == 0)
     opt$convergence <- "successful"
 
-  if (opt$code %in% c(3,5))
+  else if (opt$convergence == 1) 
+    opt$convergence <- "iteration limit reached"
+
+  else
     opt$convergence <- "Optimization may have failed"
 
   param.names <- param
-  names(opt$estimate) <- names(start)
-  param <- c(opt$estimate, unlist(fixed.param))
+  names(opt$par) <- names(start)
+  param <- c(opt$par, unlist(fixed.param))
   param <- param[param.names]
 
   if (iso){
@@ -221,11 +221,10 @@ fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, start, ...){
   ext.coeff <- function(posVec)
     2 * pnorm(sqrt(posVec %*% iSigma %*% posVec) / 2)
 
-  names(opt$iterations) <- "function"
-  fitted <- list(fitted.values = opt$estimate, fixed = unlist(fixed.param),
+  fitted <- list(fitted.values = opt$par, fixed = unlist(fixed.param),
                  param = param, convergence = opt$convergence,
-                 counts = opt$iterations, message = opt$message, data = data,
-                 est = "Least Square", opt.value = opt$minimum, model = "Smith",
+                 counts = opt$counts, message = opt$message, data = data,
+                 est = "Least Square", opt.value = opt$value, model = "Smith",
                  coord = coord, fit.marge = FALSE, cov.mod = "Gaussian",
                  ext.coeff = ext.coeff)
 
@@ -305,20 +304,20 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", start,
   if(any(!(param %in% c(nm,names(fixed.param)))))
     stop("unspecified parameters")
 
-  opt <- nlm(obj.fun, unlist(start), hessian = FALSE, ...)
+  opt <- optim(unlist(start), obj.fun, hessian = FALSE, ...)
 
-  if (opt$code == 4) 
+  if (opt$convergence == 1) 
     opt$convergence <- "iteration limit reached"
 
-  if (opt$code <= 2)
+  else if (opt$convergence == 0)
     opt$convergence <- "successful"
 
-  if (opt$code %in% c(3,5))
+  else
     opt$convergence <- "Optimization may have failed"
 
   param.names <- param
-  names(opt$estimate) <- names(start)
-  param <- c(opt$estimate, unlist(fixed.param))
+  names(opt$par) <- names(start)
+  param <- c(opt$par, unlist(fixed.param))
   param <- param[param.names]
 
   cov.fun <- covariance(sill = param["sill"], range = param["range"],
@@ -327,11 +326,10 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", start,
   ext.coeff <- function(h)
     1 + sqrt(1 - 1/2 * (cov.fun(h) + 1))
 
-  names(opt$iterations) <- "function"
-  fitted <- list(fitted.values = opt$estimate, fixed = unlist(fixed.param),
+  fitted <- list(fitted.values = opt$par, fixed = unlist(fixed.param),
                  param = param, convergence = opt$convergence,
-                 counts = opt$iterations, message = opt$message, data = data,
-                 est = "Least Square", opt.value = opt$minimum, model = "Schlather",
+                 counts = opt$counts, message = opt$message, data = data,
+                 est = "Least Square", opt.value = opt$value, model = "Schlather",
                  coord = coord, fit.marge = FALSE, cov.mod = cov.mod,
                  cov.fun = cov.fun, ext.coeff = ext.coeff)
 
