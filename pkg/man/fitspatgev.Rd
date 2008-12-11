@@ -6,7 +6,7 @@
 }
 \usage{
 fitspatgev(data, covariables, loc.form, scale.form, shape.form, start,
-..., method = "Nelder", std.err = TRUE, warn = TRUE)
+..., method = "Nelder", std.err.type = "score", warn = TRUE)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -25,8 +25,8 @@ fitspatgev(data, covariables, loc.form, scale.form, shape.form, start,
     procedure. Must be one of \code{BFGS}, \code{Nelder-Mead},
     \code{CG}, \code{L-BFGS-B} or \code{SANN}. See \code{\link{optim}}
     for details.}
-  \item{std.err}{Logical. If \code{TRUE} (default), standard errors are
-    computed.}
+  \item{std.err.type}{Character string. Must be one of "score", "grad"
+    or "none". If none, no standard errors are computed.}
   \item{warn}{Logical. If \code{TRUE} (default), users will be warned if
   the starting values lie in a zero density region.}
 }
@@ -47,13 +47,11 @@ fitspatgev(data, covariables, loc.form, scale.form, shape.form, start,
   \item{loc.form, scale.form, shape.form}{The formulas defining the
     spatial models for the GEV parameters.}
   \item{covariables}{The covariables used for the spatial models.}
+  \item{ihessian}{The inverse of the Hessian matrix of the negative
+    log-likelihood.}
+  \item{jacobian}{The variance covariance matrix of the score.}
 }
 \author{Mathieu Ribatet}
-\section{Warning}{
-  The procedure assumes that the stations are mutually independent. If
-  this hypothesis isn't satisfied then standard errors may be
-  underestimated.
-}
 \examples{
 ## 1- Simulate a max-stable random field
 require(RandomFields)

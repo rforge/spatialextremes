@@ -1,6 +1,7 @@
 \name{anova}
 \alias{anova}
 \alias{anova.maxstab}
+\alias{anova.spatgev}
 \title{Anova Tables}
 \description{
   Computes analysis of deviance for objects of class ''maxstab''
@@ -8,9 +9,11 @@
 \usage{
 \method{anova}{maxstab}(object, object2, method = "RJ", square = "chol",
 ...)
+\method{anova}{spatgev}(object, object2, method = "RJ", square = "chol",
+...)
 }
 \arguments{
-  \item{object, object2}{Two objects of class 'maxstab'.}
+  \item{object, object2}{Two objects of class 'maxstab' or 'spatgev'.}
   \item{method}{Character string. Must be one of "CB" or "RJ" for the
     Chandler and Bate or the Rotnitzky and Jewell approaches
     respectively. See function
@@ -42,7 +45,7 @@ represent analysis-of-deviance tables.
   correlated data. \emph{Biometrika} \bold{77}, 485--97.
 }
 \author{Mathieu Ribatet}
-\seealso{\code{\link{fitmaxstab}},
+\seealso{\code{\link{fitmaxstab}}, \code{\link{fitspatgev}},
   \code{\link[=profile.maxstab]{profile}}, \code{\link{TIC}}}
 \examples{
 require(RandomFields)

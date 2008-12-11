@@ -181,6 +181,11 @@ void schlatherindgrad(int *covmod, double *data, double *dist, int *nSite,
 		      int *nshapecoeff, double *loccoeff, double *scalecoeff,
 		      double *shapecoeff, double *alpha, double *sill, double *range,
 		      double *smooth, int *fitmarge, double *grad);
+void spatgevgrad(double *data, int *nSite, int *nObs, double *locdsgnmat,
+		 int *nloccoeff, double *scaledsgnmat, int *nscalecoeff,
+		 double *shapedsgnmat, int *nshapecoeff, double *loccoeff,
+		 double *scalecoeff, double *shapecoeff, double *grad);
+
 ///////////////////////////////////
 //  From pairwiselik.c
 //

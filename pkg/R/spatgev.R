@@ -1,8 +1,13 @@
 fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
-                       start, ..., method = "Nelder", std.err = TRUE,
+                       start, ..., method = "Nelder", std.err.type = "score",
                        warn = TRUE){
 
-  hessian <- std.err.flag <- std.err
+  if (std.err.type != "none")
+    hessian <- std.err.flag <- TRUE
+
+  else
+    hessian <- std.err.flag <- FALSE
+  
   n.site <- ncol(data)
   n.obs <- nrow(data)
 
@@ -151,6 +156,10 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
   else
     opt$convergence <- "successful"
 
+  param.names <- param
+  param <- c(opt$par, unlist(fixed.param))
+  param <- param[param.names]
+
   if (std.err.flag){
     tol <- .Machine$double.eps^0.5
     var.cov <- qr(opt$hessian, tol = tol)
@@ -169,27 +178,38 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
       }
       
       else{
-        std.err <- diag(var.cov)
-        std.err <- sqrt(std.err)
-      }
+        ihessian <- var.cov
+        jacobian <- .spatgevgrad(param, data, loc.dsgn.mat,scale.dsgn.mat,
+                                 shape.dsgn.mat, std.err.type,
+                                 fixed.param = names(fixed.param), param.names = param.names)
 
-      colnames(var.cov) <- rownames(var.cov) <- nm
-      names(std.err) <- nm
+        if (any(is.na(jacobian))){
+          if (warn)
+            warning("observed information matrix is singular; std. err. won't be computed")
+          
+          std.err.flag <- FALSE
+        }
+      }
     }
   }
 
-  if (!std.err.flag)
-    std.err <- var.cov <- NULL
-  
-  param.names <- param
-  param <- c(opt$par, unlist(fixed.param))
-  param <- param[param.names]
+  if (std.err.flag){
+    var.cov <- var.cov %*% jacobian %*% var.cov
+    std.err <- sqrt(diag(var.cov))
 
+    colnames(var.cov) <- colnames(ihessian) <- rownames(var.cov) <-
+      rownames(ihessian) <- names(std.err) <- nm
+  }
+
+  else
+    std.err <- std.err.type <- corr.mat <- var.cov <- ihessian <-
+      jacobian <- NULL
+  
   ans <- list(fitted.values = opt$par, param = param, std.err = std.err, var.cov = var.cov,
               counts = opt$counts, message = opt$message, covariables = covariables,
               logLik = -opt$value, loc.form = loc.form, scale.form = scale.form,
               shape.form = shape.form, convergence = opt$convergence,
-              deviance = 2 * opt$value)
+              deviance = 2 * opt$value, ihessian = ihessian, jacobian = jacobian)
 
   class(ans) <- "spatgev"
   return(ans)

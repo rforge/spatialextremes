@@ -44,6 +44,5 @@ form.shape <- shape ~ 1
 
 fitspatgev(ms1, locations, form.loc, form.scale, form.shape)
 }
-}
 \author{Mathieu Ribatet}
 \keyword{print}

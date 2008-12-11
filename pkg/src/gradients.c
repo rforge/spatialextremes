@@ -1097,3 +1097,54 @@ void schlatherindgrad(int *covmod, double *data, double *dist, int *nSite,
 
   return;
 }
+
+void spatgevgrad(double *data, int *nSite, int *nObs, double *locdsgnmat,
+		 int *nloccoeff, double *scaledsgnmat, int *nscalecoeff,
+		 double *shapedsgnmat, int *nshapecoeff, double *loccoeff,
+		 double *scalecoeff, double *shapecoeff, double *grad){
+
+  //This is the "Spatial GEV" model. It computes the gradient of the
+  //log-likelihood
+  
+  int i, j, k;
+  double *locs, *scales, *shapes, flag;
+    
+  locs = (double *)R_alloc(*nSite, sizeof(double));
+  scales = (double *)R_alloc(*nSite, sizeof(double));
+  shapes = (double *)R_alloc(*nSite, sizeof(double));
+  
+  //Stage 0. Compute the GEV parameters using the design matrix
+  flag = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
+		       loccoeff, scalecoeff, shapecoeff, *nSite,
+		       *nloccoeff, *nscalecoeff, *nshapecoeff,
+		       locs, scales, shapes);
+    
+  //Stage 1. Compute the gradient
+  for (i=0;i<*nObs;i++){
+    for (j=0;j<*nSite;j++){
+
+      for (k=0;k<*nloccoeff;k++)
+	grad[k * *nObs + i] += -log(scales[j]) - (1 + 1 / shapes[j]) *
+	  (1 + shapes[j] * (data[j * *nObs + i] - locdsgnmat[k * *nSite + j]) /
+	   scales[j]);
+
+      for (k=0;k<*nscalecoeff;k++)
+	grad[(*nloccoeff + k) * *nObs + i] += scaledsgnmat[k * *nSite + j] *
+	  (data[j * *nObs + i] - scales[j] - locs[j]) / scales[j] /
+	  (scales[j] + shapes[j] * (data[j * *nObs + i] - locs[j]));
+
+      for (k=0;k<*nshapecoeff;k++)
+	grad[(*nloccoeff + *nscalecoeff + k) * *nObs + i] += 
+	  shapedsgnmat[k * *nSite + j] / R_pow_di(shapes[j], 2) *
+	  log(1 + shapes[j] * (data[j * *nObs + i] - locs[j]) / scales[j]) -
+	  shapedsgnmat[k * *nSite + j] * (1 + 1 / shapes[j]) *
+	  (data[j * *nObs + i] - locs[j]) / scales[j] /
+	  (1 + shapes[j] * (data[j * *nObs + i] - locs[j]) / scales[j]);
+    }
+  }
+
+  return;
+}
+
+	   
+
