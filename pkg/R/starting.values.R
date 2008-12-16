@@ -121,12 +121,12 @@
   
   if (length(fixed.param) > 0){
     args <- c(list(data = data, coord = coord, cov.mod = cov.mod,
-                   marge = "emp", sill = .9), fixed.param)
+                   marge = "emp"), fixed.param)
     cov.param <- do.call("fitcovariance", args)$param
   }
   
   else
-    cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp", sill = .9)$param
+    cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp")$param
 
   cov.param <- schlatherfull(dataFrech, coord, start = as.list(cov.param),
                              cov.mod = cov.mod, fit.marge = FALSE, method = method,
@@ -196,7 +196,7 @@
   }
   
   else
-    cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp", sill = .9)$param
+    cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp")$param
 
   cov.param <- schlatherindfull(dataFrech, coord, start = c(list(alpha = .5), as.list(cov.param)),
                                 cov.mod = cov.mod, fit.marge = FALSE, method = method,
@@ -260,12 +260,12 @@
   
   if (length(fixed.param) > 0){
     args <- c(list(data = data, coord = coord, cov.mod = cov.mod,
-                   marge = "emp", sill = 1), fixed.param)
+                   marge = "emp"), fixed.param)
     cov.param <- do.call("fitcovariance", args)$param
   }
   
   else
-    cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp", sill = .9)$param
+    cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp")$param
 
   cov.param <- geomgaussfull(dataFrech, coord, start = c(list(sigma2 = 1), as.list(cov.param)),
                              cov.mod = cov.mod, fit.marge = FALSE, method = method,
