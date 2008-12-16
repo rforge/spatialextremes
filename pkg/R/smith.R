@@ -654,7 +654,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
                              scale.dsgn.mat, shape.dsgn.mat,
                              fit.marge = fit.marge, std.err.type =
                              std.err.type, fixed.param = names(fixed.param),
-                             param.names = param.names)
+                             param.names = param.names, iso = iso)
 
       if(any(is.na(jacobian))){
         if (warn)
