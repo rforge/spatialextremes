@@ -9,14 +9,7 @@ fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, start, ...){
                           marge = marge)
   weights <- extcoeff[,"std.err"]
   extcoeff <- extcoeff[,"ext.coeff"]
-
-  ##This is required otherwise we'll give to much weight this observations or because
-  ##starting values could not be computed
-  idx <- which((extcoeff > 1) & (extcoeff < 2) & (weights > (1e-3 * median(weights))))
-  extcoeff <- extcoeff[idx]
-  weights <- weights[idx]
-  n.pairs.real <- length(idx)
-  dist <- distance(coord, vec = TRUE)[idx,]
+  dist <- distance(coord, vec = TRUE)
 
   if (dist.dim == 2){
 
@@ -25,7 +18,7 @@ fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, start, ...){
       
       fun2diso <- function(cov)
         .C("fitcovmat2d", as.double(cov), as.double(0.0),
-           as.double(cov), as.integer(n.pairs.real), as.double(dist),
+           as.double(cov), as.integer(n.pairs), as.double(dist),
            as.double(extcoeff), as.double(weights), ans = double(1),
            PACKAGE = "SpatialExtremes")$ans
     }
@@ -35,7 +28,7 @@ fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, start, ...){
       
       fun2d <- function(cov11, cov12, cov22)
         .C("fitcovmat2d", as.double(cov11), as.double(cov12),
-           as.double(cov22), as.integer(n.pairs.real), as.double(dist),
+           as.double(cov22), as.integer(n.pairs), as.double(dist),
            as.double(extcoeff), as.double(weights), ans = double(1),
            PACKAGE = "SpatialExtremes")$ans
     }    
@@ -49,7 +42,7 @@ fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, start, ...){
       fun3diso <- function(cov)
         .C("fitcovmat3d", as.double(cov), as.double(0.0), as.double(0.0),
            as.double(cov), as.double(0.0), as.double(cov),
-           as.integer(n.pairs.real), as.double(dist), as.double(extcoeff),
+           as.integer(n.pairs), as.double(dist), as.double(extcoeff),
            as.double(weights), ans = double(1), PACKAGE = "SpatialExtremes")$ans
     }
 
@@ -59,7 +52,7 @@ fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, start, ...){
       fun3d <- function(cov11, cov12, cov13, cov22, cov23, cov33)
         .C("fitcovmat3d", as.double(cov11), as.double(cov12), as.double(cov13),
            as.double(cov22), as.double(cov23), as.double(cov33),
-           as.integer(n.pairs.real), as.double(dist), as.double(extcoeff),
+           as.integer(n.pairs), as.double(dist), as.double(extcoeff),
            as.double(weights), ans = double(1), PACKAGE = "SpatialExtremes")$ans
     }
   }
@@ -68,7 +61,7 @@ fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, start, ...){
 
   if (missing(start)){
     if (iso){
-      a <- 4 * qnorm(extcoeff / 2)^2
+      a <- 4 * qnorm(pmin(extcoeff, 2) / 2)^2
       sigma.start <- mean(rowSums(dist^2) / a)
       start <- list(cov = sigma.start)
     }
@@ -81,14 +74,14 @@ fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, start, ...){
                         cov22 = 1 + 2 * abs(list(...)$cov12))
         
         else{
-          a <- 4 * qnorm(extcoeff / 2)^2
+          a <- 4 * qnorm(pmin(extcoeff, 2) / 2)^2
           sigma.start <- mean(rowSums(dist^2) / a)
           start <- list(cov11 = sigma.start, cov12 = 0, cov22 = sigma.start)
         }
       }
     
       if (dist.dim == 3){
-        a <- 4 * qnorm(extcoeff / 2)^2
+        a <- 4 * qnorm(pmin(extcoeff, 2) / 2)^2
         sigma.start <- mean(rowSums(dist^2) / a)
         start <- list(cov11 = sigma.start, cov12 = 0, cov13 = 0, cov22 = sigma.start,
                       cov23 = 0, cov33 = sigma.start)
@@ -255,26 +248,20 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", start,
                           marge = marge)
   weights <- extcoeff[,"std.err"]
   extcoeff <- extcoeff[,"ext.coeff"]
-
-  ##This is required otherwise we'll give to much weight this observations
-  idx <- which(weights > (1e-3 * median(weights)))
-  weights <- weights[idx]
-  extcoeff <- extcoeff[idx]  
-  dist <- distance(coord)[idx]
-  n.pairs.real <- length(idx)
+  dist <- distance(coord)
 
   param <- c("sill", "range", "smooth")
     
   fun <- function(sill, range, smooth)
     .C("fitcovariance", as.integer(cov.mod.num), as.double(sill), as.double(range),
-       as.double(smooth), as.integer(n.pairs.real), as.double(dist),
+       as.double(smooth), as.integer(n.pairs), as.double(dist),
        as.double(extcoeff), as.double(weights), ans = double(1),
        PACKAGE = "SpatialExtremes")$ans
 
   fixed.param <- list(...)[names(list(...)) %in% param]
 
   if (missing(start))
-    start <- list(sill = .5, range = 0.75 * max(dist), smooth = .5)
+    start <- list(sill = .9, range = 0.75 * max(dist), smooth = .5)
   
   start <- start[!(param %in% names(list(...)))]
 
