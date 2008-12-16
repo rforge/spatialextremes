@@ -31,7 +31,30 @@ fitspatgev(data, covariables, loc.form, scale.form, shape.form, start,
   the starting values lie in a zero density region.}
 }
 \details{
-  To be done.
+  A kind of "spatial" GEV model can be defined by using response
+  surfaces for the GEV parameters. For instance, the GEV location
+  parameters are defined through the following equation:
+
+  \deqn{\mu = X_\mu \beta_\mu}{\mu = X_\mu \beta_\mu}
+  where \eqn{X_\mu}{X_\mu} is the design matrix and
+  \eqn{\beta_\mu}{\beta_\mu} is the vector parameter to be
+  estimated. The GEV scale and shape parameters are defined accordingly
+  to the above equation.
+
+  The log-likelihood for the GEV spatial model is consequently defined
+  as follows:
+
+  \deqn{\ell(\beta) = \sum_{i=1}^{n.site} \sum_{j=1}^{n.obs} \log
+    f(y_{i,j}; \theta_i)}{llik(\beta) = sum_(i=1)^(n.site)
+    \sum_(j=1)^(n.obs) log f(y_(i,j);theta_i)}
+  where \eqn{\theta_i}{theta_i} is the vector of the GEV parameters for
+  the \eqn{i}-th site.
+
+  Most often, there will be some dependence between stations. However,
+  it can be seen from the log-likelihood definition that we supposed
+  that the stations are mutually independent. Consequently, to get
+  reliable standard error estimates, these standard errors are estimated
+  with their sandwich estimates.  
 }
 \value{
   An object of class \code{spatgev}. Namely, this is a list with the

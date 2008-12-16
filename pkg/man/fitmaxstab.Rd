@@ -85,9 +85,6 @@ shape.form, marg.cov = NULL, iso = FALSE, \dots, fit.marge = FALSE, warn
   \item{cov.mod}{The covariance model for the spatial structure.}
 }
 \details{
-  The function is a wrapper to more specialised functions
-  (\code{schlatherfull, schlatherlm, smithfull, smithlm}).
-
   As spatial data often deal with a large number of locations, it is
   impossible to write analytically the joint distribution. Consequently,
   the fitting procedure substitutes the "full likelihood" for the
@@ -128,6 +125,14 @@ shape.form, marg.cov = NULL, iso = FALSE, \dots, fit.marge = FALSE, warn
     \item{\code{score}}{\eqn{J} is estimated directly from the variance of
       the observed score function.}
   }
+}
+\section{Warning}{
+  When using reponse surfaces to model spatially the GEV parameters, the
+  likelihood is pretty rough so that the general purpose optimization
+  routines may fail. It is your responsability to check if the
+  numerical optimization succeeded or not. I tried, as best as I can, to
+  provide warning messages if the optimizers failed but in some cases,
+  no warning will appear!  
 }
 \references{
   Cox, D. R. and Reid, N. (2004) A note on pseudo-likelihood constructed
