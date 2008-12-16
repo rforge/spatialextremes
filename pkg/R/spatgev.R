@@ -208,7 +208,7 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
   ans <- list(fitted.values = opt$par, param = param, std.err = std.err, var.cov = var.cov,
               counts = opt$counts, message = opt$message, covariables = covariables,
               logLik = -opt$value, loc.form = loc.form, scale.form = scale.form,
-              shape.form = shape.form, convergence = opt$convergence,
+              shape.form = shape.form, convergence = opt$convergence, nllh = nllh,
               deviance = 2 * opt$value, ihessian = ihessian, jacobian = jacobian)
 
   class(ans) <- "spatgev"
