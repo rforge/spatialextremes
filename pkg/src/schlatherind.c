@@ -61,19 +61,19 @@ void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
   }
   
   //Stage 1: Transformation to unit Frechet
-  if (*fitmarge)
+  if (*fitmarge){
     *dns += gev2frech(data, *nObs, *nSite, locs, scales, shapes,
 		      jac, frech);
-    
-  else {
-    for (i=0;i<(*nSite * *nObs);i++){
-      frech[i] = data[i];
-      jac[i] = 0.0;
-    }
+    *dns *= lplikschlatherind(frech, *alpha, rho, jac, *nObs, *nSite);
   }
   
-  *dns *= lplikschlatherind(frech, *alpha, rho, jac, *nObs, *nSite);
+  else {
+    for (i=0;i<(*nSite * *nObs);i++)
+      jac[i] = 0.0;
 
+    *dns *= lplikschlatherind(data, *alpha, rho, jac, *nObs, *nSite);
+  }
+  
   if (!R_FINITE(*dns))
     *dns = MINF;
 

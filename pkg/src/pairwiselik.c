@@ -113,24 +113,27 @@ double lpliksmith(double *data, double *mahalDist, double *jac,
 	   c1 * dnormc2 / data2Square / data[k + i * nObs]) / 
 	  R_pow_di(mahalDist[currentPair], 2);
 
-	dvecMixed = log(dvecMixed);
+	//dvecMixed = log(dvecMixed);
 
-	if (!R_FINITE(dvecMixed)){
-	  //printf("dvecMixed = %f\n", dvecMixed);
-	  //The likelihood is ill-defined if the mahalanobis distance
-	  //is either too small or to large thus
-	  
-	  dns += R_pow_di(1 + 1/mahalDist[currentPair] +
-			  mahalDist[currentPair], 2) * MINF;	  
-	}
+	//if (!R_FINITE(dvecMixed)){
+	//  //printf("dvecMixed = %f\n", dvecMixed);
+	//  //The likelihood is ill-defined if the mahalanobis distance
+	//  //is either too small or to large thus
+	//  
+	//  dns += R_pow_di(1 + 1/mahalDist[currentPair] +
+	//		  mahalDist[currentPair], 2) * MINF;	  
+	//}
 
-	else{
+	//else{
 	  //Now the final step, multiplying by Fvec and the gradient
-	  dns += dvecMixed + lFvec + jac[k + i * nObs] + jac[k + j * nObs];
-	}
+	dns += log(dvecMixed) + lFvec + jac[k + i * nObs] + jac[k + j * nObs];
+	//}
       }
     }
   }
+
+  if (!R_FINITE(dvecMixed))
+    dns = MINF;
   
   return dns;
 }
