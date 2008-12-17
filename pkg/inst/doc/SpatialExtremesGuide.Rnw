@@ -67,7 +67,8 @@ contour(volcano, add = TRUE)
 
 The \textbf{SpatialExtremes} package is an add-on package for the R
 \citep{Rsoft} statistical computing system. It provides functions for
-the analysis of spatial extremes.
+the analysis of spatial extremes using (currently) max-stable
+processes.
 
 All comments, criticisms and queries on the package or associated
 documentation are gratefully received.
@@ -86,21 +87,21 @@ vignette("SpatialExtremesGuide")
 \section*{Contents}
 
 This guide contains a few elements of theory on the modelling of
-spatial extremes as well as examples on the use of the
+spatial extremes as well as examples of the use of the
 \textbf{SpatialExtremes}
 package. Section~\ref{cha:an-introduction-max} gives an (light)
 introduction to max-stable processes and defines two different
 characterisations of such processes. Section~\ref{sec:fit-maxstab}
 presents the methodology used in the package to fit max-stable
-processes to data while section~\ref{cha:manip-visu-fitt} describes
+processes to data while Section~\ref{cha:manip-visu-fitt} describes
 useful functions for prediction and visualizing fitted models. Details
-for the computation of the pairwise density and gradient are reported
-into the Annex~\ref{cha:dens-grad-comp}.
+for the computation of the required pairwise densities and gradients
+are given in Annex~\ref{cha:dens-grad-comp}.
 
 \section*{Caveat}
 
-I have checked these functions as best I can but, as ever, they may
-contain bugs.  If you find a bug or suspected bug in the code or the
+I have checked these functions as best I can but they may contain
+bugs.  If you find a bug or suspected bug in the code or the
 documentation please report it to me at
 \href{mailto:mathieu.ribatet@epfl.ch}{mathieu.ribatet@epfl.ch}.
 Please include an appropriate subject line.
@@ -148,7 +149,7 @@ modelling annual maxima of spatial data.
 
 Currently, there are two different characterisations of a max-stable
 process. The first one, often referred to the \emph{rainfall-storm}
-model, as first been introduced by \citet{Smith1991}. More recently,
+model, was first introduced by \citet{Smith1991}. More recently,
 \citet{Schlather2002} introduced a new characterisation of a
 max-stable process allowing for a random shape.
 
@@ -161,12 +162,12 @@ only known for two different points in $\mathbb{R}^d$. Consequently,
 fitting max-stable processes to data is not straightforward and the
 SpatialExtremes package provides convenient tools for it.
 
-\section{The Smith's Model}
+\section{The Smith Model}
 \label{sec:smiths-char}
 
-The Smith's model\footnote{There's another form of the Smith's model
-  that uses a Student distribution instead of the Normal one. However,
-  it is not currently implemented.} is given by:
+Smith's model\footnote{Another form of Smith's model that uses a
+  Student distribution instead of the Normal one. However, it is not
+  currently implemented.} \citep{Smith1991} is given by:
 \begin{equation}
   \label{eq:smith}
   \Pr[Z_1 \leq z_1, Z_2 \leq z_2] = \exp\left[-\frac{1}{z_1} \Phi
@@ -194,14 +195,14 @@ and, for two given locations \#1 and \#2
 where $\Delta x$ is the distance vector between location \#1 and
 location \#2.
 
-The derivation of the density is reported in section
+The derivation of the density is reported in Section
 \ref{sec:density-computation-smith}. Currenlty, the package only
-handle 2 by 2 or 3 by 3 covariance matrix $\Sigma$.
+handle 2 by 2 or 3 by 3 covariance matrices $\Sigma$.
 
-\section{The Schlather's Model}
+\section{The Schlather Model}
 \label{sec:schl-char}
 
-The Schlather's model is given by:
+Schlather's model \citep{Schlather2002} is given by:
 \begin{equation}
   \label{eq:schlather}
   \Pr[Z_1 \leq z_1, Z_2 \leq z_2] = \exp\left[-\frac{1}{2}
@@ -209,8 +210,7 @@ The Schlather's model is given by:
         (\rho(h) + 1) \frac{z_1 z_2}{(z_1 + z_2)^2}} \right) \right]
 \end{equation}
 where $h$ is the distance between location \#1 and location \#2 and
-$\rho(h)$ is a valid correlation function such as $-1 \leq \rho(h)
-\leq 1$.
+$\rho(h)$ is a valid correlation function.
 
 Currently, there is three types of covariance functions implemented:
 
@@ -218,11 +218,11 @@ Currently, there is three types of covariance functions implemented:
 \begin{tabular}{ll}
   \textbf{Whittle-Matérn} & $\rho(h) = sill
   \frac{2^{1-smooth}}{\Gamma(smooth)} \left(\frac{h}{range}
-  \right)^{smooth} K_{smooth}\left(\frac{h}{range} \right)$\\ 
+  \right)^{smooth} K_{smooth}\left(\frac{h}{range} \right)$,\\ 
   \textbf{Cauchy} & $\rho(h) = sill \left[1 + \left(\frac{h}{range}
-    \right)^2 \right]^{-smooth}$\\
+    \right)^2 \right]^{-smooth}$,\\
   \textbf{Powered Exponential} & $\rho(h) = sill \exp\left[-
-    \left(\frac{h}{range} \right)^{smooth} \right]$
+    \left(\frac{h}{range} \right)^{smooth} \right]$,
 \end{tabular}
 \bigskip
 
@@ -232,7 +232,7 @@ of the covariance function, $\Gamma$ is the gamma function and
 $K_{smooth}$ is the modified Bessel function of the third kind with
 order $smooth$.
 
-The derivation of the density is reported in section
+The derivation of the density is reported in Section
 \ref{sec:density-computation-schlather}.
 
 \chapter{Fitting a Max-Stable Process to Data}
@@ -241,12 +241,12 @@ The derivation of the density is reported in section
 As stated in the previous chapter, the densities of the two max-stable
 characterisations are only known for two different locations. The
 strategy used in the package is to use pairwise-likelihood instead of
-the ``full'' likelihood. Namely, the log pairwise-likelihood is given
-by:
+the ``full'' likelihood. The log pairwise-likelihood is given
+by
 \begin{equation}
   \label{eq:lplik}
   \ell_p(\mathbf{y};\psi) = \sum_{i<j} \sum_{k=1}^{n_{i,j}}
-  \log f(y_k^{(i)}, y_k^{(j)})
+  \log f(y_k^{(i)}, y_k^{(j)}; \psi)
 \end{equation}
 where $\mathbf{y}$ is the data available on the whole region,
 $n_{i,j}$ is the number of common observations between sites $i$ and
@@ -254,20 +254,19 @@ $j$, $y_k^{(i)}$ is the $k$-th observation of the $i$-th site and
 $f(\cdot, \cdot)$ is the bivariate distribution of the max-stable
 process - see Annex~\ref{cha:dens-grad-comp} for the analytical forms.
 
-Consequently, the max-stable process is fitted to data by maximizing
-the log pairwise-likelihood\footnote{This is why the fitting procedure
-  may be time consuming with large region.}. Properties of the maximum
+The max-stable process is fitted to data by maximizing the log
+pairwise-likelihood\footnote{This is why the fitting procedure may be
+  time consuming with large region.}. Properties of the maximum
 composite likelihood estimator\footnote{In our case, the maximum
   pairwise likelihood estimator} are well known
 \citep{Lindsay1988,Cox2004}. In particular, because each pairwise
 score equation is unbiased, the sum of these score equations is
-unbiased too and leads to consistent estimations.
+unbiased too and leads to consistent estimators.
 
 If one is interested only in fitting the covariance matrix $\Sigma$ or
 the covariance function $\rho$ to data, another fitting procedure is
 available. The strategy is estimate the extremal coefficient and to
-fit either the Smith's or the Schlather's models using a least square
-criterion.
+fit either the Smith or the Schlather models using least squares.
 
 \section{Assuming Unit Fréchet Margins}
 \label{sec:simple-case-study}
@@ -293,7 +292,7 @@ ms0 <- t(ms0)
 
 For this application, the covariance function is taken to be the
 Whittle-Matérn covariance function with sill, range and smooth
-parameters equal to 0.8 (1 - 0.2), 3 and 1.2 respectively. The
+parameters equal to $0.8$ $(1 - 0.2)$, $3$ and $1.2$ respectively. The
 locations are distributed uniformly on the square $[0,10]^2$.
 
 To fit a max-stable process using pairwise likelihood and assuming
@@ -304,11 +303,11 @@ fitmaxstab(ms0, locations, cov.mod = "whitmat", fit.marge = FALSE)
 
 From this output, we can see that we indeed use the Schlather's
 representation with a Whittle-Matérn covariance function. The pairwise
-deviance is given and the Takeuchi's information criterion (TIC) is
-not available (NA) - see section~\ref{sec:model-selection} for more
-details. The convergence was successful and the estimates of the
+deviance is given and the Takeuchi information criterion (TIC) is not
+available (NA) - see Section~\ref{sec:model-selection} for more
+details. But the convergence was successful and the estimates of the
 covariance function are accessible. Note that large deviations from
-the theoretical values are not fatal as the parameters of the
+the theoretical values may be expected as the parameters of the
 Whittle-Matérn covariance function are far from orthogonal. Thus, the
 range and smooth estimates may be totally different while leading
 (approximately) to the same covariance function.
@@ -320,16 +319,14 @@ process smoothness \citep{Diggle2007}. This can be done by:
 fitmaxstab(ms0, locations, cov.mod = "whitmat", smooth = 1.2, fit.marge = FALSE)
 @ 
 
-Despite the Whittle-Matérn is a flexible covariance function, one may
-want to consider other types of covariance functions. This is achieved
-by invoking:
+Although the Whittle-Matérn is flexible, one may want to consider
+covariance functions. This is achieved by invoking:
 <<eval=FALSE>>=
 fitmaxstab(ms0, locations, cov.mod = "cauchy", fit.marge = FALSE)
 fitmaxstab(ms0, locations, cov.mod = "powexp", fit.marge = FALSE)
 @ 
 
-One may also consider the Smith's characterisation instead of the
-Schlather's one:
+One may also consider Smith's characterisation instead of Schlather's:
 <<eval=FALSE>>=
 sigma = matrix(c(100, 25, 25, 220),ncol = 2)
 sigma.inv = solve(sigma)
@@ -341,22 +338,21 @@ msSmith <- t(msSmith)
 fitmaxstab(msSmith, locations, cov.mod = "gauss", fit.marge = FALSE)
 @ 
 
-Obvisously, for each covariance model, one can fix any parameter; so
-that all the two following codes are valid:
+For each covariance model, one can fix any parameter:
 <<eval=FALSE>>=
 fitmaxstab(ms0, locations, cov.mod = "gauss", cov12 = 0, fit.marge = FALSE)
 fitmaxstab(ms0, locations, cov.mod = "cauchy", range = 3, fit.marge = FALSE)
 @ 
 
-Note that passing \verb|fit.marge = TRUE| in all the previous codes
-will result in fitting the GEV parameters for each location. However,
-be careful as it will be really CPU demanding as there will be
-\verb|3 n.site + p| parameters to estimate - where \verb|p| is the
-number of parameters for the covariance part.
+Passing \verb|fit.marge = TRUE| in the previous code will result in
+fitting the GEV parameters for each location. However, this will be
+really CPU demanding as there will be \verb|3 n.site + p| parameters
+to estimate where \verb|p| is the number of parameters for the
+covariance part.
 
 It is also possible to used different optimization routines to fit the
 model to data. This is achieved by passing the \verb|method|
-argument. For instance, if one want to use the \verb|BFGS| method:
+argument. For instance, if one wants to use the \verb|BFGS| method:
 <<eval=FALSE>>=
 fitmaxstab(ms0, locations, cov.mod = "gauss", cov12 = 0, fit.marge = FALSE, method = "BFGS")
 @
@@ -364,7 +360,7 @@ Instead of using the \verb|optim| function, one may want to use the
 \verb|nlm| or \verb|nlminb| functions. This is done as before using
 the \verb|method = "nlm"| or \verb|method = "nlminb"| option.
 
-If now, we want to fit the model using the least square criterion:
+If now, we want to fit the model using the least squares:
 <<eval=FALSE>>=
 ##Smith's model
 fitcovmat(ms0, locations)
@@ -378,25 +374,28 @@ fitcovariance(ms0, locations, "whitmat")
 In practice, the observations will never be drawn from a unit Fréchet
 distribution so that the previous section won't help much with
 concrete applications. One way to avoid this problem is to fit a GEV
-to each location and then transform all data to unit Fréchet. This is
-done using the \verb|gev2frech| function and the following code:
+to each location and then transform all data to the unit Fréchet
+scale. This is done using the \verb|gev2frech| function and the
+following code:
 <<>>=
 x <- c(2.2975896, 1.6448808, 1.3323833, -0.4464904, 2.2737603, -0.2581876, 9.5184398, -0.5899699, 0.4974283, -0.8152157)
 gev2frech(x, 1, 2, .2)
 @ 
 
-The drawback of this approach is that standard errors are definitively
-lost as the margins are first fitted and then the covariance
+The drawback of this approach is that standard errors are incorrect as
+the margins are fitted separately from the covariance
 structure. Consequently, the standard errors related to the covariance
 function are underestimated as we suppose that data are originally
 unit Fréchet.
 
-Fortunately, the SpatialExtremes solves this problem by fitting in
-\emph{one step} both GEV and covariance parameters. This could be done
-in two ways. First, one can pass the option \verb|fit.marge = TRUE|.
-However, as said in the previous section this will be really
-time consuming. Another drawback is that prediction at ungauged
-location won't be possible.
+SpatialExtremes solves this problem by fitting in \emph{one step} both
+GEV and covariance parameters. This can be done in two ways. First,
+one can pass the option \verb|fit.marge = TRUE|.  However, as said in
+the previous section this will be really time consuming. Another
+drawback is that prediction at ungauged locations won't be
+possible. Indeed, if no model is assumed for the evolution of the GEV
+parameters in space, it is impossible to predict them where no data is
+available.
 
 Another way may be to fit a \emph{response surface} for the GEV
 parameters. Currently, the response surfaces allowed by the package
@@ -414,11 +413,11 @@ for a polynomial surface and
 n.knots <- 5
 knots <- quantile(locations[,2], prob = 1:n.knots/(n.knots+1))
 y ~ rb(lat, knots = knots, degree = 3, penalty = .5)
-@ for a penalized smoothing spline with degree 3, 5 knots and a
-penalty coefficient (also known as the smoothing parameter) equals to
-0.5.
+@ 
+for a penalized smoothing spline with degree 3, 5 knots and a penalty
+coefficient (also known as the smoothing parameter) equals to 0.5.
 
-Let start with a simple polynomial surface. For this purpose, we need
+Let us start with a simple polynomial surface. For this purpose, we need
 to simulate a max-stable process and then transform the observations
 to the desired GEV scale. This could be done by the following lines:
 <<eval=FALSE>>=
@@ -459,9 +458,9 @@ fitmaxstab(ms1, locations, "gauss", loc.form = loc.form, scale.form = scale.form
 
 If we want to fit a spline for the location GEV parameter while
 preserving the polynomials for the scale and shape parameters, this
-will require a little more steps as the knots and the penalty
-coefficient must be defined\footnote{Currently, an automatic criteria
-  for defining the ``best'' penalty coefficient does not exist.}.
+will require more steps as the knots and the penalty coefficient must
+be defined\footnote{Currently, an automatic criteria for defining the
+  ``best'' penalty coefficient does not exist.}.
 <<eval = FALSE>>=
 n.knots <- 5
 knots <- quantile(locations[,2], 1:n.knots/(n.knots+1))
@@ -469,19 +468,17 @@ loc.form <- y ~ rb(lat, knots = knots, degree = 3, penalty = .5)
 fitmaxstab(ms1, locations, "gauss", loc.form = loc.form, scale.form = scale.form, shape.form= shape.form)
 @ 
 
-Obviously, all these steps still remain valid when fitting the
-Schlather's model. Note that you can fix any parameter as before for
-example, if one want to suppose that \verb|scaleCoeff3 = 1|, this is
-done by invoking the following line:
+These steps still remain valid when fitting Schlather's model. You can
+fix any parameter as before for example, if one want to suppose that
+\verb|scaleCoeff3 = 1|, this is done by:
 <<eval=FALSE>>=
 fitmaxstab(ms1, locations, "powexp", loc.form = loc.form, scale.form = scale.form,
            shape.form= shape.form, scaleCoeff3 = 1)
 @ 
 
-Please note that when using 3 smoothing splines for the GEV
-parameters, you might have to tweak the \verb|ndeps| option in the
-\verb|optim| function if you use the \verb|BFGS| optimization
-procedure:
+When using three smoothing splines for the GEV parameters, you might
+have to tweak the \verb|ndeps| option in the \verb|optim| function if
+you use the \verb|BFGS| optimization procedure:
 <<eval=FALSE>>=
 fitmaxstab(ms1, locations, "powexp", loc.form = loc.form,
            scale.form = scale.form, shape.form= shape.form,
@@ -494,37 +491,37 @@ where \verb|n.par| is the number of parameters to be estimated.
 
 As stated in section~\ref{sec:fit-maxstab}, because the model is
 fitted by maximizing the pairwise likelihood instead of the ``full''
-likelihood, the model is \emph{misspecified}. Consequently, the
-maximum pairwise likelihood estimator is still asymptotically normally
-distributed but with a different asymptotic covariance matrix. Namely,
-the maximum pairwise likelihood estimator $\hat{\psi}_p$ satisfies the
-following relation:
+likelihood, the model is \emph{misspecified}. The maximum pairwise
+likelihood estimator is still asymptotically normally distributed but
+with a different asymptotic covariance matrix. The maximum pairwise
+likelihood estimator $\hat{\psi}_p$ satisfies the following relation:
 \begin{equation}
   \label{eq:lplikAsymp}
-  \hat{\psi}_p \sim \mathcal{N}\left(\psi, H(\psi)^{-1} J(\psi)
-    H(\psi)^{-1} \right), \qquad n \rightarrow +\infty
+  \hat{\psi}_p \stackrel{\cdot}{\sim} \mathcal{N}\left(\psi,
+    H(\psi)^{-1} J(\psi) H(\psi)^{-1} \right), \qquad n \rightarrow
+  +\infty
 \end{equation}
 where $H(\psi) = \mathbb{E}[\nabla^2 \ell_p(\psi;\mathbf{Y})]$ (the
 Hessian matrix) and $J(\psi) = \mbox{Var}[\nabla
 \ell_p(\psi;\mathbf{Y})]$, where the expectations are with respect to
 the ``full'' density.
 
-In practice, to get the standard errors we need to get efficient
-estimates of $H(\psi)$ and $J(\psi)$. The estimation of the former is
-straightforward and is given by $\hat{H}(\hat{\psi}_p) = \nabla^2
+In practice, to get the standard errors we need estimates of $H(\psi)$
+and $J(\psi)$. The estimation of the former is straightforward and is
+given by $\hat{H}(\hat{\psi}_p) = \nabla^2
 \ell_p(\hat{\psi}_p;\mathbf{y})$; that is the Hessian matrix evaluated
-at $\hat{\psi}_p$. 
+at $\hat{\psi}_p$.
 
 The estimation of $J(\psi)$ can be done in two different ways. First,
 it can be estimated using the ``naive'' estimator
 $\hat{J}(\hat{\psi}_p) = \nabla \ell_p(\hat{\psi}_p;\mathbf{y})
-{\ell_p(\hat{\psi}_p;\mathbf{y})}^T$. In the SpatialExtremes package,
-this estimator is tagged \verb|grad| as it uses the gradient of the
-log pairwise likelihood. Another estimator is given by noticing that
-$J(\psi)$ corresponds to the variance of the pairwise score equations
-$\ell_p(\psi;\mathbf{Y}) = 0$. Consequently, a second estimator,
-tagged \verb|score|, is given by the sample variance of each
-contribution to the pairwise score function. Note that the second
+{\nabla \ell_p(\hat{\psi}_p;\mathbf{y})}^T$. In the SpatialExtremes
+package, this estimator is tagged \verb|grad| as it uses the gradient
+of the log pairwise likelihood. Another estimator is given by noticing
+that $J(\psi)$ corresponds to the variance of the pairwise score
+equations $\ell_p(\psi;\mathbf{Y}) = 0$. Consequently, a second
+estimator, tagged \verb|score|, is given by the sample variance of
+each contribution to the pairwise score function. Note that the second
 estimator is only accessible if independent replications of
 $\mathbf{Y}$ are available\footnote{which will mostly be the case for
   spatial extremes.}.
@@ -553,12 +550,11 @@ fitmaxstab(ms0, locations, cov.mod = "gauss", fit.marge = FALSE, std.err.type = 
 \label{sec:model-selection}
 
 It is sometimes useful to fit several models to data and then compare
-the models together. To this aim, the well-known Akaike information
-criterion (AIC) is often used. Because we work under
-miss-specification, AIC is not appropriate anymore. Instead, we will
-use a generalization of the Takeuchi's information
+the models using a criteria such as the well-known Akaike information
+criterion (AIC. Because we work under miss-specification, AIC is not
+appropriate, so we use a generalization of the Takeuchi information
 criterion. \citet{Varin2005} show that, under miss-specification, an
-appropriate selection statistic is given by:
+appropriate selection statistic is given by
 \begin{equation}
   \label{eq:TIC}
   \mbox{TIC} = - \ell_p (\psi_p) - \mbox{tr}\left\{J H^{-1} \right\}
@@ -582,15 +578,16 @@ model2 <- fitmaxstab(ms0, locations, cov.mod = "cauchy", fit.marge = FALSE, sill
 TIC(model1, model2)
 @ 
 
-TIC is useful when comparing different models. However, it may lack of
+TIC is useful when comparing different models. However, it may lack
 power if the two models are nested. When dealing with nested models,
-one may prefer using the so called likelihood ratio statistics.
+one may prefer using the likelihood ratio statistics.
 
 Because we are working with a misspecified model, the usual asymptotic
-$\chi^2_p$ distribution, where $p$ is the number of parameter to be
-estimated, doesn't hold anymore. There's two way to solve this issue:
-(a) adjusting the $\chi^2$ distribution or (b) adjusting the composite
-likelihood so that the usual $\chi^2_p$ holds - see \citet{Cox2004}.
+$\chi^2_p$ distribution, where $p$ is the number of additional
+parameters to be estimated in the more complex model, doesn't hold
+anymore. There's two way to solve this issue: (a) adjusting the
+$\chi^2$ distribution or (b) adjusting the composite likelihood so
+that the usual $\chi^2_p$ holds - see \citet{Cox2004}.
 
 <<eval=FALSE>>=
 require(RandomFields)
@@ -622,9 +619,9 @@ anova(M0, M1)
 \section{Prediction of the GEV parameters}
 \label{sec:pred-gev-param}
 
-Once the model is fitted, one may want to get the estimates of the GEV
-parameters at any locations. This is achieved using the
-\textsl{predict} function:
+Once the model is fitted, one may want estimates of the GEV parameters
+at any set of location. This is achieved using the \textsl{predict}
+function:
 <<echo=FALSE,eval=FALSE>>=
 n.site <- 20
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
@@ -654,9 +651,9 @@ predict(fitted)
 
 If one want to get estimates of the GEV parameters at an ungauged
 locations, this is done by adding a matrix giving the new
-coordinates. Be careful, if new coordinates are supplied, the column
-names of the new coordinates should match with the ones of the original
-coordinates. For our application, this could be done as follows:
+coordinates. If new coordinates are supplied, the column names of the
+new coordinates should match those. For our application, this could be
+done as follows:
 <<eval=FALSE>>=
 new.coord <- cbind(3:6, 7:10)
 colnames(new.coord) <- c("lon", "lat")
@@ -666,22 +663,23 @@ predict(fitted, new.coord)
 \section{Visualising the Extremal Coefficient}
 \label{sec:visu-extr-coeff}
 
-The extremal coefficient is a useful quantity to assess the dependence
+The extremal coefficient is a useful way to assess the dependence
 between two locations $x_1$ and $x_2 \in \mathbb{R}^d$. Assuming that
-the data could be modeled by a max-stable process with unit Fréchet
-margin, the extremal coefficient $\theta(x_1 - x_2)$ satisfies:
+the data could be modeled by a stationary max-stable process with unit
+Fréchet margin, the extremal coefficient $\theta(x_1 - x_2)$
+satisfies:
 \begin{equation}
   \label{eq:extcoeff}
   \Pr\left[Z(x_1) \leq z, Z(x_2) \leq z\right] = \exp\left(-
-    \frac{\theta(x_1 - x_2)}{z} \right)
+    \frac{\theta(x_1, x_2)}{z} \right)
 \end{equation}
-where $1 \leq \theta(x_1 - x_2) \leq 2$ with the lower and upper
-bounds corresponding to complete dependence and independence between
+where $1 \leq \theta(x_1, x_2) \leq 2$ with the lower and upper bounds
+corresponding to complete dependence and independence between
 locations $x_1$ and $x_2$.
 
-Consequently, the extremal coefficient function $\theta(\cdot)$ is a
-natural way to know how evolves the dependence between extremes in
-space.
+Consequently, the extremal coefficient function $\theta(\cdot, \cdot)$
+is a natural way to know how the dependence between extremes in space
+evolves.
 
 The SpatialExtremes package proposes two way to plot the evolution of
 the extremal coefficient as the distance increases. The first one is
@@ -689,8 +687,8 @@ to use an empirical estimation of the extremal coefficient; while the
 second uses a parametric estimation using the Smith's and Schlather's
 models.
 
-\citet{Schlather2003} introduced a methodology to estimate non
-parametrically the extremal coefficient. The \verb|fitextcoeff|
+\citet{Schlather2003} introduced a methodology to estimate the
+extremal coefficient non-parametrically. The \verb|fitextcoeff|
 function uses this methodology to get estimates for each pair of
 stations within the region and plots the evolution of these estimates
 as the distance increases. In addition, by default, a \emph{lowess}
@@ -735,8 +733,8 @@ Smith's and Schlather's models. Namely, the function is given by:
 \end{tabular}
 \bigskip
 
-The SpatialExtremes package allows to plot the evolution of the
-extremal coefficient function using the \verb|extcoeff| function - see
+The SpatialExtremes package can plot the evolution of the extremal
+coefficient function using the \verb|extcoeff| function - see
 Fig.~\ref{fig:extcoeff}.
 <<label=extcoeff>>=
 fitted <- fitmaxstab(ms0, locations, "whitmat", fit.marge = FALSE)
@@ -755,14 +753,13 @@ extcoeff(fitted)
 \section{Visualising the Covariance Function}
 \label{sec:visu-covar-funct}
 
-Another way to assess how evolves the dependence between extremes as
+Another way to assess how the dependence between extremes evolves as
 the distance increases is to plot the covariance function. This is
-done using the \verb|covariance| function. Note that this function is
-(currently) only available for the Schlather's model.
+done using the \verb|covariance| function.
 
-Basically, there are two ways to call the \verb|covariance|
-function. We can call it once we have fitted a max-stable process or
-by specifying directly the covariance parameters.
+There are two ways to call the \verb|covariance| function. We can call
+it once we have fitted a max-stable process or by specifying directly
+the covariance parameters.
 
 For illustration purpose, Fig.~\ref{fig:covfun} compares the fitted
 covariance function to the theoretical one.
@@ -783,7 +780,7 @@ legend("topright", c("Fitted","Theo"), lty = 1, col = c(1,3), inset = .05)
   \label{fig:covfun}
 \end{figure}
 
-Note that one can also compute the covariance at a given distance by invoking:
+One can also compute the covariance at a given distance by invoking:
 <<>>=
 rbind(fitted = covariance(fitted, dist = seq(0,10, 3))$cov.val,
       theo = covariance(sill = 1, range = 30, smooth = 0.5, cov.mod = "whitmat", dist = seq(0,10, 3))$cov.val)
@@ -797,7 +794,7 @@ parameters or a map of return levels with a given return period. This
 is done using the \verb|map| function.
 
 To illustrate this feature, let use the previous fitted model.  One
-can have a contour plot the evolution of the GEV parameters in
+can have a contour plot of the evolution of the GEV parameters in
 $\mathbb{R}^d$ by invoking the following code:
 <<eval=FALSE,label=mapGEV>>=
 par(mfrow=c(1,3))
@@ -826,10 +823,10 @@ map(fitted, "quant", ret.per = 50 , ranges = new.ranges)
 \chapter{Density and Gradient Computations}
 \label{cha:dens-grad-comp}
 
-\section{The Smith's Model}
+\section{Smith's Model}
 \label{sec:smith-char}
 
-Let us recall that the Smith's model is given by:
+Let us recall that Smith's model is given by:
 \begin{equation}
   \label{eq:smith}
   \Pr[Z_1 \leq z_1, Z_2 \leq z_2] = \exp\left[-\frac{1}{z_1} \Phi
@@ -918,7 +915,7 @@ Define
   \label{eq:3}
   A = \frac{1}{z_1}\Phi(c_1) \quad \text{and} \quad B = \frac{1}{z_2}\Phi(c_2)
 \end{equation}
-Consequently, $F(z_1, z_2) = exp(-A -B)$ and
+Consequently, $F(z_1, z_2) = \exp(-A -B)$ and
 \begin{equation}
   \label{eq:4}
   \frac{\partial F}{\partial z_1} (z_1, z_2) = - \left(\frac{\partial
@@ -1400,10 +1397,10 @@ where
 \end{equation*}
 
 
-\section{The Schlather's Model}
+\section{Schlather's Model}
 \label{sec:schlather-char}
 
-The Schlather's model is given by:
+Schlather's model is given by:
 \begin{equation}
   \label{eq:schlather}
   \Pr[Z_1 \leq z_1, Z_2 \leq z_2] = \exp\left[-\frac{1}{2}
