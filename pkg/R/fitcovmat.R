@@ -11,6 +11,9 @@ fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, start, ...){
   extcoeff <- extcoeff[,"ext.coeff"]
   dist <- distance(coord, vec = TRUE)
 
+  ##Check if there are 0 weights, this could happen if few cases
+  weights[weights == 0] <- mean(weights)
+
   if (dist.dim == 2){
 
     if (iso){
@@ -249,6 +252,9 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", start,
   weights <- extcoeff[,"std.err"]
   extcoeff <- extcoeff[,"ext.coeff"]
   dist <- distance(coord)
+
+  ##Check if there are 0 weights, this could happen if few cases
+  weights[weights == 0] <- mean(weights)
 
   param <- c("sill", "range", "smooth")
     

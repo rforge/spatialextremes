@@ -17,8 +17,10 @@ void fitcovmat2d(double *cov11, double *cov12, double *cov22,
   *ans = - mahalDistFct(distVec, *nPairs, cov11, cov12, cov22,
 			mahalDist);
 
-  if (*ans != 0.0)
+  if (*ans != 0.0){
+    *ans = 1e50;
     return;
+  }
 
   for (i=0;i<*nPairs;i++)
     *ans += R_pow_di((2 * pnorm(mahalDist[i] / 2, 0.0, 1.0, 1, 0)
