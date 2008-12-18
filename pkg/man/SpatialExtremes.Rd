@@ -44,7 +44,7 @@
     \item \code{\link{distance}}: computes the distance between each
     pair of locations
     \item \code{\link[=profile.maxstab]{profile}},
-    \code{\link[profile2d.maxstab]{profile2d}}: computes the profile
+    \code{\link[=profile2d.maxstab]{profile2d}}: computes the profile
     composite likelihood
     \item \code{\link{covariance}}: computes the covariance function
   }
