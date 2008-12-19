@@ -145,7 +145,18 @@ independent identically distributed random fields $Y_i(x)$, $x \in
 Note that \eqref{eq:maxstab-def} does not ensure that the limit
 exists. However, provided it does and from \eqref{eq:maxstab-def}, we
 can see that max-stable processes might be appropriate models for
-modelling annual maxima of spatial data.
+modelling annual maxima of spatial data let say.
+
+Theoretically speaking, there is no loss of generality in transforming
+the margins to have a a unit Fréchet scale i.e.
+\begin{equation}
+  \label{eq:CDFFrechet}
+  \Pr\left[Z(x) \leq z\right] = \exp\left(\frac{1}{z} \right), \qquad
+    \forall z \in \mathbb{R}^d
+\end{equation}
+and we will first assume that the unit Fréchet assumption holds for
+which we have $a_n(x) = n$ and $b_n(x) = 0$. However, later in this
+document, we will relax this assumption to have unknown GEV margins.
 
 Currently, there are two different characterisations of a max-stable
 process. The first one, often referred to the \emph{rainfall-storm}
@@ -235,14 +246,86 @@ order $smooth$.
 The derivation of the density is reported in Section
 \ref{sec:density-computation-schlather}.
 
+\section{The Extremal Coefficient}
+\label{sec:extremal-coefficient}
+
+The extremal coefficient is a useful way to assess the dependence
+between two locations $x_1$ and $x_2 \in \mathbb{R}^d$. Assuming that
+the data could be modeled by a stationary max-stable process with unit
+Fréchet margin, the extremal coefficient $\theta(x_1 - x_2)$
+satisfies:
+\begin{equation}
+  \label{eq:extcoeff}
+  \Pr\left[Z(x_1) \leq z, Z(x_2) \leq z\right] = \exp\left(-
+    \frac{\theta(x_1, x_2)}{z} \right)
+\end{equation}
+where $1 \leq \theta(x_1, x_2) \leq 2$ with the lower and upper bounds
+corresponding to complete dependence and independence between
+locations $x_1$ and $x_2$.
+
+Consequently, the extremal coefficient function $\theta(\cdot, \cdot)$
+is a natural way to know how the dependence between extremes in space
+evolves.
+
 \chapter{Fitting a Max-Stable Process to Data}
 \label{sec:fit-maxstab}
 
+If one is interested only in fitting the covariance matrix $\Sigma$ or
+the covariance function $\rho$ to data, another fitting procedure is
+available. The strategy is estimate the extremal coefficient and to
+fit either the Smith or the Schlather models using least squares.  We
+will consider these two different approaches separately.
+
+\section{Least Squares}
+\label{sec:least-squares}
+
+As stated by Equations~\eqref{eq:smith} and~\eqref{eq:schlather}, the
+density of the max-stable processes are analytically known only for
+the bivariate case so that maximum likelihood estimators isn't
+available. This statement leads Smith \citep{Smith1991} to propose an
+estimator based on least squares. Namely, the fitting procedure
+consists in minimizing the objective function defined by
+\begin{equation}
+  \label{eq:extCoeffLeastSquares}
+  C(\psi) = \sum{i=1}^{n.site-1} \sum_{j=i+1}^{n.site}
+  \left(\frac{\theta_{i,j} -
+      \tilde{\theta}_{i,j}}{s\left(\tilde{\theta}_{i,j} \right)}
+  \right)^2
+\end{equation}
+where $\psi$ is the vector parameter of the max-stable process,
+$\theta_{i,j}$ is the predicted extremal coefficient from the
+max-stable model for stations $i$ and $j$, $\tilde{\theta}_{i,j}$
+is a semi-parametric estimator of the extremal coefficient for
+stations $i$ and $j$ and $s(\tilde{\theta}_{i,j})$ is the standard
+deviation related to the estimation of $\tilde{\theta}_{i,j}$.
+
+The SpatialExtremes has a function to fit max-stable processes using
+least squares through the \verb|fitcovmat| for the Smith model and
+\verb|fitcovariance| for the Schlather model. More precisely, this is
+done by the following lines:
+<<eval=FALSE>>=
+##Simulate a max-stable process
+n.site <- 40
+locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
+colnames(locations) <- c("lon", "lat")
+
+ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
+param=c(0,1,.2,3, 1.2), maxstable="extr", n = 80)
+ms0 <- t(ms0)
+##Smith's model
+fitcovmat(ms0, locations)
+##Schlather's model with Powered exponential covariance function
+fitcovariance(ms0, locations, "whitmat")
+@ 
+
+
+\section{Pairwise Likelihood}
+\label{sec:pairwise-likelihood}
+
 As stated in the previous chapter, the densities of the two max-stable
-characterisations are only known for two different locations. The
-strategy used in the package is to use pairwise-likelihood instead of
-the ``full'' likelihood. The log pairwise-likelihood is given
-by
+models are only known for two different locations. The strategy used
+in the package is to use pairwise-likelihood instead of the ``full''
+likelihood. The log pairwise-likelihood is given by
 \begin{equation}
   \label{eq:lplik}
   \ell_p(\mathbf{y};\psi) = \sum_{i<j} \sum_{k=1}^{n_{i,j}}
@@ -263,12 +346,8 @@ composite likelihood estimator\footnote{In our case, the maximum
 score equation is unbiased, the sum of these score equations is
 unbiased too and leads to consistent estimators.
 
-If one is interested only in fitting the covariance matrix $\Sigma$ or
-the covariance function $\rho$ to data, another fitting procedure is
-available. The strategy is estimate the extremal coefficient and to
-fit either the Smith or the Schlather models using least squares.
 
-\section{Assuming Unit Fréchet Margins}
+\subsection{Assuming Unit Fréchet Margins}
 \label{sec:simple-case-study}
 
 To start working with the SpatialExtremes package, let consider a
@@ -360,15 +439,7 @@ Instead of using the \verb|optim| function, one may want to use the
 \verb|nlm| or \verb|nlminb| functions. This is done as before using
 the \verb|method = "nlm"| or \verb|method = "nlminb"| option.
 
-If now, we want to fit the model using the least squares:
-<<eval=FALSE>>=
-##Smith's model
-fitcovmat(ms0, locations)
-##Schlather's model with Powered exponential covariance function
-fitcovariance(ms0, locations, "whitmat")
-@ 
-
-\section{With Unknown GEV Margins}
+\subsection{With Unknown GEV Margins}
 \label{sec:with-unknown-gev}
 
 In practice, the observations will never be drawn from a unit Fréchet
@@ -486,7 +557,7 @@ fitmaxstab(ms1, locations, "powexp", loc.form = loc.form,
 @ 
 where \verb|n.par| is the number of parameters to be estimated.
 
-\section{Assessing Uncertainties}
+\subsection{Assessing Uncertainties}
 \label{sec:assess-uncert}
 
 As stated in section~\ref{sec:fit-maxstab}, because the model is
@@ -546,12 +617,49 @@ fitmaxstab(ms0, locations, cov.mod = "gauss", fit.marge = FALSE, std.err.type = 
 fitmaxstab(ms0, locations, cov.mod = "gauss", fit.marge = FALSE, std.err.type = "grad")
 @ 
 
-\section{Model Selection}
-\label{sec:model-selection}
+\chapter{Model Selection}
+\label{cha:model-selection}
 
-It is sometimes useful to fit several models to data and then compare
-the models using a criteria such as the well-known Akaike information
-criterion (AIC. Because we work under miss-specification, AIC is not
+Model selection plays an important role in statistical
+modelling. According to the Ockam's razor, given several models that
+fit the data equally well, we should focus on simple models rather
+than more complex ones. Depending on the models to be compared,
+several approaches exist for model selection. In this section, we will
+present theory on information criteria such as the Akaike Information
+Criterion (AIC) and about the likelihood ratio statistic. We present
+these two approaches in turn.
+
+\section{Takeuchi Information Criterion}
+\label{sec:take-inform-crit}
+
+Having two different models, we want to know which one we should
+prefer for modelling our data. If these two models have exactly the
+same maximized log-likelihoods, we should prefer the one which have
+less parameters because it will reduce the variance of our
+estimates. However, if these two maximized log-likelihoods only differ
+by a small amount, does this small increase worth the price of having
+additional parameters? To answer this question, we have to resort to
+the Kullback-Leibler discrepancy.
+
+Let consider a random sample $Y_1$, \ldots, $Y_n$ drawn from an
+unknown density $g$. Ignoring $g$, we fit a statistical model
+$f(y;\theta)$ by maximizing the log-likelihood. The Kullback-Leibler
+discrepancy measures the discrepancy of our fitted model $f$ from the
+true one $g$
+\begin{equation}
+  \label{eq:KullbackLeibler}
+  D\left(f_\theta, g\right) = \int \log \left(
+    \frac{g(y)}{f(y;\theta)} \right) g(y) \mbox{dy}
+\end{equation}
+
+It can be shown that the Kullback-Leibler discrepancy is positive and
+vanishes if and only if $f(y;\theta) = g(y)$. Consequently, we aim to
+choose models that minimize $D(f_\theta, g)$. However, $D(f_\theta,
+g)$ isn't enough discriminant as several models satisfy $D(f_\theta,
+g) = 0$. Indeed, let consider two models $f_0$ and $f_1$ where $f_0$
+is nested in $f_1$ and $D(f_1, g) = 0$ then $D(f_0, g) = 0$ too.
+
+Because we work under miss-specification, AIC is not
 appropriate, so we use a generalization of the Takeuchi information
 criterion. \citet{Varin2005} show that, under miss-specification, an
 appropriate selection statistic is given by
@@ -577,6 +685,9 @@ model1 <- fitmaxstab(ms0, locations, cov.mod = "powexp", fit.marge = FALSE, sill
 model2 <- fitmaxstab(ms0, locations, cov.mod = "cauchy", fit.marge = FALSE, sill = 1)
 TIC(model1, model2)
 @ 
+
+\section{Likelihood Ratio Statistic}
+\label{sec:likel-ratio-stat}
 
 TIC is useful when comparing different models. However, it may lack
 power if the two models are nested. When dealing with nested models,
@@ -611,6 +722,121 @@ M0 <- fitmaxstab(ms0, locations, "gauss", fit.marge = FALSE)
 M1 <- fitmaxstab(ms0, locations, "gauss", fit.marge = FALSE, cov11 =
 100)
 anova(M0, M1)
+@ 
+
+\section{Building Response Surfaces for the GEV Parameters}
+\label{sec:build-resp-surf}
+
+In section~\ref{sec:with-unknown-gev} we show how to fit a max-stable
+processes to data with unknown GEV margins. However, we didn't mention
+how to build response surfaces as models for the evolution of the GEV
+parameters. One way has been first introduced in the previous section
+related to model selection. However, because we fit max-stable
+processes by maximizing the log-pairwise likelihood, a comprehensive
+selection of models could be CPU prohibitive. Another option may be to
+fit only these response surfaces to data while omitting temporally the
+spatial dependence parameters. Despite this strategy doesn't take into
+account all uncertainties on the max-stable parameters, it should lead
+to accurate model selection as one expect that the spatial dependence
+parameters and the GEV response surface ones to be nearly
+orthogonal. The main asset of the latter approach is that fitting a
+(kind of) spatial GEV model to data is clearly less CPU consuming.
+
+This spatial GEV model is defined as follows:
+\begin{equation}
+  \label{eq:spatgev}
+  Z(x) \stackrel{\cdot}{\sim} GEV\left(\mu(x), \sigma(x),
+    \xi(x)\right)
+\end{equation}
+where the GEV parameters are defined through the following equations
+\begin{eqnarray*}
+  \mu &=& X_\mu \beta_\mu\\
+  \sigma &=& X_\sigma \beta_\sigma\\
+  \xi &=& X_\xi \beta_\xi
+\end{eqnarray*}
+where $X_\cdot$ are design matrices and $\beta_\cdot$ are parameters
+to be estimated.
+
+The log-likelihood of the spatial GEV model is given by:
+\begin{equation}
+  \label{eq:llikSpatGEV}
+  \ell(\beta) = \sum_{i=1}^{n.site}
+  \sum_{j=1}^{n.obs} \left[ - \log \sigma_i - \left(1 + \xi_i
+      \frac{z_{i,j} - \mu_i}{\sigma_i} \right)^{-1/\xi_i} - \left(1 +
+      \frac{1}{\xi_i} \right) \log \left(1 + \xi_i \frac{z_{i,j} -
+        \mu_i}{\sigma_i} \right) \right]
+\end{equation}
+where $\beta = (\beta_\mu, \beta_\sigma, \beta_\xi)$, $\mu_i$,
+$\sigma_i$ and $\xi_i$ are the GEV parameters for the $i$-th site and
+$z_{i,j}$ is the $j$-th obvservation for the $i$-th site.
+
+From Equation~\eqref{eq:llikSpatGEV}, we can see that independence
+between stations is assumed. For most applications, this assumption is
+clearly incorrect and we require the use of the MLE asymptotic
+distribution under misspecification to get standard error estimates:
+\begin{equation}
+  \label{eq:spatGEVStdErr}
+  \left(\beta_\mu, \beta_\sigma, \beta_\xi \right)
+  \stackrel{\cdot}{\sim} \mathcal{N}\left(\psi, H(\beta)^{-1} J(\beta)
+    H(\beta)^{-1} \right), \qquad n \rightarrow +\infty
+\end{equation}
+where $H(\beta) = \mathbb{E}[\nabla^2 \ell_p(\beta;\mathbf{Y})]$ (the
+Hessian matrix) and $J(\beta) = \mbox{Var}[\nabla
+\ell_p(\beta;\mathbf{Y})]$.
+
+In practice, the spatial GEV model is fitted to data through the
+\verb|fitspatgev| function. The use of this function is similar to the
+one of the \verb|fitmaxstab| one. Let show its use by the following
+example.
+
+Lets start by simulating a max-stable process with unit Fréchet
+margins and transform it to have a spatially structured GEV margins.
+
+<<>>=
+n.site <- 20
+locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
+colnames(locations) <- c("lon", "lat")
+
+sigma <- matrix(c(100, 25, 25, 220),ncol = 2)
+sigma.inv <- solve(sigma)
+sqrtCinv <- t(chol(sigma.inv))
+model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv/2))
+ms0 <- MaxStableRF(locations[,1], locations[,2], grid = FALSE, model = model,
+                   maxstable="Bool", n = 50)
+ms1 <- t(ms0)
+
+param.loc <- -10 + 2 * locations[,2]
+param.scale <- 5 + 2 * locations[,1] + locations[,2]^2
+param.shape <- rep(0.2, n.site)
+
+for (i in 1:n.site)
+  ms1[,i] <- param.scale[i] * (ms1[,i]^param.shape[i] - 1) / param.shape[i] + param.loc[i]
+@ 
+
+Now we define appropriate response surfaces for our spatial GEV model
+and fit two different models.
+<<>>=
+loc.form <- y ~ lat
+scale.form <- y ~ lon + I(lat^2)
+shape.form <- y ~ 1
+shape.form2 <- y ~ lon
+M1 <- fitspatgev(ms1, locations, loc.form, scale.form, shape.form)
+M2 <- fitspatgev(ms1, locations, loc.form, scale.form, shape.form2)
+M1
+@ 
+
+From the output of model \verb|M1| we can see that it is very similar
+to the one of a fitted max-stable process apart from the spatial
+dependence parameters are not present. In fact, \verb|M1| is an object
+of class \verb|spatgev| so that when printing \verb|M1| \textbf{R}
+calls a specific printing method. This is the same when calling either
+the \verb|anova| or the \verb|TIC| functions.
+
+As explained in Section~\ref{sec:model-selection}, it is easy to
+perform model selection by inspecting the following output:
+<<>>=
+anova(M1, M2)
+TIC(M1, M2)
 @ 
 
 \chapter{Manipulating and Visualising Fitted Models}
@@ -662,24 +888,6 @@ predict(fitted, new.coord)
 
 \section{Visualising the Extremal Coefficient}
 \label{sec:visu-extr-coeff}
-
-The extremal coefficient is a useful way to assess the dependence
-between two locations $x_1$ and $x_2 \in \mathbb{R}^d$. Assuming that
-the data could be modeled by a stationary max-stable process with unit
-Fréchet margin, the extremal coefficient $\theta(x_1 - x_2)$
-satisfies:
-\begin{equation}
-  \label{eq:extcoeff}
-  \Pr\left[Z(x_1) \leq z, Z(x_2) \leq z\right] = \exp\left(-
-    \frac{\theta(x_1, x_2)}{z} \right)
-\end{equation}
-where $1 \leq \theta(x_1, x_2) \leq 2$ with the lower and upper bounds
-corresponding to complete dependence and independence between
-locations $x_1$ and $x_2$.
-
-Consequently, the extremal coefficient function $\theta(\cdot, \cdot)$
-is a natural way to know how the dependence between extremes in space
-evolves.
 
 The SpatialExtremes package proposes two way to plot the evolution of
 the extremal coefficient as the distance increases. The first one is
