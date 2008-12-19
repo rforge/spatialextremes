@@ -151,7 +151,7 @@ Theoretically speaking, there is no loss of generality in transforming
 the margins to have a a unit Fréchet scale i.e.
 \begin{equation}
   \label{eq:CDFFrechet}
-  \Pr\left[Z(x) \leq z\right] = \exp\left(\frac{1}{z} \right), \qquad
+  \Pr\left[Z(x) \leq z\right] = \exp\left(-\frac{1}{z} \right), \qquad
     \forall z \in \mathbb{R}^d
 \end{equation}
 and we will first assume that the unit Fréchet assumption holds for
@@ -176,12 +176,74 @@ SpatialExtremes package provides convenient tools for it.
 \section{The Smith Model}
 \label{sec:smiths-char}
 
-Smith's model\footnote{Another form of Smith's model that uses a
-  Student distribution instead of the Normal one. However, it is not
-  currently implemented.} \citep{Smith1991} is given by:
+\citet{Smith1991} proposed a method for constructing a stationary
+max-stable process. Let $\{(\xi_i, y_i), i \geq 1\}$ denote the points
+of a Poisson process on $(0,+\infty) \times \mathbb{R}^d$ with
+intensity measure $\xi^{-2} d\xi \nu(dy)$ where $\nu(dy)$ is a
+positive measure on $\mathbb{R}^d$. Then one characterisation of a
+max-stable process with unit Fréchet margins is defined by:
+\begin{equation}
+  \label{eq:smithChar}
+  Z(x) = \max_i \left\{ \xi_i f(y_i,x) \right\}, \qquad x \in
+  \mathbb{R}^d
+\end{equation}
+where $\{f(y,x), x,y \in \mathbb{R}^d\}$ is a non-negative function
+such that
+\begin{equation*}
+  \int_{\mathbb{R}^d} f(x,y) \nu(dy) = 1, \qquad \forall x \in
+  \mathbb{R}^d
+\end{equation*}
+
+To see that Equation~\eqref{eq:smithChar} defines a stationary
+max-stable process with unit Fréchet margins, we have to check that
+the margins are indeed unit Fréchet and $Z(x)$ holds the max-stable
+property. Following the idea of Smith, consider the set defined by:
+\begin{equation*}
+  E = \left\{(\xi, y) \in \mathbb{R}^+_* \times \mathbb{R}^d: \xi
+    f(y,x) > z \right\}
+\end{equation*}
+for a fixed location $x \in \mathbb{R}^d$ and $z>0$. Then
+\begin{eqnarray*}
+  \Pr\left[Z(x) \leq z \right] &=& \Pr \left[\text{no points in } E
+  \right] = \exp \left[ -\int_{\mathbb{R}^d} \int_{z/f(y,x)}^{+\infty}
+    \xi^{-2} d\xi \nu(\mbox{dy}) \right]\\ 
+  &=& \exp \left[ - \int_{\mathbb{R}^d} z^{-1} f(x,y) \nu(\mbox{dy})
+  \right] = \exp \left(- \frac{1}{z} \right)
+\end{eqnarray*}
+and the margins are unit Fréchet.
+
+The max-stable property of $Z(\cdot)$ follows because the
+superposition of $n$ independent, identical Poisson processes is a
+Poisson process with its intensity multiplied by $n$. More precisely,
+we have:
+\begin{equation*}
+  \left\{\max_{i=1}^n Z_i(x_1), \ldots, \max_{i=1}^n Z_i(x_k) \right\}
+  \stackrel{\cdot}{\sim} n \left\{Z(x_1), \ldots, Z(x_k)\right\}, \qquad k
+    \in \mathbb{N}
+\end{equation*}
+
+The process defined by \eqref{eq:smithChar} is often referred to as
+the rainfall-storm process as one can have a more physical
+interpretation of the above construction. Think of each $y_i$ as
+realisations of rainfall storm centres in $\mathbb{R}^d$ and $\nu(dy)$
+as the spatial distribution of these storm centres over $\mathbb{R}^d$
+- usually $\mathbb{R}^2$. Each $\xi_i$ represents the intensity of the
+$i$-th storm and therefore $\xi_i f(y_i, x)$ represents the amount of
+rainfall for this specific event at location $x$. In other words,
+$f(y_i, \cdot)$ drive how the $i$-th storm centred at $y_i$ diffuse in
+space.
+
+Definition \eqref{eq:smithChar} is rather general and Smith considered
+a particular setting where $\nu(dy)$ is the Lebesgue measure and
+$f(y,x) = f_0(y-x)$, where $f_0(y-x)$ is a multivariate Normal density
+with mean $y$ and covariance matrix $\Sigma$\footnote{Another form of
+  Smith's model that uses a Student distribution instead of the Normal
+  one. However, it is not currently implemented.}. With these
+additional assumptions, it can be shown that the bivariate CDF is
+given by:
 \begin{equation}
   \label{eq:smith}
-  \Pr[Z_1 \leq z_1, Z_2 \leq z_2] = \exp\left[-\frac{1}{z_1} \Phi
+  \Pr[Z(x_1) \leq z_1, Z(x_2) \leq z_2] = \exp\left[-\frac{1}{z_1} \Phi
     \left(\frac{a}{2} + \frac{1}{a} \log \frac{z_2}{z_1} \right) -
     \frac{1}{z_2} \Phi \left(\frac{a}{2} + \frac{1}{a}
       \log\frac{z_1}{z_2} \right) \right]
@@ -204,24 +266,100 @@ and, for two given locations \#1 and \#2
   \quad \text{and so forth}
 \end{equation*}
 where $\Delta x$ is the distance vector between location \#1 and
-location \#2.
-
-The derivation of the density is reported in Section
+location \#2. The derivation of the density is reported in Section
 \ref{sec:density-computation-smith}. Currenlty, the package only
-handle 2 by 2 or 3 by 3 covariance matrices $\Sigma$.
+handle 2 by 2 or 3 by 3 covariance matrices
+$\Sigma$. Figure~\ref{fig:Smith2sim} plots two simulations of Smith's
+model with different variance-covariance matrices.
+
+<<label=Smith2Sim,echo=FALSE>>=
+x <- y <- seq(0, 10, length = 100)
+sigma <- matrix(c(9/8, 0, 0, 9/8),ncol = 2)
+sigma2 <- matrix(c(9/8, 1, 1, 9/8),ncol = 2)
+sigma.inv <- solve(sigma)
+sqrtCinv <- t(chol(sigma.inv))
+sigma.inv2 <- solve(sigma2)
+sqrtCinv2 <- t(chol(sigma.inv2))
+model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
+model2 <- list(list(model = "gauss", var = 1, aniso = sqrtCinv2 / 2))
+set.seed(12)
+ms0 <- MaxStableRF(x, y, grid=TRUE, model = model, maxstable = "Bool")
+ms0 <- t(ms0)
+set.seed(12)
+ms1 <- MaxStableRF(x, y, grid=TRUE, model = model2, maxstable = "Bool")
+ms1 <- t(ms1)
+
+par(mfrow=c(1,2))
+image(x, y, ms0, col = terrain.colors(30))
+image(x, y, ms1, col = terrain.colors(30))
+@ 
+
+\begin{figure}
+  \centering
+<<fig=TRUE,echo=FALSE>>=
+<<Smith2Sim>>
+@ 
+  \caption{Two simulations of the Smith model with different $\Sigma$ matrices.}
+  \label{fig:Smith2sim}
+\end{figure}
 
 \section{The Schlather Model}
 \label{sec:schl-char}
 
-Schlather's model \citep{Schlather2002} is given by:
+More recently, \citet{Schlather2002} introduced a second
+characterisation of max-stable processes. Let $Y(\cdot)$ be a
+stationary process on $\mathbb{R}^d$ such that $\mathbb{E}[\max\{0,
+Y(x)\}] = 1$ and $\{\xi_i, i \geq 1\}$ be the points of a Poisson
+process on $\mathbb{R}^+_*$ with intensity measure $\xi^{-2}
+d\xi$. Then Schlather showed that a stationary max-stable process with
+unit Fréchet margins can be defined by:
+\begin{equation}
+  \label{eq:SchlatherChar}
+  Z(x) = \max_i \xi_i \max \left\{0, Y_i(x) \right\}
+\end{equation}
+where the $Y_i(\cdot)$ are i.i.d copies of $Y(\cdot)$.
+
+As before, the max-stable property of $Z(\cdot)$ stems from the
+superposition of $n$ independent, identical Poisson processes. While
+the unit Fréchet margins holds by using the same argument as for the
+Smith model. Indeed, let consider the following set:
+\begin{equation*}
+  E = \left\{(\xi, y(x)) \in \mathbb{R}^+_* \times \mathbb{R}^d: \xi
+    \max(0, y(x)) > z \right\}
+\end{equation*}
+for a fixed location $x \in \mathbb{R}^d$ and $z > 0$. Then
+\begin{eqnarray*}
+  \Pr\left[Z(x) \leq z \right] &=& \Pr\left[\text{no points in } E \right]
+  = \exp \left[ - \int_{\mathbb{R}^d} \int_{z/\max(0, y(x))}^{+\infty}
+    \xi^{-2} d\xi \nu(dy(x)) \right]\\
+  &=& \exp \left[ - \int_{\mathbb{R}^d} z^{-1} \max \{0, y(x) \}
+    \nu(dy(x)) \right] = \exp\left(-\frac{1}{z}\right)
+\end{eqnarray*}
+
+As with the Smith model, the process defined in
+Equation~\eqref{eq:SchlatherChar} allows for practical
+interpretation. Think about $\xi_i Y_i(\cdot)$ as the daily spatial
+rainfall events so that all these events have the same spatial
+dependence structure but differ only in their magnitude $\xi_i$. This
+model differs slightly from Smith's one as we now have no
+deterministic shape such as a multivariate Normal density for the
+storms but a random shape driven by the process
+$Y(\cdot)$. Consequently, this model has the main advantage to allows
+for a large range of possible storm shapes.
+
+Equation~\eqref{eq:SchlatherChar} is rather vague and we need
+additional assumptions to get practical models. Schlather proposed to
+take $Y_i(\cdot)$ to be a stationary Gaussian process with correlation
+function $\rho(x)$, scaled so that $\mathbb{E}[\max\{0, Y_i(x)\}] =
+1$. With these new assumtions, it can be shown that the bivariate CDF
+of process~\eqref{eq:SchlatherChar} is given by:
 \begin{equation}
   \label{eq:schlather}
-  \Pr[Z_1 \leq z_1, Z_2 \leq z_2] = \exp\left[-\frac{1}{2}
+  \Pr[Z(x_1) \leq z_1, Z(x_2) \leq z_2] = \exp\left[-\frac{1}{2}
     \left(\frac{1}{z_1} + \frac{1}{z_2} \right) \left(1 + \sqrt{1 - 2
         (\rho(h) + 1) \frac{z_1 z_2}{(z_1 + z_2)^2}} \right) \right]
 \end{equation}
-where $h$ is the distance between location \#1 and location \#2 and
-$\rho(h)$ is a valid correlation function.
+where $h$ is the distance between location \#1 and location \#2.
 
 Currently, there is three types of covariance functions implemented:
 
@@ -245,6 +383,32 @@ order $smooth$.
 
 The derivation of the density is reported in Section
 \ref{sec:density-computation-schlather}.
+
+<<label=Schlather2Sim,echo=FALSE>>=
+x <- y <- seq(0, 10, length = 100)
+set.seed(12)
+ms0 <- MaxStableRF(x, y, grid=TRUE, model="wh", param=c(0,1,0,1, 1), maxstable="extr")
+ms0 <- t(ms0)
+set.seed(12)
+ms1 <- MaxStableRF(x, y, grid=TRUE, model="stable", param=c(0,1,0,1.5, 1), maxstable="extr")
+ms1 <- t(ms1)
+
+par(mfrow=c(1,2))
+image(x, y, ms0, col = terrain.colors(30))
+image(x, y, ms1, col = terrain.colors(30))
+@ 
+
+\begin{figure}
+  \centering
+<<fig=TRUE,echo=FALSE>>=
+<<Schlather2Sim>>
+@ 
+\caption{Two simulations of the Schlather model with different
+  correlation functions with approximately the same practical
+  range. Left panel: Whittle-Matérn. Right panel: Powered
+  exponential.}
+  \label{fig:Smith2sim}
+\end{figure}
 
 \section{The Extremal Coefficient}
 \label{sec:extremal-coefficient}
@@ -1761,6 +1925,6 @@ where $\frac{\partial A}{\partial \beta}$, $\frac{\partial B}{\partial
 been already defined in Section~\ref{sec:with-ordinary-gev}.
 
 \bibliography{./references}
-\bibliographystyle{kluwer}
+\bibliographystyle{apalike}
 \end{document}
 
