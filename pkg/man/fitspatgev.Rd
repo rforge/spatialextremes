@@ -6,7 +6,8 @@
 }
 \usage{
 fitspatgev(data, covariables, loc.form, scale.form, shape.form, start,
-..., method = "Nelder", std.err.type = "score", warn = TRUE)
+..., control = list(maxit = 10000), method = "Nelder", std.err.type =
+"score", warn = TRUE)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -21,6 +22,8 @@ fitspatgev(data, covariables, loc.form, scale.form, shape.form, start,
     values - but might fail.}
   \item{\dots}{Several arguments to be passed to the
     \code{\link{optim}} functions. See section details.}
+  \item{control}{The control argument to be passed to the
+    \code{\link{optim}} function.}
   \item{method}{The method used for the numerical optimisation
     procedure. Must be one of \code{BFGS}, \code{Nelder-Mead},
     \code{CG}, \code{L-BFGS-B} or \code{SANN}. See \code{\link{optim}}

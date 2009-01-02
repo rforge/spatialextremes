@@ -166,8 +166,8 @@ param.shape <- rep(0.2, n.site)
 
 ##Transform the unit Frechet margins to GEV 
 for (i in 1:n.site)
-  ms1[,i] <- param.scale[i] * (ms1[,i]^param.shape[i] - 1) /
-  param.shape[i] + param.loc[i]
+  ms1[,i] <- frech2gev(ms1[,i], param.loc[i], param.scale[i],
+param.shape[i])
 
 ##Define a model for the GEV margins to be fitted
 ##shape ~ 1 stands for the GEV shape parameter is constant
