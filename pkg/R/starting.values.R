@@ -1,7 +1,9 @@
-.start.smith <- function(data, coord, loc.model, scale.model, shape.model,
+.start.smith <- function(data, coord, covariables, loc.form, scale.form, shape.form,
                          print.start.values = TRUE, method = "Nelder",
                          iso = TRUE, ...){
 
+  n.site <- ncol(data)
+  
   if (ncol(coord) == 2)
     param <- c("cov11", "cov12", "cov22")
 
@@ -13,18 +15,6 @@
   if (print.start.values)
     cat("Computing appropriate starting values\n")
   
-  n.site <- ncol(data)
-
-  loc <- scale <- shape <- rep(NA, n.site)
-  dataFrech <- data
-  for (i in 1:n.site){
-    marg.param <- gevmle(data[,i])
-    loc[i] <- marg.param["loc"]
-    scale[i] <- marg.param["scale"]
-    shape[i] <- marg.param["shape"]
-    dataFrech[,i] <- gev2frech(dataFrech[,i], loc[i], scale[i], shape[i])
-  }
-
   if (length(fixed.param) > 0){
     args <- c(list(data = data, coord = coord, marge = "emp", iso = iso),
               fixed.param)
@@ -39,41 +29,21 @@
     names(covs) <- "cov"
   }    
 
-  covs <- smithfull(dataFrech, coord, start = as.list(covs),
-                    fit.marge = FALSE, method = method, warn = FALSE,
-                    iso = iso)$param
+  spatgev <- fitspatgev(data, as.matrix(covariables), loc.form,
+                          scale.form, shape.form, std.err.type = "none")
 
-  if (iso){
-    covs <- covs[1]
-    names(covs) <- "cov"
-  } 
-  
-  locCoeff <- loc.model$init.fun(loc)
-  scaleCoeff <- scale.model$init.fun(scale)
-  shapeCoeff <- shape.model$init.fun(shape)
-  
-  locCoeff[is.na(locCoeff)] <- 0
-  scaleCoeff[is.na(scaleCoeff)] <- 0
-  shapeCoeff[is.na(shapeCoeff)] <- 0
-    
-  ##To be sure that the scale parameter is always positive at starting
-  ##values
-  scales.hat <- scale.model$dsgn.mat %*% scaleCoeff
-  
-  if (any(scales.hat <= 0))
-    scaleCoeff[1] <- scaleCoeff[1] - 1.001 * min(scales.hat)
-  
-  start <- as.list(covs)
+  frech <- data
+  gev <- predict(spatgev)
+  for (i in 1:n.site)
+    frech[,i] <- gev2frech(frech[,i], gev[i,"loc"], gev[i,"scale"], gev[i,"shape"])
 
-  names(locCoeff) <- names(scaleCoeff) <- names(shapeCoeff) <- NULL
+  covs <- smithfull(frech, coord, fit.marge = FALSE, start = as.list(covs),
+                    iso = iso, warn = FALSE, method = method)$param
   
-  start <- c(start, as.list(unlist(list(locCoeff = locCoeff,
-                                        scaleCoeff = scaleCoeff,
-                                        shapeCoeff = shapeCoeff))))
-  if (print.start.values)
-    cat("Starting values are defined\n")
+  start <- c(as.list(covs), as.list(spatgev$param))
 
   if (print.start.values){
+    cat("Starting values are defined\n")
     cat("Starting values are:\n")
     print(unlist(start))
   }
@@ -82,42 +52,17 @@
 }
 
 
-.start.schlather <- function(data, coord, cov.mod, loc.model, scale.model, shape.model,
-                             print.start.values = TRUE, method = "Nelder",
+.start.schlather <- function(data, coord, covariables, cov.mod, loc.form,
+                             scale.form, shape.form, print.start.values = TRUE,
+                             method = "Nelder",
                              ...){
 
+  n.site <- ncol(data)
   param <- c("sill", "range", "smooth")
   fixed.param <- list(...)[names(list(...)) %in% param]
   
   if (print.start.values)
     cat("Computing appropriate starting values\n")
-  
-  n.site <- ncol(data)
-
-  loc <- scale <- shape <- rep(NA, n.site)
-  dataFrech <- data
-  for (i in 1:n.site){
-    marg.param <- gevmle(data[,i])
-    loc[i] <- marg.param["loc"]
-    scale[i] <- marg.param["scale"]
-    shape[i] <- marg.param["shape"]
-    dataFrech[,i] <- gev2frech(dataFrech[,i], loc[i], scale[i], shape[i])
-  }
-
-  locCoeff <- loc.model$init.fun(loc)
-  scaleCoeff <- scale.model$init.fun(scale)
-  shapeCoeff <- shape.model$init.fun(shape)
-    
-  locCoeff[is.na(locCoeff)] <- 0
-  scaleCoeff[is.na(scaleCoeff)] <- 0
-  shapeCoeff[is.na(shapeCoeff)] <- 0
-
-  ##To be sure that the scale parameter is always positive at starting
-  ##values
-  scales.hat <- scale.model$dsgn.mat %*% scaleCoeff
-  
-  if (any(scales.hat <= 0))
-    scaleCoeff[1] <- scaleCoeff[1] - 1.001 * min(scales.hat)
   
   if (length(fixed.param) > 0){
     args <- c(list(data = data, coord = coord, cov.mod = cov.mod,
@@ -128,22 +73,21 @@
   else
     cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp")$param
 
-  cov.param <- schlatherfull(dataFrech, coord, start = as.list(cov.param),
-                             cov.mod = cov.mod, fit.marge = FALSE, method = method,
-                             warn = FALSE)$param
-  
-  start <- as.list(cov.param)
+  spatgev <- fitspatgev(data, as.matrix(covariables), loc.form,
+                          scale.form, shape.form, std.err.type = "none")
 
-  names(locCoeff) <- names(scaleCoeff) <- names(shapeCoeff) <- NULL
-  
-  start <- c(start, as.list(unlist(list(locCoeff = locCoeff,
-                                        scaleCoeff = scaleCoeff,
-                                        shapeCoeff = shapeCoeff))))
+  frech <- data
+  gev <- predict(spatgev)
+  for (i in 1:n.site)
+    frech[,i] <- gev2frech(frech[,i], gev[i,"loc"], gev[i,"scale"], gev[i,"shape"])
 
-  if (print.start.values)
-    cat("Starting values are defined\n")
+  cov.param <- schlatherfull(frech, coord, fit.marge = FALSE, warn = FALSE,
+                             start = as.list(cov.param), method = method)$param
+  
+  start <- c(as.list(cov.param), as.list(spatgev$param))
 
   if (print.start.values){
+    cat("Starting values are defined\n")
     cat("Starting values are:\n")
     print(unlist(start))
   }
@@ -152,42 +96,16 @@
 }
 
 
-.start.schlatherind <- function(data, coord, cov.mod, loc.model, scale.model, shape.model,
-                                print.start.values = TRUE, method = "Nelder",
-                                ...){
+.start.schlatherind <- function(data, coord, covariables, cov.mod, loc.form,
+                                scale.form, shape.form, print.start.values = TRUE,
+                                method = "Nelder", ...){
 
+  n.site <- ncol(data)
   param <- c("alpha", "sill", "range", "smooth")
   fixed.param <- list(...)[names(list(...)) %in% param]
   
   if (print.start.values)
     cat("Computing appropriate starting values\n")
-  
-  n.site <- ncol(data)
-
-  loc <- scale <- shape <- rep(NA, n.site)
-  dataFrech <- data
-  for (i in 1:n.site){
-    marg.param <- gevmle(data[,i])
-    loc[i] <- marg.param["loc"]
-    scale[i] <- marg.param["scale"]
-    shape[i] <- marg.param["shape"]
-    dataFrech[,i] <- gev2frech(dataFrech[,i], loc[i], scale[i], shape[i])
-  }
-
-  locCoeff <- loc.model$init.fun(loc)
-  scaleCoeff <- scale.model$init.fun(scale)
-  shapeCoeff <- shape.model$init.fun(shape)
-  
-  locCoeff[is.na(locCoeff)] <- 0
-  scaleCoeff[is.na(scaleCoeff)] <- 0
-  shapeCoeff[is.na(shapeCoeff)] <- 0
-
-  ##To be sure that the scale parameter is always positive at starting
-  ##values
-  scales.hat <- scale.model$dsgn.mat %*% scaleCoeff
-  
-  if (any(scales.hat <= 0))
-    scaleCoeff[1] <- scaleCoeff[1] - 1.001 * min(scales.hat)
   
   if (length(fixed.param) > 0){
     args <- c(list(data = data, coord = coord, cov.mod = cov.mod,
@@ -198,22 +116,22 @@
   else
     cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp")$param
 
-  cov.param <- schlatherindfull(dataFrech, coord, start = c(list(alpha = .5), as.list(cov.param)),
-                                cov.mod = cov.mod, fit.marge = FALSE, method = method,
-                                warn = FALSE)$param
+  spatgev <- fitspatgev(data, as.matrix(covariables), loc.form,
+                          scale.form, shape.form, std.err.type = "none")
+
+  frech <- data
+  gev <- predict(spatgev)
+  for (i in 1:n.site)
+    frech[,i] <- gev2frech(frech[,i], gev[i,"loc"], gev[i,"scale"], gev[i,"shape"])
+
+  cov.param <- schlatherindfull(frech, coord, cov.mod = cov.mod, fit.marge = FALSE,
+                                start = c(list(alpha = 0.25), as.list(cov.param)),
+                                warn = FALSE, method = method)$param
   
-  start <- as.list(cov.param)
-
-  names(locCoeff) <- names(scaleCoeff) <- names(shapeCoeff) <- NULL
+  start <- c(as.list(cov.param), as.list(spatgev$param))
   
-  start <- c(start, as.list(unlist(list(locCoeff = locCoeff,
-                                        scaleCoeff = scaleCoeff,
-                                        shapeCoeff = shapeCoeff))))
-
-  if (print.start.values)
-    cat("Starting values are defined\n")
-
   if (print.start.values){
+    cat("Starting values are defined\n")
     cat("Starting values are:\n")
     print(unlist(start))
   }
@@ -221,42 +139,16 @@
   return(start)
 }
 
-.start.geomgauss <- function(data, coord, cov.mod, loc.model, scale.model, shape.model,
-                             print.start.values = TRUE, method = "Nelder",
-                             ...){
+.start.geomgauss <- function(data, coord, covariables, cov.mod, loc.form,
+                             scale.form, shape.form, print.start.values = TRUE,
+                             method = "Nelder", ...){
 
+  n.site <- ncol(data)
   param <- c("sigma2", "sill", "range", "smooth")
   fixed.param <- list(...)[names(list(...)) %in% param]
   
   if (print.start.values)
     cat("Computing appropriate starting values\n")
-  
-  n.site <- ncol(data)
-
-  loc <- scale <- shape <- rep(NA, n.site)
-  dataFrech <- data
-  for (i in 1:n.site){
-    marg.param <- gevmle(data[,i])
-    loc[i] <- marg.param["loc"]
-    scale[i] <- marg.param["scale"]
-    shape[i] <- marg.param["shape"]
-    dataFrech[,i] <- gev2frech(dataFrech[,i], loc[i], scale[i], shape[i])
-  }
-
-  locCoeff <- loc.model$init.fun(loc)
-  scaleCoeff <- scale.model$init.fun(scale)
-  shapeCoeff <- shape.model$init.fun(shape)
-  
-  locCoeff[is.na(locCoeff)] <- 0
-  scaleCoeff[is.na(scaleCoeff)] <- 0
-  shapeCoeff[is.na(shapeCoeff)] <- 0
-
-  ##To be sure that the scale parameter is always positive at starting
-  ##values
-  scales.hat <- scale.model$dsgn.mat %*% scaleCoeff
-  
-  if (any(scales.hat <= 0))
-    scaleCoeff[1] <- scaleCoeff[1] - 1.001 * min(scales.hat)
   
   if (length(fixed.param) > 0){
     args <- c(list(data = data, coord = coord, cov.mod = cov.mod,
@@ -267,22 +159,22 @@
   else
     cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp")$param
 
-  cov.param <- geomgaussfull(dataFrech, coord, start = c(list(sigma2 = 1), as.list(cov.param)),
-                             cov.mod = cov.mod, fit.marge = FALSE, method = method,
-                             warn = FALSE)$param
+  spatgev <- fitspatgev(data, as.matrix(covariables), loc.form,
+                          scale.form, shape.form, std.err.type = "none")
+
+  frech <- data
+  gev <- predict(spatgev)
+  for (i in 1:n.site)
+    frech[,i] <- gev2frech(frech[,i], gev[i,"loc"], gev[i,"scale"], gev[i,"shape"])
+
+  cov.param <- geomgaussfull(frech, coord, cov.mod = cov.mod, fit.marge = FALSE,
+                             start = c(list(sigma2 = 1), as.list(cov.param)),
+                             warn = FALSE, method = method)$param
   
-  start <- as.list(cov.param)
-
-  names(locCoeff) <- names(scaleCoeff) <- names(shapeCoeff) <- NULL
+  start <- c(as.list(cov.param), as.list(spatgev$param))
   
-  start <- c(start, as.list(unlist(list(locCoeff = locCoeff,
-                                        scaleCoeff = scaleCoeff,
-                                        shapeCoeff = shapeCoeff))))
-
-  if (print.start.values)
-    cat("Starting values are defined\n")
-
   if (print.start.values){
+    cat("Starting values are defined\n")
     cat("Starting values are:\n")
     print(unlist(start))
   }
@@ -290,11 +182,20 @@
   return(start)
 }
 
-.start.nsgeomgauss <- function(data, coord, cov.mod, loc.model, scale.model, shape.model,
-                               sigma2.model, print.start.values = TRUE, method = "Nelder",
+.start.nsgeomgauss <- function(data, coord, covariables, cov.mod, loc.form,
+                               scale.form, shape.form, sigma2.form,
+                               print.start.values = TRUE, method = "Nelder",
                                ...){
 
-  n.sigma2coeff <- ncol(sigma2.model$dsgn.mat)
+  n.site <- ncol(data)
+  sigma2.terms <- terms(sigma2.form)
+
+  if (length(attributes(sigma2.terms)$factor) == 0)
+    n.sigma2coeff <- attributes(sigma2.terms)$intercept
+
+  else
+    n.sigma2coeff <- attributes(sigma2.terms)$intercept +
+      ncol(attributes(sigma2.terms)$factors)
 
   if (n.sigma2coeff == 1)
     sigma2.names <- "sigma2"
@@ -308,61 +209,34 @@
   if (print.start.values)
     cat("Computing appropriate starting values\n")
   
-  n.site <- ncol(data)
-
-  loc <- scale <- shape <- rep(NA, n.site)
-  dataFrech <- data
-  for (i in 1:n.site){
-    marg.param <- gevmle(data[,i])
-    loc[i] <- marg.param["loc"]
-    scale[i] <- marg.param["scale"]
-    shape[i] <- marg.param["shape"]
-    dataFrech[,i] <- gev2frech(dataFrech[,i], loc[i], scale[i], shape[i])
-  }
-
-  locCoeff <- loc.model$init.fun(loc)
-  scaleCoeff <- scale.model$init.fun(scale)
-  shapeCoeff <- shape.model$init.fun(shape)
-  
-  locCoeff[is.na(locCoeff)] <- 0
-  scaleCoeff[is.na(scaleCoeff)] <- 0
-  shapeCoeff[is.na(shapeCoeff)] <- 0
-
-  ##To be sure that the scale parameter is always positive at starting
-  ##values
-  scales.hat <- scale.model$dsgn.mat %*% scaleCoeff
-  
-  if (any(scales.hat <= 0))
-    scaleCoeff[1] <- scaleCoeff[1] - 1.001 * min(scales.hat)
-  
   if (length(fixed.param) > 0){
     args <- c(list(data = data, coord = coord, cov.mod = cov.mod,
-                   marge = "emp", sill = 1), fixed.param)
+                   marge = "emp"), fixed.param)
     cov.param <- do.call("fitcovariance", args)$param
   }
   
   else
-    cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp", sill = .9)$param
+    cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp")$param
 
-  sigma2.start <- c(1, rep(0, n.sigma2coeff-1))
-  names(sigma2.start) <- sigma2.names
-  
-  cov.param <- geomgaussfull(dataFrech, coord, start = c(as.list(sigma2.start), as.list(cov.param)),
-                             cov.mod = cov.mod, fit.marge = FALSE, method = method,
-                             warn = FALSE)$param
-  
-  start <- as.list(cov.param)
+  spatgev <- fitspatgev(data, as.matrix(covariables), loc.form,
+                          scale.form, shape.form, std.err.type = "none")
 
-  names(locCoeff) <- names(scaleCoeff) <- names(shapeCoeff) <- NULL
-  
-  start <- c(start, as.list(unlist(list(locCoeff = locCoeff,
-                                        scaleCoeff = scaleCoeff,
-                                        shapeCoeff = shapeCoeff))))
+  frech <- data
+  gev <- predict(spatgev)
+  for (i in 1:n.site)
+    frech[,i] <- gev2frech(frech[,i], gev[i,"loc"], gev[i,"scale"], gev[i,"shape"])
 
-  if (print.start.values)
-    cat("Starting values are defined\n")
+  sigma2param <- rep(0, length(sigma2.names))
+  names(sigma2param) <- sigma2.names
+  
+  cov.param <- nsgeomgaussfull(frech, coord, cov.mod = cov.mod, fit.marge = FALSE,
+                               sigma2.form = sigma2.form, warn = FALSE, method = method,
+                               start = c(as.list(sigma2param), as.list(cov.param)))$param
+  
+  start <- c(as.list(cov.param), as.list(spatgev$param))
 
   if (print.start.values){
+    cat("Starting values are defined\n")
     cat("Starting values are:\n")
     print(unlist(start))
   }
