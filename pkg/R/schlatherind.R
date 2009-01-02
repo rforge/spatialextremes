@@ -124,6 +124,14 @@ Standard errors are not available unless you fix it.")
   
   if(any(is.na(m))) 
     stop("'start' specifies unknown arguments")
+
+  ##We use the parscale option to help the optimizer
+  ##We do not overwrite user config
+  if (is.null(control$parscale)){
+    parscale <- abs(unlist(start))
+    parscale[parscale == 0] <- 1
+    control$parscale <- parscale
+  }
   
   formals(nplk) <- c(f[m], f[-m])
   nllh <- function(p, ...) nplk(p, ...)
@@ -269,7 +277,8 @@ Standard errors are not available unless you fix it.")
                          smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
   
   ext.coeff <- function(h)
-    1 + sqrt(1 - 1/2 * (cov.fun(h) + 1))
+    2 * param["alpha"] + (1 - param["alpha"]) *
+      (1 + sqrt(1 - 1/2 * (cov.fun(h) + 1)))
 
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
                  var.cov = var.cov, param = param, cov.fun = cov.fun, fixed = unlist(fixed.param),
@@ -394,8 +403,8 @@ schlatherindform <- function(data, coord, cov.mod, loc.form, scale.form, shape.f
 
   if (missing(start)) {
 
-    start <- .start.schlatherind(data, coord, cov.mod, loc.model, scale.model,
-                                 shape.model, method = method, ...)
+    start <- .start.schlatherind(data, coord, covariables, cov.mod, loc.form,
+                                 scale.form, shape.form, method = method, ...)
 
     start <- start[!(param %in% names(list(...)))]
   
@@ -415,7 +424,15 @@ schlatherindform <- function(data, coord, cov.mod, loc.form, scale.form, shape.f
   
   if(any(is.na(m))) 
     stop("'start' specifies unknown arguments")
-  
+
+  ##We use the parscale option to help the optimizer
+  ##We do not overwrite user config
+  if (is.null(control$parscale)){
+    parscale <- abs(unlist(start))
+    parscale[parscale == 0] <- 1
+    control$parscale <- parscale
+  }
+    
   formals(nplk) <- c(f[m], f[-m])
   nllh <- function(p, ...) nplk(p, ...)
 
@@ -579,7 +596,8 @@ Standard errors are not available unless you fix it.")
                         smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
   
   ext.coeff <- function(h)
-    1 + param["alpha"] + (1 - param["alpha"]) * sqrt(1 - 1/2 * (cov.fun(h) + 1))
+    2 * param["alpha"] + (1 - param["alpha"]) *
+      (1 + sqrt(1 - 1/2 * (cov.fun(h) + 1)))
   
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
                  var.cov = var.cov, fixed = unlist(fixed.param), param = param,

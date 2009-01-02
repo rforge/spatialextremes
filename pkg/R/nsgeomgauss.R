@@ -145,7 +145,15 @@ nsgeomgaussfull <- function(data, coord, cov.mod, sigma2.form,
   
   if(any(is.na(m))) 
     stop("'start' specifies unknown arguments")
-  
+
+  ##We use the parscale option to help the optimizer
+  ##We do not overwrite user config
+  if (is.null(control$parscale)){
+    parscale <- abs(unlist(start))
+    parscale[parscale == 0] <- 1
+    control$parscale <- parscale
+  }
+    
   formals(nplk) <- c(f[m], f[-m])
   nllh <- function(p, ...) nplk(p, ...)
 
@@ -298,7 +306,7 @@ Standard errors are not available unless you fix it.")
                          smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
   
   ext.coeff <- function(h)
-    2 * pnorm(sqrt(param["sigma2"] * (1 - cov.fun(h)) / 2))
+    2 * pnorm(sqrt(exp(param["sigma2"]) * (1 - cov.fun(h)) / 2))
 
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
                  var.cov = var.cov, param = param, cov.fun = cov.fun, fixed = unlist(fixed.param),
@@ -439,8 +447,9 @@ nsgeomgaussform <- function(data, coord, cov.mod = cov.mod, sigma2.form, ...,
 
   if (missing(start)) {
 
-    start <- .start.nsgeomgauss(data, coord, cov.mod, loc.model, scale.model,
-                                shape.model, sigma2.model, method = method, ...)
+    start <- .start.nsgeomgauss(data, coord, covariables, cov.mod, loc.form,
+                                scale.form, shape.form, sigma2.form,
+                                method = method, ...)
     
     start <- start[!(param %in% names(list(...)))]
   
@@ -460,7 +469,15 @@ nsgeomgaussform <- function(data, coord, cov.mod = cov.mod, sigma2.form, ...,
   
   if(any(is.na(m))) 
     stop("'start' specifies unknown arguments")
-  
+
+  ##We use the parscale option to help the optimizer
+  ##We do not overwrite user config
+  if (is.null(control$parscale)){
+    parscale <- abs(unlist(start))
+    parscale[parscale == 0] <- 1
+    control$parscale <- parscale
+  }
+    
   formals(nplk) <- c(f[m], f[-m])
   nllh <- function(p, ...) nplk(p, ...)
 
@@ -618,7 +635,7 @@ Standard errors are not available unless you fix it.")
                         smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
   
   ext.coeff <- function(h)
-    2 * pnorm(sqrt(param["sigma2"] * (1 - cov.fun(h)) / 2))
+    2 * pnorm(sqrt(exp(param["sigma2"]) * (1 - cov.fun(h)) / 2))
   
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
                  var.cov = var.cov, fixed = unlist(fixed.param), param = param,
