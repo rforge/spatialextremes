@@ -77,12 +77,15 @@ anova.maxstab <- function(object, object2, method = "RJ",
   else{
     theta0 <- M0$param
     theta0 <- theta0[colnames(ihessian)]
-    
-    ivar.cov <- try(solve(var.cov), silent = TRUE)
-    hessian <- try(solve(ihessian), silent = TRUE)
 
-    if (is.matrix(ivar.cov) && is.matrix(hessian)){
+    jac <- M1$jacobian
+    ijac <- try(solve(qr(jac)), silent = TRUE)
+    hessian <- try(solve(qr(ihessian)), silent = TRUE)
 
+    if (is.matrix(ijac) && is.matrix(hessian)){
+
+      ivar.cov <- hessian %*% ijac %*% hessian
+      
       if (square == "svd"){
         svd.hessian <- svd(hessian)
         svd.ivar.cov <- svd(ivar.cov)
@@ -115,12 +118,16 @@ anova.maxstab <- function(object, object2, method = "RJ",
         
       }
 
-      else
+      else{
+        warning("Impossible to get the Cholesky or the svd decomposition")
         Dev <- c(NA, deviance(M1))
+      }
     }
     
-    else
+    else{
+      warning("Matrices H or/and J are singular")
       Dev <- c(NA, deviance(M1))
+    }
   }
   
   diffDev <- Dev[1] - Dev[2]
@@ -152,9 +159,14 @@ anova.maxstab <- function(object, object2, method = "RJ",
   dimnames(table) <- list(models, c("MDf", "Deviance", "Df",
                                     "Chisq", "Pr(> sum lambda Chisq)"))
 
-  structure(table, heading = c("Eigenvalue(s):", round(eigen.val, 2),
-                     "\nAnalysis of Variance Table"),
-            class = c("anova", "data.frame"))
+  if (method == "RJ")
+    structure(table, heading = c("Eigenvalue(s):", round(eigen.val, 2),
+                       "\nAnalysis of Variance Table"),
+              class = c("anova", "data.frame"))
+
+  else
+    structure(table, heading = "Analysis of Variance Table",
+              class = c("anova", "data.frame"))
 }
 
 TIC.spatgev <- function(object, ...){
@@ -232,12 +244,15 @@ anova.spatgev <- function(object, object2, method = "RJ",
   else{
     theta0 <- M0$param
     theta0 <- theta0[colnames(ihessian)]
-    
-    ivar.cov <- try(solve(var.cov), silent = TRUE)
-    hessian <- try(solve(ihessian), silent = TRUE)
 
-    if (is.matrix(ivar.cov) && is.matrix(hessian)){
+    jac <- M1$jacobian    
+    ijac <- try(solve(qr(jac)), silent = TRUE)
+    hessian <- try(solve(qr(ihessian)), silent = TRUE)
 
+    if (is.matrix(ijac) && is.matrix(hessian)){
+
+      ivar.cov <- hessian %*% ijac %*% hessian
+      
       if (square == "svd"){
         svd.hessian <- svd(hessian)
         svd.ivar.cov <- svd(ivar.cov)
@@ -270,12 +285,16 @@ anova.spatgev <- function(object, object2, method = "RJ",
         
       }
 
-      else
+      else{
+        warning("Impossible to get the Cholesky or the svd decomposition")
         Dev <- c(NA, deviance(M1))
+      }
     }
     
-    else
+    else{
+      warning("Matrices H or/and J are singular")
       Dev <- c(NA, deviance(M1))
+    }
   }
   
   diffDev <- Dev[1] - Dev[2]
@@ -307,8 +326,13 @@ anova.spatgev <- function(object, object2, method = "RJ",
   dimnames(table) <- list(models, c("MDf", "Deviance", "Df",
                                     "Chisq", "Pr(> sum lambda Chisq)"))
 
-  structure(table, heading = c("Eigenvalue(s):", round(eigen.val, 2),
-                     "\nAnalysis of Variance Table"),
-            class = c("anova", "data.frame"))
+  if (method == "RJ")
+    structure(table, heading = c("Eigenvalue(s):", round(eigen.val, 2),
+                       "\nAnalysis of Variance Table"),
+              class = c("anova", "data.frame"))
+
+  else
+    structure(table, heading = "Analysis of Variance Table",
+              class = c("anova", "data.frame"))
 }
 
