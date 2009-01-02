@@ -24,8 +24,8 @@ void distance(double *coord, int *nDim, int *nSite,
     for (i=0;i<(*nSite-1);i++){
       for (j=i+1;j<*nSite;j++){
 	for (k=0;k<*nDim;k++)
-	  dist[currentPair] += R_pow_di(coord[i + k * *nSite] -
-					coord[j + k * *nSite], 2);
+	  dist[currentPair] += (coord[i + k * *nSite] -	coord[j + k * *nSite]) *
+	    (coord[i + k * *nSite] - coord[j + k * *nSite]);
 	
 	dist[currentPair] = sqrt(dist[currentPair]);
 	currentPair++;

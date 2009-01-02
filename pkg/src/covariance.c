@@ -122,9 +122,9 @@ double mahalDistFct(double *distVec, int nPairs, double *cov11,
   
   for (i=0;i<nPairs;i++){
 
-    mahal[i] = (*cov11 *  R_pow_di(distVec[nPairs + i], 2) -
+    mahal[i] = (*cov11 * distVec[nPairs + i] * distVec[nPairs + i] -
 		2 * *cov12 * distVec[i] * distVec[nPairs + i] +
-		*cov22 * R_pow_di(distVec[i], 2)) / det;
+		*cov22 * distVec[i] * distVec[i]) / det;
     
     mahal[i] = sqrt(mahal[i]);
   }
