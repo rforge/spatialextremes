@@ -1,6 +1,6 @@
 fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
-                       start, ..., method = "Nelder", std.err.type = "score",
-                       warn = TRUE){
+                       start, ..., control = list(maxit = 10000),
+                       method = "Nelder", std.err.type = "score", warn = TRUE){
 
   if (std.err.type != "none")
     hessian <- std.err.flag <- TRUE
@@ -114,6 +114,8 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
                                  scaleCoeff = scaleCoeff,
                                  shapeCoeff = shapeCoeff)))
 
+    start <- start[!(param %in% names(list(...)))]
+
   }
 
   if (!length(start)) 
@@ -146,7 +148,8 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
   if (warn && (init.lik >= 1.0e6)) 
     warning("negative log-likelihood is infinite at starting values")
 
-  opt <- optim(start, nllh, hessian = hessian, ..., method = method)
+  opt <- optim(start, nllh, hessian = hessian, ..., method = method,
+               control = control)
     
   if ((opt$convergence != 0) || (opt$value >= 1.0e6)){
     if (warn)
@@ -198,7 +201,8 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
     std.err <- sqrt(diag(var.cov))
 
     colnames(var.cov) <- colnames(ihessian) <- rownames(var.cov) <-
-      rownames(ihessian) <- names(std.err) <- nm
+      rownames(ihessian) <- colnames(jacobian) <- rownames(jacobian) <-
+        names(std.err) <- nm
   }
 
   else
@@ -209,7 +213,8 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
               counts = opt$counts, message = opt$message, covariables = covariables,
               logLik = -opt$value, loc.form = loc.form, scale.form = scale.form,
               shape.form = shape.form, convergence = opt$convergence, nllh = nllh,
-              deviance = 2 * opt$value, ihessian = ihessian, jacobian = jacobian)
+              deviance = 2 * opt$value, ihessian = ihessian, jacobian = jacobian,
+              data = data, jacobian = jacobian, fixed = unlist(fixed.param))
 
   class(ans) <- "spatgev"
   return(ans)
