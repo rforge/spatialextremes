@@ -238,3 +238,10 @@ void spatgevlik(double *data, double *covariables, int *nSite, int *nObs,
 		int *nshapecoeff, int *npparshape, double *shapepenalty,
 		double *loccoeff, double *scalecoeff, double *shapecoeff,
 		double *dns);
+
+///////////////////////////////////
+//  From madogram.c
+//
+void madogram(double *data, int *nObs, int *nSite, double *mado);
+void lmadogram(double *data, int *nObs, int *nSite, double *lambda,
+	       int *nLambda, double *lmado);
