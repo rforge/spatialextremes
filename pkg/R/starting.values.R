@@ -38,7 +38,7 @@
     frech[,i] <- gev2frech(frech[,i], gev[i,"loc"], gev[i,"scale"], gev[i,"shape"])
 
   covs <- smithfull(frech, coord, fit.marge = FALSE, start = as.list(covs),
-                    iso = iso, warn = FALSE, method = method)$param
+                    iso = iso, warn = FALSE, method = method, std.err.type = "none")$param
   
   start <- c(as.list(covs), as.list(spatgev$param))
 
@@ -82,7 +82,8 @@
     frech[,i] <- gev2frech(frech[,i], gev[i,"loc"], gev[i,"scale"], gev[i,"shape"])
 
   cov.param <- schlatherfull(frech, coord, fit.marge = FALSE, warn = FALSE,
-                             start = as.list(cov.param), method = method)$param
+                             start = as.list(cov.param), method = method,
+                             std.err.type = "none")$param
   
   start <- c(as.list(cov.param), as.list(spatgev$param))
 
@@ -126,7 +127,7 @@
 
   cov.param <- schlatherindfull(frech, coord, cov.mod = cov.mod, fit.marge = FALSE,
                                 start = c(list(alpha = 0.25), as.list(cov.param)),
-                                warn = FALSE, method = method)$param
+                                warn = FALSE, method = method, std.err.type = "none")$param
   
   start <- c(as.list(cov.param), as.list(spatgev$param))
   
@@ -169,7 +170,7 @@
 
   cov.param <- geomgaussfull(frech, coord, cov.mod = cov.mod, fit.marge = FALSE,
                              start = c(list(sigma2 = 1), as.list(cov.param)),
-                             warn = FALSE, method = method)$param
+                             warn = FALSE, method = method, std.err.type = "none")$param
   
   start <- c(as.list(cov.param), as.list(spatgev$param))
   
@@ -231,7 +232,8 @@
   
   cov.param <- nsgeomgaussfull(frech, coord, cov.mod = cov.mod, fit.marge = FALSE,
                                sigma2.form = sigma2.form, warn = FALSE, method = method,
-                               start = c(as.list(sigma2param), as.list(cov.param)))$param
+                               start = c(as.list(sigma2param), as.list(cov.param)),
+                               std.err.type = "none")$param
   
   start <- c(as.list(cov.param), as.list(spatgev$param))
 

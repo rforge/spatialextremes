@@ -23,6 +23,7 @@ qqextcoeff <- function(fitted, estim = "ST", marge = "emp",
                           marge = marge)$ext.coeff[,"ext.coeff"]
 
   plot(exco.emp, exco.mod, xlab = xlab, ylab = ylab, ...)
+  abline(0, 1)
 }
 
 qqgev <- function(fitted, xlab, ylab, ...){
