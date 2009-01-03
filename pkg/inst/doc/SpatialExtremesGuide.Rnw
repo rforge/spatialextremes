@@ -5,6 +5,7 @@
 \usepackage{amsmath,amsfonts}
 \usepackage{hyperref}
 \usepackage[square]{natbib}
+%\usepackage{fancyhdr}
 
 \setlength{\parskip}{0.7ex plus0.1ex minus0.1ex}
 \setlength{\parindent}{0em}
@@ -12,26 +13,54 @@
 \renewcommand{\floatpagefraction}{0.95}
 \renewcommand{\textfraction}{0.05}
 
+\makeatletter
+\def\thickhrulefill{\leavevmode \leaders \hrule height 1ex \hfill \kern \z@}
+\def\@makechapterhead#1{%
+  \reset@font
+  \vspace*{10\p@}%
+  {\parindent \z@ 
+    \begin{flushleft}
+      \reset@font \scshape \bfseries \Huge \thechapter \par
+    \end{flushleft}
+    \hrule
+    \begin{flushleft}
+      \reset@font \LARGE \bfseries \strut #1\strut \par
+    \end{flushleft}
+    \vskip 50\p@
+  }}
+\def\@makeschapterhead#1{%
+  \reset@font
+  \vspace*{10\p@}%
+  {\parindent \z@ 
+    \begin{flushleft}
+      \reset@font \scshape \bfseries \Huge \vphantom{\thechapter} \par
+    \end{flushleft}
+    \hrule
+    \begin{flushleft}
+      \reset@font \LARGE \bfseries \strut #1\strut \par
+    \end{flushleft}
+    \vskip 50\p@
+  }}
+
+
 \begin{document}
 % \VignetteIndexEntry{A R Package for Modelling Spatial Extremes} 
 % \VignetteDepends{SpatialExtremes,RandomFields}
 % \VignetteKeyword{Extreme Value Theory, Spatial Extremes, Max-stable processes} 
 % \VignettePackage{SpatialExtremes}
 
+%\pagestyle{empty}
 \begin{titlepage}
   \vspace*{2cm}
   \begin{center}
     \LARGE A User's Guide to the SpatialExtremes Package\\
     \vspace{1em}
-    \Large Mathieu Ribatet$^\dag$ \& Simone Padoan$^\ast$\\
+    \Large Mathieu Ribatet\\
     \vspace{1em}
-    Copyright \copyright{2008}\\
+    Copyright \copyright{2009}\\
     \vspace{2em}
     \large
-    $^\dag$Chair of Statistics\\
-    École Polytechnique Fédérale de Lausanne\\
-    Switzerland\\
-    $^\ast$Laboratory of Environmental Fluid Mechanics and Hydrology\\
+    Chair of Statistics\\
     École Polytechnique Fédérale de Lausanne\\
     Switzerland\\
   \end{center}
@@ -39,9 +68,21 @@
   \begin{center}
 <<echo=FALSE,fig=TRUE>>=
 library(SpatialExtremes)
-library(RandomFields)
-image(volcano, col = terrain.colors(100), xaxt = "n", yaxt="n")
-contour(volcano, add = TRUE)
+##image(volcano, col = terrain.colors(100), xaxt = "n", yaxt="n")
+##contour(volcano, add = TRUE)
+set.seed(12)
+n.site <- 50
+locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
+colnames(locations) <- c("lon", "lat")
+
+##Simulate a max-stable process - with unit Frechet margins
+ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
+                   param=c(0,1,0,1, 2), maxstable="extr",
+                   n = 40)
+ms0 <- t(ms0)
+
+##Compute the lambda-madogram
+lmadogram(ms0, locations, n.bins = 25, border = "grey", box = FALSE)
 @ 
   \end{center}
   \vspace{2em}
@@ -56,6 +97,12 @@ contour(volcano, add = TRUE)
 \listoffigures
 
 \pagenumbering{arabic}
+%\pagestyle{fancy}
+
+<<echo=false>>=
+options(SweaveHooks=list(fig=function()
+par(mar=c(5.1, 4.1, 1.1, 2.1))))
+@
 
 \chapter*{Introduction}
 \label{cha:introduction}
@@ -68,7 +115,7 @@ contour(volcano, add = TRUE)
 The \textbf{SpatialExtremes} package is an add-on package for the R
 \citep{Rsoft} statistical computing system. It provides functions for
 the analysis of spatial extremes using (currently) max-stable
-processes.
+processes. 
 
 All comments, criticisms and queries on the package or associated
 documentation are gratefully received.
@@ -84,19 +131,31 @@ wherever the package is installed. You can get it by invoking
 vignette("SpatialExtremesGuide")
 @ 
 
+You may want to have a look at its own web page
+\url{http://spatialextremes.r-forge.r-project.org/} to have a quick
+overview of what it currently does.
+
 \section*{Contents}
 
-This guide contains a few elements of theory on the modelling of
-spatial extremes as well as examples of the use of the
-\textbf{SpatialExtremes}
-package. Section~\ref{cha:an-introduction-max} gives an (light)
-introduction to max-stable processes and defines two different
-characterisations of such processes. Section~\ref{sec:fit-maxstab}
-presents the methodology used in the package to fit max-stable
-processes to data while Section~\ref{cha:manip-visu-fitt} describes
-useful functions for prediction and visualizing fitted models. Details
-for the computation of the required pairwise densities and gradients
-are given in Annex~\ref{cha:dens-grad-comp}.
+To help users to use properly the \emph{SpatialExtremes} packages,
+this report introduces all the theory and references needed. Some
+practical examples are inserted directly within the text to show how
+it works in practice. Chapter~\ref{cha:an-introduction-max} is an
+introduction to max-stable processes and introduces several models
+that might be useful in concrete applications. Statistics and tools to
+analyze the spatial dependence of extremes are presented in
+Chapter~\ref{cha:spatial-depend-max}. Chapter~\ref{chat:fit-maxstab-frech}
+tackles the problem of fitting max-stable process to data that are
+assumed to be unit Fréchet
+distributed. Chapter~\ref{cha:model-selection} is devoted to model
+selection. Chapter~\ref{cha:fit-maxstab-gev} presents models and
+procedures on how to fit max-stable processes to data that do not have
+unit Fréchet margins. Chapter~\ref{cha:model-checking} is devoted to
+model checking while Chapter~\ref{cha:infer-proc-pred} is devoted to
+inferential procedures and predictions. Lastly,
+Chapter~\ref{cha:conclusion} draws conclusions on spatial
+extremes. Note that several computations are reported in the Annex
+part.
 
 \section*{Caveat}
 
@@ -124,11 +183,9 @@ A copy of the GNU General Public License can be obtained from
 
 \section*{Acknowledgements}
 
-This work has been supported by the
-\href{http://www.cces.ethz.ch/index}{Competence Center Environment and
-  Sustainability} within the
-\href{http://www.cces.ethz.ch/projects/hazri/EXTREMES}{EXTREMES}
-project.
+This work has been supported by the Competence Center Environment and
+Sustainability \url{http://www.cces.ethz.ch/index} within the EXTREMES
+project \url{http://www.cces.ethz.ch/projects/hazri/EXTREMES}.
 
 \chapter{An Introduction to Max-Stable Processes}
 \label{cha:an-introduction-max}
@@ -148,40 +205,34 @@ can see that max-stable processes might be appropriate models for
 modelling annual maxima of spatial data let say.
 
 Theoretically speaking, there is no loss of generality in transforming
-the margins to have a a unit Fréchet scale i.e.
+the margins to have a unit Fréchet scale i.e.
 \begin{equation}
   \label{eq:CDFFrechet}
   \Pr\left[Z(x) \leq z\right] = \exp\left(-\frac{1}{z} \right), \qquad
-    \forall z \in \mathbb{R}^d
+    \forall x \in \mathbb{R}^d, \qquad z > 0
 \end{equation}
 and we will first assume that the unit Fréchet assumption holds for
 which we have $a_n(x) = n$ and $b_n(x) = 0$. However, later in this
 document, we will relax this assumption to have unknown GEV margins.
 
 Currently, there are two different characterisations of a max-stable
-process. The first one, often referred to the \emph{rainfall-storm}
+process. The first one, often referred to as the \emph{rainfall-storm}
 model, was first introduced by \citet{Smith1991}. More recently,
 \citet{Schlather2002} introduced a new characterisation of a
-max-stable process allowing for a random shape.
-
-It is out of the scope of this document to describe fully the main
-differences between the two canonical constructions. We will restrict
-our attention to particular cases of these characterisations.
-
-Unfortunately, closed forms for the density of these two models are
-only known for two different points in $\mathbb{R}^d$. Consequently,
-fitting max-stable processes to data is not straightforward and the
-SpatialExtremes package provides convenient tools for it.
+max-stable process allowing for a random shape. In this Chapter, we
+will present several max-stable models that might be relevant in
+studying spatial extremes.
 
 \section{The Smith Model}
 \label{sec:smiths-char}
 
-\citet{Smith1991} proposed a method for constructing a stationary
-max-stable process. Let $\{(\xi_i, y_i), i \geq 1\}$ denote the points
-of a Poisson process on $(0,+\infty) \times \mathbb{R}^d$ with
-intensity measure $\xi^{-2} d\xi \nu(dy)$ where $\nu(dy)$ is a
-positive measure on $\mathbb{R}^d$. Then one characterisation of a
-max-stable process with unit Fréchet margins is defined by:
+\citet{Smith1991} was the first to proposed a characterisation of
+stationary max-stable process. The construction was the following. Let
+$\{(\xi_i, y_i), i \geq 1\}$ denote the points of a Poisson process on
+$(0,+\infty) \times \mathbb{R}^d$ with intensity measure $\xi^{-2}
+d\xi \nu(dy)$ where $\nu(dy)$ is a positive measure on
+$\mathbb{R}^d$. Then one characterisation of a max-stable process with
+unit Fréchet margins is defined by:
 \begin{equation}
   \label{eq:smithChar}
   Z(x) = \max_i \left\{ \xi_i f(y_i,x) \right\}, \qquad x \in
@@ -230,8 +281,8 @@ as the spatial distribution of these storm centres over $\mathbb{R}^d$
 - usually $\mathbb{R}^2$. Each $\xi_i$ represents the intensity of the
 $i$-th storm and therefore $\xi_i f(y_i, x)$ represents the amount of
 rainfall for this specific event at location $x$. In other words,
-$f(y_i, \cdot)$ drive how the $i$-th storm centred at $y_i$ diffuse in
-space.
+$f(y_i, \cdot)$ drive how the $i$-th storm centred at $y_i$ diffuses
+in space.
 
 Definition \eqref{eq:smithChar} is rather general and Smith considered
 a particular setting where $\nu(dy)$ is the Lebesgue measure and
@@ -249,28 +300,25 @@ given by:
       \log\frac{z_1}{z_2} \right) \right]
 \end{equation}
 where $\Phi$ is the standard normal cumulative distribution function
-and, for two given locations \#1 and \#2  
+and, for two given locations 1 and 2  
 \begin{equation*}
   a^2 = \Delta x^T \Sigma^{-1} \Delta x \quad \text{and} \quad 
   \Sigma = 
   \begin{bmatrix}
-    cov_{11} & cov_{12}\\
-    cov_{12} & cov_{22}
+    \sigma_{11} & \sigma_{12}\\
+    \sigma_{12} & \sigma_{22}
   \end{bmatrix}
   \quad \text{or} \quad \Sigma = 
   \begin{bmatrix}
-    cov_{11} & cov_{12} & cov_{13}\\
-    cov_{12} & cov_{22} & cov_{23}\\
-    cov_{13} & cov_{23} & cov_{33}
+    \sigma_{11} & \sigma_{12} & \sigma_{13}\\
+    \sigma_{12} & \sigma_{22} & \sigma_{23}\\
+    \sigma_{13} & \sigma_{23} & \sigma_{33}
   \end{bmatrix}
   \quad \text{and so forth}
 \end{equation*}
-where $\Delta x$ is the distance vector between location \#1 and
-location \#2. The derivation of the density is reported in Section
-\ref{sec:density-computation-smith}. Currenlty, the package only
-handle 2 by 2 or 3 by 3 covariance matrices
-$\Sigma$. Figure~\ref{fig:Smith2sim} plots two simulations of Smith's
-model with different variance-covariance matrices.
+where $\Delta x$ is the distance vector between location 1 and
+location 2. Figure~\ref{fig:Smith2sim} plots two simulations of
+Smith's model with different variance-covariance matrices.
 
 <<label=Smith2Sim,echo=FALSE>>=
 x <- y <- seq(0, 10, length = 100)
@@ -296,12 +344,68 @@ image(x, y, ms1, col = terrain.colors(30))
 
 \begin{figure}
   \centering
-<<fig=TRUE,echo=FALSE>>=
+<<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
 <<Smith2Sim>>
 @ 
-  \caption{Two simulations of the Smith model with different $\Sigma$ matrices.}
+  \caption{Two simulations of the Smith model with different $\Sigma$
+    matrices. Left panel: $\sigma_{11} = \sigma_{22} = 9/8$ and
+    $\sigma_{12} = 0$. Right panel: $\sigma_{11} = \sigma_{22} = 9/8$
+    and $\sigma_{12} = 1$.}
   \label{fig:Smith2sim}
 \end{figure}
+
+$a$ in Equation~\eqref{eq:smith} is the Mahanalobis distance and is
+similar to the Euclidean distance except that it gives different
+weights to each component of $\Delta x$. $a$ is positive and the
+limiting cases $a \rightarrow 0^+$ and $a \rightarrow +\infty$
+correspond respectively to perfect dependence and
+independence. Therefore, for $\Sigma$ being fixed, the dependence
+decreases monotically and continuously as $||\Delta x ||$
+increases. On the contrary, if now $\Delta x$ is fixed, the dependence
+decreases monotically as $a$ increases.
+
+The covariance matrix $\Sigma$ plays a major role in
+Equation~\eqref{eq:smith} as it fully determines the shape of the
+storm events. Indeed, due the use of a multivariate Normal
+distribution, the storm events have an ellipsoid shape. Considering
+the eigen decomposition of $\Sigma$, we can write
+\begin{equation}
+  \label{eq:svdSigma}
+  \Sigma = U \Lambda U^T
+\end{equation}
+where $U$ is a rotation matrix and $\Lambda$ is a diagonal matrix of
+the eigenvalues. Thus, $U$ controls the direction of the principal
+axes and $\Lambda$ controls their lengths. 
+
+If $\Sigma$ is diagonal and all the diagonal terms are identical, then
+$\Sigma = \Lambda$ so that the ellipsoids change to circles and
+model~\eqref{eq:smith} becomes isotropic. Figure~\ref{fig:Smith2sim}
+is a nice illustration of this feature. The left panel corresponds to
+an isotropic random field while the right one depicts a clear
+anisotropy for which we have
+\begin{equation*}
+  \Sigma =
+  \begin{bmatrix}
+    9/8 & 1\\
+    1 & 9/8
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+    ~\cos (-3 \pi / 4) & \sin (-3 \pi / 4)\\
+    -\sin (-3 \pi / 4) & \cos (-3 \pi / 4)
+  \end{bmatrix}
+  \begin{bmatrix}
+    1/8 & 0\\
+    0 & 17/8
+  \end{bmatrix}
+  \begin{bmatrix}
+    \cos (-3 \pi / 4) & -\sin (-3 \pi / 4)\\
+    \sin (-3 \pi / 4) & ~\cos (-3 \pi / 4)
+  \end{bmatrix}
+\end{equation*}
+so that the main direction of the major principal axis is $\pi/4$ and
+one unit move along the direction $-\pi / 4$ has the same decrease in
+dependence as $17$ unit moves along the direction $\pi / 4$.
 
 \section{The Schlather Model}
 \label{sec:schl-char}
@@ -311,7 +415,7 @@ characterisation of max-stable processes. Let $Y(\cdot)$ be a
 stationary process on $\mathbb{R}^d$ such that $\mathbb{E}[\max\{0,
 Y(x)\}] = 1$ and $\{\xi_i, i \geq 1\}$ be the points of a Poisson
 process on $\mathbb{R}^+_*$ with intensity measure $\xi^{-2}
-d\xi$. Then Schlather showed that a stationary max-stable process with
+d\xi$. Then Schlather show that a stationary max-stable process with
 unit Fréchet margins can be defined by:
 \begin{equation}
   \label{eq:SchlatherChar}
@@ -344,8 +448,16 @@ dependence structure but differ only in their magnitude $\xi_i$. This
 model differs slightly from Smith's one as we now have no
 deterministic shape such as a multivariate Normal density for the
 storms but a random shape driven by the process
-$Y(\cdot)$. Consequently, this model has the main advantage to allows
+$Y(\cdot)$. Consequently, this model has the main advantage to allow
 for a large range of possible storm shapes.
+
+It has to be noticed that the Schlather and Smith characterisations
+have strong connections. To see this, let consider the random process
+defined by $Y_i(x) = f_0(x - X_i)$ where $f_0$ is a probability
+density function and $\{X_i\}$ is a homogeneous Poisson process both
+in $\mathbb{R}^d$. With this particular setting,
+model~\eqref{eq:SchlatherChar} is identical to
+model~\eqref{eq:smithChar}.
 
 Equation~\eqref{eq:SchlatherChar} is rather vague and we need
 additional assumptions to get practical models. Schlather proposed to
@@ -359,30 +471,92 @@ of process~\eqref{eq:SchlatherChar} is given by:
     \left(\frac{1}{z_1} + \frac{1}{z_2} \right) \left(1 + \sqrt{1 - 2
         (\rho(h) + 1) \frac{z_1 z_2}{(z_1 + z_2)^2}} \right) \right]
 \end{equation}
-where $h$ is the distance between location \#1 and location \#2.
+where $h$ is the euclidean distance between location 1 and location
+2. Usually, $\rho(h)$ is chosen from one of valid parametric families
+such as:
 
-Currently, there is three types of covariance functions implemented:
+<<label=covariances,echo=FALSE>>=
+par(mfrow=c(1,3))
+covariance(sill = 1, range = 1, smooth = 4, cov.mod = "whitmat",
+           xlim = c(0,6), ylim = c(0, 1))
+covariance(sill = 1, range = 1, smooth = 2, cov.mod = "whitmat",
+           add = TRUE, col = 2, xlim = c(0,6))
+covariance(sill = 1, range = 1, smooth = 1, cov.mod = "whitmat",
+           add = TRUE, col = 3, xlim = c(0,6))
+covariance(sill = 1, range = 1, smooth = 0.5, cov.mod = "whitmat",
+           col = 4, add = TRUE, xlim = c(0,6))
+legend("topright", c(expression(nu == 4), expression(nu == 2),
+                     expression(nu == 1), expression(nu == 0.5)),
+       col = 1:4, lty = 1, inset = 0.05)
+
+covariance(sill = 1, range = 1, smooth = 2, cov.mod = "powexp",
+           xlim = c(0, 3), ylim = c(0, 1))
+covariance(sill = 1, range = 1, smooth = 1.5, cov.mod = "powexp",
+           add = TRUE, col = 2, xlim = c(0, 3))
+covariance(sill = 1, range = 1, smooth = 1, cov.mod = "powexp",
+           add = TRUE, col = 3, xlim = c(0, 3))
+covariance(sill = 1, range = 1, smooth = 0.75, cov.mod = "powexp",
+           add = TRUE, col = 4, xlim = c(0, 3))
+legend("topright", c(expression(nu == 2), expression(nu == 1.5),
+                     expression(nu == 1), expression(nu == 0.75)),
+       col = 1:4, lty = 1, inset = 0.05)
+
+covariance(sill = 1, range = 1, smooth = 4, cov.mod = "cauchy",
+           xlim = c(0, 3), ylim = c(0, 1))
+covariance(sill = 1, range = 1, smooth = 2, cov.mod = "cauchy",
+           add = TRUE, col = 2, xlim = c(0, 3))
+covariance(sill = 1, range = 1, smooth = 1, cov.mod = "cauchy",
+           add = TRUE, col = 3, xlim = c(0, 3))
+covariance(sill = 1, range = 1, smooth = 0.75, cov.mod = "cauchy",
+           add = TRUE, col = 4, xlim = c(0, 3))
+legend("topright", c(expression(nu == 4), expression(nu == 2),
+                     expression(nu == 1), expression(nu == 0.75)),
+       col = 1:4, lty = 1, inset = 0.05)
+@ 
+
+\begin{figure}
+  \centering
+<<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
+<<covariances>>
+@ 
+\caption{Plots of the Whittle-Matérn (left panel), the powered
+  exponential (middle panel) and the Cauchy (right panel) correlation
+  functions. The sill and the range parameters are $c_1 = c_2 = 1$
+  while the smooth parameters are given in the legend.}
+  \label{fig:covariances}
+\end{figure}
 
 \bigskip
 \begin{tabular}{ll}
-  \textbf{Whittle-Matérn} & $\rho(h) = sill
-  \frac{2^{1-smooth}}{\Gamma(smooth)} \left(\frac{h}{range}
-  \right)^{smooth} K_{smooth}\left(\frac{h}{range} \right)$,\\ 
-  \textbf{Cauchy} & $\rho(h) = sill \left[1 + \left(\frac{h}{range}
-    \right)^2 \right]^{-smooth}$,\\
-  \textbf{Powered Exponential} & $\rho(h) = sill \exp\left[-
-    \left(\frac{h}{range} \right)^{smooth} \right]$,
+  \textbf{Whittle-Matérn} & $\rho(h) = c_1
+  \frac{2^{1-\nu}}{\Gamma(\nu)} \left(\frac{h}{c_2} \right)^{\nu}
+  K_{\nu}\left(\frac{h}{c_2} \right)$,\\  
+  \textbf{Cauchy} & $\rho(h) = c_1 \left[1 + \left(\frac{h}{c_2}
+    \right)^2 \right]^{-\nu}$,\\
+  \textbf{Powered Exponential} & $\rho(h) = c_1 \exp\left[-
+    \left(\frac{h}{c_2} \right)^{\nu} \right]$,
 \end{tabular}
 \bigskip
 
-where $h$ is the distance between locations \#1 and \#2, $sill$,
-$range$ and $smooth$ are the sill, the range and the smooth parameters
-of the covariance function, $\Gamma$ is the gamma function and
-$K_{smooth}$ is the modified Bessel function of the third kind with
-order $smooth$.
-
-The derivation of the density is reported in Section
-\ref{sec:density-computation-schlather}.
+where $c_1$, $c_2$ and $\nu$ are the sill, the range and the smooth
+parameters of the correlation function, $\Gamma$ is the gamma function
+and $K_{\nu}$ is the modified Bessel function of the third kind with
+order $\nu$. Figure~\ref{fig:covariances} plots the correlation
+functions for the parametric families introduced above. The left panel
+was generated with the following lines
+<<eval=FALSE>>=
+covariance(sill = 1, range = 1, smooth = 4, cov.mod = "whitmat",
+           xlim = c(0,6), ylim = c(0, 1))
+covariance(sill = 1, range = 1, smooth = 2, cov.mod = "whitmat",
+           add = TRUE, col = 2, xlim = c(0,6))
+covariance(sill = 1, range = 1, smooth = 1, cov.mod = "whitmat",
+           add = TRUE, col = 3, xlim = c(0,6))
+covariance(sill = 1, range = 1, smooth = 0.5, cov.mod = "whitmat",
+           col = 4, add = TRUE, xlim = c(0,6))
+legend("topright", c(expression(nu == 4), expression(nu == 2),
+                     expression(nu == 1), expression(nu == 0.5)),
+       col = 1:4, lty = 1, inset = 0.05)
+@ 
 
 <<label=Schlather2Sim,echo=FALSE>>=
 x <- y <- seq(0, 10, length = 100)
@@ -400,243 +574,2018 @@ image(x, y, ms1, col = terrain.colors(30))
 
 \begin{figure}
   \centering
-<<fig=TRUE,echo=FALSE>>=
+<<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
 <<Schlather2Sim>>
 @ 
 \caption{Two simulations of the Schlather model with different
-  correlation functions with approximately the same practical
-  range. Left panel: Whittle-Matérn. Right panel: Powered
-  exponential.}
-  \label{fig:Smith2sim}
+  correlation functions having approximately the same practical
+  range. Left panel: Whittle-Matérn with $c_1 = c_2 = \nu = 1$. Right
+  panel: Powered exponential with $c_1 = \nu = 1$ and $c_2 = 1.5$.}
+  \label{fig:Schlather2sim}
 \end{figure}
+
+Figure~\ref{fig:Schlather2sim} plots two realisations of the Schlather
+model with the powered exponential and Whittle-Matérn correlation
+functions. It can be seen that the powered exponential model leads to
+more rough random fields as the slope of the powered exponential
+correlation function near the origin is steeper than the
+Whittle-Matérn.
+
+<<label=anisoCovFun,echo=FALSE>>=
+cov.fun <- covariance(sill = 1, range = 1, smooth = 1,
+                      cov.mod = "powexp", plot = FALSE)
+A <- matrix(c(cos(pi/4), -sin(pi/4), .5 * sin(pi/4), cos(pi/4)), 2)
+cov.fun.aniso <- function(vec.pos)
+  cov.fun(sqrt(vec.pos %*% A %*% vec.pos))
+
+rho1 <- rho2 <- matrix(NA, 100, 100)
+xs <- ys <- seq(-3, 3, length = 100)
+for (i in 1:100){
+  x <- xs[i]
+  for (j in 1:100){
+    rho1[i,j] <- cov.fun(sqrt(x^2+ys[j]^2))
+    rho2[i,j] <- cov.fun.aniso(c(x, ys[j]))
+  }
+}
+
+par(mfrow=c(1,2))
+contour(xs, ys, rho1, xlab = expression(paste(Delta, x)),
+        ylab = expression(paste(Delta, y)))
+contour(xs, ys, rho2, xlab = expression(paste(Delta, x)),
+        ylab = expression(paste(Delta, y)))
+@ 
+
+\begin{figure}
+  \centering
+<<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
+<<anisoCovFun>>
+@ 
+\caption{Contour plots of an isotropic (left panel) and anisotropic
+  (right panel) correlation functions. Powered exponential family with
+  $c_1 = c_2 = \nu = 1$. The anisotropy parameters are: $\varphi = \pi
+  / 4$, $r = 0.5$.}
+  \label{fig:anisoCovFun}
+\end{figure}
+
+The correlation functions introduced above are all isotropic despite
+model~\eqref{eq:schlather} doesn't require this assumption. From a
+valid correlation function $\rho$ it is always possible to get an
+elliptical correlation function $\rho_e$ by using the following
+transformation:
+\begin{equation}
+  \label{eq:ellipticalCorrFun}
+  \rho_e(\Delta x) = \rho\left(\sqrt{{\Delta x}^T A \Delta x} \right)
+\end{equation}
+where $\Delta x$ is the distance vector between two stations, $A$ is
+any positive semi-definite matrix that may involve additional
+parameters. For example, if the spatial domain belongs to
+$\mathbb{R}^2$, a convenient parametrization for $A$ is given by
+\begin{equation*}
+  A =
+  \begin{bmatrix}
+    \phantom{-}\cos \varphi & r\sin \varphi\\
+    -\sin \varphi & ~\cos \varphi
+  \end{bmatrix}
+\end{equation*}
+where $\varphi \in [0, \pi)$ is the rotation angle and $0 < r < 1$ is
+the ratio between the minor and major principal axes of the
+ellipse. Figure~\ref{fig:anisoCovFun} plots the contour of an
+isotropric correlation function and an anistropic one derived from
+Equation~\eqref{eq:ellipticalCorrFun}.
+
+The correlation coefficient $\rho(h)$ can take any value in
+$[-1,-1]$. Complete dependence is reached when $\rho(h) = 1$ while
+independence occurs when $\rho(h) = -1$. However, most of parametric
+correlation families don't allow negative values so that independence
+is never reached. The next two sections propose two alternatives based
+on characterisation~\eqref{eq:SchlatherChar} that bypass this hurdle.
+
+\section{Independent Schlather Process}
+\label{sec:indep-schl-proc}
+
+In the previous section, we mentioned that the model proposed by
+\citet{Schlather2002} cannot deal with independence. A first attempt
+to solve this issue is to consider a new random process that consists
+in a mixture of the Schlather model and a fully independent random
+process. This model, called independent Schlather Process, is defined
+by:
+\begin{equation}
+  \label{eq:indSchlatherChar}
+  Z(x) = \max \left\{ \alpha Y, (1- \alpha) Z^*(x) \right\}
+\end{equation}
+where $\alpha \in [0, 1]$ is the mixture proportion, $Y$ is a unit
+Fréchet random variable and $Z^*(\cdot)$ is the Schlather process as
+defined by Equation~\eqref{eq:schlather}. It can be seen directly from
+Equation~\eqref{eq:indSchlather} that independence occurs when $\alpha
+= 1$.
+
+$Z(\cdot)$ is a stationary max-stable process with unit Fréchet
+margins. Indeed,
+\begin{eqnarray*}
+  \Pr \left[Z(x) \leq z \right] &=& \Pr \left[ \alpha Y \leq z, (1 -
+    \alpha) Z^*(x) \leq z \right] = \Pr \left[ Y \leq z / \alpha \right]
+  \Pr \left[Z^*(x) \leq z / (1 - \alpha) \right]\\
+  &=& \exp \left[ - \alpha / z \right] \exp \left[ - (1-\alpha) / z
+  \right] = \exp \left(-1/z \right)
+\end{eqnarray*}
+so that $Z(\cdot)$ has unit Fréchet margins. The max-stability of
+$Z(\cdot)$ follows directly as $Y$ and $Z^*(x)$ are independent and
+both of them are max-stable.
+
+Using the same additional assumptions that we mentionned in the
+previous section, the bivariate CDF is given by:
+\begin{equation}
+  \label{eq:indSchlather}
+  \Pr \left[Z(x_1) \leq z_1, Z(x_2) \leq z_2 \right] = \exp
+  \left[ -\left(\frac{1}{z_1} + \frac{1}{z_2} \right) \left\{\alpha +
+      \frac{1-\alpha}{2} \left(1 + \sqrt{1 - 2 (\rho(h) + 1) \frac{z_1
+            z_2}{(z_1 + z_2)^2}} \right) \right\} \right]
+\end{equation}
+
+<<label=indSchlather2Sim,echo=FALSE>>=
+rfrechet <- function(n, loc = 0, scale = 1, shape = 1){
+  if (min(scale) < 0 || min(shape) <= 0) 
+    stop("invalid arguments")
+  loc + scale * rexp(n)^(-1/shape)
+}
+
+x <- y <- seq(0, 10, length = 100)
+set.seed(12)
+ms0 <- MaxStableRF(x, y, grid=TRUE, model="wh", param=c(0,1,0,1, 1), maxstable="extr")
+ms0 <- t(ms0)
+alpha <- 0.1
+z <- rfrechet(prod(dim(ms0)))
+ms0 <- apply(cbind((1-alpha) * as.numeric(ms0), alpha * z), 1, max)
+ms0 <- matrix(ms0, nrow = 100, ncol = 100)
+
+
+set.seed(12)
+ms1 <- MaxStableRF(x, y, grid=TRUE, model="wh", param=c(0,1,0,1, 1), maxstable="extr")
+ms1 <- t(ms1)
+alpha <- 0.9
+z <- rfrechet(prod(dim(ms1)))
+ms1 <- apply(cbind((1-alpha) * as.numeric(ms1), alpha * z), 1, max)
+ms1 <- matrix(ms1, nrow = 100, ncol = 100)
+
+breaks <- c(seq(0, 50, length = 30), 1500)
+par(mfrow=c(1,2))
+image(x, y, ms0, col = terrain.colors(31)[-31], breaks = breaks)
+image(x, y, ms1, col = terrain.colors(31)[-31], breaks = breaks)
+@ 
+
+\begin{figure}
+  \centering
+<<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
+<<indSchlather2Sim>>
+@ 
+\caption{Two simulations of the independent Schlather model having a
+  Whittle-Matérn correlation function such as $c_1 = c_2 = \nu =
+  1$. Left panel: $\alpha = 0.1$. Right panel: $\alpha = 0.9$.}
+  \label{fig:indSchlather2sim}
+\end{figure}
+
+There are two main drawbacks with the independent Schlather
+process. Firstly, despite $Z(\cdot)$ is a valid stochastic process,
+its spatial structure is quite unnatural. Indeed, the $Y$ component
+can be thought as pure noisy process. Secondly, despite independence
+is reached, there is still a range of dependence that couldn't be
+taken into account. We will focus on this point in
+Section~\ref{sec:extremal-coefficient}. Figure~\ref{fig:indSchlather2sim}
+plots two simulated independent Schlather random fields but with two
+different $\alpha$ values.
+
+\section{Geometric Gaussian Process}
+\label{sec:geom-gauss-proc}
+
+To solve the issue of independence with the Schlather process,
+A.C. Davison proposed another model referred to as the geometric
+Gaussian model. The term geometric is by analogy with geometric
+brownian motions. The geometric Gaussian model is based on
+characterisation~\eqref{eq:SchlatherChar} but uses instead of Gaussian
+process for $Y_i(\cdot)$, a log-Normal process. More precisely, the
+geometric Gaussian process is defined by:
+\begin{equation}
+  \label{eq:geomGaussChar}
+  Z(x) = \max_i \xi_i Y_i(x)
+\end{equation}
+where the $Y_i(\cdot)$ are i.i.d copies of $Y(\cdot)$ given by:
+\begin{equation*}
+  Y(x) = \exp\left(\sigma \epsilon(x) - \frac{\sigma^2}{2} \right)
+\end{equation*}
+where $\epsilon(\cdot)$ is a standard Gaussian process with
+correlation function $\rho$.
+
+Obviously this random process is max-stable and has unit
+Fréchet. Indeed, it shares the same construction that the Schlather
+characterisation. The only condition that need to be satisfied is that
+$\mathbb{E}[Y(x)]=1$. This is easily shown as
+\begin{equation*}
+  \mathbb{E}\left[\sigma \epsilon(x) - \frac{\sigma^2}{2} \right] =
+  -\frac{\sigma^2}{2} \qquad \text{and} \qquad \mbox{Var}\left[\sigma
+    \epsilon(x) - \frac{\sigma^2}{2} \right] = \sigma^2  
+\end{equation*}
+so that, by using the properties of a log-Normal distribution, we have
+\begin{equation*}
+  \mathbb{E}[Y(x)] = \exp \left(-\frac{\sigma^2}{2} +
+    \frac{\sigma^2}{2} \right) = 1
+\end{equation*}
+
+\begin{figure}
+  \centering
+  \includegraphics[angle=-90,width=.6\textwidth]{Figures/geomGauss2Sim}
+  \caption{Two simulations of the geometric Gaussian random process
+    with the Whittle-Matérn correlation function such as $c_1 = c_2 =
+    \nu = 1$. Left panel: $\sigma^2 = 0.1$. Right panel: $\sigma^2 =
+    2$.}
+  \label{fig:geomGauss2Sim}
+\end{figure}
+
+As $\sigma \rightarrow 0^+$ or $\rho(h) \rightarrow 1$ complete
+dependence is reached while $\sigma \rightarrow +\infty$ leads to
+independence whatever the $\rho(h)$ value
+is. Figure~\ref{fig:geomGauss2Sim} plots two simulations of the
+geometric Gausian process with two different values for
+$\sigma^2$. Interestingly, the bivariate CDF
+for~\eqref{eq:geomGaussChar} is the same as Equation~\eqref{eq:smith}
+where
+\begin{equation}
+  \label{eq:geomGaussAsSmith}
+  a^2 = 2 \sigma^2 \left(1 - \rho(h) \right)
+\end{equation}
+
+\chapter{Spatial Dependence of Max-Stable Random Fields}
+\label{cha:spatial-depend-max}
+
+Sooner or later, statistical modellers will be interested in knowing
+how evolves dependence in space. When dealing with non-extremal data,
+a common tools is the (semi-)variogram $\gamma$
+\citep{Cressie1993}. Let $Y(\cdot)$ be a stationary Gaussian process
+with correlation function $\rho$ and variance $\sigma^2$. It is well
+known that $Y(\cdot)$ is fully characterized by its mean and its
+covariance. Consequently, the variogram defined as
+\begin{equation}
+  \label{eq:variogram}
+  \gamma(x_1 - x_2) = \frac{1}{2} \mbox{Var}\left[Y(x_1) - Y(x_2)
+  \right] = \sigma^2 \left[1 - \rho(x_1 - x_2) \right]
+\end{equation}
+determines the degree of spatial dependence of $Y(\cdot)$.
+
+When extreme values are of interest, the variogram is not anymore a
+useful tool as it may not even exist. Therefore, there is a need for
+developing more adapted tools for analyzing the spatial dependence of
+max-stable fields. In this chapter, we will present the extremal
+coefficient as a measure of the degree of dependence for extreme
+values and variogram-based approaches that are especially well adapted
+to extremes.
 
 \section{The Extremal Coefficient}
 \label{sec:extremal-coefficient}
 
-The extremal coefficient is a useful way to assess the dependence
-between two locations $x_1$ and $x_2 \in \mathbb{R}^d$. Assuming that
-the data could be modeled by a stationary max-stable process with unit
-Fréchet margin, the extremal coefficient $\theta(x_1 - x_2)$
-satisfies:
+Let $Z(\cdot)$ be a stationary max-stable random field with unit
+Fréchet margins. The extremal dependence among $N$ fixed locations in
+$\mathbb{R}^d$ can be summarised by the extremal coefficient which is
+defined as: 
 \begin{equation}
   \label{eq:extcoeff}
-  \Pr\left[Z(x_1) \leq z, Z(x_2) \leq z\right] = \exp\left(-
-    \frac{\theta(x_1, x_2)}{z} \right)
+  \Pr\left[Z(x_1) \leq z, \ldots, Z(x_N) \leq z\right] = \exp\left(-
+    \frac{\theta_N}{z} \right)
 \end{equation}
-where $1 \leq \theta(x_1, x_2) \leq 2$ with the lower and upper bounds
-corresponding to complete dependence and independence between
-locations $x_1$ and $x_2$.
+where $1 \leq \theta_N \leq N$ with the lower and upper bounds
+corresponding to complete dependence and independence and thus
+provides a measure of the spatial dependence degree between
+stations. Following this idea, $\theta_N$ can be thought as the
+effective number of independent stations.
 
-Consequently, the extremal coefficient function $\theta(\cdot, \cdot)$
-is a natural way to know how the dependence between extremes in space
-evolves.
+Given the properties of the max-stable process with unit Fréchet
+marings, the finite-dimensional CDF belongs to the class of
+multivariate extreme value distributions
+\begin{equation}
+  \label{eq:MEVD}
+  \Pr\left[Z(x_1) \leq z_1, \ldots, Z(x_N) \leq z_N\right] =
+  \exp\left(- V(z_1, \ldots, V(z_N) \right)
+\end{equation}
+where $V$ is a homogeneous function of order $-1$ called the exponent
+measure \citep{Pickands1981,Coles2001}. As a consequence, the
+homogeneity property of $V$ implies a strong relationship between the
+exponent measure and the extremal coefficient
+\begin{equation}
+  \label{eq:extCoeffVfun}
+  \theta_N = V(1, \ldots, 1)
+\end{equation}
 
-\chapter{Fitting a Max-Stable Process to Data}
-\label{sec:fit-maxstab}
+An important specific case of Equation~\eqref{eq:extcoeff} is to
+consider pairwise extremal coefficients, that is
+\begin{equation}
+  \label{eq:extcoeffPairwise}
+  \Pr\left[Z(x_1) \leq z, Z(x_2) \leq z \right] =
+  \exp\left(-\frac{\theta(x_1 - x_2)}{z} \right)
+\end{equation}
 
-If one is interested only in fitting the covariance matrix $\Sigma$ or
-the covariance function $\rho$ to data, another fitting procedure is
-available. The strategy is estimate the extremal coefficient and to
-fit either the Smith or the Schlather models using least squares.  We
-will consider these two different approaches separately.
+Following \citet{Schlather2003}, $\theta(\cdot)$ is called the
+extremal coefficient function and provides sufficient information
+about extremal dependence for many problems despite it doesn't
+characterise the full distribution.
+
+The extremal coefficient functions for max-stable models presented in
+Chapter \ref{cha:an-introduction-max} can be derived directly from
+their bivariate distribution by letting $z_1=z_2=z$. More precisely,
+we have:
+
+\bigskip
+\begin{tabular}{ll}
+  \textbf{Smith} & $\theta(x_1 - x_2) = 2
+  \Phi\left(\frac{\sqrt{(x_1 - x_2)^T \Sigma^{-1} (x_1 - x_2)}}{2}
+  \right)$\\
+  \textbf{Schlather} & $\theta(x_1 - x_2) = 1 + \sqrt{\frac{1 -
+      \rho(x_1 - x_2)}{2}}$\\
+  \textbf{Independent Schlather} & $\theta(x_1 - x_2) = 2 \alpha +
+  \left(1 - \alpha \right) \left(1 + \sqrt{\frac{1 - \rho(x_1 -
+        x_2)}{2}} \right)$\\
+  \textbf{Geometric Gaussian} & $\theta(x_1 - x_2) = 2 \Phi
+  \left(\sqrt{\frac{\sigma^2 (1 - \rho(x_1 - x_2))}{2}} \right)$    
+\end{tabular}
+\bigskip
+
+<<label=extCoeffModels,echo=FALSE>>=
+smith <- function(h) 2 * pnorm(h/2)
+cov.fun <- covariance(sill = 1, range = 1, smooth = 1, plot = FALSE)
+schlather <- function(h)
+  1 + sqrt((1-cov.fun(h))/2)
+alpha <- 0.1
+ischlather <- function(h)
+  2 * alpha + (1 - alpha) * schlather(h)
+sigma2 <- 3
+geomGauss <- function(h)
+  2 * pnorm(sqrt(sigma2 * (1 - cov.fun(h)) / 2))
+
+plot(smith, from = 0, to = 5, xlab = "h", ylab = expression(theta(h)))
+plot(geomGauss, add = TRUE, col = 2, from = 0, to = 5)
+plot(ischlather, add = TRUE, col = 3, from = 0, to = 5)
+plot(schlather, add = TRUE, col = 4, from = 0, to = 5)
+legend("bottomright", c("Smith",  "Geom. Gauss", "Ind. Schlather", "Schlather"),
+       col = 1:4, lty = 1, inset = 0.05)
+@ 
+
+\begin{figure}
+  \centering
+<<fig=TRUE,echo=FALSE,height=3.5>>=
+<<extCoeffModels>>
+@ 
+\caption{Extremal coefficient functions for the different max-stable
+  models introduced. $\Sigma$ is the $2\times 2$ identity
+  matrix. Correlation function: Whittle-Matérn with $c_1 = c_2 = \nu =
+  1$. $\alpha = 0.1$. $\sigma^2 = 3$.}
+  \label{fig:extCoeffModels}
+\end{figure}
+
+Figure~\ref{fig:extCoeffModels} plots the extremal coefficient
+function for the different max-stable models introduced. We can see
+that the Smith model covers the whole range of dependence while
+Schlather's model has an upper bound of $1 + \sqrt{1/2}$. Similarly,
+the independent Schlather model has an upper bound of $1 + \sqrt{1/2}
++ \alpha (1 - \sqrt{1/2})$ but induces a jump of amount $\alpha$ at
+the origin. Lastly, the geometric Gaussian model has an upper bound of
+$2 \Phi(\sqrt{\sigma^2/2})$ but does not induce any jump at
+$h=0$. From a practical point of view, when $\sigma^2 \geq 15$, the
+geometric Gaussian model covers the whole range of dependence.
+
+
+\citet{Schlather2003} prove several interesting properties for
+$\theta(\cdot)$.
+\begin{enumerate}
+\item $2 - \theta(\cdot)$ is a semi-definite positive function,
+\item $\theta(\cdot)$ isn't differentiable at $0$ unless $\theta
+  \equiv 1$,
+\item If $d \geq 2$ and $Z(\cdot)$ is isotropic, $\theta(\cdot)$ has
+  at most one jump at $0$ and is continuous elsewhere.
+\end{enumerate}
+
+These properties have strong consequences. The first assertion
+indicates that the spatial dependence structure of a stationary
+max-stable process can be characterised by a correlation function. The
+second assertion states that a valid correlation functions does not
+always lead to a valid extremal coefficient function. For instance,
+the Gaussian correlation model, i.e. $\rho(h) = \exp(-h^2)$, $h\geq
+0$, is not allowed since it is differentiable at $h = 0$.
+
+Equation~\eqref{eq:extcoeff} forms the basis for a simple maximum
+likelihood estimator. Suppose we have $Z_i(\cdot)$, $i=1$, \ldots, $n$
+independent replications of $Z(\cdot)$ observed at a set $A = \{x_1,
+\ldots, x_{|A|} \}$ of locations. The log-likelihood based on
+Equation~\eqref{eq:extcoeff} is given by:
+% \begin{equation}
+%   \label{eq:llikSTNaive}
+%   \ell_A(\theta_A) = \#\left\{i: \max_{j \in A} \left(Z_i(x_j)
+%       \overline{Z(x_j)} \right) > 0 \right\} \log \theta_A - \theta_A
+%   \sum_{i=1}^{n} \frac{1}{\max_{j \in A} \left( Z_i(x_j)
+%       \overline{Z(x_j)} \right)}
+% \end{equation}
+\begin{equation}
+  \label{eq:llikSTNaive}
+  \ell_A(\theta_A) = n \log \theta_A - \theta_A \sum_{i=1}^{n}
+  \frac{1}{\max_{j \in A} \left( Z_i(x_j) \overline{Z(x_j)} \right)}
+\end{equation}
+where the terms of the form $\log \max_{j\in A}\{Z_i(x_j)\}$ were
+omitted and $\overline{Z(x_j)} = n^{-1} \sum_{i=1}^n 1 /
+Z_i(x_j)$. The scalings by $\overline{Z(x_j)}$ are here to ensure that
+$\hat{\theta}_A = 1$ when $|A| = 1$.
+
+The problem with the MLE based on Equation~\eqref{eq:llikSTNaive} is
+that the extremal coefficient estimates may not hold the properties on
+the extremal coefficient function stated above. To solve this issue,
+\citet{Schlather2003} propose self consistent estimators for
+$\theta_A$ by either sequentially correct the estimates obtained by
+Equation~\eqref{eq:llikSTNaive} or by modifying the log-likelihood to
+ensure these properties. However, these adjustements seem of poor
+value toward their numerical complexity.
+
+\citet{Smith1991} proposed another estimator for the pairwise extremal
+coefficients. As $Z(x)$ is unit Fréchet for all $x \in \mathbb{R}^d$,
+$1/Z(x)$ has a unit exponential distribution and, according to
+Equation~\eqref{eq:extcoeffPairwise}, $1 / \max\{Z(x_1), Z(x_2)\}$ has
+an exponential distribution with rate $\theta(x_1 - x_2)$. By the law
+of large numbers $\sum_{i=1}^n 1/Z_i(x_1) = \sum_{i=1}^n 1/Z_i(x_2)
+\approx n$\footnote{In fact, these relations are exact if the margins
+  were transformed to unit Fréchet by using the maximum likelihood
+  estimates.}, this suggests a simple estimator for the extremal
+coefficient between locations $x_1$ and $x_2$:
+\begin{equation}
+  \label{eq:extCoeffSmith}
+  \hat{\theta}(x_1 - x_2) = \frac{n}{\sum_{i=1}^n \min
+    \{Z_i(x_1)^{-1}, Z_i(x_2)^{-1} \}}
+\end{equation}
+
+<<label=extCoeffST-Smith,echo=FALSE>>=
+n.site <- 50
+n.obs <- 100
+x <- runif(n.site, 0, 10)
+y <- runif(n.site, 0, 10)
+set.seed(12)
+ms0 <- MaxStableRF(x, y, grid=FALSE, model="wh", param=c(0,1,0,1, 1),
+                   maxstable="extr", n = n.obs)
+ms0 <- t(ms0)
+cov.fun <- covariance(sill = 1, range = 1, smooth = 1, cov.mod = "whitmat",
+                      plot = FALSE)
+ext.coeff <- function(h)
+  1 + sqrt((1 - cov.fun(h))/2)
+
+par(mfrow=c(1,2))
+ST <- fitextcoeff(ms0, cbind(x, y), loess = FALSE, ylim = c(1, 2))
+plot(ext.coeff, from = 0, to = 12, col = 2, add = TRUE, lwd = 1.5)
+Smith <- fitextcoeff(ms0, cbind(x, y), estim = "Smith", loess = FALSE, ylim = c(1, 2))
+plot(ext.coeff, from = 0, to = 12, col = 2, add = TRUE, lwd = 1.5)
+@ 
+
+\begin{figure}
+  \centering
+<<echo=FALSE,fig=TRUE,width=7,height=3.5>>=
+<<extCoeffST-Smith>>
+@   
+\caption{Pairwise extremal coefficient estimates from the Schlather
+  and Tawn (left panel) and Smith (right panel) estimators from a
+  simulated max-stable random field having a Whittle-Matérn
+  correlation function - $c_1 = c_2 = \nu = 1$. The red lines are the
+  theoretical extremal coefficient function.}
+  \label{fig:extCoeffST-Smith}
+\end{figure}
+
+Figure~\ref{fig:extCoeffST-Smith} plots the pairwise extremal
+coefficient estimates from a simulated Schlather's model having a
+Whittle-Matérn correlation function using
+Equations~\eqref{eq:llikSTNaive} and \eqref{eq:extCoeffSmith}. This
+figure was generated by using the following code:
+
+<<eval=FALSE>>=
+n.site <- 50
+n.obs <- 100
+x <- runif(n.site, 0, 10)
+y <- runif(n.site, 0, 10)
+set.seed(12)
+ms0 <- MaxStableRF(x, y, grid=FALSE, model="wh", param=c(0,1,0,1, 1),
+                   maxstable="extr", n = n.obs)
+ms0 <- t(ms0)
+par(mfrow=c(1,2))
+fitextcoeff(ms0, cbind(x, y), loess = FALSE)
+fitextcoeff(ms0, cbind(x, y), estim = "Smith", loess = FALSE)
+@ 
+
+\section{Madogram-based approaches}
+\label{sec:madogram-based}
+
+As we stated within the Introduction of this Chapter, variograms are
+useful quantities to assess the degree of spatial dependence for
+Gaussian processes. However its use for extreme observations is
+limited as it may not exist. To see this, let consider a stationary
+max-stable process with unit Fréchet margins. For such random
+processes, the variance is not finite and the variogram does not exist
+theoretically so we need extra work to get reliable variogram-based
+tools.
+
+\subsection{Madogram}
+\label{sec:madogram}
+
+A standard tool in geostatistics, similar to the variogram, is the
+madogram \citep{Matheron1987}. The madogram considers instead of the
+non-centered second order moment the first order one, that is:
+\begin{equation}
+  \label{eq:madogram}
+  \nu(x_1 - x_2) = \frac{1}{2} \mathbb{E}\left[ |Z(x_1) - Z(x_2)|
+  \right]
+\end{equation}
+where $Z(\cdot)$ is a stationary random field with assumed finite
+mean.
+
+The problem with the madogram is almost identical to the one we
+emphasized with the variogram as unit Fréchet random variables have no
+finite mean. This led \citet{Cooley2006} to consider identical GEV
+margins with shape parameter $\xi < 1$ to ensure that the mean (and
+even the variance) are finite. It is possible to use the same strategy
+to ensure that the variogram exists theoretically but, as we will show
+later, we will see that working with the madogram is particularly
+adapted for extreme values and has strong links with the extremal
+coefficient.
+
+By using simple arguments and some results obtained by
+\citet{Hosking1985} on probability weighted moments,
+\citet{Cooley2006} show that
+\begin{equation}
+  \label{eq:mado2ExtCoeff}
+  \theta(x_1 - x_2) =
+  \begin{cases}
+    u_\beta \left(\mu + \frac{\nu(x_1 - x_2)}{\Gamma(1 - \xi)}\right),
+    & \xi < 1, \xi \neq 0,\\
+    \exp\left(\frac{\nu(x_1 - x_2)}{\sigma}\right), & \xi = 0,
+  \end{cases}
+\end{equation}
+where $\mu$, $\sigma$ and $\xi$ are the location, scale and shape
+parameters for the GEV distribution, $\Gamma(\cdot)$ is the Gamma
+function and
+\begin{equation*}
+  u_\beta(x) = \left(1 + \xi \frac{x - \mu}{\sigma} \right)_+^{1/\xi}
+\end{equation*}
+
+<<echo=FALSE,label=madogram>>=
+cov.fun1 <- covariance(sill = 1, range = 1, smooth = 1,
+                       cov.mod = "whitmat", plot = FALSE)
+ext.coeff1 <- function(h)
+  1 + sqrt((1 - cov.fun1(h))/2)
+mado1 <- function(h)
+  log(ext.coeff1(h))
+
+cov.fun2 <- covariance(sill = 1, range = 1.5, smooth = 1,
+                       cov.mod = "powexp", plot = FALSE)
+ext.coeff2 <- function(h)
+  1 + sqrt((1 - cov.fun2(h))/2)
+mado2 <- function(h)
+  log(ext.coeff2(h))
+
+n.site <- 50
+n.obs <- 100
+x <- runif(n.site, 0, 10)
+y <- runif(n.site, 0, 10)
+set.seed(12)
+ms0 <- MaxStableRF(x, y, grid=FALSE, model="wh", param=c(0,1,0,1, 1),
+                   maxstable="extr", n = n.obs)
+ms0 <- t(ms0)
+
+par(mfrow=c(1,2))
+madogram(ms0, cbind(x, y), which = "mado", ylim = c(0, log(2)))
+plot(mado1, from = 0, to = 12, add = TRUE, col = 2, lwd = 1.5)
+madogram(ms0, cbind(x, y), which = "mado", ylim = c(0, log(2)),
+         n.bins = 100, xlim = c(0, 12))
+plot(mado1, from = 0, to = 12, add = TRUE, col = 2, lwd = 1.5)
+@
+
+\begin{figure}
+  \centering
+<<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
+<<madogram>>
+@   
+\caption{Madogram (left panel) and binned madogram (right panel) with
+  unit Gumbel margins for the Schlather model with the Whittle-Matérn
+  correlation functions. The red lines are the theoretical
+  madograms. Points are pairwise estimates.}
+  \label{fig:madogram}
+\end{figure}
+
+Equation~\eqref{eq:madogram} suggests a simple estimator
+\begin{equation}
+  \label{eq:madogramEstim}
+  \hat{\nu}(x_1-x_2) = \frac{1}{2n} \sum_{i=1}^n |z_i(x_1) - z_i(x_2)|
+\end{equation}
+where $z_i(x_1)$ and $z_i(x_2)$ are the $i$-th observations of the
+random field at location $x_1$ and $x_2$ and $n$ is the total number
+of observations. If isotropy is assumed, then it might be preferable
+to use a ``binned'' version of estimator~\eqref{eq:madogramEstim}
+\begin{equation}
+  \label{eq:madogramEstimBinned}
+  \hat{\nu}(h) = \frac{1}{2n |B_h|} \sum_{(x_1, x_2) \in
+    B_h}\sum_{i=1}^n |z_i(x_1) - z_i(x_2)|
+\end{equation}
+where $B_h$ is the set of pair of locations whose pairwise distances
+belong to $[h -\epsilon, h + \epsilon[$, for $\epsilon > 0$.
+
+Figure~\ref{fig:madogram} plots the theoretical madograms for the
+Schlather's model having a Whittle-Matérn correlation
+function. Pairwise and binned pairwise estimates as defined by
+Equations~\eqref{eq:madogramEstim} ans~\eqref{eq:madogramEstimBinned}
+are also reported. The code used to generate these madogram estimates
+was
+<<eval=FALSE>>=
+n.site <- 50
+n.obs <- 100
+x <- runif(n.site, 0, 10)
+y <- runif(n.site, 0, 10)
+set.seed(12)
+ms0 <- MaxStableRF(x, y, grid=FALSE, model="wh", param=c(0,1,0,1, 1),
+                   maxstable="extr", n = n.obs)
+ms0 <- t(ms0)
+
+par(mfrow=c(1,2))
+madogram(ms0, cbind(x, y), which = "mado")
+madogram(ms0, cbind(x, y), which = "mado", n.bins = 100)
+@ 
+
+Using a plugin estimate into Equation~\eqref{eq:mado2ExtCoeff} leads
+to a simple estimator for $\theta(\cdot)$:
+\begin{equation}
+  \label{eq:extCoeffEstMado}
+  \hat{\theta}(x_1 - x_2) =
+  \begin{cases}
+    u_\beta \left(\mu + \frac{\hat{\nu}(x_1 - x_2)}{\Gamma(1 -
+        \xi)}\right), & \xi < 1, \xi \neq 0,\\
+    \exp\left(\frac{\hat{\nu}(x_1 - x_2)}{\sigma}\right), & \xi = 0,
+  \end{cases}
+\end{equation}
+
+<<label=madogramExtCoeff,echo=FALSE>>=
+n.site <- 50
+n.obs <- 100
+x <- runif(n.site, 0, 10)
+y <- runif(n.site, 0, 10)
+set.seed(12)
+ms0 <- MaxStableRF(x, y, grid=FALSE, model="wh", param=c(0,1,0,1, 1),
+                   maxstable="extr", n = n.obs)
+ms0 <- t(ms0)
+
+cov.fun <- covariance(sill = 1, range = 1, smooth = 1, cov.mod = "whitmat",
+                      plot = FALSE)
+ext.coeff <- function(h)
+  1 + sqrt((1 - cov.fun(h))/2)
+mado <- function(h)
+  log(ext.coeff(h))
+
+par(mfrow=c(1,2))
+madogram(ms0, cbind(x, y), which = "mado", ylim = c(0, log(2)))
+plot(mado, from = 0, to = 12, col = 2, lwd = 1.5, add = TRUE)
+madogram(ms0, cbind(x, y), which = "ext", ylim = c(1, 2))
+plot(ext.coeff, from = 0, to = 12, col = 2, lwd = 1.5, add = TRUE)
+@ 
+
+\begin{figure}
+  \centering
+<<echo=FALSE,fig=TRUE,width=7,height=3.5>>=
+<<madogramExtCoeff>>
+@   
+\caption{Pairwise madograms (left panel) and extremal coefficients
+  (right panel) estimates from a simulated max-stable random field
+  having a Whittle-Matérn correlation function - $c_1 = c_2 = \nu =
+  1$. The red lines are the theoretical madogram and extremal
+  coefficient function.}
+  \label{fig:madoExtCoeff}
+\end{figure}
+
+Figure~\ref{fig:madoExtCoeff} plots the madogram and extremal
+coefficient functions estimated from a simulated max-stable process
+with unit Fréchet margins and having a Whittle-Matérn correlation
+function. These estimates were obtained by using
+Equations~\eqref{eq:madogramEstim} and \eqref{eq:extCoeffEstMado}
+respectively. The figure was generated using the code below.
+
+<<eval=FALSE>>=
+n.site <- 50
+n.obs <- 100
+x <- runif(n.site, 0, 10)
+y <- runif(n.site, 0, 10)
+set.seed(12)
+ms0 <- MaxStableRF(x, y, grid=FALSE, model="wh", param=c(0,1,0,1, 1),
+                   maxstable="extr", n = n.obs)
+ms0 <- t(ms0)
+madogram(ms0, cbind(x, y))
+@ 
+
+\subsection{$F$-Madogram}
+\label{sec:f-madogram}
+
+In the previous subsection, we introduced the madogram as a summary
+statistic for the spatial dependence structure. However, the choice of
+the GEV parameters to compute this madogram is somewhat
+arbritrary. Instead, \citet{Cooley2006} propose a modified madogram
+called the $F$-madogram
+\begin{equation}
+  \label{eq:F-madogram}
+  \nu_F(x_1 - x_2) = \frac{1}{2} \mathbb{E}
+  \left[|F\left(Z(x_1)\right) - F\left(Z(x_2)\right)| \right]
+\end{equation}
+where $Z(\cdot)$ is a stationary max-stable random field with unit
+Fréchet margins and $F(z) = \exp(-1/z)$.
+
+<<echo=FALSE,label=F-madogram>>=
+n.site <- 50
+n.obs <- 100
+x <- runif(n.site, 0, 10)
+y <- runif(n.site, 0, 10)
+set.seed(12)
+sigma <- matrix(c(1, 0, 0, 1),ncol = 2)
+sigma.inv <- solve(sigma)
+sqrtCinv <- t(chol(sigma.inv))
+model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
+set.seed(12)
+ms0 <- MaxStableRF(x, y, grid = FALSE, model = model, maxstable = "Bool",
+                   n = n.obs)
+ms0 <- t(ms0)
+
+ext.coeff <- function(h)
+  2 * pnorm(h/2)
+Fmado <- function(h)
+  0.5 * (ext.coeff(h) - 1) / (ext.coeff(h) + 1)
+
+par(mfrow=c(1,2))
+fmadogram(ms0, cbind(x, y), which = "mado", ylim = c(0, 1/5))
+plot(Fmado, from = 0, to = 13, add = TRUE, col = 2, lwd = 1.5)
+fmadogram(ms0, cbind(x, y), which = "ext", ylim = c(1, 2.4))
+plot(ext.coeff, from = 0, to = 13, add = TRUE, col = 2, lwd = 1.5)
+@
+
+\begin{figure}
+  \centering
+<<fig=TRUE,echo=FALSE,width=7,height=3.5>>=
+<<F-madogram>>
+@   
+\caption{Pairwise $F$-madogram (left panel) and extremal coefficient
+  (right panel) estimates for the Smith model with $\Sigma$ equals to
+  the identity matrix. The red lines are the theoretical $F$-madogram
+  and extremal coefficient function.}
+  \label{fig:F-madogram}
+\end{figure}
+
+The $F$-madogram is well defined even in the presence of unit Fréchet
+margins as we work with $F(Z(x_1))$ instead of $Z(x_1)$. Obviously,
+Equation~\eqref{eq:F-madogram} suggests a simple estimator:
+\begin{equation}
+  \label{eq:F-madogramEstim}
+  \hat{\nu}_F(x_1 - x_2) = \frac{1}{2 n} \sum_{i=1}^{n}
+  |\hat{F}(z_i(x_1)) - \hat{F}(z_i(x_2))|
+\end{equation}
+where $z_i(x_1)$ and $z_i(x_2)$ are the $i$-th observations of the
+random field at location $x_1$ and $x_2$ and $n$ is the total number
+of observations.
+
+The $F$-madogram has strong connections with the extremal coefficient
+introduced in Section~\ref{sec:extremal-coefficient}. To see this,
+lets first note that
+\begin{equation}
+  \label{eq:abs2max}
+  |x - y| = 2 \max\left\{x, y \right\} - (x + y)
+\end{equation}
+
+Using Equation~\eqref{eq:abs2max} in Equation~\eqref{eq:F-madogram},
+we have:
+\begin{eqnarray*}
+  \nu_F(x_1 - x_2) &=& \frac{1}{2} \mathbb{E}
+  \left[|F\left(Z(x_1)\right) - F\left(Z(x_2)\right)| \right] =
+  \mathbb{E}\left[\max\left\{F\left(Z(x_1)\right),
+      F\left(Z(x_2)\right) \right\} \right] - \mathbb{E}\left[
+    F\left(Z(x_1) \right) \right]\\ 
+  &=& \mathbb{E}\left[F\left(\max\{Z(x_1), Z(x_2)\} \right)\right] -
+  \frac{1}{2}
+\end{eqnarray*}
+where we used the fact that $F(Z(x_1))$ is uniformly distributed on
+$[0, 1]$. Now, from Section~\ref{sec:extremal-coefficient}, we know
+that
+\begin{equation*}
+  \Pr \left[ \max\left\{ Z(x_1), Z(x_2) \right\}\leq z \right] = \exp
+  \left(- \frac{\theta(x_1 - x_2)}{z} \right)
+\end{equation*}
+so that
+\begin{eqnarray*}
+  \mathbb{E}\left[F\left(\max\{Z(x_1), Z(x_2)\} \right) \right] &=&
+  \theta(x_1 - x_2) \int_{0}^{+\infty} \exp\left(-\frac{1}{z} \right)
+  \frac{\exp\left(-\frac{\theta(x_1 - x_2)}{z} \right)}{z^2}\mbox{dz}\\
+  &=& \frac{\theta(x_1 - x_2)}{\theta(x_1 - x_2) + 1}
+\end{eqnarray*}
+and finally
+\begin{equation}
+  \label{eq:F-mado2ExtCoeff}
+  2 \nu_F(x_1 - x_2) = \frac{\theta(x_1 - x_2) - 1}{\theta(x_1 - x_2)
+    + 1}
+\end{equation}
+or conversely
+\begin{equation}
+  \label{eq:extCoeff2F-mado}
+  \theta(x_1 - x_2) = \frac{1 + 2 \nu_F(x_1 - x_2)}{1 - 2 \nu_F(x_1 -
+    x_2)}
+\end{equation}
+
+As we can see from the above equation, there is a one-to-one
+relationship between the extremal coefficient and the
+$F$-madogram. This suggests a simple estimator for $\theta(x_1 - x_2)$
+\begin{equation}
+  \label{eq:extCoeffEstF-mado}
+  \hat{\theta}(x_1 - x_2) = \frac{1 + 2 \hat{\nu}_F(x_1 - x_2)}{1 - 2
+    \hat{\nu}_F(x_1 - x_2)}
+\end{equation}
+
+Figure~\ref{fig:F-madogram} plots the pairwise $F$-madogram and
+extremal coefficient estimates from $100$ replications of the
+isotropic Smith model. The code used to produce this figure was:
+<<eval=FALSE>>=
+n.site <- 50
+n.obs <- 100
+x <- runif(n.site, 0, 10)
+y <- runif(n.site, 0, 10)
+set.seed(12)
+sigma <- matrix(c(1, 0, 0, 1),ncol = 2)
+sigma.inv <- solve(sigma)
+sqrtCinv <- t(chol(sigma.inv))
+model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
+set.seed(12)
+ms0 <- MaxStableRF(x, y, grid = FALSE, model = model, maxstable = "Bool",
+                   n = n.obs)
+ms0 <- t(ms0)
+
+par(mfrow=c(1,2))
+fmadogram(ms0, cbind(x, y))
+@ 
+
+As with the madogram presented in the previous Section, it is also
+possible to have binned estimates of the $F$-madogram by passing the
+argument \verb|n.bins| into the \verb|fmadogram| function.
+
+\subsection{$\lambda$-Madogram}
+\label{sec:lambda-madogram}
+
+The extremal coefficient, and thus the ($F$-)madogram, does not fully
+characterize the spatial dependence of a random field. Indeed, from
+Equation~\eqref{eq:extcoeff}, it only considers $\Pr[z(x_1) \leq z_1,
+Z(x_2) \leq z_2]$ where $z_1 = z_2 = z$. To solve this issue,
+\citet{Naveau2009} introduce the $\lambda$-madogram defined as
+\begin{equation}
+  \label{eq:lambda-madogram}
+  \nu_{\lambda}(x_1 - x_2) = \frac{1}{2} \mathbb{E} \left[
+    |F^{\lambda}\{Z(x_1)\} - F^{1-\lambda}\{Z(x_2)\}|\right]
+\end{equation}
+for any $\lambda \in [0, 1]$.
+
+The idea beyond this is that by varying $\lambda$, we will focus on
+$\Pr[Z(x_1) \leq z_1, Z(x_2) \leq z_2]$ where $z_1 = \lambda z$ and
+$z_2 = (1 - \lambda) z$ and thus explore the whole space.
+
+Applying Equation~\eqref{eq:abs2max} with $x = F^{\lambda}\{Z(x_1)\}$
+and $y = F^{1-\lambda}\{Z(x_2)\}$, we have
+\begin{eqnarray*}
+  \nu_{\lambda}(x_1 - x_2) &=& \mathbb{E}\left[\max\{F^{\lambda}
+    \{Z(x_1)\}, F^{1-\lambda}\{Z(x_2)\} \} \right] - \mathbb{E}\left[
+    F^{\lambda} \{Z(x_1)\} \right] - \mathbb{E}\left[F^{1-\lambda}
+    \{Z(x_2)\} \right]\\
+  &=& \mathbb{E}\left[\max\{F^{\lambda} \{Z(x_1)\},
+    F^{1-\lambda}\{Z(x_2)\} \} \right] - \frac{1}{2(1+\lambda)} -
+  \frac{1}{2(2 - \lambda)}
+\end{eqnarray*}
+where we used the fact that $\mathbb{E}[X^k] = 1/(1+k)$, $X \sim
+U(0,1)$, $k>0$. From Section~\ref{sec:extremal-coefficient} we know
+that
+\begin{eqnarray*}
+  \Pr\left[\max\{F^{\lambda} \{Z(x_1)\}, F^{1-\lambda}\{Z(x_2)\} \}
+    \leq z \right] &=& \Pr \left[Z(x_1) \leq \lambda / \log z, Z(x_2)
+    \leq (1 - \lambda) / \log z \right]\\
+  &=& \exp\left\{\log (z) V_{x_1,x_2}\left(\lambda, 1 - \lambda
+    \right) \right\}
+\end{eqnarray*}
+where $V_{x_1,x_2}$ is the homogeneous function of order $-1$
+introduced in Equation~\eqref{eq:MEVD}. Differentiating this CDF
+w.r.t. $z$ gives the probability density function of
+$\max\{F^{\lambda} \{Z(x_1)\}, F^{1-\lambda}\{Z(x_2)\} \}$, so that we
+have
+\begin{eqnarray*}
+  \mathbb{E}\left[\max\{F^{\lambda} \{Z(x_1)\},
+    F^{1-\lambda}\{Z(x_2)\} \} \right] &=& \int_0^1 -z
+  \frac{V_{x_1,x_2}(\lambda, 1-\lambda)}{z} \exp\left\{-\log (z)
+    V_{x_1,x_2}\left(\lambda, 1 - \lambda \right) \right\} \mbox{dz}\\
+  &=& \frac{V_{x_1,x_2}(\lambda, 1-\lambda)}{1+V_{x_1,x_2}(\lambda,
+    1-\lambda)}
+\end{eqnarray*}
+and finally
+\begin{equation}
+  \label{eq:lambda-madogramVfun}
+  \nu_{\lambda}(x_1 - x_2) = \frac{V_{x_1,x_2}(\lambda,
+    1-\lambda)}{1+V_{x_1,x_2}(\lambda, 1-\lambda)} - c(\lambda)
+\end{equation}
+where $c(\lambda) = 3/\{2(1+\lambda)(2-\lambda)\}$.
+
+Again there is a one-to-one relationship between $\nu_\lambda$ and the
+dependence measure, so that we can express $V_{x_1,x_2}$ as a function
+of $\nu_\lambda$
+\begin{equation}
+  \label{eq:Vfun2lambda-mado}
+  V_{x_1,x_2}(\lambda, 1-\lambda) = \frac{c(\lambda) + \nu_\lambda(x_1
+    - x_2)}{1 - c(\lambda) -\nu_\lambda(x_1 - x_2)}
+\end{equation}
+
+As $V_{x_1,x_2}(0.5, 0.5) = 2 \theta(x_1 - x_2)$, the previous
+equation induces that the madogram and the $F$-madogram are special
+cases of the $\lambda$-madogram when $\lambda = 0.5$. For instance, we
+have
+\begin{equation*}
+  \nu_{0.5}(x_1 - x_2) = \frac{8 \nu_F(x_1 - x_2)}{3[3 + 2 \nu_F(x_1 -
+    x_2)]}
+\end{equation*}
+
+Equation~\eqref{eq:lambda-madogram} suggests a simple estimator
+\begin{equation}
+  \label{eq:lambda-madogramEst}
+  \hat{\nu}_{\lambda}(x_1 - x_2) = \frac{1}{2n} \sum_{i=1}^n
+  |\hat{F}^{\lambda}\{z_i(x_1)\} - \hat{F}^{1-\lambda}\{z_i(x_2)\}|
+\end{equation}
+where $z_i(x_1)$ and $z_i(x_2)$ are the $i$-th observations of the
+random field at location $x_1$ and $x_2$, $n$ is the total number of
+observations and $\hat{F}$ is an estimate of the CDF at the specified
+location. By plug in this estimator into
+Equation~\eqref{eq:Vfun2lambda-mado} we get an estimator for the
+dependence measure
+\begin{equation}
+  \label{eq:VfunEst}
+  \hat{V}_{x_1,x_2}(\lambda, 1-\lambda) = \frac{c(\lambda) +
+    \hat{\nu}_\lambda(x_1 - x_2)}{1 - c(\lambda)
+    -\hat{\nu}_\lambda(x_1 - x_2)}
+\end{equation}
+
+<<label=lambda-madogram,echo=FALSE>>=
+n.site <- 50
+n.obs <- 100
+x <- runif(n.site, 0, 10)
+y <- runif(n.site, 0, 10)
+set.seed(12)
+ms0 <- MaxStableRF(x, y, grid=FALSE, model="stable", param=c(0,1,0,1, 1),
+                   maxstable="extr", n = n.obs)
+ms0 <- t(ms0)
+set.seed(12)
+ms1 <- MaxStableRF(x, y, grid=FALSE, model="cauchy", param=c(0,1,0,1, 1),
+                   maxstable="extr", n = n.obs)
+ms1 <- t(ms1)
+
+par(mfrow=c(1,2), pty = "s")
+lmadogram(ms0, cbind(x, y), n.bins = 60)
+lmadogram(ms1, cbind(x, y), n.bins = 60)
+@ 
+
+\begin{figure}
+  \centering
+<<echo=FALSE,fig=TRUE,width=7,height=3.5>>=
+<<lambda-madogram>>
+@ 
+\vspace{-1cm}
+\caption{Binned $\lambda$-madogram estimates for two Schlather models
+  having a powered exponential (right panel) and a Cauchy covariance
+  (left panel) functions. $c_1 = c_2 = \nu = 1$.}
+  \label{fig:lambda-mado}
+\end{figure}
+
+Figure~\ref{fig:lambda-mado} plots the binned $\lambda$-madogram
+estimates from $100$ replications of the Schlather model having a
+powered exponential and a Cauchy correlation functions. The code used
+to produce this figure was:
+
+<<eval=FALSE>>=
+n.site <- 50
+n.obs <- 100
+x <- runif(n.site, 0, 10)
+y <- runif(n.site, 0, 10)
+set.seed(12)
+ms0 <- MaxStableRF(x, y, grid=FALSE, model="stable", param=c(0,1,0,1, 1),
+                   maxstable="extr", n = n.obs)
+ms0 <- t(ms0)
+set.seed(12)
+ms1 <- MaxStableRF(x, y, grid=FALSE, model="cauchy", param=c(0,1,0,1, 1),
+                   maxstable="extr", n = n.obs)
+ms1 <- t(ms1)
+
+par(mfrow=c(1,2))
+lmadogram(ms0, cbind(x, y), n.bins = 60)
+lmadogram(ms1, cbind(x, y), n.bins = 60)
+@ 
+
+Note that it might be useful to use the excellent \emph{persp3d}
+function provided by the contributed \emph{rgl} R package to explore
+dynamically the $\lambda$-madogram.
+
+\chapter{Fitting a unit Fréchet Max-Stable Process to Data}
+\label{chat:fit-maxstab-frech}
+
+In Chapter~\ref{cha:an-introduction-max}, we talked about max-stable
+processes and gave two different characterisations of such
+processes. However, we mentionned that only the bivariate
+distributions are analytically known so that the fitting of max-stable
+processes to data is not straightforward. In this Chapter, we will
+present two different approaches to fit max-stable processes to
+data. The first one is based on least squares and was first introduced
+by \citet{Smith1991}. The second one uses the maximum composite
+likelihood estimator \citep{Lindsay1988} and more precisely the
+maximum pairwise likelihood estimator. We will consider these two
+different approaches separately.
 
 \section{Least Squares}
 \label{sec:least-squares}
 
 As stated by Equations~\eqref{eq:smith} and~\eqref{eq:schlather}, the
 density of the max-stable processes are analytically known only for
-the bivariate case so that maximum likelihood estimators isn't
-available. This statement leads Smith \citep{Smith1991} to propose an
+the bivariate case so that maximum likelihood estimators is not
+available. This statement led \citet{Smith1991} to propose an
 estimator based on least squares. Namely, the fitting procedure
 consists in minimizing the objective function defined by
 \begin{equation}
   \label{eq:extCoeffLeastSquares}
-  C(\psi) = \sum{i=1}^{n.site-1} \sum_{j=i+1}^{n.site}
-  \left(\frac{\theta_{i,j} -
-      \tilde{\theta}_{i,j}}{s\left(\tilde{\theta}_{i,j} \right)}
-  \right)^2
+  C(\psi) = \sum_{i<j} \left(\frac{\theta_{i,j} -
+      \tilde{\theta}_{i,j}}{s(\tilde{\theta}_{i,j})} \right)^2
 \end{equation}
 where $\psi$ is the vector parameter of the max-stable process,
 $\theta_{i,j}$ is the predicted extremal coefficient from the
-max-stable model for stations $i$ and $j$, $\tilde{\theta}_{i,j}$
-is a semi-parametric estimator of the extremal coefficient for
-stations $i$ and $j$ and $s(\tilde{\theta}_{i,j})$ is the standard
-deviation related to the estimation of $\tilde{\theta}_{i,j}$.
+max-stable model for stations $i$ and $j$ , $\tilde{\theta}_{i,j}$ is
+a semi-parametric estimator defined by
+Equation~\eqref{eq:extCoeffSmith} for stations $i$ and $j$ and
+$s(\tilde{\theta}_{i,j})$ is the standard deviation related to the
+estimation of $\tilde{\theta}_{i,j}$. These $s(\tilde{\theta}_{i,j})$
+are estimated by the jacknife estimator \citep{Efron1982}.
 
-The SpatialExtremes has a function to fit max-stable processes using
-least squares through the \verb|fitcovmat| for the Smith model and
-\verb|fitcovariance| for the Schlather model. More precisely, this is
-done by the following lines:
-<<eval=FALSE>>=
-##Simulate a max-stable process
+S.J. Neil, in his thesis, suggests the use of this weighted sum of
+squares criterion to avoid unsatisfactory fits in region of high
+dependence i.e. when $\theta_{i,j}$ is close to 1.
+
+Although \citet{Smith1991} proposed this estimator for his own
+max-stable model, there is no restriction in applying it to any of the
+max-stable models introduced in
+Chapter~\ref{cha:an-introduction-max}. An illustration of this fitting
+procedure is given by the following lines:
+<<>>=
 n.site <- 40
+n.obs <- 80
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
-
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
-param=c(0,1,.2,3, 1.2), maxstable="extr", n = 80)
+sigma <- matrix(c(9/8, 1, 1, 9/8),ncol = 2)
+sigma.inv <- solve(sigma)
+sqrtCinv <- t(chol(sigma.inv))
+model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
+set.seed(12)
+ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model = model,
+                   maxstable = "Bool", n = n.obs)
 ms0 <- t(ms0)
-##Smith's model
-fitcovmat(ms0, locations)
-##Schlather's model with Powered exponential covariance function
-fitcovariance(ms0, locations, "whitmat")
+fitcovmat(ms0, locations, marge = "emp")
 @ 
 
+This approach suffers from two major drawbacks. Firstly, unless we use
+Monte-Carlo techniques, standard errors are not available and because
+observations are far from being Normal, the least squares estimator
+should be far from efficiency in the way given by the Cramér-Rao lower
+bound \citep{Cramer1946} and the Gauss-Markov theorem. Secondly, for
+concrete analysis, it is hopeless that the observed (spatial) annual
+maxima have unit Fréchet margins so that we need first to transform
+the data to the unit Fréchet scale. This suggests the use of a more
+flexible estimator.
 
 \section{Pairwise Likelihood}
 \label{sec:pairwise-likelihood}
 
-As stated in the previous chapter, the densities of the two max-stable
-models are only known for two different locations. The strategy used
-in the package is to use pairwise-likelihood instead of the ``full''
-likelihood. The log pairwise-likelihood is given by
+As already stated, the ``full'' likelihood for the max-stable model
+presented in Chapter~\ref{cha:an-introduction-max} is not analytically
+known if the number of stations under consideration is greater or
+equal to three. However, as the bivariate density is analytically
+known, this suggests the use of the composite likelihood
+\citep{Lindsay1988} and more precisely the pairwise likelihood in
+place of the ``full'' likelihood. The log pairwise-likelihood is given
+by
 \begin{equation}
   \label{eq:lplik}
-  \ell_p(\mathbf{y};\psi) = \sum_{i<j} \sum_{k=1}^{n_{i,j}}
-  \log f(y_k^{(i)}, y_k^{(j)}; \psi)
+  \ell_p(\mathbf{z};\psi) = \sum_{i<j} \sum_{k=1}^{n_{i,j}}
+  \log f(z_k^{(i)}, z_k^{(j)}; \psi)
 \end{equation}
-where $\mathbf{y}$ is the data available on the whole region,
+where $\mathbf{z}$ is the data available on the whole region,
 $n_{i,j}$ is the number of common observations between sites $i$ and
 $j$, $y_k^{(i)}$ is the $k$-th observation of the $i$-th site and
-$f(\cdot, \cdot)$ is the bivariate distribution of the max-stable
-process - see Annex~\ref{cha:dens-grad-comp} for the analytical forms.
+$f(\cdot, \cdot)$ is the bivariate distribution of the unit Fréchet
+max-stable process.
 
-The max-stable process is fitted to data by maximizing the log
-pairwise-likelihood\footnote{This is why the fitting procedure may be
-  time consuming with large region.}. Properties of the maximum
-composite likelihood estimator\footnote{In our case, the maximum
-  pairwise likelihood estimator} are well known
-\citep{Lindsay1988,Cox2004}. In particular, because each pairwise
-score equation is unbiased, the sum of these score equations is
-unbiased too and leads to consistent estimators.
+\subsection{Misspecification}
+\label{sec:misspecification}
 
+Properties of the maximum composite likelihood estimator\footnote{In
+  our case, the maximum pairwise likelihood estimator} are well known
+\citep{Lindsay1988,Cox2004} and belong to the class of maximum
+likelihood estimation under misspecification.
 
-\subsection{Assuming Unit Fréchet Margins}
-\label{sec:simple-case-study}
+A statistical model $\{f(y;\psi), \psi \in \mathbb{R}^p\}$ is said
+\emph{misspecified} if the observations $y_i$, $i=1$, \ldots, $n$ are
+drawn from a unknown true density $g$ instead of $f$. We say that the
+model $\{f(y;\psi), \psi \in \mathbb{R}^p\}$ is \emph{correct} if
+there exists $\psi_* \in \mathbb{R}^d$ such that $f(y;\psi_*) = g(y)$,
+for all $y$. 
 
-To start working with the SpatialExtremes package, let consider a
-simple case study for which each location is unit Fréchet
-distributed. M. Schlather developed a R package called
-\emph{RandomFields} to simulate spatial random fields from a
-max-stable process. Consequently, all we need is to define the
-coordinate of each location as well as the parameters of the
-covariance function in equation \eqref{eq:schlather}.
+Let $\hat{\psi}$ be the maximum likelihood estimator. Because of the
+law of large numbers, we have
+\begin{equation}
+  \label{eq:LLNMissMLE}
+  \frac{1}{n} \sum_{i=1}^n \log f\left(y_i;\hat{\psi}\right)
+  \longrightarrow \int \log f\left(y;\psi_g\right) g(y) \mbox{dy},
+  \qquad n \rightarrow +\infty
+\end{equation}
+where $\psi_g$ is the value that minimizes the Kullback-Leibler
+discrepancy defined as
+\begin{equation}
+  \label{eq:KullbackLeibler}
+  D\left(f_\psi, g\right) = \int \log \left( \frac{g(y)}{f(y;\psi)}
+  \right) g(y) \mbox{dy}
+\end{equation}
 
+By definition of $\hat{\psi}$, we have:
+\begin{equation*}
+  \frac{1}{n} \sum_{i=1}^n \frac{\partial \log
+    f(y_i;\hat{\psi})}{\partial \psi} = 0
+\end{equation*}
+so that, provided the log-likelihood is regular enough, a Taylor
+expansion about $\psi_g$ yields
+\begin{eqnarray*}
+  && \frac{1}{n} \sum_{i=1}^n \frac{\partial \log f(y_i;\psi_g)}{\partial
+    \psi} + \left(\hat{\psi} - \psi_g \right)^T \frac{1}{n} \sum_{i=1}^n
+  \frac{\partial^2 \log f(y_i;\psi_g)}{\partial \psi \partial \psi^T}
+  \stackrel{\cdot}{=} 0\\
+  &\Longleftrightarrow& \hat{\psi} \stackrel{\cdot}{=} \psi_g -
+  \left\{ \frac{1}{n} \sum_{i=1}^n \frac{\partial^2 \log
+      f(y_i;\psi_g)}{\partial \psi \partial \psi^T} \right\}^{-1}
+  \left\{\frac{1}{n} \sum_{i=1}^n \frac{\partial \log
+      f(y_i;\psi_g)}{\partial \psi} \right\}
+\end{eqnarray*}
+
+It can be shown using the central limit theorem and the weak law of
+large numbers \citep[p.~124]{Davison2003} that the previous equation
+implies that
+\begin{equation}
+  \label{eq:MLEMissp}
+  \hat{\psi} \stackrel{\cdot}{\sim} N\left(\psi_g, J(\psi_g)^{-1}
+    H(\psi_g) J(\psi_g)^{-1} \right)
+\end{equation}
+where
+\begin{eqnarray}
+  \label{eq:Hessian}
+  H(\psi_g) &=& n \int \frac{\partial \log f(y;\psi)}{\partial \psi}
+  \frac{\partial \log f(y;\psi)}{\partial \psi^T} g(y) \mbox{dy}\\
+  \label{eq:VarScore}
+  J(\psi_g) &=& n \int \frac{\partial^2 \log f(y;\psi)}{\partial
+    \psi \partial \psi^T} g(y) \mbox{dy}
+\end{eqnarray}
+
+Note that if by a lucky chance our candidate model $f(y;\psi)$
+contains the true one, then $\psi_g = \psi$ and $H(\psi_g) =
+-J(\psi_g)$ so that Equation~\eqref{eq:MLEMissp} reduces to the usual
+asymptotic distribution for the MLE.
+
+The pairwise likelihood is a specific case of misspecified models and
+leads to further simplifications. To see this, lets consider the
+gradient of the log-pairwise likelihood
+\begin{equation}
+  \label{eq:gradlplik}
+  \nabla \ell_p(\mathbf{y};\psi) = \sum_{i<j} \sum_{k=1}^{n_{i,j}}
+  \nabla \log f(y_k^{(i)}, y_k^{(j)}; \psi)
+\end{equation}
+For each fixed $i$ and $j$,
+\begin{equation*}
+  \sum_{k=1}^{n_{i,j}} \nabla \log f(y_k^{(i)}, y_k^{(j)}; \psi) = 0
+\end{equation*}
+is an unbiased estimating equation so that $\nabla
+\ell_p(\mathbf{y};\psi) = 0$ is unbiased too as a linear combination
+of unbiased estimating equations. This leads to a modification of
+Equation~\eqref{eq:MLEMissp}
+\begin{equation}
+  \label{eq:lplikAsymp}
+  \hat{\psi_p} \stackrel{\cdot}{\sim} N\left(\psi, J(\psi)^{-1}
+    H(\psi) J(\psi)^{-1} \right)
+\end{equation}
+where $H(\psi)$ and $J(\psi)$ are given by
+Equations~\eqref{eq:Hessian} and \eqref{eq:VarScore}.
+
+Let consider a simple case study to see how it works in practice. Here
+we simulate independent replications of the Schlather model with a
+Whittle-Matérn correlation function having its sill, range and shape
+parameters equal to $0.8$, $3$ and $1.2$ respectively.
 <<>>=
-library(RandomFields)
 n.site <- 40
+set.seed(12)
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
 ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
 param=c(0,1,.2,3, 1.2), maxstable="extr", n = 80)
 ms0 <- t(ms0)
+fitmaxstab(ms0, locations, cov.mod = "whitmat", std.err.type = "none")
 @
 
-For this application, the covariance function is taken to be the
-Whittle-Matérn covariance function with sill, range and smooth
-parameters equal to $0.8$ $(1 - 0.2)$, $3$ and $1.2$ respectively. The
-locations are distributed uniformly on the square $[0,10]^2$.
-
-To fit a max-stable process using pairwise likelihood and assuming
-unit Fréchet margins, all we have to do is to invoke:
-<<>>=
-fitmaxstab(ms0, locations, cov.mod = "whitmat", fit.marge = FALSE)
-@ 
-
 From this output, we can see that we indeed use the Schlather's
-representation with a Whittle-Matérn covariance function. The pairwise
-deviance is given and the Takeuchi information criterion (TIC) is not
-available (NA) - see Section~\ref{sec:model-selection} for more
-details. But the convergence was successful and the estimates of the
-covariance function are accessible. Note that large deviations from
-the theoretical values may be expected as the parameters of the
-Whittle-Matérn covariance function are far from orthogonal. Thus, the
-range and smooth estimates may be totally different while leading
-(approximately) to the same covariance function.
+representation with a Whittle-Matérn correlation function. The
+convergence was successful and the parameter estimates for the
+covariance function as well as the pairwise deviance are
+accessible. Note that large deviations from the theoretical values may
+be expected as the parameters of the Whittle-Matérn covariance
+function are far from orthogonal. Thus, the range and smooth estimates
+may be totally different while leading (approximately) to the same
+covariance function.
 
-When using the Whittle-Matérn covariance function, it is sometimes
-preferable to fix the smooth parameter using prior knowledge on the
-process smoothness \citep{Diggle2007}. This can be done by:
+The \verb|fitmaxstab| function provides a powerful option that can fix
+any parameter of the model under consideration. For instance, this
+could be especially useful when using the Whittle-Matérn correlation
+function as it is sometimes preferable to fix the smooth parameter
+using prior knowledge on the process smoothness
+\citep{Diggle2007}. Obviously, this feature is not restricted to this
+specific case and one can consider more exotic models. Held-fixing any
+parameters of the model is illustrated by the following lines
 <<eval=FALSE>>=
-fitmaxstab(ms0, locations, cov.mod = "whitmat", smooth = 1.2, fit.marge = FALSE)
+fitmaxstab(ms0, locations, cov.mod = "whitmat", smooth = 1.2,
+           std.err.type = "none")
+fitmaxstab(ms0, locations, cov.mod = "whitmat", sill = 1)
+fitmaxstab(ms0, locations, cov.mod = "whitmat", range = 3)
 @ 
 
 Although the Whittle-Matérn is flexible, one may want to consider
-covariance functions. This is achieved by invoking:
+other families of covariance functions. This is achieved by invoking:
 <<eval=FALSE>>=
-fitmaxstab(ms0, locations, cov.mod = "cauchy", fit.marge = FALSE)
-fitmaxstab(ms0, locations, cov.mod = "powexp", fit.marge = FALSE)
+fitmaxstab(ms0, locations, cov.mod = "cauchy")
+fitmaxstab(ms0, locations, cov.mod = "powexp")
 @ 
 
-One may also consider Smith's characterisation instead of Schlather's:
+One may also consider other types of max-stable models, this could be
+done as follows
 <<eval=FALSE>>=
-sigma = matrix(c(100, 25, 25, 220),ncol = 2)
-sigma.inv = solve(sigma)
-sqrtCinv = t(chol(sigma.inv))
-model = list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
-msSmith <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model,
-maxstable="Bool", n = 50)
-msSmith <- t(msSmith)                   
-fitmaxstab(msSmith, locations, cov.mod = "gauss", fit.marge = FALSE)
+fitmaxstab(ms0, locations, cov.mod = "gauss")
+fitmaxstab(ms0, locations, cov.mod = "iwhithmat")
+fitmaxstab(ms0, locations, cov.mod = "gpowexp")
 @ 
-
-For each covariance model, one can fix any parameter:
-<<eval=FALSE>>=
-fitmaxstab(ms0, locations, cov.mod = "gauss", cov12 = 0, fit.marge = FALSE)
-fitmaxstab(ms0, locations, cov.mod = "cauchy", range = 3, fit.marge = FALSE)
-@ 
-
-Passing \verb|fit.marge = TRUE| in the previous code will result in
-fitting the GEV parameters for each location. However, this will be
-really CPU demanding as there will be \verb|3 n.site + p| parameters
-to estimate where \verb|p| is the number of parameters for the
-covariance part.
+where \verb|iwhitmat| stands for the independent Schlather's model
+with the Whittle-Matérn correlation family and \verb|gpowexp| for the
+geometric Gaussian model with the powered exponential correlation
+family.
 
 It is also possible to used different optimization routines to fit the
-model to data. This is achieved by passing the \verb|method|
-argument. For instance, if one wants to use the \verb|BFGS| method:
+model to data by passing the \verb|method| argument. For instance, if
+one wants to use the \verb|BFGS| method:
 <<eval=FALSE>>=
-fitmaxstab(ms0, locations, cov.mod = "gauss", cov12 = 0, fit.marge = FALSE, method = "BFGS")
-@
+fitmaxstab(ms0, locations, cov.mod = "gauss", cov12 = 0, method = "BFGS")
+@ 
+
 Instead of using the \verb|optim| function, one may want to use the
 \verb|nlm| or \verb|nlminb| functions. This is done as before using
 the \verb|method = "nlm"| or \verb|method = "nlminb"| option.
 
-\subsection{With Unknown GEV Margins}
-\label{sec:with-unknown-gev}
+Finally, it is important to note that maximizing the pairwise
+likelihood is a considerable task. The choice of the numerical
+optimizer is also an important stage. In particular, using optimizers
+that use the gradient of the pairwise likelihood is not always a good
+idea. Indeed, if the Whittle-Matérn covariance function is considered
+and the smooth parameter has to be estimated, then the pairwise
+likelihood is not differentiable w.r.t. this specific parameter. In
+general, the Nelder-Mead \citep{Nelder1965} approach seems to perform
+better even if the convergence is sometimes slow.
+
+\subsection{Assessing Uncertainties}
+\label{sec:assess-uncert}
+
+As stated in Section~\ref{sec:pairwise-likelihood}, because the model
+is fitted by maximizing the pairwise likelihood instead of the
+``full'' likelihood, we work under misspecification. We have shown
+that, under mild regularity conditions, the maximum pairwise
+likelihood estimator is still asymptotically normally distributed but
+with a different asymptotic covariance matrix. Let recall that the
+maximum pairwise likelihood estimator $\hat{\psi}_p$ satisfies
+\begin{equation*}
+  \hat{\psi}_p \stackrel{\cdot}{\sim} \mathcal{N}\left(\psi,
+    H(\psi)^{-1} J(\psi) H(\psi)^{-1} \right), \qquad n \rightarrow
+  +\infty
+\end{equation*}
+where $H(\psi) = \mathbb{E}[\nabla^2 \ell_p(\psi;\mathbf{Y})]$ (the
+Hessian matrix) and $J(\psi) = \mbox{Var}[\nabla
+\ell_p(\psi;\mathbf{Y})]$, where the expectations are with respect to
+the ``full'' density.
+
+In practice, to get the standard errors we need estimates of $H(\psi)$
+and $J(\psi)$. The estimation of the former is straightforward and is
+given by $\hat{H}(\hat{\psi}_p) = \nabla^2
+\ell_p(\hat{\psi}_p;\mathbf{y})$; that is the Hessian matrix evaluated
+at $\hat{\psi}_p$. Usually, standard optimizers are able to get
+finite-difference based estimates for $H(\hat{\psi}_p)$ so that no
+extra work is needed to get $\hat{H}(\hat{\psi}_p)$.
+
+The estimation of $J(\hat{\psi}_p)$ is more difficult and can be done
+in two different ways \citep{Varin2005}. First, $J(\hat{\psi}_p)$ can
+be estimated using the ``naive'' estimator $\hat{J}(\hat{\psi}_p) =
+\nabla \ell_p(\hat{\psi}_p;\mathbf{y}) {\nabla
+  \ell_p(\hat{\psi}_p;\mathbf{y})}^T$. This estimator is tagged
+\verb|grad| as it uses the gradient of the log pairwise
+likelihood. Another estimator is given by noticing that $J(\psi)$
+corresponds to the variance of the pairwise score equations
+$\ell_p(\psi;\mathbf{Y}) = 0$. Consequently, a second estimator,
+tagged \verb|score|, is given by the sample variance of each
+contribution to the pairwise score function. Note that the second
+estimator is only accessible if independent replications of
+$\mathbf{Y}$ are available\footnote{which will mostly be the case for
+  spatial extremes.}.
+
+These two types of standard errors are available by invoking the
+following two lines:
+<<eval=FALSE>>=
+fitmaxstab(ms0, locations, cov.mod = "gauss", std.err.type = "score")
+fitmaxstab(ms0, locations, cov.mod = "gauss", std.err.type = "grad")
+@ 
+
+\chapter{Model Selection}
+\label{cha:model-selection}
+
+Model selection plays an important role in statistical
+modelling. According to the Ockam's razor, given several models that
+fit the data equally well, we should focus on simple models rather
+than more complex ones. Depending on the models to be compared,
+several approaches exist for model selection. In this section, we will
+present theory on information criteria such as the Akaike Information
+Criterion (AIC) \citep{Akaike1974} and about the likelihood ratio
+statistic \citep[Sec.~4.5]{Davison2003}. We present these two
+approaches in turn.
+
+\section{Takeuchi Information Criterion}
+\label{sec:take-inform-crit}
+
+Having two different models, we want to know which one we should
+prefer for modelling our data. If these two models have exactly the
+same maximized log-likelihoods, we should prefer the one which have
+less parameters because it will have a smaller variance. However, if
+these two maximized log-likelihoods only differ by a small amount,
+does this small increase worth the price of having additional
+parameters? To answer this question, we have to resort to the
+Kullback-Leibler discrepancy.
+
+Let consider a random sample $Y_1$, \ldots, $Y_n$ drawn from an
+unknown density $g$. Ignoring $g$, we fit a statistical model
+$f(y;\psi)$ by maximizing the log-likelihood. The Kullback-Leibler
+discrepancy measures the discrepancy of our fitted model $f$ from the
+true one $g$
+\begin{equation}
+  \label{eq:KullbackLeibler}
+  D\left(f_\psi, g\right) = \int \log \left(
+    \frac{g(y)}{f(y;\psi)} \right) g(y) \mbox{dy}
+\end{equation}
+
+The Kullback-Leibler discrepancy is always positive. Indeed, as $x
+\mapsto -log(x)$ is a convex function, the Jensen's inequality states
+\begin{equation*}
+  D\left(f_\psi, g\right) = \int \log \left(
+    \frac{g(y)}{f(y;\psi)} \right) g(y) \mbox{dy} \geq -\log \left(
+    \int \frac{f(y;\psi)}{g(y)} g(y) \mbox{dy} \right) = 0 
+\end{equation*}
+where we used the fact that $f(y;\psi)$ is a probability density
+function. Furthermore, the lower bound is reached if and only if the
+convex function is not strictly convex which only occurs iff
+$f(y;\psi) = g(y)$.
+
+Consequently, for model selection, we aim to choose models that
+minimize $D(f_\psi, g)$. However, $D(f_\psi, g)$ is not enough
+discriminant as several models may satisfy $D(f_\psi, g) = 0$. To
+solve this issue, suppose we have an estimate $\hat{\psi}$, we need to
+average $D(f_{\hat{\psi}}, g)$ over the distribution of
+$\hat{\psi}$. Intuitively, because of their larger sampling variance,
+averaging over $\hat{\psi}$ will penalized much more models having a
+larger number of parameters than those with fewer parameters.
+
+Let $\psi_g$ be the value that minimizes $D(f_\psi, g)$. A Taylor
+expansion of $\log f(y;\hat{\psi})$ around $\psi_g$ gives
+\begin{equation*}
+  \log f(y;\hat{\psi}) \approx \log f(y;\psi_g) + \frac{1}{2}
+  \left(\hat{\psi} - \psi_g \right)^T \frac{\partial^2 \log
+    f(y;\psi_g)}{\partial \psi \partial \psi^T}
+  \left(\hat{\psi} - \psi_g \right)
+\end{equation*}
+where we use the fact that $\psi_g$ minimise the Kullback-Leibler
+discrepancy so its partial derivative w.r.t. $\psi$ vanishes. By
+putting this into Equation~\eqref{eq:KullbackLeibler} we get
+\begin{eqnarray*}
+  D\left(f_{\hat{\psi}},g\right) &\stackrel{\cdot}{=}&
+  D\left(f_{\psi_g} \right) - \frac{1}{2 n}
+  \mbox{tr}\left\{(\hat{\psi} - \psi_g) (\hat{\psi} -
+    \psi_g)^T J(\psi_g)\right\}
+\end{eqnarray*}
+where $J(\psi_g)$ is given by Equation~\eqref{eq:VarScore}. Finaly, we
+have
+\begin{equation}
+  \label{eq:KLAverageOverPsiHat}
+  n \mathbb{E}_g \left[D\left(f_{\hat{\psi}},g\right) \right]
+  \stackrel{\cdot}{=} n D\left(f_{\psi_g},g\right) - \frac{1}{2} 
+  \mbox{tr}\left\{J(\psi_g)^{-1} H(\psi_g) \right\}    
+\end{equation}
+where $H(\psi_g)$ is given by Equation~\eqref{eq:Hessian}.
+
+The AIC is, up to constant, an estimator of
+Equation~\eqref{eq:KLAverageOverPsiHat} and is defined as
+\begin{equation}
+  \label{eq:AIC}
+  \mbox{AIC} = - 2 \ell(\hat{\psi}) + 2 p
+\end{equation}
+The simplification $\mbox{tr}\{J(\psi_g)^{-1} H(\psi_g) \} = -p$
+arises as the AIC supposes that there is no misspecification.
+
+Because we see in Section~\ref{sec:misspecification} that by using the
+maximum pairwise likelihood estimator we work under misspecification,
+the AIC is not appropriate. Another estimator of
+Equation~\eqref{eq:KLAverageOverPsiHat}, which allows for
+misspecification, is the Takeuchi information criterion (TIC)
+\begin{equation}
+  \label{eq:TIC}
+  \mbox{TIC} = - 2 \ell(\hat{\psi}) - 2 \mbox{tr}\left\{\hat{J}
+    \hat{H}^{-1} \right\}
+\end{equation}
+In accordance with the AIC, the best model will correspond to the one
+that minimizes Equation~\eqref{eq:TIC}. Recently, \citet{Varin2005}
+rediscover this information criterion and demonstrate its use for
+model selection when composite likelihood is involved.
+
+In practice, one can have a look at the output of the
+\verb|fitmaxstab| function or use the \verb|TIC| function.
+
+<<>>=
+set.seed(1)
+n.site <- 40
+locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
+colnames(locations) <- c("lon", "lat")
+ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="cauchy",
+                   param=c(0,1,0.2,3, 1.2), maxstable="extr", n = 80)
+ms0 <- t(ms0)
+model1 <- fitmaxstab(ms0, locations, cov.mod = "powexp")
+model2 <- fitmaxstab(ms0, locations, cov.mod = "cauchy")
+TIC(model1, model2)
+@ 
+
+The TIC for \verb|model2| is lower that the one for \verb|model1| so
+that we might prefer using \verb|model2|.
+
+
+\section{Likelihood Ratio Statistic}
+\label{sec:likel-ratio-stat}
+
+TIC is useful when comparing different models. However, it may lack
+power if the two models are nested. When dealing with nested models,
+one may prefer using the likelihood ratio statistic because of the
+Neyman-Pearson lemma \citep{Neyman1933}.
+
+Suppose we are interested in a statistical model $\{f(x;\psi)\}$ where
+$\psi^T = (\kappa^T, \phi^T)$ and more especially wether a particular
+value $\kappa_0$ of $\kappa$ is relevant with our data. Let
+$(\hat{\kappa}^T, \hat{\phi}^T)$ be the maximum likelihood estimate
+for $\psi$ and $\hat{\phi}_{\kappa_0}$ the maximum likelihood estimate
+under the restriction $\kappa = \kappa_0$. A common statistic to check
+if $\kappa_0$ is relevant or not is the likelihood ratio statistic $
+W(\kappa_0)$ which satisfies, under mild regularity conditions,
+\begin{equation}
+  \label{eq:likRatio}
+  W(\kappa_0) = 2 \left\{\ell(\hat{\kappa},\hat{\phi}) - \ell(\kappa_0,
+    \hat{\phi}_{\kappa_0}) \right\} \longrightarrow \chi_p^2, \qquad n
+    \rightarrow +\infty
+\end{equation}
+where $p$ is the dimension of $\kappa_0$.
+
+Unfortunately, when working under misspecification, the usual
+asymptotic $\chi^2_p$ distribution does not hold anymore. There's two
+ways to solve this issue: (a) adjusting the $\chi^2$ distribution
+\citep{Rotnitzki1990} or (b) adjusting the composite likelihood so
+that the usual $\chi^2_p$ holds \citep{Cox2004}. We will consider this
+two strategies in turn.
+
+\subsection{Adjusting the $\chi^2$ distribution}
+\label{sec:adjust-chi2-distr}
+
+If the model is misspecified, Equation~\eqref{eq:likRatio} has to be
+adjusted. More precisely, as stated by \citep{Rotnitzki1990}, we have
+\begin{equation}
+  \label{eq:likRatioMissp}
+  W(\kappa_0) = 2 \left\{\ell(\hat{\kappa},\hat{\phi}) - \ell(\kappa_0,
+    \hat{\phi}_{\kappa_0}) \right\} \longrightarrow \sum_{i=1}^p
+  \lambda_i X_i, \qquad n \rightarrow +\infty
+\end{equation}
+where $\lambda_i$ are the eigenvalues of ($(H^{-1} J H^{-1})_\kappa
+\{-(H^{-1})_\kappa\}^{-1}$, the $X_i$ are independent $\chi_1^2$
+random variables and $(H^{-1} J H^{-1})_\kappa$ and $(H^{-1})_\kappa$
+are the submatrices of $H^{-1} J H^{-1}$ and $H^{-1}$ corresponding to
+the elements of $\kappa$ and where the matrices $H$ and $J$ are given
+by Equations~\eqref{eq:Hessian} and \eqref{eq:VarScore}. For practical
+purposes, the matrices $H$ and $J$ are substituted for their
+respective estimates as described in Section~\ref{sec:assess-uncert}.
+
+The problem with Equation~\eqref{eq:likRatioMissp} is that generally
+the distribution of $\sum_{i=1}^p \lambda_i X_i$ is not known
+exactly. This leads \citet{Rotnitzki1990} to consider $p W(\kappa_0) /
+\sum_{i=1}^p \lambda_i$ as a $\chi_p^2$ random variable. However, a
+better approximation uses results on quadratic forms of Normal random
+distribution.
+
+An application of this approach is given by the following lines:
+<<>>=
+set.seed(7)
+n.site <- 30
+locations <- matrix(rnorm(2*n.site, sd = sqrt(.2)), ncol = 2)
+colnames(locations) <- c("lon", "lat")
+sigma <- matrix(c(100, 25, 25, 220),ncol = 2)
+sigma.inv <- solve(sigma)
+sqrtCinv <- t(chol(sigma.inv))
+model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
+ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model,
+                   maxstable = "Bool", n = 50)
+ms0 <- t(ms0)
+
+M0 <- fitmaxstab(ms0, locations, "gauss", , cov11 = 100)
+M1 <- fitmaxstab(ms0, locations, "gauss")
+anova(M0, M1)
+@ 
+
+From this ouput, we can see that the $p$-value is approximately $0.58$
+which turns out to be in favour of $H_0$ i.e. $\sigma_{11} = 100$ in
+$\Sigma$. Note that the eigenvalue estimate was also reported.
+
+\subsection{Adjusting the composite likelihood}
+\label{sec:adjust-comp-likel}
+
+Contrary to the approach of \citet{Rotnitzki1990},
+\citet{Chandler2007} propose to adjust the composite likelihood
+instead of adjusting the asymptotic likelihood ratio statistic
+distribution. The starting point is that, under misspecification, the
+log-composite likelihood evaluated at its maximum likelihood estimate
+$\hat{\psi}$ has curvature $-\hat{H}^{-1}$ while it shoud be
+$\hat{H}^{-1} \hat{J} \hat{H}^{-1}$. This forms the basis for
+adjusting the log-composite likelihood is the following way
+\begin{equation}
+  \label{eq:lclik}
+  \ell_{adj}(\psi) = \ell(\psi^*), \qquad \psi^* = \hat{\psi}
+  + C (\psi - \hat{\psi})
+\end{equation}
+for some $p\times p$ matrix $C$.
+
+It is straightforward to see that $\hat{\psi}$ maximizes $\ell_A$ with
+zero derivative. The key point is that its curvature at $\hat{\theta}$
+is $C^T \hat{H}^{-1} C$. By choosing an appropriate $C$ matrix, it is
+possible to ensure that $\ell_A$ has the right curvature for
+applying~\eqref{eq:likRatio} directly. More precisely, by letting
+\begin{equation}
+  \label{eq:adjustMatrix}
+  C = M^{-1} M_A
+\end{equation}
+where $M^T M = \hat{H}$ and $M_A^T M_A = \hat{H}^{-1} \hat{J}
+\hat{H}^{-1}$, we ensure that $\ell_A$ has curvature $\hat{H}^{-1}
+\hat{J} \hat{H}^{-1}$. If $p>1$, the matrix square roots $M$ and $M_A$
+are not unique and one may use the Cholesky or the singular value
+decompostions.
+
+With this setting, we can apply~\eqref{eq:likRatio} directly i.e.
+\begin{equation*}
+  W_A(\kappa_0) = 2 \left\{\ell_A(\hat{\kappa}, \hat{\phi}) -
+    \ell_A(\kappa_0, \hat{\phi}_A) \right\} \longrightarrow \chi_p^2
+\end{equation*}
+where $\hat{\phi}_A$ is the maximum adjusted likelihood estimated for
+the restricted model.
+
+The problem with the above equation is that it requires the estimation
+of $\hat{\phi}_A$ which could be CPU prohibitive. Unfortunately,
+substituting $\hat{\phi}$ for $\hat{\phi}_A$ doesn't solve the problem
+as $\ell_A(\hat{\phi}) \leq \ell_A(\hat{\phi}_A)$ so that this
+substitution will inflate $W_A(\kappa_0)$ and thus
+$\Pr_{H_0}[W_a(\kappa_0) > w_a(\alpha)] > 1 - \alpha$, where
+$w_a(\alpha)$ is the $1-\alpha$ quantile for the $\chi_p^2$
+distribution and $\alpha$ the significance level of the hypothesis
+test.
+
+To solve these issues, \citet{Chandler2007} propose to compensate for
+the use of $\hat{\phi}$ instead of $\hat{\phi}_A$ by considering a
+modified likelihood ratio statistic
+\begin{equation}
+  \label{eq:8}
+  W_A^*(\kappa_0) = 2 c \left\{\ell_A(\hat{\kappa}, \hat{\phi}) -
+    \ell_A(\kappa_0, \hat{\phi}_A) \right\} \longrightarrow \chi_p^2
+\end{equation}
+where 
+\begin{equation*}
+  c = \frac{(\hat{\kappa} - \kappa_0)^T \{-(\hat{H}^{-1} \hat{J}
+    \hat{H}^{-1})_{\kappa_0}\}^{-1} (\hat{\kappa} -
+    \kappa_0)}{\{(\hat{\kappa}^T, \hat{\phi}^T)\}^T \{-(\hat{H}^{-1}
+    \hat{J} \hat{H}^{-1})_{\kappa_0}\} \{(\hat{\kappa}^T,
+    \hat{\phi}^T)\}}
+\end{equation*}
+
+
+The next lines performs the same hypothesis test than the one we did
+in Section~\ref{sec:adjust-chi2-distr}.
+<<>>=
+anova(M0, M1, method = "CB")
+@ 
+
+By using the Chandler and Bate methodology, we draw the same
+conclusion that the one we stated in the previous section e.g. the
+observations are consistent with the null hypothesis $\sigma_{11} =
+100$.
+
+\chapter{Fitting a Max-Stable Process to Data With Unknown GEV
+  Margins}
+\label{cha:fit-maxstab-gev}
+
 
 In practice, the observations will never be drawn from a unit Fréchet
-distribution so that the previous section won't help much with
-concrete applications. One way to avoid this problem is to fit a GEV
-to each location and then transform all data to the unit Fréchet
-scale. This is done using the \verb|gev2frech| function and the
-following code:
+distribution so that Chapter~\ref{chat:fit-maxstab-frech} won't help
+much with concrete applications. One way to avoid this problem is to
+fit a GEV to each location and then transform all data to the unit
+Fréchet scale. Given a continuous random variable $Y$ whose cumulative
+distribution function is $F$, one can define a new random variable $Z$
+such as $Z$ is unit Fréchet distributed
+\begin{equation}
+  \label{eq:Y2Frech}
+  Z = - \frac{1}{\log F(Y)}
+\end{equation}
+
+More precisely, if $Y$ is a random variable distributed
+as a GEV with location, scale and shape parameters equal to $\mu$,
+$\sigma$ and $\xi$ respectively, it turns out that
+Equation~\eqref{eq:GEV2Frech} becomes
+\begin{equation}
+  \label{eq:GEV2Frech}
+  Z = \left(1 + \xi \frac{Y - \mu}{\sigma}\right)^{1/\xi}
+\end{equation}
+
+The above transformation can be done by using the \verb|gev2frech|
+function
 <<>>=
-x <- c(2.2975896, 1.6448808, 1.3323833, -0.4464904, 2.2737603, -0.2581876, 9.5184398, -0.5899699, 0.4974283, -0.8152157)
-gev2frech(x, 1, 2, .2)
+x <- c(2.2975896, 1.6448808, 1.3323833, -0.4464904, 2.2737603, -0.2581876,
+       9.5184398, -0.5899699, 0.4974283, -0.8152157)
+z <- gev2frech(x, 1, 2, .2)
+@
+or conversely if $Z$ is a unit Fréchet random variable, then the
+random variable $Y$ defined as
+\begin{equation}
+  \label{eq:frech2GEV}
+  Y = \mu + \sigma \frac{Z^{\xi} - 1}{\xi}
+\end{equation}
+is GEV distributed with location, scale and shape parameter equal to
+$\mu \in \mathbb{R}$, $\sigma \in \mathbb{R}_*^+$ and $\xi \in
+\mathbb{R}$ respectively.
+<<>>=
+frech2gev(z, 1, 2, .2)
 @ 
 
 The drawback of this approach is that standard errors are incorrect as
-the margins are fitted separately from the covariance
-structure. Consequently, the standard errors related to the covariance
-function are underestimated as we suppose that data are originally
-unit Fréchet.
+the margins are fitted separately from the spatial dependence
+structure. Consequently, the standard errors related to the spatial
+dependence parameters are underestimated as we suppose that data were
+originally unit Fréchet.
 
-SpatialExtremes solves this problem by fitting in \emph{one step} both
-GEV and covariance parameters. This can be done in two ways. First,
-one can pass the option \verb|fit.marge = TRUE|.  However, as said in
-the previous section this will be really time consuming. Another
-drawback is that prediction at ungauged locations won't be
-possible. Indeed, if no model is assumed for the evolution of the GEV
-parameters in space, it is impossible to predict them where no data is
-available.
+One can solve this problem by fitting in \emph{one step} both GEV and
+spatial dependence parameters. As the bivariate distributions for the
+max-stable models introduced in Chapter \ref{cha:an-introduction-max}
+were imposing unit Fréchet margins, we need to rewrite them for
+unknown GEV margins. To this aim, let define the transformation $t$
+such that
+\begin{equation}
+  \label{eq:mapGEV2Frech}
+  t: Y(x) \mapsto \left(1 + \xi(x) \frac{Y(x) -
+      \mu(x)}{\sigma(x)}\right)^{1/\xi(x)}
+\end{equation}
+where $Y(\cdot)$ is supposed to be a max-stable random field having
+GEV margins such that $Y(x) \sim \mbox{GEV}(\mu(x), \sigma(x),
+\xi(x))$, $\sigma(x) >0$ for all $x \in \mathbb{R}^d$. Consequently,
+the bivariate distribution of $(Y(x_1), Y(x_2))$ is
+\begin{equation*}
+  \Pr\left[Y(x_1) \leq y_1, Y(x_2) \leq y_2 \right] = \Pr\left[Z(x_1)
+    \leq z_2, Z(x_2) \leq z_2 \right]
+\end{equation*}
+where $z_1 = t(y_1)$ and $z_2 = t(y_2)$. Thus, one can relate the
+bivariate density for $(Y(x_1), Y(x_2))$ to the one for $(Z(x_1),
+Z(x_2))$ that we introduced in Chapter \ref{cha:an-introduction-max}
+and the log pairwise likelihood becomes
+\begin{equation}
+  \label{eq:lplikGEV}
+  \ell_p(\mathbf{y};\psi) = \sum_{i<j} \sum_{k=1}^{n_{i,j}} \left\{
+    \log f(z_k^{(i)}, z_k^{(j)}; \psi) + \log |J(y_k^{(i)})
+    J(y_k^{(j)})| \right\}
+\end{equation}
+where $n_{i,j}$ is the sample size of common observations between site
+$i$ and $j$ and
+\begin{equation*}
+  z_k^{(i)} = \left(1 + \xi_i \frac{y_k^{(i)} - \mu_i}{\sigma_i}
+  \right)^{1/\xi_i-1}
+\end{equation*}
+where $\mu_i$, $\sigma_i$, $\xi_i$ are the GEV parameters for the
+$i$-th site and $y_k^{(i)}$ is the $k$-th observation available at
+site $i$ and $|J(t(y_k^{(i)}))|$ is the Jacobian of the mapping $t$
+evaluated at the $y_k^{(i)}$ observation i.e.
+\begin{equation*}
+  |J(t(y_k^{(i)}))| = \frac{1}{\sigma_i} \left(1 + \xi_i
+    \frac{y_k^{(i)} - \mu_i}{\sigma_i} \right)^{1/\xi_i-1}
+\end{equation*}
 
-Another way may be to fit a \emph{response surface} for the GEV
-parameters. Currently, the response surfaces allowed by the package
-are polynomial surfaces or a penalized smoothing spline\footnote{this
-  is an exclusive ``or'' (or \emph{xor}) i.e. a response surface with
-  a polynomial and a spline is not possible}.
+Maximizing the log-likelihood given by Equation~\eqref{eq:lplikGEV} is
+possible by passing the option \verb|fit.marge = TRUE| in the
+\verb|fitmaxstab| function i.e.
+<<eval=FALSE>>=
+fitmaxstab(data, coord, "gauss", fit.marge = TRUE)
+@ 
+
+However, this will be really time consuming as such models will have
+$3 n.site + p$ parameters to estimate, where $p$ is the number of
+parameters related to the extremal spatial dependence
+structure. Another drawback is that prediction at ungauged locations
+won't be possible. Indeed, if no model is assumed for the evolution of
+the GEV parameters in space, it is therefore impossible to predict
+them where no data is available.
+
+Another way may be to fit \emph{response surfaces} for the GEV
+parameters. The next section aims to give an introduction to the use
+of response surfaces.
+
+\section{Response Surfaces}
+\label{sec:response-surfaces}
+
+Response surfaces is a generic term when the problem under concern is
+to describe how a \emph{response variable} $y$ depends on
+\emph{explanatory variables} $x_1$, \ldots, $x_k$. For instance, with
+our particular problem of spatial extremes, one may wonder how is it
+possible to predict the GEV parameters at a fixed location given the
+knowledge of extra covariables such as longitude, latitude, \ldots The
+goal of response surfaces is to get efficient predictions for the
+response variable while keeping, so far as we can, simple models.
+
+In this section, we will first introduce the linear regression
+models. Next, we will increase in complexity and flexibility by
+introducing semi-parametric regression models.
+
+\subsection{Linear Regression Models}
+\label{sec:line-regr-models}
+
+Suppose we observe a response $y$ through the $y_1$, \ldots, $y_n$
+values. For each observed $y_i$, we also have $p$ related explanatory
+variables denoted by $x_{1,i}$, \ldots, $x_{p,i}$. To predict $y$
+given the $x_{\cdot, \cdot}$ values, one might consider the following
+model:
+\begin{equation*}
+  y_i = \beta_0 + \beta_1 x_{1,i} + \ldots + \beta_p x_{p,i} +
+  \epsilon_i
+\end{equation*}
+where $\beta_0$, \ldots, $\beta_p$ are the regression parameters to be
+estimated and $\epsilon_i$ is an unobserved error term.
+
+It is possible to write the above equation in a more compact way by
+using matrix notation e.g.
+\begin{equation}
+  \label{eq:LM}
+  y = X \beta + \epsilon
+\end{equation}
+where $y$ is a $p \times 1$ vector, $X$ is a $n \times p$ matrix
+called the \emph{design matrix} and $\epsilon$ is a $p \times 1$
+vector.
+
+Model~\eqref{eq:LM} is called a \emph{linear model} as it is linear in
+$\beta$ but not necessarily in the covariates $x$. For example, the
+two following models are linear models
+\begin{eqnarray*}
+  y &=& \beta_0 + \beta_1 x_1 + \beta_2 x_1^2 + \epsilon\\
+  y &=& \beta_0 + \beta_1 x_1 + \beta_2 \log x_2 + \epsilon
+\end{eqnarray*}
+or equivalently in a matrix notation
+\begin{eqnarray*}
+  \begin{bmatrix}
+    y_1\\
+    \vdots\\
+    y_n
+  \end{bmatrix}
+   &=
+  \begin{bmatrix}
+    1 & x_{1,1} & x_{1,1}^2\\
+    \vdots  & \vdots & \vdots\\
+    1 & x_{1,n} & x_{1,n}^2  
+  \end{bmatrix}
+  &
+  \begin{bmatrix}
+    \beta_0\\
+    \beta_1\\
+    \beta_2
+  \end{bmatrix}
+  +
+  \begin{bmatrix}
+    \epsilon_0\\
+    \epsilon_1\\
+    \epsilon_2    
+  \end{bmatrix}\\
+   \begin{bmatrix}
+    y_1\\
+    \vdots\\
+    y_n
+  \end{bmatrix}
+  &=
+  \begin{bmatrix}
+    1 & x_{1,1} & \log x_{2,1}\\
+    \vdots  & \vdots & \vdots\\
+    1 & x_{1,n} & \log x_{2,n}
+  \end{bmatrix}
+  &
+  \begin{bmatrix}
+    \beta_0\\
+    \beta_1\\
+    \beta_2
+  \end{bmatrix}
+  +
+  \begin{bmatrix}
+    \epsilon_0\\
+    \epsilon_1\\
+    \epsilon_2    
+  \end{bmatrix}
+\end{eqnarray*}
+
+Usually, $\beta$ is estimated by minimizing least squares
+\begin{equation}
+  \label{eq:least-square}
+  SS(\beta) = \sum_{i=1}^n (y_i - x_i^T \beta)^2 = (y - X\beta)^T (y -
+  X\beta)
+\end{equation}
+which amounts to solve the equations
+\begin{equation*}
+  \sum_{i=1}^n x_{j,i} (y_i - \beta^T x_i) = 0, \qquad j = 1, \ldots,
+  p
+\end{equation*}
+or equivalently in a matrix notation
+\begin{equation*}
+  X^T (y - X\beta) = 0
+\end{equation*}
+so that, provided that $X^T X$ is invertible, the least squares
+estimate for $\beta$ is given by
+\begin{equation}
+  \label{eq:betahatLeastSquare}
+  \hat{\beta} = \left(X^T X \right)^{-1} X^T y
+\end{equation}
+and the fitted $y$ values are given by
+\begin{equation}
+  \label{eq:hatMatrix}
+  \hat{y} = X \hat{\beta} = X \left(X^T X \right)^{-1} X^T y
+\end{equation}
+
+The matrix $P = X \left(X^T X \right)^{-1} X^T$ is called the
+\emph{hat matrix} as it puts ``hats'' on $y$. $P$ is a projection
+matrix that orthogonally projects $y$ onto the plane spanned by the
+columns of the design matrix $X$.
+
+It can be shown that if the response values are supposed to be
+Normally distributed, the least squares estimator is identical to the
+maximum likelihood estimator. However, if the Normal distribution
+assumption is not appropriate, other estimators might be considered as
+we will see later in Section~\ref{sec:build-resp-surf}.
+
+
+\subsection{Semiparametric Regression Models}
+\label{sec:semipar-regr}
+
+In the previous section, we talked about linear regression models for
+which the relationship between the explanatory variables and the
+response has a deterministic shape and is supposed to be
+known. However, it may happened applications for which the data have a
+complex behaviour. For such cases, we benefit from using
+semiparametric regression models defined as
+\begin{equation}
+  \label{eq:semiparModel}
+  y = g(x) + \epsilon
+\end{equation}
+where $g$ is a smooth function with unknown shape.
+
+The idea of semiparametric regression models is to decompose $g$ into
+an appropriate basis.
+
+\section{Building Response Surfaces for the GEV Parameters}
+\label{sec:build-resp-surf}
+
+In the previous section, we introduced the notion of response surfaces
+and we show that they should be used if one is interested in
+simultaneously fitting the GEV and the spatial dependence parameters
+of a max-stable process. However, one may wonder how to build accurate
+response surfaces for the GEV parameters. This is the aim of this
+section.
+
+A first attempt could be to fit several max-stable models and identify
+the most promising ones by using the techniques on model selection
+introduced in Chapter~\ref{cha:model-selection}. Although it is a
+well-funded approach, its use in practice is limited because the
+fitting procedure, due to the pairwise likelihood estimator, is CPU
+prohibitive.
+
+A more pragmatic strategy is to consider only these response surfaces
+while omitting temporally the spatial dependence parameters. Despite
+this strategy doesn't take into account all the uncertainties on the
+max-stable parameters, it should lead to accurate model selection as
+one expect that the spatial dependence parameters and the GEV response
+surface ones to be nearly orthogonal. The main asset of the latter
+approach is that fitting a (kind of) spatial GEV model to data is
+clearly less CPU consuming.
+
+This spatial GEV model is defined as follows:
+\begin{equation}
+  \label{eq:spatgev}
+  Z(x) \sim GEV\left(\mu(x), \sigma(x), \xi(x)\right)
+\end{equation}
+where the GEV parameters are defined through the following equations
+\begin{eqnarray*}
+  \mu &=& X_\mu \beta_\mu\\
+  \sigma &=& X_\sigma \beta_\sigma\\
+  \xi &=& X_\xi \beta_\xi
+\end{eqnarray*}
+where $X_\cdot$ are design matrices and $\beta_\cdot$ are parameters
+to be estimated.
+
+The log-likelihood of the spatial GEV model is given by:
+\begin{equation}
+  \label{eq:llikSpatGEV}
+  \ell(\beta) = \sum_{i=1}^{n.site}
+  \sum_{j=1}^{n.obs} \left[ - \log \sigma_i - \left(1 + \xi_i
+      \frac{z_{i,j} - \mu_i}{\sigma_i} \right)^{-1/\xi_i} - \left(1 +
+      \frac{1}{\xi_i} \right) \log \left(1 + \xi_i \frac{z_{i,j} -
+        \mu_i}{\sigma_i} \right) \right]
+\end{equation}
+where $\beta = (\beta_\mu, \beta_\sigma, \beta_\xi)$, $\mu_i$,
+$\sigma_i$ and $\xi_i$ are the GEV parameters for the $i$-th site and
+$z_{i,j}$ is the $j$-th obvservation for the $i$-th site.
+
+From Equation~\eqref{eq:llikSpatGEV}, we can see that independence
+between stations is assumed. For most applications, this assumption is
+clearly incorrect and we require the use of the MLE asymptotic
+distribution under misspecification to get standard error estimates:
+\begin{equation}
+  \label{eq:spatGEVStdErr}
+  \left(\beta_\mu, \beta_\sigma, \beta_\xi \right)
+  \stackrel{\cdot}{\sim} \mathcal{N}\left(\psi, H(\beta)^{-1} J(\beta)
+    H(\beta)^{-1} \right), \qquad n \rightarrow +\infty
+\end{equation}
+where $H(\beta) = \mathbb{E}[\nabla^2 \ell_p(\beta;\mathbf{Y})]$ (the
+Hessian matrix) and $J(\beta) = \mbox{Var}[\nabla
+\ell_p(\beta;\mathbf{Y})]$.
+
+In practice, the spatial GEV model is fitted to data through the
+\verb|fitspatgev| function. The use of this function is similar to
+\verb|fitmaxstab|.
+
+Lets start by simulating a max-stable process with unit Fréchet
+margins and transform it to have a spatially structured GEV margins.
+
+<<>>=
+n.site <- 20
+set.seed(15)
+locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
+colnames(locations) <- c("lon", "lat")
+
+sigma <- matrix(c(100, 25, 25, 220),ncol = 2)
+sigma.inv <- solve(sigma)
+sqrtCinv <- t(chol(sigma.inv))
+model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv/2))
+ms0 <- MaxStableRF(locations[,1], locations[,2], grid = FALSE, model = model,
+                   maxstable="Bool", n = 50)
+ms1 <- t(ms0)
+
+param.loc <- -10 + 2 * locations[,2]
+param.scale <- 5 + 2 * locations[,1] + locations[,2]^2
+param.shape <- rep(0.2, n.site)
+
+for (i in 1:n.site)
+  ms1[,i] <- frech2gev(ms1[,i], param.loc[i], param.scale[i], param.shape[i])
+@ 
+
+Now we define appropriate response surfaces for our spatial GEV model
+and fit two different models.
+<<>>=
+loc.form <- y ~ lat
+scale.form <- y ~ lon + I(lat^2)
+shape.form <- y ~ 1
+shape.form2 <- y ~ lon
+M1 <- fitspatgev(ms1, locations, loc.form, scale.form, shape.form)
+M2 <- fitspatgev(ms1, locations, loc.form, scale.form, shape.form2)
+M1
+@ 
+
+From the output of model \verb|M1| we can see that it is very similar
+to the one of a fitted max-stable process except the spatial
+dependence parameters are not present. As explained in
+Chapter~\ref{cha:model-selection}, it is easy to perform model
+selection by inspecting the following output:
+<<>>=
+anova(M1, M2)
+TIC(M1, M2)
+@ 
+
+From these two outputs, we can see that the $p$-value for the
+likelihood ratio test is around $0.95$ which clearly advocates for the
+use of model \verb|M1|. The TIC corroborates this conclusion.
+
+
+\section{Max-stable Processes with GEV Response Surfaces}
+\label{sec:maxstab-respSurf}
 
 The SpatialExtremes package defines response surfaces using the
 \emph{R formula} approach e.g.
@@ -721,290 +2670,52 @@ fitmaxstab(ms1, locations, "powexp", loc.form = loc.form,
 @ 
 where \verb|n.par| is the number of parameters to be estimated.
 
-\subsection{Assessing Uncertainties}
-\label{sec:assess-uncert}
+\chapter{Model Checking}
+\label{cha:model-checking}
 
-As stated in section~\ref{sec:fit-maxstab}, because the model is
-fitted by maximizing the pairwise likelihood instead of the ``full''
-likelihood, the model is \emph{misspecified}. The maximum pairwise
-likelihood estimator is still asymptotically normally distributed but
-with a different asymptotic covariance matrix. The maximum pairwise
-likelihood estimator $\hat{\psi}_p$ satisfies the following relation:
-\begin{equation}
-  \label{eq:lplikAsymp}
-  \hat{\psi}_p \stackrel{\cdot}{\sim} \mathcal{N}\left(\psi,
-    H(\psi)^{-1} J(\psi) H(\psi)^{-1} \right), \qquad n \rightarrow
-  +\infty
-\end{equation}
-where $H(\psi) = \mathbb{E}[\nabla^2 \ell_p(\psi;\mathbf{Y})]$ (the
-Hessian matrix) and $J(\psi) = \mbox{Var}[\nabla
-\ell_p(\psi;\mathbf{Y})]$, where the expectations are with respect to
-the ``full'' density.
+Once a model has been fitted, it is always a good idea to check any
+discrepancy between data and our fitted model. Usually, graphical
+tools are widely used. In this Chapter, we will present some guidances
+on how to check if the model we have been considered is appropriate or
+not. When dealing with max-stable processes, model checking will
+essentially consists in two task:
+\begin{enumerate}
+\item Check if the response surfaces for the GEV parameters are
+  accurate enough,
+\item Check if the spatial dependence model is consistent with our
+  data.
+\end{enumerate}
+We will consider these two tasks in turn.
 
-In practice, to get the standard errors we need estimates of $H(\psi)$
-and $J(\psi)$. The estimation of the former is straightforward and is
-given by $\hat{H}(\hat{\psi}_p) = \nabla^2
-\ell_p(\hat{\psi}_p;\mathbf{y})$; that is the Hessian matrix evaluated
-at $\hat{\psi}_p$.
+\section{Checking the GEV Margins}
+\label{sec:check-margins}
 
-The estimation of $J(\psi)$ can be done in two different ways. First,
-it can be estimated using the ``naive'' estimator
-$\hat{J}(\hat{\psi}_p) = \nabla \ell_p(\hat{\psi}_p;\mathbf{y})
-{\nabla \ell_p(\hat{\psi}_p;\mathbf{y})}^T$. In the SpatialExtremes
-package, this estimator is tagged \verb|grad| as it uses the gradient
-of the log pairwise likelihood. Another estimator is given by noticing
-that $J(\psi)$ corresponds to the variance of the pairwise score
-equations $\ell_p(\psi;\mathbf{Y}) = 0$. Consequently, a second
-estimator, tagged \verb|score|, is given by the sample variance of
-each contribution to the pairwise score function. Note that the second
-estimator is only accessible if independent replications of
-$\mathbf{Y}$ are available\footnote{which will mostly be the case for
-  spatial extremes.}.
+As stated in Chapter~\ref{cha:fit-maxstab-gev}, if the data are not
+supposed to be unit Fréchet distributed, then we have to resort to
+response surfaces to model the evolution of the GEV parameters in
+space. This stage is an important one as it consists in a trade off
+between bias and variance.
 
-These two types of standard errors are available by invoking the
-following two lines:
-<<echo=FALSE>>=
-n.site <- 20
-locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
-colnames(locations) <- c("lon", "lat")
+Bias may be induced when the response surfaces have poor predictive
+performance so that the transformation to the unit Fréchet scale will
+be unsatisfactory. As the bivariate densities introduced in
+Chapter~\ref{cha:an-introduction-max} holds only for unit Fréchet
+observations, this could imply strong departures from the required
+hypothesis. 
 
-sigma = matrix(c(100, 25, 25, 220),ncol = 2)
-sigma.inv = solve(sigma)
-sqrtCinv = t(chol(sigma.inv))
-model = list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model,
-                   maxstable="Bool", n = 50)
-ms0 <- t(ms0)
-@ 
-<<eval=FALSE>>=
-fitmaxstab(ms0, locations, cov.mod = "gauss", fit.marge = FALSE, std.err.type = "score")
-fitmaxstab(ms0, locations, cov.mod = "gauss", fit.marge = FALSE, std.err.type = "grad")
-@ 
+On the other hand, if a response surface has a high predictive
+performance but has a large number of parameters to be estimated, then
+one should wonder how relevant are our estimates because of the
+induced variance on our estimations.
 
-\chapter{Model Selection}
-\label{cha:model-selection}
+\section{Checking the Spatial Dependence Model}
+\label{sec:check-spat-depend}
 
-Model selection plays an important role in statistical
-modelling. According to the Ockam's razor, given several models that
-fit the data equally well, we should focus on simple models rather
-than more complex ones. Depending on the models to be compared,
-several approaches exist for model selection. In this section, we will
-present theory on information criteria such as the Akaike Information
-Criterion (AIC) and about the likelihood ratio statistic. We present
-these two approaches in turn.
 
-\section{Takeuchi Information Criterion}
-\label{sec:take-inform-crit}
 
-Having two different models, we want to know which one we should
-prefer for modelling our data. If these two models have exactly the
-same maximized log-likelihoods, we should prefer the one which have
-less parameters because it will reduce the variance of our
-estimates. However, if these two maximized log-likelihoods only differ
-by a small amount, does this small increase worth the price of having
-additional parameters? To answer this question, we have to resort to
-the Kullback-Leibler discrepancy.
 
-Let consider a random sample $Y_1$, \ldots, $Y_n$ drawn from an
-unknown density $g$. Ignoring $g$, we fit a statistical model
-$f(y;\theta)$ by maximizing the log-likelihood. The Kullback-Leibler
-discrepancy measures the discrepancy of our fitted model $f$ from the
-true one $g$
-\begin{equation}
-  \label{eq:KullbackLeibler}
-  D\left(f_\theta, g\right) = \int \log \left(
-    \frac{g(y)}{f(y;\theta)} \right) g(y) \mbox{dy}
-\end{equation}
-
-It can be shown that the Kullback-Leibler discrepancy is positive and
-vanishes if and only if $f(y;\theta) = g(y)$. Consequently, we aim to
-choose models that minimize $D(f_\theta, g)$. However, $D(f_\theta,
-g)$ isn't enough discriminant as several models satisfy $D(f_\theta,
-g) = 0$. Indeed, let consider two models $f_0$ and $f_1$ where $f_0$
-is nested in $f_1$ and $D(f_1, g) = 0$ then $D(f_0, g) = 0$ too.
-
-Because we work under miss-specification, AIC is not
-appropriate, so we use a generalization of the Takeuchi information
-criterion. \citet{Varin2005} show that, under miss-specification, an
-appropriate selection statistic is given by
-\begin{equation}
-  \label{eq:TIC}
-  \mbox{TIC} = - \ell_p (\psi_p) - \mbox{tr}\left\{J H^{-1} \right\}
-\end{equation}
-In accordance with the AIC, the best model will corresponds to the one
-that minimizes equation~\eqref{eq:TIC}.
-
-In practice, one can have a look at the output of the
-\verb|fitmaxstab| function or use the \verb|TIC| function.
-
-<<eval=FALSE>>=
-n.site <- 40
-locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
-colnames(locations) <- c("lon", "lat")
-
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="stable",
-                   param=c(0,1,0,3, 1.2), maxstable="extr", n = 80)
-ms0 <- t(ms0)
-model1 <- fitmaxstab(ms0, locations, cov.mod = "powexp", fit.marge = FALSE, sill = 1)
-model2 <- fitmaxstab(ms0, locations, cov.mod = "cauchy", fit.marge = FALSE, sill = 1)
-TIC(model1, model2)
-@ 
-
-\section{Likelihood Ratio Statistic}
-\label{sec:likel-ratio-stat}
-
-TIC is useful when comparing different models. However, it may lack
-power if the two models are nested. When dealing with nested models,
-one may prefer using the likelihood ratio statistics.
-
-Because we are working with a misspecified model, the usual asymptotic
-$\chi^2_p$ distribution, where $p$ is the number of additional
-parameters to be estimated in the more complex model, doesn't hold
-anymore. There's two way to solve this issue: (a) adjusting the
-$\chi^2$ distribution or (b) adjusting the composite likelihood so
-that the usual $\chi^2_p$ holds - see \citet{Cox2004}.
-
-<<eval=FALSE>>=
-require(RandomFields)
-
-##Define the coordinates of each location
-n.site <- 30
-locations <- matrix(rnorm(2*n.site, sd = sqrt(.2)), ncol = 2)
-colnames(locations) <- c("lon", "lat")
-
-##Simulate a max-stable process - with unit Frechet margins
-sigma <- matrix(c(100, 25, 25, 220),ncol = 2)
-sigma.inv <- solve(sigma)
-sqrtCinv <- t(chol(sigma.inv))
-model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model=model,
-                   maxstable = "Bool", n = 50)
-ms0 <- t(ms0)
-
-##Fit three nested models
-M0 <- fitmaxstab(ms0, locations, "gauss", fit.marge = FALSE)
-M1 <- fitmaxstab(ms0, locations, "gauss", fit.marge = FALSE, cov11 =
-100)
-anova(M0, M1)
-@ 
-
-\section{Building Response Surfaces for the GEV Parameters}
-\label{sec:build-resp-surf}
-
-In section~\ref{sec:with-unknown-gev} we show how to fit a max-stable
-processes to data with unknown GEV margins. However, we didn't mention
-how to build response surfaces as models for the evolution of the GEV
-parameters. One way has been first introduced in the previous section
-related to model selection. However, because we fit max-stable
-processes by maximizing the log-pairwise likelihood, a comprehensive
-selection of models could be CPU prohibitive. Another option may be to
-fit only these response surfaces to data while omitting temporally the
-spatial dependence parameters. Despite this strategy doesn't take into
-account all uncertainties on the max-stable parameters, it should lead
-to accurate model selection as one expect that the spatial dependence
-parameters and the GEV response surface ones to be nearly
-orthogonal. The main asset of the latter approach is that fitting a
-(kind of) spatial GEV model to data is clearly less CPU consuming.
-
-This spatial GEV model is defined as follows:
-\begin{equation}
-  \label{eq:spatgev}
-  Z(x) \stackrel{\cdot}{\sim} GEV\left(\mu(x), \sigma(x),
-    \xi(x)\right)
-\end{equation}
-where the GEV parameters are defined through the following equations
-\begin{eqnarray*}
-  \mu &=& X_\mu \beta_\mu\\
-  \sigma &=& X_\sigma \beta_\sigma\\
-  \xi &=& X_\xi \beta_\xi
-\end{eqnarray*}
-where $X_\cdot$ are design matrices and $\beta_\cdot$ are parameters
-to be estimated.
-
-The log-likelihood of the spatial GEV model is given by:
-\begin{equation}
-  \label{eq:llikSpatGEV}
-  \ell(\beta) = \sum_{i=1}^{n.site}
-  \sum_{j=1}^{n.obs} \left[ - \log \sigma_i - \left(1 + \xi_i
-      \frac{z_{i,j} - \mu_i}{\sigma_i} \right)^{-1/\xi_i} - \left(1 +
-      \frac{1}{\xi_i} \right) \log \left(1 + \xi_i \frac{z_{i,j} -
-        \mu_i}{\sigma_i} \right) \right]
-\end{equation}
-where $\beta = (\beta_\mu, \beta_\sigma, \beta_\xi)$, $\mu_i$,
-$\sigma_i$ and $\xi_i$ are the GEV parameters for the $i$-th site and
-$z_{i,j}$ is the $j$-th obvservation for the $i$-th site.
-
-From Equation~\eqref{eq:llikSpatGEV}, we can see that independence
-between stations is assumed. For most applications, this assumption is
-clearly incorrect and we require the use of the MLE asymptotic
-distribution under misspecification to get standard error estimates:
-\begin{equation}
-  \label{eq:spatGEVStdErr}
-  \left(\beta_\mu, \beta_\sigma, \beta_\xi \right)
-  \stackrel{\cdot}{\sim} \mathcal{N}\left(\psi, H(\beta)^{-1} J(\beta)
-    H(\beta)^{-1} \right), \qquad n \rightarrow +\infty
-\end{equation}
-where $H(\beta) = \mathbb{E}[\nabla^2 \ell_p(\beta;\mathbf{Y})]$ (the
-Hessian matrix) and $J(\beta) = \mbox{Var}[\nabla
-\ell_p(\beta;\mathbf{Y})]$.
-
-In practice, the spatial GEV model is fitted to data through the
-\verb|fitspatgev| function. The use of this function is similar to the
-one of the \verb|fitmaxstab| one. Let show its use by the following
-example.
-
-Lets start by simulating a max-stable process with unit Fréchet
-margins and transform it to have a spatially structured GEV margins.
-
-<<>>=
-n.site <- 20
-locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
-colnames(locations) <- c("lon", "lat")
-
-sigma <- matrix(c(100, 25, 25, 220),ncol = 2)
-sigma.inv <- solve(sigma)
-sqrtCinv <- t(chol(sigma.inv))
-model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv/2))
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid = FALSE, model = model,
-                   maxstable="Bool", n = 50)
-ms1 <- t(ms0)
-
-param.loc <- -10 + 2 * locations[,2]
-param.scale <- 5 + 2 * locations[,1] + locations[,2]^2
-param.shape <- rep(0.2, n.site)
-
-for (i in 1:n.site)
-  ms1[,i] <- param.scale[i] * (ms1[,i]^param.shape[i] - 1) / param.shape[i] + param.loc[i]
-@ 
-
-Now we define appropriate response surfaces for our spatial GEV model
-and fit two different models.
-<<>>=
-loc.form <- y ~ lat
-scale.form <- y ~ lon + I(lat^2)
-shape.form <- y ~ 1
-shape.form2 <- y ~ lon
-M1 <- fitspatgev(ms1, locations, loc.form, scale.form, shape.form)
-M2 <- fitspatgev(ms1, locations, loc.form, scale.form, shape.form2)
-M1
-@ 
-
-From the output of model \verb|M1| we can see that it is very similar
-to the one of a fitted max-stable process apart from the spatial
-dependence parameters are not present. In fact, \verb|M1| is an object
-of class \verb|spatgev| so that when printing \verb|M1| \textbf{R}
-calls a specific printing method. This is the same when calling either
-the \verb|anova| or the \verb|TIC| functions.
-
-As explained in Section~\ref{sec:model-selection}, it is easy to
-perform model selection by inspecting the following output:
-<<>>=
-anova(M1, M2)
-TIC(M1, M2)
-@ 
-
-\chapter{Manipulating and Visualising Fitted Models}
-\label{cha:manip-visu-fitt}
+\chapter{Inferential Procedures and Predictions}
+\label{cha:infer-proc-pred}
 
 \section{Prediction of the GEV parameters}
 \label{sec:pred-gev-param}
@@ -1190,6 +2901,10 @@ colnames(new.ranges) <- c("lon", "lat")
 map(fitted, "quant", ret.per = 50 , ranges = new.ranges)
 @ 
 
+\chapter{Conclusion}
+\label{cha:conclusion}
+
+
 \appendix
 
 \chapter{Density and Gradient Computations}
@@ -1199,15 +2914,14 @@ map(fitted, "quant", ret.per = 50 , ranges = new.ranges)
 \label{sec:smith-char}
 
 Let us recall that Smith's model is given by:
-\begin{equation}
-  \label{eq:smith}
+\begin{equation*}
   \Pr[Z_1 \leq z_1, Z_2 \leq z_2] = \exp\left[-\frac{1}{z_1} \Phi
     \left(\frac{a}{2} + \frac{1}{a} \log \frac{z_2}{z_1} \right) -
     \frac{1}{z_2} \Phi \left(\frac{a}{2} + \frac{1}{a}
       \log\frac{z_1}{z_2} \right) \right]
-\end{equation}
+\end{equation*}
 where $\Phi$ is the standard normal cumulative distribution function
-and, for two locations \#1 and \#2  
+and, for two locations 1 and 2  
 \begin{equation*}
   a^2 = \Delta x^T \Sigma^{-1} \Delta x \quad \text{and} \quad 
   \Sigma = 
@@ -1222,8 +2936,8 @@ and, for two locations \#1 and \#2
     cov_{13} & cov_{23} & cov_{33}
   \end{bmatrix}
 \end{equation*}
-where $\Delta x$ is the distance vector between location \#1 and
-location \#2.
+where $\Delta x$ is the distance vector between location 1 and
+location 2.
 
 \subsection{Useful quantities}
 \label{sec:usefull-quantities}
@@ -1772,14 +3486,13 @@ where
 \section{Schlather's Model}
 \label{sec:schlather-char}
 
-Schlather's model is given by:
-\begin{equation}
-  \label{eq:schlather}
+Recall that Schlather's model is given by:
+\begin{equation*}
   \Pr[Z_1 \leq z_1, Z_2 \leq z_2] = \exp\left[-\frac{1}{2}
     \left(\frac{1}{z_1} + \frac{1}{z_2} \right) \left(1 + \sqrt{1 - 2
         (\rho(h) + 1) \frac{z_1 z_2}{(z_1 + z_2)^2}} \right) \right]
-\end{equation}
-where $h$ is the distance between location \#1 and location \#2 and
+\end{equation*}
+where $h$ is the distance between location 1 and location 2 and
 $\rho(h)$ is a valid correlation function such as $-1 \leq \rho(h)
 \leq 1$.
 
