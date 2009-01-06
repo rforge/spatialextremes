@@ -59,7 +59,7 @@ ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
 ms0 <- t(ms0)
 
 ##Compute the lambda-madogram
-lmadogram(ms0, locations, bins = seq(0, 12, by = 0.8))
+lmadogram(ms0, locations, n.bins = 80)
 }
 \author{Mathieu Ribatet}
 \keyword{hplot}
