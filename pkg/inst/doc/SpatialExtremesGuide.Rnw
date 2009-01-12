@@ -185,7 +185,10 @@ A copy of the GNU General Public License can be obtained from
 
 This work has been supported by the Competence Center Environment and
 Sustainability \url{http://www.cces.ethz.ch/index} within the EXTREMES
-project \url{http://www.cces.ethz.ch/projects/hazri/EXTREMES}.
+project \url{http://www.cces.ethz.ch/projects/hazri/EXTREMES}. I would
+like to thank S. A. Padoan for his support when we were both
+calculating the tedious partial derivatives required for the
+estimation of the asymptotic sandwich covariance matrix.
 
 \chapter{An Introduction to Max-Stable Processes}
 \label{cha:an-introduction-max}
@@ -499,10 +502,10 @@ $Y(\cdot)$. Consequently, this model has the main advantage to allow
 for a large range of possible storm shapes.
 
 It has to be noticed that the Schlather and Smith characterisations
-have strong connections. To see this, let consider the random process
-defined by $Y_i(x) = f_0(x - X_i)$ where $f_0$ is a probability
-density function and $\{X_i\}$ is a homogeneous Poisson process both
-in $\mathbb{R}^d$. With this particular setting,
+have strong connections. To see this, let consider the case for which
+$Y_i(x) = f_0(x - X_i)$ where $f_0$ is a probability density function
+and $\{X_i\}$ is a homogeneous Poisson process both in
+$\mathbb{R}^d$. With this particular setting,
 model~\eqref{eq:SchlatherChar} is identical to
 model~\eqref{eq:smithChar}.
 
@@ -977,7 +980,7 @@ multivariate extreme value distributions
 \begin{equation}
   \label{eq:MEVD}
   \Pr\left[Z(x_1) \leq z_1, \ldots, Z(x_N) \leq z_N\right] =
-  \exp\left(- V(z_1, \ldots, V(z_N) \right)
+  \exp\left(- V(z_1, \ldots, z_N) \right)
 \end{equation}
 where $V$ is a homogeneous function of order $-1$ called the exponent
 measure \citep{Pickands1981,Coles2001}. As a consequence, the
@@ -2456,11 +2459,11 @@ It is possible to write the above equation in a more compact way by
 using matrix notation e.g.
 \begin{equation}
   \label{eq:LM}
-  y = X \beta + \epsilon
+  \mathbf{y} = \mathbf{X \beta} + \mathbf{\epsilon}
 \end{equation}
-where $y$ is a $p \times 1$ vector, $X$ is a $n \times p$ matrix
-called the \emph{design matrix} and $\epsilon$ is a $p \times 1$
-vector.
+where $\mathbf{y}$ is a $n \times 1$ vector, $\mathbf{X}$ is a $n
+\times p$ matrix called the \emph{design matrix} and
+$\mathbf{\epsilon}$ is a $p \times 1$ vector.
 
 Model~\eqref{eq:LM} is called a \emph{linear model} as it is linear in
 $\beta$ but not necessarily in the covariates $x$. For example, the
@@ -2519,44 +2522,59 @@ or equivalently in a matrix notation
   \end{bmatrix}
 \end{eqnarray*}
 
-Usually, $\beta$ is estimated by minimizing least squares
+Usually, $\mathbf{\beta}$ is estimated by minimizing least squares
 \begin{equation}
   \label{eq:least-square}
-  SS(\beta) = \sum_{i=1}^n (y_i - x_i^T \beta)^2 = (y - X\beta)^T (y -
-  X\beta)
+  SS(\beta) = \sum_{i=1}^n (y_i - x_i^T \mathbf{\beta})^2 =
+  (\mathbf{y} - \mathbf{X\beta})^T (\mathbf{y} - \mathbf{X\beta})
 \end{equation}
 which amounts to solve the equations
 \begin{equation*}
-  \sum_{i=1}^n x_{j,i} (y_i - \beta^T x_i) = 0, \qquad j = 1, \ldots,
-  p
+  \sum_{i=1}^n x_{j,i} (y_i - \mathbf{\beta}^T x_i) = 0, \qquad j = 1,
+  \ldots, p
 \end{equation*}
 or equivalently in a matrix notation
 \begin{equation*}
-  X^T (y - X\beta) = 0
+  \mathbf{X}^T (\mathbf{y} -\mathbf{ X\beta}) = 0
 \end{equation*}
-so that, provided that $X^T X$ is invertible, the least squares
-estimate for $\beta$ is given by
+so that, provided that $\mathbf{X}^T \mathbf{X}$ is invertible, the
+least squares estimate for $\mathbf{\beta}$ is given by
 \begin{equation}
   \label{eq:betahatLeastSquare}
-  \hat{\beta} = \left(X^T X \right)^{-1} X^T y
+  \hat{\mathbf{\beta}} = \left(\mathbf{X}^T \mathbf{X} \right)^{-1}
+  \mathbf{X}^T \mathbf{y}
 \end{equation}
-and the fitted $y$ values are given by
+and the fitted $\mathbf{y}$ values are given by
 \begin{equation}
   \label{eq:hatMatrix}
-  \hat{y} = X \hat{\beta} = X \left(X^T X \right)^{-1} X^T y
+  \hat{\mathbf{y}} = \mathbf{X} \hat{\mathbf{\beta}} = \mathbf{X}
+  \left(\mathbf{X}^T \mathbf{X} \right)^{-1} \mathbf{X}^T \mathbf{y}
 \end{equation}
 
-The matrix $P = X \left(X^T X \right)^{-1} X^T$ is called the
-\emph{hat matrix} as it puts ``hats'' on $y$. $P$ is a projection
-matrix that orthogonally projects $y$ onto the plane spanned by the
-columns of the design matrix $X$.
+The matrix $\mathbf{H} = \mathbf{X} \left(\mathbf{X}^T \mathbf{X}
+\right)^{-1} \mathbf{X}^T$ is called the \emph{hat matrix} as it puts
+``hats'' on $\mathbf{y}$. $\mathbf{H}$ is a projection matrix that
+orthogonally projects $\mathbf{y}$ onto the plane spanned by the
+columns of the design matrix $\mathbf{X}$.
 
-It can be shown that if the response values are supposed to be
-Normally distributed, the least squares estimator is identical to the
-maximum likelihood estimator. However, if the Normal distribution
-assumption is not appropriate, other estimators might be considered as
-we will see later in Section~\ref{sec:build-resp-surf}.
-
+The hat matrix plays an important role in parametric regression as it
+provides useful informations on the influence of some observations to
+the fitted values. Indeed, from Equation~\eqref{eq:hatMatrix}, we
+have
+\begin{equation*}
+  \hat{y}_i = \sum_{j=1}^n H_{i,j} y_j
+\end{equation*}
+so that $H_{i,i}$ is the contribution of $y_i$ to the estimate
+$\hat{y}_i$. Furthermore, if we consider the total influence of all
+the observations, we have
+\begin{eqnarray*}
+  \sum_{i=1}^n H_{i,i} &=& \mbox{tr}(\mathbf{H}) = \mbox{tr}\{\mathbf{X}
+  (\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T \}\\
+  &=& \mbox{tr}\{\mathbf{X}^T \mathbf{X} (\mathbf{X^T}
+  \mathbf{X})^{-1} \} = \mbox{tr} (\mathbf{I}_p) = p
+\end{eqnarray*}
+and the total influence of all observations is equal to the degrees of
+freedom of the model.
 
 \subsection{Semiparametric Regression Models}
 \label{sec:semipar-regr}
@@ -2569,12 +2587,24 @@ complex behaviour. For such cases, we benefit from using
 semiparametric regression models defined as
 \begin{equation}
   \label{eq:semiparModel}
-  y = g(x) + \epsilon
+  y_i = f(x) + \epsilon_i
 \end{equation}
-where $g$ is a smooth function with unknown shape.
+where $f$ is a smooth function with unknown shape.
 
 The idea of semiparametric regression models is to decompose $g$ into
-an appropriate basis.
+an appropriate basis for which Equation~\eqref{eq:semiparModel}
+simplifies to Equation~\eqref{eq:LM} e.g.
+\begin{equation}
+  \label{eq:decompBasis}
+  f(x) = \sum_{j=1}^q b_j(x) \beta_j
+\end{equation}
+where $b_j(\cdot)$ is the $j$-th basis function and $\beta_j$ is the
+$j$-th element of the regression parameter $\mathbf{\beta}$.
+
+Several basis functions exist such as the polynomial basis, the cubic
+spline basis, B-splines, \ldots It is beyond the scope of this
+document to introduce all of them in details and we will focus on one
+particular basis: the \emph{radial basis functions}.
 
 \section{Building Response Surfaces for the GEV Parameters}
 \label{sec:build-resp-surf}
