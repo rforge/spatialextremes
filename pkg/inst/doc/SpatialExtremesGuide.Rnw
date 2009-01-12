@@ -2,7 +2,7 @@
 \usepackage{Sweave}
 \usepackage[utf8]{inputenc}
 \usepackage{fullpage}
-\usepackage{amsmath,amsfonts}
+\usepackage{amsmath,amsfonts,amsthm}
 \usepackage{hyperref}
 \usepackage[square]{natbib}
 %\usepackage{fancyhdr}
@@ -319,6 +319,53 @@ and, for two given locations 1 and 2
 where $\Delta x$ is the distance vector between location 1 and
 location 2. Figure~\ref{fig:Smith2sim} plots two simulations of
 Smith's model with different variance-covariance matrices.
+\begin{proof}
+  \begin{eqnarray*}
+    -\log \Pr \left[Z(x_1) \leq z_1, Z(x_2) \leq z_2 \right] &=&
+    \iint_{\min\{z_1/f_0(s - x_1), z_2 / f_0(s- x_2) \}} \xi^{-2} d\xi
+    \mbox{ds}\\
+    &=& \int \max\left\{\frac{f_0(s - x_1)}{z_1}, \frac{f_0(s-
+        x_2)}{z_2}\right\} \mbox{ds}\\
+    &=& \int \frac{f_0(s - x_1)}{z_1} \mathbb{I}\left(\frac{f_0(s -
+        x_1)}{z_1} > \frac{f_0(s - x_2)}{z_2} \right) \mbox{ds}\\
+    &+& \int \frac{f_0(s - x_2)}{z_2} \mathbb{I}\left(\frac{f_0(s -
+        x_1)}{z_1} \leq \frac{f_0(s - x_2)}{z_2} \right) \mbox{ds}\\
+    &=& \int \frac{f_0(s)}{z_1} \mathbb{I}\left(\frac{f_0(s)}{z_1} >
+      \frac{f_0(s - x_2 + x_1)}{z_2} \right) \mbox{ds}\\
+    &+& \int \frac{f_0(s)}{z_2} \mathbb{I}\left(\frac{f_0(s - x_1 +
+        x_2)}{z_1} \leq \frac{f_0(s)}{z_2} \right) \mbox{ds}\\
+    &=& \frac{1}{z_1} \mathbb{E}\left[\mathbb{I}\left(\frac{f_0(X)}{z_1}
+        > \frac{f_0(X - x_2 + x_1)}{z_2} \right) \right]\\
+    &+& \frac{1}{z_2} \mathbb{E}\left[ \mathbb{I}\left(\frac{f_0(X - x_1
+          + x_2)}{z_1} \leq \frac{f_0(X)}{z_2} \right)\right]
+  \end{eqnarray*}
+  where $X$ is a r.v. having $f_0$ as density. To get the closed form of
+  the bivariate distribution, it remains to compute the probabilities of
+  the event $\{f_0(X)/z_1 > f_0(X - x_2 + x_1)/z_2\}$.
+  \begin{eqnarray*}
+    \frac{f_0(X)}{z_1} > \frac{f_0(X - x_2 + x_1)}{z_2}
+    &\Longleftrightarrow& 2 \log z_1 + X^T \Sigma^{-1} X < 2 \log z_2
+    + \left(X - x_2 + x_1 \right)^T \Sigma^{-1} \left(X - x_2 + x_1
+    \right)\\
+    &\Longleftrightarrow& X^T \Sigma^{-1} (x_1 - x_2) > \log
+    \frac{z_1}{z_2} - \frac{1}{2} (x_1 - x_2)^T \Sigma^{-1} (x_1 - x_2)
+  \end{eqnarray*}
+  As $X$ has density $f_0$, $X^T \Sigma^{-1} (x_1 - x_2)$ is Normal with
+  mean $0$ and variance $a^2=(x_1 - x_2)^T \Sigma^{-1} (x_1 - x_2)$. And
+  finally, we get
+  \begin{eqnarray*}
+    A &:=& \frac{1}{z_1} \mathbb{E}\left[ \mathbb{I} \left(
+        \frac{f_0(X)}{z_1} > \frac{f_0(X - x_2 + x_1)}{z_2} \right)
+    \right] = \frac{1}{z_1} \left\{1 - \Phi\left(\frac{\log z_1/z_2}{a}
+        - \frac{a}{2} \right) \right\}\\
+    &=& \frac{1}{z_1} \Phi\left(\frac{a}{2} + \frac{\log z_2/z_1}{a}
+    \right)\\
+    B &:=& \frac{1}{z_2} \mathbb{E}\left[ \mathbb{I} \left( \frac{ f_0(X
+          - x_1 + x_2)}{z_1} \leq \frac{f_0(X)}{z_2} \right)\right] =
+    \frac{1}{z_2} \Phi\left(\frac{a}{2} + \frac{\log z_1/z_2}{a} \right)
+  \end{eqnarray*}
+  This proves Equation~\eqref{eq:smith}.
+\end{proof}
 
 <<label=Smith2Sim,echo=FALSE>>=
 x <- y <- seq(0, 10, length = 100)
@@ -812,6 +859,74 @@ where
   \label{eq:geomGaussAsSmith}
   a^2 = 2 \sigma^2 \left(1 - \rho(h) \right)
 \end{equation}
+\begin{proof}
+  \begin{eqnarray*}
+    -\log \Pr \left[Z(x_1) \leq z_1, Z(x_2) \leq z_2 \right] &=&
+    \iint_{\min\{z_1/Y(x_1), z_2 / Y(x_2) \}}^{+\infty} \xi^{-2} d\xi
+    dP(Y(x_1),Y(x_2))\\
+    &=& \int \max\left\{\frac{Y(x_1)}{z_1}, \frac{Y(x_2)}{z_2} \right\}
+    dP(Y(x_1),Y(x_2))\\
+    &=& \int \frac{Y(x_1)}{z_1} \mathbb{I}\left(\frac{Y(x_1)}{z_1} >
+      \frac{Y(x_2)}{z_2} \right) dP(Y(x_1),Y(x_2))\\
+    &+& \int \frac{Y(x_2)}{z_2} \mathbb{I}\left(\frac{Y(x_1)}{z_1} \leq
+      \frac{Y(x_2)}{z_2} \right) dP(Y(x_1),Y(x_2))
+  \end{eqnarray*}
+
+  Let first notice that
+  \begin{equation*}
+    \frac{Y(x_1)}{Y(x_2)} = \exp\left[\sigma \{\epsilon(x_1) -
+      \epsilon(x_2)\} \right]
+  \end{equation*}
+  Define $W_a = \frac{\sigma}{2} \{\epsilon(x_1) - \epsilon(x_2) \}$ and
+  $W_b = \frac{\sigma}{2} \{\epsilon(x_1) + \epsilon(x_2) \}$. As
+  $\epsilon(x_1)$ and $\epsilon(x_2)$ are both standard Normal
+  r.v. having correlation $\rho$, $W_a$ and $W_b$ are also Normal
+  r.v. with $0$ mean and their variances are equal to $\sigma^2 (1 -
+  \rho) / 2$ and $\sigma^2 (1 + \rho) / 2$ respectively. Moreover, it is
+  straightforward to see that $W_a$ and $W_b$ are independent.
+
+  We have
+  \begin{equation*}
+    Y(x_1) = \exp\left( - \frac{\sigma^2}{2} \right)
+    \exp\left(W_a\right) \exp\left(W_b\right) \qquad \text{and} \qquad 
+    \frac{Y(x_1)}{z_1} > \frac{Y(x_2)}{z_2} \Longleftrightarrow
+    W_a > \frac{1}{2} \log\left(\frac{z_1}{z_2}\right)
+  \end{equation*}
+  so that we get
+  \begin{eqnarray*}
+    A &:=&\int \frac{Y(x_1)}{z_1} \mathbb{I}\left(\frac{Y(x_1)}{z_1} >
+      \frac{Y(x_2)}{z_2} \right) dP(Y(x_1),Y(x_2))\\
+    &=& \frac{\exp(-\sigma^2/2)}{z_1} \iint \exp\left(W_a\right)
+    \exp\left(W_b\right) I\left\{W_a > \frac{1}{2} \log
+      \frac{z_1}{z_2}\right\} dP\left(W_a, W_b\right)\\
+    &=& \frac{\exp(-\sigma^2/2)}{z_1} \int \exp\left(W_b\right)
+    dP\left(W_b\right) \int \exp\left(W_a\right) I\left\{W_a >
+      \frac{1}{2} \log\frac{z_1}{z_2}\right\} dP\left(W_a\right)\\
+    &=& \frac{1}{z_1} \exp\left(-\frac{\sigma^2}{2} \right) \exp\left(
+      \frac{\sigma^2 (1 + \rho)}{4}\right) \frac{1}{2}
+    \exp\left(\frac{\sigma^2 (1 - \rho)}{4} \right)\left[1 -
+      \Phi\left(\frac{\log \frac{z_1}{z_2} - \sigma^2 (1 - \rho)}{\sigma
+          \sqrt{2 (1 - \rho)}} \right) \right]\\
+    &=& \frac{1}{z_1} \Phi\left(\frac{\sigma \sqrt{1 - \rho}}{\sqrt{2}}
+      - \frac{\log \frac{z_1}{z_2}}{\sigma \sqrt{2(1-\rho)}} \right)
+  \end{eqnarray*}
+  where we used that
+  \begin{equation*}
+    \int \exp\left(X\right) I\left\{X > c\right\}dP\left(X\right) =
+    \frac{1}{2} \exp\left(\frac{\sigma^2}{2} \right) \Phi\left(\frac{c -
+        \sigma^2}{2 \sigma} \right), \qquad \text{where } X \sim
+    N(0,\sigma^2)
+  \end{equation*}
+
+  By symmetry, we get
+  \begin{equation*}
+    \int \frac{Y(x_2)}{z_2} \mathbb{I}\left(\frac{Y(x_2)}{z_2} >
+      \frac{Y(x_1)}{z_1} \right) dP(Y(x_1),Y(x_2)) &=& \frac{1}{z_2}
+    \Phi\left(\frac{\sigma \sqrt{1 - \rho}}{\sqrt{2}} - \frac{\log
+        \frac{z_2}{z_1}}{\sigma \sqrt{2(1-\rho)}} \right)
+  \end{equation*}
+  This proves Equation~\eqref{eq:geomGaussAsSmith}.
+\end{proof}
 
 \chapter{Spatial Dependence of Max-Stable Random Fields}
 \label{cha:spatial-depend-max}
