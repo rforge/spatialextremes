@@ -32,10 +32,16 @@ void lmadogram(double *data, int *nObs, int *nSite, double *lambda,
 	for (l=0;l<*nObs;l++){
 	  lmado[currentPair * *nLambda + k] += 
 	    fabs(R_pow(data[i * *nObs + l], lambda[k]) -
-		 R_pow(data[j * *nObs + l], 1 - lambda[k]));
+		 R_pow(data[j * *nObs + l], 1 - lambda[k])) -
+	    lambda[k] * (1 - R_pow(data[i * *nObs + l], lambda[k])) -
+	    (1 - lambda[k]) * (1 - R_pow(data[j * *nObs + l],
+					 1 - lambda[k]));
 	}
 
 	lmado[currentPair * *nLambda + k] *= 0.5 / *nObs;
+	lmado[currentPair * *nLambda + k] += 0.5 * 
+	  (1 - lambda[k] + lambda[k] * lambda[k]) / (2 - lambda[k]) /
+	  (1 + lambda[k]);
       }
     }
   }

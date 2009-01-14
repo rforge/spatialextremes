@@ -205,8 +205,7 @@ lmadogram <- function(data, coord, n.bins, xlab, ylab, zlab, n.lambda = 11,
   dist <- distance(coord)
 
   if (marge == "emp")
-    ##We use the plotting-positions as defined by Hosking and Wallis (1995)
-    data <- (apply(data, 2, order) - 0.35) / nrow(data)
+    data <- (apply(data, 2, order)) / (nrow(data)+1)
 
   else{
     for (i in 1:n.site){
