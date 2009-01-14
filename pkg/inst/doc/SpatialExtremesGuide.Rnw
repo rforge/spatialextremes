@@ -924,7 +924,7 @@ where
   By symmetry, we get
   \begin{equation*}
     \int \frac{Y(x_2)}{z_2} \mathbb{I}\left(\frac{Y(x_2)}{z_2} >
-      \frac{Y(x_1)}{z_1} \right) dP(Y(x_1),Y(x_2)) &=& \frac{1}{z_2}
+      \frac{Y(x_1)}{z_1} \right) dP(Y(x_1),Y(x_2)) = \frac{1}{z_2}
     \Phi\left(\frac{\sigma \sqrt{1 - \rho}}{\sqrt{2}} - \frac{\log
         \frac{z_2}{z_1}}{\sigma \sqrt{2(1-\rho)}} \right)
   \end{equation*}
@@ -1460,39 +1460,7 @@ random field at location $x_1$ and $x_2$ and $n$ is the total number
 of observations.
 
 The $F$-madogram has strong connections with the extremal coefficient
-introduced in Section~\ref{sec:extremal-coefficient}. To see this,
-lets first note that
-\begin{equation}
-  \label{eq:abs2max}
-  |x - y| = 2 \max\left\{x, y \right\} - (x + y)
-\end{equation}
-
-Using Equation~\eqref{eq:abs2max} in Equation~\eqref{eq:F-madogram},
-we have:
-\begin{eqnarray*}
-  \nu_F(x_1 - x_2) &=& \frac{1}{2} \mathbb{E}
-  \left[|F\left(Z(x_1)\right) - F\left(Z(x_2)\right)| \right] =
-  \mathbb{E}\left[\max\left\{F\left(Z(x_1)\right),
-      F\left(Z(x_2)\right) \right\} \right] - \mathbb{E}\left[
-    F\left(Z(x_1) \right) \right]\\ 
-  &=& \mathbb{E}\left[F\left(\max\{Z(x_1), Z(x_2)\} \right)\right] -
-  \frac{1}{2}
-\end{eqnarray*}
-where we used the fact that $F(Z(x_1))$ is uniformly distributed on
-$[0, 1]$. Now, from Section~\ref{sec:extremal-coefficient}, we know
-that
-\begin{equation*}
-  \Pr \left[ \max\left\{ Z(x_1), Z(x_2) \right\}\leq z \right] = \exp
-  \left(- \frac{\theta(x_1 - x_2)}{z} \right)
-\end{equation*}
-so that
-\begin{eqnarray*}
-  \mathbb{E}\left[F\left(\max\{Z(x_1), Z(x_2)\} \right) \right] &=&
-  \theta(x_1 - x_2) \int_{0}^{+\infty} \exp\left(-\frac{1}{z} \right)
-  \frac{\exp\left(-\frac{\theta(x_1 - x_2)}{z} \right)}{z^2}\mbox{dz}\\
-  &=& \frac{\theta(x_1 - x_2)}{\theta(x_1 - x_2) + 1}
-\end{eqnarray*}
-and finally
+introduced in Section~\ref{sec:extremal-coefficient}. Indeed, we have
 \begin{equation}
   \label{eq:F-mado2ExtCoeff}
   2 \nu_F(x_1 - x_2) = \frac{\theta(x_1 - x_2) - 1}{\theta(x_1 - x_2)
@@ -1505,8 +1473,44 @@ or conversely
     x_2)}
 \end{equation}
 
-As we can see from the above equation, there is a one-to-one
-relationship between the extremal coefficient and the
+\begin{proof}
+  Lets first note that
+  \begin{equation}
+    \label{eq:abs2max}
+    |x - y| = 2 \max\left\{x, y \right\} - (x + y)
+  \end{equation}
+
+  Using Equation~\eqref{eq:abs2max} in Equation~\eqref{eq:F-madogram},
+  we have:
+  \begin{eqnarray*}
+    \nu_F(x_1 - x_2) &=& \frac{1}{2} \mathbb{E}
+    \left[|F\left(Z(x_1)\right) - F\left(Z(x_2)\right)| \right] =
+    \mathbb{E}\left[\max\left\{F\left(Z(x_1)\right),
+        F\left(Z(x_2)\right) \right\} \right] - \mathbb{E}\left[
+      F\left(Z(x_1) \right) \right]\\ 
+    &=& \mathbb{E}\left[F\left(\max\{Z(x_1), Z(x_2)\} \right)\right] -
+    \frac{1}{2}
+  \end{eqnarray*}
+  where we used the fact that $F(Z(x_1))$ is uniformly distributed on
+  $[0, 1]$. Now, from Section~\ref{sec:extremal-coefficient}, we know
+  that
+  \begin{equation*}
+    \Pr \left[ \max\left\{ Z(x_1), Z(x_2) \right\}\leq z \right] = \exp
+    \left(- \frac{\theta(x_1 - x_2)}{z} \right)
+  \end{equation*}
+  so that
+  \begin{eqnarray*}
+    \mathbb{E}\left[F\left(\max\{Z(x_1), Z(x_2)\} \right) \right] &=&
+    \theta(x_1 - x_2) \int_{0}^{+\infty} \exp\left(-\frac{1}{z} \right)
+    \frac{\exp\left(-\frac{\theta(x_1 - x_2)}{z} \right)}{z^2}\mbox{dz}\\
+    &=& \frac{\theta(x_1 - x_2)}{\theta(x_1 - x_2) + 1}
+  \end{eqnarray*}
+  This proves Equations~\eqref{eq:F-mado2ExtCoeff}
+  and~\eqref{eq:extCoeff2F-mado}.
+\end{proof}
+
+As we can see from Equation~\eqref{eq:extCoeff2F-mado}, there is a
+one-to-one relationship between the extremal coefficient and the
 $F$-madogram. This suggests a simple estimator for $\theta(x_1 - x_2)$
 \begin{equation}
   \label{eq:extCoeffEstF-mado}
@@ -1557,49 +1561,57 @@ for any $\lambda \in [0, 1]$.
 
 The idea beyond this is that by varying $\lambda$, we will focus on
 $\Pr[Z(x_1) \leq z_1, Z(x_2) \leq z_2]$ where $z_1 = \lambda z$ and
-$z_2 = (1 - \lambda) z$ and thus explore the whole space.
-
-Applying Equation~\eqref{eq:abs2max} with $x = F^{\lambda}\{Z(x_1)\}$
-and $y = F^{1-\lambda}\{Z(x_2)\}$, we have
-\begin{eqnarray*}
-  \nu_{\lambda}(x_1 - x_2) &=& \mathbb{E}\left[\max\{F^{\lambda}
-    \{Z(x_1)\}, F^{1-\lambda}\{Z(x_2)\} \} \right] - \mathbb{E}\left[
-    F^{\lambda} \{Z(x_1)\} \right] - \mathbb{E}\left[F^{1-\lambda}
-    \{Z(x_2)\} \right]\\
-  &=& \mathbb{E}\left[\max\{F^{\lambda} \{Z(x_1)\},
-    F^{1-\lambda}\{Z(x_2)\} \} \right] - \frac{1}{2(1+\lambda)} -
-  \frac{1}{2(2 - \lambda)}
-\end{eqnarray*}
-where we used the fact that $\mathbb{E}[X^k] = 1/(1+k)$, $X \sim
-U(0,1)$, $k>0$. From Section~\ref{sec:extremal-coefficient} we know
-that
-\begin{eqnarray*}
-  \Pr\left[\max\{F^{\lambda} \{Z(x_1)\}, F^{1-\lambda}\{Z(x_2)\} \}
-    \leq z \right] &=& \Pr \left[Z(x_1) \leq \lambda / \log z, Z(x_2)
-    \leq (1 - \lambda) / \log z \right]\\
-  &=& \exp\left\{\log (z) V_{x_1,x_2}\left(\lambda, 1 - \lambda
-    \right) \right\}
-\end{eqnarray*}
-where $V_{x_1,x_2}$ is the homogeneous function of order $-1$
-introduced in Equation~\eqref{eq:MEVD}. Differentiating this CDF
-w.r.t. $z$ gives the probability density function of
-$\max\{F^{\lambda} \{Z(x_1)\}, F^{1-\lambda}\{Z(x_2)\} \}$, so that we
-have
-\begin{eqnarray*}
-  \mathbb{E}\left[\max\{F^{\lambda} \{Z(x_1)\},
-    F^{1-\lambda}\{Z(x_2)\} \} \right] &=& \int_0^1 -z
-  \frac{V_{x_1,x_2}(\lambda, 1-\lambda)}{z} \exp\left\{-\log (z)
-    V_{x_1,x_2}\left(\lambda, 1 - \lambda \right) \right\} \mbox{dz}\\
-  &=& \frac{V_{x_1,x_2}(\lambda, 1-\lambda)}{1+V_{x_1,x_2}(\lambda,
-    1-\lambda)}
-\end{eqnarray*}
-and finally
+$z_2 = (1 - \lambda) z$ and thus explore the whole space. The
+$\lambda$-madogram is related to the exponent measure $V$, namely
 \begin{equation}
   \label{eq:lambda-madogramVfun}
   \nu_{\lambda}(x_1 - x_2) = \frac{V_{x_1,x_2}(\lambda,
     1-\lambda)}{1+V_{x_1,x_2}(\lambda, 1-\lambda)} - c(\lambda)
 \end{equation}
 where $c(\lambda) = 3/\{2(1+\lambda)(2-\lambda)\}$.
+
+\begin{proof}
+  Applying Equation~\eqref{eq:abs2max} with $x =
+  F^{\lambda}\{Z(x_1)\}$ and $y = F^{1-\lambda}\{Z(x_2)\}$, we have
+  \begin{eqnarray*}
+    \nu_{\lambda}(x_1 - x_2) &=& \mathbb{E}\left[\max\{F^{\lambda}
+      \{Z(x_1)\}, F^{1-\lambda}\{Z(x_2)\} \} \right] - \mathbb{E}\left[
+      F^{\lambda} \{Z(x_1)\} \right] - \mathbb{E}\left[F^{1-\lambda}
+      \{Z(x_2)\} \right]\\
+    &=& \mathbb{E}\left[\max\{F^{\lambda} \{Z(x_1)\},
+      F^{1-\lambda}\{Z(x_2)\} \} \right] - \frac{1}{2(1+\lambda)} -
+    \frac{1}{2(2 - \lambda)}
+  \end{eqnarray*}
+  where we used the fact that $\mathbb{E}[X^k] = 1/(1+k)$, $X \sim
+  U(0,1)$, $k>0$. From Section~\ref{sec:extremal-coefficient} we know
+  that
+  \begin{eqnarray*}
+    \Pr\left[\max\{F^{\lambda} \{Z(x_1)\}, F^{1-\lambda}\{Z(x_2)\} \}
+      \leq z \right] &=& \Pr \left[Z(x_1) \leq \lambda / \log z, Z(x_2)
+      \leq (1 - \lambda) / \log z \right]\\
+    &=& \exp\left\{\log (z) V_{x_1,x_2}\left(\lambda, 1 - \lambda
+      \right) \right\}
+  \end{eqnarray*}
+  where $V_{x_1,x_2}$ is the homogeneous function of order $-1$
+  introduced in Equation~\eqref{eq:MEVD}. Differentiating this CDF
+  w.r.t. $z$ gives the probability density function of
+  $\max\{F^{\lambda} \{Z(x_1)\}, F^{1-\lambda}\{Z(x_2)\} \}$, so that
+  we have
+  \begin{eqnarray*}
+    \mathbb{E}\left[\max\{F^{\lambda} \{Z(x_1)\},
+      F^{1-\lambda}\{Z(x_2)\} \} \right] &=& \int_0^1 -z
+    \frac{V_{x_1,x_2}(\lambda, 1-\lambda)}{z} \exp\left\{-\log (z)
+      V_{x_1,x_2}\left(\lambda, 1 - \lambda \right) \right\} \mbox{dz}\\
+    &=& \frac{V_{x_1,x_2}(\lambda, 1-\lambda)}{1+V_{x_1,x_2}(\lambda,
+      1-\lambda)}
+  \end{eqnarray*}
+  and finally
+  \begin{equation*}
+    \nu_{\lambda}(x_1 - x_2) = \frac{V_{x_1,x_2}(\lambda,
+      1-\lambda)}{1+V_{x_1,x_2}(\lambda, 1-\lambda)} - c(\lambda)
+  \end{equation*}
+  where $c(\lambda) = 3/\{2(1+\lambda)(2-\lambda)\}$.
+\end{proof}
 
 Again there is a one-to-one relationship between $\nu_\lambda$ and the
 dependence measure, so that we can express $V_{x_1,x_2}$ as a function
