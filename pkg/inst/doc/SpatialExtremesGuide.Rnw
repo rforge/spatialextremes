@@ -1640,9 +1640,28 @@ Equation~\eqref{eq:lambda-madogram} suggests a simple estimator
 where $z_i(x_1)$ and $z_i(x_2)$ are the $i$-th observations of the
 random field at location $x_1$ and $x_2$, $n$ is the total number of
 observations and $\hat{F}$ is an estimate of the CDF at the specified
-location. By plug in this estimator into
-Equation~\eqref{eq:Vfun2lambda-mado} we get an estimator for the
-dependence measure
+location. 
+
+There is an issue with the previous estimator. Indeed, the boundary
+conditions for the $\lambda$-madogram when $\lambda = 0$ or $\lambda =
+1$ are not always fulfilled. From Equation~\eqref{eq:lambda-madogram},
+if $\lambda = 0$ or $\lambda = 1$, $\nu_\lambda(x_1 - x_2) = 1/4$. If
+$F$ is estimated by MLE, then this condition fails while if
+$\hat{F}(x_{i:n}) = i / n+1$ we get the required conditions. To bypass
+this hurdle, \citet{Naveau2009} propose the following adjusted
+estimator
+\begin{eqnarray*}
+  \hat{\nu}_{\lambda}(x_1 - x_2) &=& \frac{1}{2n} \sum_{i=1}^n
+  |\hat{F}^{\lambda}\{z_i(x_1)\} - \hat{F}^{1-\lambda}\{z_i(x_2)\}| -
+  \frac{\lambda}{2n} \sum_{i=1}^n \left[1 -
+    \hat{F}^\lambda\{z_i(x_1)\} \right]\\
+  &-& \frac{1 - \lambda}{2n} \sum_{i=1}^n \left[1 -
+    \hat{F}^{1-\lambda}\{z_i(x_2)\}\right] + \frac{1 - \lambda +
+    \lambda^2}{2 (2 - \lambda) (1 + \lambda)}
+\end{eqnarray*}
+
+By plug in this estimator into Equation~\eqref{eq:Vfun2lambda-mado} we
+get an estimator for the dependence measure
 \begin{equation}
   \label{eq:VfunEst}
   \hat{V}_{x_1,x_2}(\lambda, 1-\lambda) = \frac{c(\lambda) +

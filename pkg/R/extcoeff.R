@@ -48,13 +48,7 @@ fitextcoeff <- function(data, coord, ..., estim = "ST", marge = "emp",
   }
   
   if (marge == "emp") {
-    frech <- data
-    probs <- ppoints(n.obs, a = 0)
-    for (i in 1:n.site){
-      idx <- order(frech[,i])
-      frech[idx,i] <- probs
-    }
-    
+    frech <- apply(data, 2, rank) / (n.obs  +1)    
     frech <- - 1 / log(frech)
     
   }
@@ -136,12 +130,7 @@ fitextcoeff <- function(data, coord, ..., estim = "ST", marge = "emp",
       if (marge == "emp"){
         probs <- ppoints(n.obs - 1, a = 0)
         for (year in 1:n.obs){
-          frech.jack <- data[-year,]
-          for (i in 1:n.site){
-            idx <- order(data[-year,i])
-            frech.jack[idx,i] <- probs
-          }
-          
+          frech.jack <- apply(data[-year,], 2, rank) / n.obs
           frech.jack <- - log(frech.jack)
           
           ext.coeff.std.err[year,] <- .C("extCoeffSmith", as.double(frech.jack),

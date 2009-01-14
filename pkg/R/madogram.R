@@ -37,8 +37,7 @@ madogram <- function(data, coord, n.bins, gev.param = c(0, 1, 0),
     col <- 1
 
   if (marge == "emp")
-    ##We use the plotting-positions as defined by Hosking and Wallis (1995)
-    data <- (apply(data, 2, order) - 0.35) / n.obs
+    data <- apply(data, 2, rank) / (n.obs + 1)
 
   else{
     for (i in 1:n.site){
@@ -135,8 +134,7 @@ fmadogram <- function(data, coord, n.bins, which = c("mado", "ext"),
     col <- 1
 
   if (marge == "emp")
-    ##We use the plotting-positions as defined by Hosking and Wallis (1995)
-    data <- (apply(data, 2, order) - 0.35) / nrow(data)
+    data <- apply(data, 2, rank) / (n.obs + 1)
 
   else{
     for (i in 1:n.site){
@@ -205,7 +203,7 @@ lmadogram <- function(data, coord, n.bins, xlab, ylab, zlab, n.lambda = 11,
   dist <- distance(coord)
 
   if (marge == "emp")
-    data <- (apply(data, 2, order)) / (nrow(data)+1)
+    data <- apply(data, 2, rank) / (n.obs + 1)
 
   else{
     for (i in 1:n.site){
