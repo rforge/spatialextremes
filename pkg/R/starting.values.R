@@ -74,15 +74,15 @@
     cov.param <- fitcovariance(data, coord, cov.mod, marge = "emp")$param
 
   spatgev <- fitspatgev(data, as.matrix(covariables), loc.form,
-                          scale.form, shape.form, std.err.type = "none")
+                        scale.form, shape.form, std.err.type = "none")
 
   frech <- data
   gev <- predict(spatgev)
   for (i in 1:n.site)
     frech[,i] <- gev2frech(frech[,i], gev[i,"loc"], gev[i,"scale"], gev[i,"shape"])
 
-  cov.param <- schlatherfull(frech, coord, fit.marge = FALSE, warn = FALSE,
-                             start = as.list(cov.param), method = method,
+  cov.param <- schlatherfull(frech, coord, cov.mod = cov.mod, fit.marge = FALSE,
+                             warn = FALSE, start = as.list(cov.param), method = method,
                              std.err.type = "none")$param
   
   start <- c(as.list(cov.param), as.list(spatgev$param))
