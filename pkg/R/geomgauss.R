@@ -91,7 +91,15 @@ geomgaussfull <- function(data, coord, start, cov.mod = "whitmat", ...,
     }
 
     if (length(fixed.param) > 0){
-      args <- c(list(data = data, coord = coord, cov.mod = cov.mod, marge = "emp"), fixed.param)
+      if (any(names(fixed.param) == "sigma2")){
+        idx <- which(names(fixed.param) == "sigma2")
+        args <- c(list(data = data, coord = coord, cov.mod = cov.mod, marge = "emp"),
+                  fixed.param[-idx])
+      }
+
+      else
+        args <- c(list(data = data, coord = coord, cov.mod = cov.mod, marge = "emp"), fixed.param)
+      
       cov.start <- do.call("fitcovariance", args)$param
     }
 
