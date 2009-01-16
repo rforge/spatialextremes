@@ -83,3 +83,83 @@ void fitcovariance(int *covmod, double *sill, double *range, double *smooth,
 
   return;
 }
+
+void fiticovariance(int *covmod, double *alpha, double *sill, double *range,
+		    double *smooth, int *nPairs, double *dist, double *extcoeff,
+		    double *weights, double *ans){
+  /* This computes the least squares for the independent Schlather model */
+  
+  int i;
+  double *rho;
+
+  rho = (double *)R_alloc(*nPairs, sizeof(double));
+
+  if (*alpha > 1){
+    *ans = -*alpha * *alpha * MINF;
+    return;
+  }
+
+  if (*alpha < 0){
+    *ans = - (1 - *alpha) * (1 - *alpha) * MINF;
+    return;
+  }
+
+  switch (*covmod){
+  case 1:
+    *ans = -whittleMatern(dist, *nPairs, *sill, *range, *smooth, rho);
+    break;
+  case 2:
+    *ans = -cauchy(dist, *nPairs, *sill, *range, *smooth, rho);
+    break;
+  case 3:
+    *ans = -powerExp(dist, *nPairs, *sill, *range, *smooth, rho);
+    break;
+  }
+  
+  if (*ans != 0.0)
+    return;
+
+  for (i=0;i<*nPairs;i++)
+    *ans += R_pow_di((2 * *alpha + (1 - *alpha) *
+		      (1 + sqrt(1 - 0.5 * (rho[i] + 1)) -
+		       extcoeff[i])) / weights[i], 2);
+
+  return;
+}
+
+void fitgcovariance(int *covmod, double *sigma2, double *sill, double *range,
+		    double *smooth, int *nPairs, double *dist, double *extcoeff,
+		    double *weights, double *ans){
+  /* This computes the least squares for the geometric Gaussian model */
+  
+  int i;
+  double *rho;
+
+  rho = (double *)R_alloc(*nPairs, sizeof(double));
+
+  if (*sigma2 <= 0){
+    *ans = -(1 - *sigma2) * (1 - *sigma2) * MINF;
+    return;
+  }
+  
+  switch (*covmod){
+  case 1:
+    *ans = -whittleMatern(dist, *nPairs, *sill, *range, *smooth, rho);
+    break;
+  case 2:
+    *ans = -cauchy(dist, *nPairs, *sill, *range, *smooth, rho);
+    break;
+  case 3:
+    *ans = -powerExp(dist, *nPairs, *sill, *range, *smooth, rho);
+    break;
+  }
+  
+  if (*ans != 0.0)
+    return;
+
+  for (i=0;i<*nPairs;i++)
+    *ans += R_pow_di((2 * pnorm(sqrt(*sigma2 * (1 - rho[i]) / 2), 0.0, 1.0, 1, 0) -
+		     extcoeff[i]) / weights[i], 2);
+
+  return;
+}

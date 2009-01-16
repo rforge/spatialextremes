@@ -236,9 +236,23 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", start,
   n.pairs <- n.site * (n.site - 1) / 2
   dist.dim <- ncol(coord)
 
+  if (substr(cov.mod, 1, 1) %in% c("i", "g")){
+        
+    if (substr(cov.mod, 1, 1) == "i")
+      model <- "iSchlather"
+
+    if (substr(cov.mod, 1, 1) == "g")
+      model <- "Geometric"
+
+    cov.mod <- substr(cov.mod, 2, 8)
+  }
+
+  else
+    model <- "Schlather"
+
   if (!(cov.mod %in% c("whitmat","cauchy","powexp")))
     stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp'")
-
+  
   if (cov.mod == "whitmat")
     cov.mod.num <- 1
   if (cov.mod == "cauchy")
@@ -257,17 +271,45 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", start,
   weights[weights == 0] <- mean(weights)
 
   param <- c("sill", "range", "smooth")
-    
-  fun <- function(sill, range, smooth)
-    .C("fitcovariance", as.integer(cov.mod.num), as.double(sill), as.double(range),
-       as.double(smooth), as.integer(n.pairs), as.double(dist),
-       as.double(extcoeff), as.double(weights), ans = double(1),
-       PACKAGE = "SpatialExtremes")$ans
+
+  if (model == "iSchlather")
+    param <- c("alpha", param)
+
+  if (model == "Geometric")
+    param <- c("sigma2", param)
+
+  if (model == "Schlather")
+    fun <- function(sill, range, smooth)
+      .C("fitcovariance", as.integer(cov.mod.num), as.double(sill), as.double(range),
+         as.double(smooth), as.integer(n.pairs), as.double(dist),
+         as.double(extcoeff), as.double(weights), ans = double(1),
+         PACKAGE = "SpatialExtremes")$ans
+
+  else if (model == "iSchlather")
+    fun <- function(alpha, sill, range, smooth)
+      .C("fiticovariance", as.integer(cov.mod.num), as.double(alpha), as.double(sill),
+         as.double(range), as.double(smooth), as.integer(n.pairs), as.double(dist),
+         as.double(extcoeff), as.double(weights), ans = double(1),
+         PACKAGE = "SpatialExtremes")$ans
+
+  else
+    fun <- function(sigma2, sill, range, smooth)
+      .C("fitgcovariance", as.integer(cov.mod.num), as.double(sigma2), as.double(sill),
+         as.double(range), as.double(smooth), as.integer(n.pairs), as.double(dist),
+         as.double(extcoeff), as.double(weights), ans = double(1),
+         PACKAGE = "SpatialExtremes")$ans
 
   fixed.param <- list(...)[names(list(...)) %in% param]
 
-  if (missing(start))
+  if (missing(start)){
     start <- list(sill = .9, range = 0.75 * max(dist), smooth = .5)
+
+    if (model == "iSchlather")
+      start <- c(list(alpha = 0.5), start)
+
+    if (model == "Geometric")
+      start <- c(list(sigma2 = 1), start)
+  }
   
   start <- start[!(param %in% names(list(...)))]
 
@@ -315,14 +357,24 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", start,
 
   cov.fun <- covariance(sill = param["sill"], range = param["range"],
                         smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
-  
-  ext.coeff <- function(h)
-    1 + sqrt(1 - 1/2 * (cov.fun(h) + 1))
+
+  if (model == "Schlather")
+    ext.coeff <- function(h)
+      1 + sqrt(1 - 1/2 * (cov.fun(h) + 1))
+
+  else if (model == "iSchlather")
+    ext.coeff <- function(h)
+      2 * param["alpha"] + (1 - param["alpha"]) *
+        (1 + sqrt(1 - 1/2 * (cov.fun(h) + 1)))
+
+  else
+    ext.coeff <- function(h)
+      2 * pnorm(sqrt(param["sigma2"] * (1 - cov.fun(h)) / 2))
 
   fitted <- list(fitted.values = opt$par, fixed = unlist(fixed.param),
                  param = param, convergence = opt$convergence,
                  counts = opt$counts, message = opt$message, data = data,
-                 est = "Least Square", opt.value = opt$value, model = "Schlather",
+                 est = "Least Square", opt.value = opt$value, model = model,
                  coord = coord, fit.marge = FALSE, cov.mod = cov.mod,
                  cov.fun = cov.fun, ext.coeff = ext.coeff)
 

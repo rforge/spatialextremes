@@ -14,10 +14,11 @@ fitcovariance(data, coord, cov.mod, marge = "mle", start, \dots)
   \item{coord}{A matrix that gives the coordinates of each
     location. Each row corresponds to one location.}
   \item{cov.mod}{A character string corresponding the the covariance
-    model in the Schlather's model. Must be one of "gauss" for the
-    Smith's characterisation; or "whitmat", "cauchy" or "powexp" for the
-    Whittle-Matern, the Cauchy and the Powered Exponential covariance
-    family.}
+    model in the Schlather's model. Must be one of "whitmat", "cauchy"
+    or "powexp" for the Whittle-Matern, the Cauchy and the Powered
+    Exponential covariance family. If the prefixes "i" or "g" are used
+    then the independent Schlather and geometric Gaussian models are
+    used respectively.}
   \item{marge}{Character string specifying how margins are transformed
     to unit Frechet. Must be one of "emp", "frech" or "mle" - see
     function \code{\link{fitextcoeff}}.}

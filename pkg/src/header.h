@@ -226,6 +226,12 @@ void fitcovmat3d(double *cov11, double *cov12, double *cov13,
 void fitcovariance(int *covmod, double *sill, double *range, double *smooth,
 		   int *nPairs, double *distVec, double *extcoeff,
 		   double *weights, double *ans);
+void fiticovariance(int *covmod, double *alpha, double *sill, double *range,
+		    double *smooth, int *nPairs, double *dist, double *extcoeff,
+		    double *weights, double *ans);
+void fitgcovariance(int *covmod, double *sigma2, double *sill, double *range,
+		    double *smooth, int *nPairs, double *dist, double *extcoeff,
+		    double *weights, double *ans);
 
 ///////////////////////////////////
 //  From spatgevlik.c
