@@ -1,5 +1,5 @@
 fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
-                       start, ..., control = list(maxit = 10000),
+                       ..., start, control = list(maxit = 10000),
                        method = "Nelder", std.err.type = "score", warn = TRUE){
 
   if (std.err.type != "none")

@@ -98,15 +98,17 @@ geomgaussfull <- function(data, coord, start, cov.mod = "whitmat", ...,
       }
 
       else
-        args <- c(list(data = data, coord = coord, cov.mod = cov.mod, marge = "emp"), fixed.param)
+        args <- c(list(data = data, coord = coord, cov.mod = paste("g", cov.mod, sep=""),
+                       marge = "emp"), fixed.param)
       
       cov.start <- do.call("fitcovariance", args)$param
     }
 
     else
-      cov.start <- fitcovariance(data, coord, cov.mod, marge = "emp")$param
+      cov.start <- fitcovariance(data, coord, paste("g", cov.mod, sep=""),
+                                 marge = "emp")$param
 
-    start <- c(list(sigma2 = 1), as.list(cov.start), start)
+    start <- c(as.list(cov.start), start)
     start <- start[!(param %in% names(list(...)))]
   }
   
