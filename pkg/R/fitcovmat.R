@@ -278,21 +278,21 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", ..., start){
     param <- c("sigma2", param)
 
   if (model == "Schlather")
-    fun <- function(sill, range, smooth)
+    funS <- function(sill, range, smooth)
       .C("fitcovariance", as.integer(cov.mod.num), as.double(sill), as.double(range),
          as.double(smooth), as.integer(n.pairs), as.double(dist),
          as.double(extcoeff), as.double(weights), ans = double(1),
          PACKAGE = "SpatialExtremes")$ans
 
   else if (model == "iSchlather")
-    fun <- function(alpha, sill, range, smooth)
+    funI <- function(alpha, sill, range, smooth)
       .C("fiticovariance", as.integer(cov.mod.num), as.double(alpha), as.double(sill),
          as.double(range), as.double(smooth), as.integer(n.pairs), as.double(dist),
          as.double(extcoeff), as.double(weights), ans = double(1),
          PACKAGE = "SpatialExtremes")$ans
 
   else
-    fun <- function(sigma2, sill, range, smooth)
+    funG <- function(sigma2, sill, range, smooth)
       .C("fitgcovariance", as.integer(cov.mod.num), as.double(sigma2), as.double(sill),
          as.double(range), as.double(smooth), as.integer(n.pairs), as.double(dist),
          as.double(extcoeff), as.double(weights), ans = double(1),
@@ -304,7 +304,7 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", ..., start){
     start <- list(sill = .9, range = 0.75 * max(dist), smooth = .5)
 
     if (model == "iSchlather")
-      start <- c(list(alpha = 0.5), start)
+      start <- c(list(alpha = 0.25), start)
 
     if (model == "Geometric")
       start <- c(list(sigma2 = 1), start)
@@ -320,20 +320,48 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", ..., start){
   
   nm <- names(start)
   l <- length(nm)
+
+  if (model == "Schlather")
+    f <- formals(funS)
+
+  else if (model == "iSchlather")
+    f <- formals(funI)
+
+  else
+    f <- formals(funG)
   
-  f <- formals(fun)
   names(f) <- param
   m <- match(nm, param)
   
   if(any(is.na(m))) 
     stop("'start' specifies unknown arguments")
 
-  formals(fun) <- c(f[m], f[-m])
-  obj.fun <- function(p, ...) fun(p, ...)
+  if (model == "Schlather"){
+    formals(funS) <- c(f[m], f[-m])
+    obj.fun <- function(p, ...) funS(p, ...)
     
-  if (l > 1)
-    body(obj.fun) <- parse(text = paste("fun(", paste("p[",1:l,
-                             "]", collapse = ", "), ", ...)"))
+    if (l > 1)
+      body(obj.fun) <- parse(text = paste("funS(", paste("p[",1:l,
+                               "]", collapse = ", "), ", ...)"))
+  }
+
+  else if (model == "iSchlather"){
+    formals(funI) <- c(f[m], f[-m])
+    obj.fun <- function(p, ...) funI(p, ...)
+    
+    if (l > 1)
+      body(obj.fun) <- parse(text = paste("funI(", paste("p[",1:l,
+                               "]", collapse = ", "), ", ...)"))
+  }
+
+  else {
+    formals(funG) <- c(f[m], f[-m])
+    obj.fun <- function(p, ...) funG(p, ...)
+    
+    if (l > 1)
+      body(obj.fun) <- parse(text = paste("funG(", paste("p[",1:l,
+                               "]", collapse = ", "), ", ...)"))
+  }
   
   if(any(!(param %in% c(nm,names(fixed.param)))))
     stop("unspecified parameters")
