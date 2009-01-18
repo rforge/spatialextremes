@@ -5,8 +5,8 @@
   This function derives the MLE of a spatial GEV model.
 }
 \usage{
-fitspatgev(data, covariables, loc.form, scale.form, shape.form, start,
-..., control = list(maxit = 10000), method = "Nelder", std.err.type =
+fitspatgev(data, covariables, loc.form, scale.form, shape.form, ...,
+start, control = list(maxit = 10000), method = "Nelder", std.err.type =
 "score", warn = TRUE)
 }
 \arguments{

@@ -6,7 +6,7 @@
   non-parametric estimates of the pairwise extremal coefficients.
 }
 \usage{
-fitcovmat(data, coord, marge = "mle", iso = FALSE, start, \dots)
+fitcovmat(data, coord, marge = "mle", iso = FALSE, ..., start)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to

@@ -6,7 +6,7 @@
   non-parametric estimates of the pairwise extremal coefficients.
 }
 \usage{
-fitcovariance(data, coord, cov.mod, marge = "mle", start, \dots)
+fitcovariance(data, coord, cov.mod, marge = "mle", ..., start)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
