@@ -1,4 +1,4 @@
-fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, start, ...){
+fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, ..., start){
 
   n.site <- ncol(data)
   n.pairs <- n.site * (n.site - 1) / 2
@@ -229,8 +229,7 @@ fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, start, ...){
   
 }
 
-fitcovariance <- function(data, coord, cov.mod, marge = "mle", start,
-                          ...){
+fitcovariance <- function(data, coord, cov.mod, marge = "mle", ..., start){
 
   n.site <- ncol(data)
   n.pairs <- n.site * (n.site - 1) / 2
