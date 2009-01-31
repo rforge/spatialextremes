@@ -2,6 +2,10 @@ distance <- function(coord, vec = FALSE){
   ##This function computes the distance between each pair of locations
 
   ##coord is a matrix giving the coordinates (1 row = 1 station)
+  ##If coord are on the real line, we use a trick
+  if (is.null(dim(coord)))
+    coord <- cbind(coord, 0)
+  
   n.site <- nrow(coord)
   dist.dim <- ncol(coord)
   n.pairs <- n.site * (n.site - 1) / 2
