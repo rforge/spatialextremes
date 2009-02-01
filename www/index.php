@@ -22,6 +22,7 @@
 	  content="spatial extremes, extreme value theory, max-stable
 		   processes, composite likelihood, latent variable,
 		   copula"/>
+    <script type="text/javascript" src="javascript/lightbox.js"></script>
   </head>
   <body>
     <div id="conteneur">
