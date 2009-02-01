@@ -168,10 +168,10 @@ pre span.comment
 #overlay{ background-image: url(../images/overlay.png); }
 
 * html #overlay{
-	background-color: #333;
+	background-color: #000;
 	back\ground-color: transparent;
 	background-image: url(../images/blank.gif);
-	filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src="overlay.png", sizingMethod="scale");
+	filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src="../images/overlay.png", sizingMethod="scale");
 	}
 
 /* My configuration not alsa one */
