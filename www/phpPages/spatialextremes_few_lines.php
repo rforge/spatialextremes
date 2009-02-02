@@ -115,7 +115,7 @@ package.
 <div class="Rcodes">
   <span class="Rcomments">
     ##Covariance functions:<br/></span>
-  <a href="images/covariance.png" rel="lightbox" class="Routs">
+  <a href="images/covariance.png" rel="lightbox" title="Covariance function" class="Routs">
     <code>covariance(sill = 1, range = 1, smooth = 0.5, cov.mod = "whitmat");</code>
     <span>
       <img src="images/covariance.png"
@@ -127,7 +127,7 @@ package.
   <span class="Rcomments">
     ##Madogram:<br/>
   </span>
-  <a href="images/madogram.png" rel="lightbox" class="Routs">
+  <a href="images/madogram.png" rel="lightbox" title="Madogram" class="Routs">
     <code>madogram(data, coord, which = "mado")</code>
     <span>
       <img src="images/madogram.png"
@@ -138,7 +138,7 @@ package.
   <br/>
   <span class="Rcomments">
     ##Extremal coefficient:<br/> </span>
-  <a class="Routs" rel="lightbox" href="images/extcoeff.png">
+  <a class="Routs" rel="lightbox" title="Extremal coefficient" href="images/extcoeff.png">
     <code>extcoeff(fitted.object);</code>
     <span>
       <img src="images/extcoeff.png" 
@@ -150,7 +150,7 @@ package.
   <span class="Rcomments">
     ##Prediction of return levels:<br/> 
   </span>
-  <a class="Routs" rel="lightbox" href="images/map.png">
+  <a class="Routs" rel="lightbox" title="Return levels" href="images/map.png">
     <code>map(fitted.object, "quant", ret.per =
     50)</code>
     <span>
@@ -160,7 +160,7 @@ package.
     </span>
   </a>
   <br/>
-  <a class="Routs" rel="lightbox" href="images/condmap.png">
+  <a class="Routs" rel="lightbox" title="Conditional return levels" href="images/condmap.png">
     <code>condmap(schlather, c(1, 1), seq(0, 10, length
     = 20), seq(0,10, length = 20))</code>
     <span>
@@ -173,7 +173,7 @@ package.
   <span class="Rcomments">
     ##Semi-parametric estimates of the extremal coefficient:<br/> 
   </span>
-  <a class="Routs" rel="lightbox" href="images/fitextcoeff.png">
+  <a class="Routs" rel="lightbox" title="Extremal coefficient" href="images/fitextcoeff.png">
     <code>fitextcoeff(data, coord); fitextcoeff(data, coord, angles =
     seq(-pi, pi, length = 4))</code>
     <span>
@@ -186,7 +186,8 @@ package.
   <span class="Rcomments">
     ##Profile composite likelihood:<br/> 
   </span>
-  <a class="Routs" rel="lightbox" href="images/proflik.png">
+  <a class="Routs" rel="lightbox" title="Profile composite likelihood"
+     href="images/proflik.png">
     <code>profile(fitted.object, "cov11", range = c(80, 200))</code>
     <span>
       <img src="images/proflik.png"
@@ -198,7 +199,7 @@ package.
   <span class="Rcomments">
     ##Plot a p-spline:<br/> 
   </span>
-  <a class="Routs" rel="lightbox" href="images/spline.png">
+  <a class="Routs" rel="lightbox" title="P-spline" href="images/spline.png">
     <code>
       fitted &lt;- rbpspline(y, x, knots, degree); lines(fitted, col =
       2)
