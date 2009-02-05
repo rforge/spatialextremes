@@ -1,47 +1,5 @@
-\documentclass[a4paper,11pt]{report}
-\usepackage{Sweave}
-\usepackage[utf8]{inputenc}
-\usepackage{fullpage}
-\usepackage{amsmath,amsfonts,amsthm}
-\usepackage{hyperref}
-\usepackage[square]{natbib}
-% \usepackage{fancyhdr}
-
-\setlength{\parskip}{0.7ex plus0.1ex minus0.1ex}
-\setlength{\parindent}{0em}
-
-\renewcommand{\floatpagefraction}{0.95}
-\renewcommand{\textfraction}{0.05}
-
-\makeatletter
-\def\thickhrulefill{\leavevmode \leaders \hrule height 1ex \hfill \kern \z@}
-\def\@makechapterhead#1{%
-  \reset@font
-  \vspace*{10\p@}%
-  {\parindent \z@ 
-    \begin{flushleft}
-      \reset@font \scshape \bfseries \Huge \thechapter \par
-    \end{flushleft}
-    \hrule
-    \begin{flushleft}
-      \reset@font \LARGE \bfseries \strut #1\strut \par
-    \end{flushleft}
-    \vskip 50\p@
-  }}
-\def\@makeschapterhead#1{%
-  \reset@font
-  \vspace*{10\p@}%
-  {\parindent \z@ 
-    \begin{flushleft}
-      \reset@font \scshape \bfseries \Huge \vphantom{\thechapter} \par
-    \end{flushleft}
-    \hrule
-    \begin{flushleft}
-      \reset@font \LARGE \bfseries \strut #1\strut \par
-    \end{flushleft}
-    \vskip 50\p@
-  }}
-
+\documentclass[a4paper,11pt]{book}
+\usepackage{layout}
 
 \begin{document}
 % \VignetteIndexEntry{A R Package for Modelling Spatial Extremes} 
@@ -49,7 +7,8 @@
 % \VignetteKeyword{Extreme Value Theory, Spatial Extremes, Max-stable processes} 
 % \VignettePackage{SpatialExtremes}
 
-%\pagestyle{empty}
+\pagestyle{empty}
+\frontmatter
 \begin{titlepage}
   \vspace*{2cm}
   \begin{center}
@@ -87,7 +46,7 @@ lmadogram(ms0, locations, n.bins = 25, border = "grey", box = FALSE)
   \end{center}
 \end{titlepage}
 
-
+\mainmatter
 \pagenumbering{roman}
 \normalsize
 
@@ -95,17 +54,19 @@ lmadogram(ms0, locations, n.bins = 25, border = "grey", box = FALSE)
 %%\listoftables
 \listoffigures
 
-\pagenumbering{arabic}
-%\pagestyle{fancy}
-
 <<echo=false>>=
 options(SweaveHooks=list(fig=function()
 par(mar=c(5.1, 4.1, 1.1, 2.1))))
 @
 
+\pagestyle{fancy}
+\renewcommand{\chaptermark}[1]{\markboth{\thechapter\ $\cdot$\ #1}{}}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\ $\cdot$\ #1}}
+
 \chapter*{Introduction}
 \label{cha:introduction}
 \addcontentsline{toc}{chapter}{Introduction}
+\pagenumbering{arabic}
 
 
 \section*{What is the SpatialExtremes package?}
@@ -288,9 +249,9 @@ in space.
 
 Definition \eqref{eq:smithChar} is rather general and Smith considered
 a particular setting where $\nu(dy)$ is the Lebesgue measure and
-$f(y,x) = f_0(y-x)$, where $f_0(y-x)$ is a multivariate Normal density
+$f(y,x) = f_0(y-x)$, where $f_0(y-x)$ is a multivariate normal density
 with mean $y$ and covariance matrix $\Sigma$\footnote{Another form of
-  Smith's model that uses a Student distribution instead of the Normal
+  Smith's model that uses a Student distribution instead of the normal
   one. However, it is not currently implemented.}. With these
 additional assumptions, it can be shown that the bivariate CDF is
 \begin{equation}
@@ -340,7 +301,7 @@ Smith's model with different variance-covariance matrices.
     &+& \frac{1}{z_2} \mathbb{E}\left[ \mathbb{I}\left(\frac{f_0(X - x_1
           + x_2)}{z_1} \leq \frac{f_0(X)}{z_2} \right)\right]
   \end{eqnarray*}
-  where $X$ is a r.v. having $f_0$ as density. To get the closed form of
+  where $X$ is a r.v.\ having $f_0$ as density. To get the closed form of
   the bivariate distribution, it remains to compute the probabilities of
   the event $\{f_0(X)/z_1 > f_0(X - x_2 + x_1)/z_2\}$.
   {\small
@@ -353,18 +314,21 @@ Smith's model with different variance-covariance matrices.
       \frac{z_1}{z_2} - \frac{1}{2} (x_1 - x_2)^T \Sigma^{-1} (x_1 - x_2)
     \end{eqnarray*}
   }
-  As $X$ has density $f_0$, $X^T \Sigma^{-1} (x_1 - x_2)$ is Normal with
+  As $X$ has density $f_0$, $X^T \Sigma^{-1} (x_1 - x_2)$ is normal with
   mean $0$ and variance $a^2=(x_1 - x_2)^T \Sigma^{-1} (x_1 - x_2)$. And
   finally, we get
   \begin{eqnarray*}
-    A &:=& \frac{1}{z_1} \mathbb{E}\left[ \mathbb{I} \left(
+    \frac{1}{z_1} \mathbb{E}\left[ \mathbb{I} \left(
         \frac{f_0(X)}{z_1} > \frac{f_0(X - x_2 + x_1)}{z_2} \right)
-    \right] = \frac{1}{z_1} \left\{1 - \Phi\left(\frac{\log z_1/z_2}{a}
-        - \frac{a}{2} \right) \right\}\\
+    \right] &=& \frac{1}{z_1} \left\{1 - \Phi\left(\frac{\log
+          z_1/z_2}{a} - \frac{a}{2} \right) \right\}\\
     &=& \frac{1}{z_1} \Phi\left(\frac{a}{2} + \frac{\log z_2/z_1}{a}
     \right)\\
-    B &:=& \frac{1}{z_2} \mathbb{E}\left[ \mathbb{I} \left( \frac{ f_0(X
-          - x_1 + x_2)}{z_1} \leq \frac{f_0(X)}{z_2} \right)\right] =
+  \end{eqnarray*}
+  and
+  \begin{eqnarray*}
+    \frac{1}{z_2} \mathbb{E}\left[ \mathbb{I} \left( \frac{ f_0(X -
+          x_1 + x_2)}{z_1} \leq \frac{f_0(X)}{z_2} \right)\right] &=& 
     \frac{1}{z_2} \Phi\left(\frac{a}{2} + \frac{\log z_1/z_2}{a} \right)
   \end{eqnarray*}
   This proves equation~\eqref{eq:smith}.
@@ -416,7 +380,7 @@ as $a$ increases.
 
 The covariance matrix $\Sigma$ plays a major role in
 equation~\eqref{eq:smith} as it determines the shape of the storm
-events. Indeed, due the use of a multivariate Normal distribution, the
+events. Indeed, due the use of a multivariate normal distribution, the
 storm events have an elliptical shape. Considering the
 eigen-decomposition of $\Sigma$, we can write
 \begin{equation}
@@ -441,7 +405,7 @@ for which we have
   \end{bmatrix}
   =
   \begin{bmatrix}
-    ~\cos (-3 \pi / 4) & \sin (-3 \pi / 4)\\
+    \phantom{-}\cos (-3 \pi / 4) & \sin (-3 \pi / 4)\\
     -\sin (-3 \pi / 4) & \cos (-3 \pi / 4)
   \end{bmatrix}
   \begin{bmatrix}
@@ -450,7 +414,7 @@ for which we have
   \end{bmatrix}
   \begin{bmatrix}
     \cos (-3 \pi / 4) & -\sin (-3 \pi / 4)\\
-    \sin (-3 \pi / 4) & ~\cos (-3 \pi / 4)
+    \sin (-3 \pi / 4) & \phantom{-}\cos (-3 \pi / 4)
   \end{bmatrix},
 \end{equation*}
 so that the main direction of the major principal axis is $\pi/4$ and
@@ -497,7 +461,7 @@ interpretation. Think of $\xi_i Y_i(\cdot)$ as the daily spatial
 rainfall events so that all these events have the same spatial
 dependence structure but differ only in their magnitude $\xi_i$. This
 model differs slightly from Smith's one as we now have no
-deterministic shape such as a multivariate Normal density for the
+deterministic shape such as a multivariate normal density for the
 storms but a random shape driven by the process
 $Y(\cdot)$.
 
@@ -576,17 +540,17 @@ legend("topright", c(expression(nu == 4), expression(nu == 2),
 \end{figure}
 
 \bigskip
-\begin{tabular}{lllll}
+\begin{tabular}{lll}
   \textbf{Whittle--Matérn} & $\rho(h) = c_1
   \frac{2^{1-\nu}}{\Gamma(\nu)} \left(\frac{h}{c_2} \right)^{\nu}
-  K_{\nu}\left(\frac{h}{c_2} \right)$, & $0 \leq c_1 \leq 1$, & $c_2
-  >0$, & $\nu > 0$\\  
-  \textbf{Cauchy} & $\rho(h) = c_1 \left[1 + \left(\frac{h}{c_2}
-    \right)^2 \right]^{-\nu}$, & $0 \leq c_1 \leq 1$, & $c_2 >0$, &
+  K_{\nu}\left(\frac{h}{c_2} \right)$, & $0 \leq c_1 \leq 1$, $c_2>0$,
   $\nu > 0$\\
+  \textbf{Cauchy} & $\rho(h) = c_1 \left[1 + \left(\frac{h}{c_2}
+    \right)^2 \right]^{-\nu}$, & $0 \leq c_1 \leq 1$, $c_2 >0$, $\nu >
+  0$\\
   \textbf{Powered Exponential} & $\rho(h) = c_1 \exp\left[-
     \left(\frac{h}{c_2} \right)^{\nu} \right]$, & $0 \leq c_1 \leq 1$,
-  & $c_2 > 0$, & $0 < \nu \leq 2$
+  $c_2 > 0$, $0 < \nu \leq 2$
 \end{tabular}
 \bigskip
 
@@ -697,7 +661,7 @@ $\mathbb{R}^2$, a convenient parametrization for $A$ is given by
   A =
   \begin{bmatrix}
     \phantom{-}\cos \varphi & r\sin \varphi\\
-    -\sin \varphi & ~\cos \varphi
+    -\sin \varphi & \phantom{r}\cos \varphi
   \end{bmatrix}
 \end{equation*}
 where $\varphi \in [0, \pi)$ is the rotation angle and $0 < r < 1$ is
@@ -816,7 +780,7 @@ A.C. Davison proposed another model referred to as the geometric
 Gaussian model. The term geometric is by analogy with geometric
 brownian motion. The geometric Gaussian model is based on
 characterisation~\eqref{eq:SchlatherChar} but uses instead of Gaussian
-process for $Y_i(\cdot)$, a log-Normal process. More precisely, the
+process for $Y_i(\cdot)$, a log-normal process. More precisely, the
 geometric Gaussian process is defined by:
 \begin{equation}
   \label{eq:geomGaussChar}
@@ -833,7 +797,7 @@ Obviously this random process is a unit Fréchet max-stable
 process. Indeed, it shares the same construction as the Schlather
 characterisation. The only condition that need to be satisfied is that
 $\mathbb{E}[Y(x)]=1$. This is easily shown as the moment generating
-function of a Normal random variable $X$ with mean $\mu$ and variance
+function of a normal random variable $X$ with mean $\mu$ and variance
 $\sigma^2$ is
 \begin{equation*}
   M_X(t) = \mathbb{E} \left[ \exp(t X) \right] = \exp \left( \mu t +
@@ -885,12 +849,12 @@ where
     \frac{Y(x_1)}{Y(x_2)} = \exp\left[\sigma \{\epsilon(x_1) -
       \epsilon(x_2)\} \right]
   \end{equation*}
-  Define $W_a = \frac{\sigma}{2} \{\epsilon(x_1) - \epsilon(x_2) \}$ and
-  $W_b = \frac{\sigma}{2} \{\epsilon(x_1) + \epsilon(x_2) \}$. As
-  $\epsilon(x_1)$ and $\epsilon(x_2)$ are both standard Normal
-  r.v. having correlation $\rho$, $W_a$ and $W_b$ are also Normal
-  r.v. with $0$ mean and their variances are equal to $\sigma^2 (1 -
-  \rho) / 2$ and $\sigma^2 (1 + \rho) / 2$ respectively. Moreover, it is
+  Define $W_a = \frac{\sigma}{2} \{\epsilon(x_1) - \epsilon(x_2) \}$
+  and $W_b = \frac{\sigma}{2} \{\epsilon(x_1) + \epsilon(x_2) \}$. As
+  $\epsilon(x_1)$ and $\epsilon(x_2)$ are both standard normal r.v.\
+  having correlation $\rho$, $W_a$ and $W_b$ are also normal r.v.\
+  with $0$ mean and their variances are equal to $\sigma^2 (1 - \rho)
+  / 2$ and $\sigma^2 (1 + \rho) / 2$ respectively. Moreover, it is
   straightforward to see that $W_a$ and $W_b$ are independent.
 
   We have
@@ -949,7 +913,7 @@ covariance. Consequently, the variogram defined as
 \begin{equation}
   \label{eq:variogram}
   \gamma(x_1 - x_2) = \frac{1}{2} \mbox{Var}\left[Y(x_1) - Y(x_2)
-  \right] = \sigma^2 \left[1 - \rho(x_1 - x_2) \right]
+  \right] = \sigma^2 \left\{1 - \rho(x_1 - x_2) \right\}
 \end{equation}
 determines the degree of spatial dependence of $Y(\cdot)$.
 
@@ -985,7 +949,7 @@ multivariate extreme value distributions
 \begin{equation}
   \label{eq:MEVD}
   \Pr\left[Z(x_1) \leq z_1, \ldots, Z(x_N) \leq z_N\right] =
-  \exp\left(- V(z_1, \ldots, z_N) \right)
+  \exp\left\{- V(z_1, \ldots, z_N) \right\}
 \end{equation}
 where $V$ is a homogeneous function of order $-1$ called the exponent
 measure \citep{Pickands1981,Coles2001}. As a consequence, the
@@ -1001,7 +965,7 @@ consider pairwise extremal coefficients, that is
 \begin{equation}
   \label{eq:extcoeffPairwise}
   \Pr\left[Z(x_1) \leq z, Z(x_2) \leq z \right] =
-  \exp\left(-\frac{\theta(x_1 - x_2)}{z} \right)
+  \exp\left\{-\frac{\theta(x_1 - x_2)}{z} \right\}
 \end{equation}
 
 Following \citet{Schlather2003}, $\theta(\cdot)$ is called the
@@ -1010,7 +974,7 @@ about extremal dependence for many problems although it does not
 characterise the full distribution.
 
 The extremal coefficient functions for max-stable models presented in
-Chapter \ref{cha:an-introduction-max} can be derived directly from
+Chapter~\ref{cha:an-introduction-max} can be derived directly from
 their bivariate distribution by letting $z_1=z_2=z$. More precisely,
 we have:
 
@@ -1106,7 +1070,7 @@ on equation~\eqref{eq:extcoeff} is given by:
 \begin{equation}
   \label{eq:llikSTNaive}
   \ell_A(\theta_A) = n \log \theta_A - \theta_A \sum_{i=1}^{n}
-  \frac{1}{\max_{j \in A} \left( Z_i(x_j) \overline{Z(x_j)} \right)}
+  \frac{1}{\max_{j \in A} \left\{ Z_i(x_j) \overline{Z(x_j)} \right\}}
 \end{equation}
 where the terms of the form $\log \max_{j\in A}\{Z_i(x_j)\}$ were
 omitted and $\overline{Z(x_j)} = n^{-1} \sum_{i=1}^n 1 /
@@ -1139,7 +1103,7 @@ coefficient between locations $x_1$ and $x_2$:
 \end{equation}
 
 <<label=extCoeffST-Smith,echo=FALSE>>=
-n.site <- 50
+n.site <- 40
 n.obs <- 100
 x <- runif(n.site, 0, 10)
 y <- runif(n.site, 0, 10)
@@ -1179,7 +1143,7 @@ equations~\eqref{eq:llikSTNaive} and \eqref{eq:extCoeffSmith}. This
 figure was generated using the following code:
 
 <<eval=FALSE>>=
-n.site <- 50
+n.site <- 40
 n.obs <- 100
 x <- runif(n.site, 0, 10)
 y <- runif(n.site, 0, 10)
@@ -1260,7 +1224,7 @@ ext.coeff2 <- function(h)
 mado2 <- function(h)
   log(ext.coeff2(h))
 
-n.site <- 50
+n.site <- 40
 n.obs <- 100
 x <- runif(n.site, 0, 10)
 y <- runif(n.site, 0, 10)
@@ -1340,7 +1304,7 @@ a simple estimator for $\theta(\cdot)$:
 \end{equation}
 
 <<label=madogramExtCoeff,echo=FALSE>>=
-n.site <- 50
+n.site <- 40
 n.obs <- 100
 x <- runif(n.site, 0, 10)
 y <- runif(n.site, 0, 10)
@@ -1384,7 +1348,7 @@ equations~\eqref{eq:madogramEstim} and \eqref{eq:extCoeffEstMado}
 respectively. The figure was generated using the code below.
 
 <<eval=FALSE>>=
-n.site <- 50
+n.site <- 40
 n.obs <- 100
 x <- runif(n.site, 0, 10)
 y <- runif(n.site, 0, 10)
@@ -1412,7 +1376,7 @@ where $Z(\cdot)$ is a stationary max-stable random field with unit
 Fréchet margins and $F(z) = \exp(-1/z)$.
 
 <<echo=FALSE,label=F-madogram>>=
-n.site <- 50
+n.site <- 40
 n.obs <- 100
 x <- runif(n.site, 0, 10)
 y <- runif(n.site, 0, 10)
@@ -1505,7 +1469,7 @@ or conversely
   \begin{eqnarray*}
     \mathbb{E}\left[F\left(\max\{Z(x_1), Z(x_2)\} \right) \right] &=&
     \theta(x_1 - x_2) \int_{0}^{+\infty} \exp\left(-\frac{1}{z} \right)
-    \frac{\exp\left(-\frac{\theta(x_1 - x_2)}{z} \right)}{z^2}\mbox{dz}\\
+    \exp\left(-\frac{\theta(x_1 - x_2)}{z} \right) z^{-2}\mbox{dz}\\
     &=& \frac{\theta(x_1 - x_2)}{\theta(x_1 - x_2) + 1}
   \end{eqnarray*}
   This proves equations~\eqref{eq:F-mado2ExtCoeff}
@@ -1525,7 +1489,7 @@ Figure~\ref{fig:F-madogram} plots the pairwise $F$-madogram and
 extremal coefficient estimates from $100$ replications of the
 isotropic Smith model. The code used to produce this figure was:
 <<eval=FALSE>>=
-n.site <- 50
+n.site <- 40
 n.obs <- 100
 x <- runif(n.site, 0, 10)
 y <- runif(n.site, 0, 10)
@@ -1590,9 +1554,9 @@ where $c(\lambda) = 3/\{2(1+\lambda)(2-\lambda)\}$.
   that
   \begin{eqnarray*}
     \Pr\left[\max\{F^{\lambda} \{Z(x_1)\}, F^{1-\lambda}\{Z(x_2)\} \}
-      \leq z \right] &=& \Pr \left[Z(x_1) \leq \lambda / \log z, Z(x_2)
-      \leq (1 - \lambda) / \log z \right]\\
-    &=& \exp\left\{\log (z) V_{x_1,x_2}\left(\lambda, 1 - \lambda
+      \leq z \right] &=& \Pr \left[Z(x_1) \leq -\frac{\lambda}{\log
+        z}, Z(x_2) \leq -\frac{1 - \lambda}{\log z} \right]\\
+    &=& \exp\left\{-\log (z) V_{x_1,x_2}\left(\lambda, 1 - \lambda
       \right) \right\}
   \end{eqnarray*}
   where $V_{x_1,x_2}$ is the homogeneous function of order $-1$
@@ -1602,9 +1566,10 @@ where $c(\lambda) = 3/\{2(1+\lambda)(2-\lambda)\}$.
   F^{1-\lambda}\{Z(x_2)\} \}$, so that we have
   \begin{eqnarray*}
     \mathbb{E}\left[\max\{F^{\lambda} \{Z(x_1)\},
-      F^{1-\lambda}\{Z(x_2)\} \} \right] &=& \int_0^1 -z
-    \frac{V_{x_1,x_2}(\lambda, 1-\lambda)}{z} \exp\left\{-\log (z)
-      V_{x_1,x_2}\left(\lambda, 1 - \lambda \right) \right\} \mbox{dz}\\
+      F^{1-\lambda}\{Z(x_2)\} \} \right] &=& \int_0^1
+    -V_{x_1,x_2}(\lambda, 1-\lambda) \exp\left\{-\log (z)
+      V_{x_1,x_2}\left(\lambda, 1 - \lambda \right) \right\}
+    \mbox{dz}\\
     &=& \frac{V_{x_1,x_2}(\lambda, 1-\lambda)}{1+V_{x_1,x_2}(\lambda,
       1-\lambda)}
   \end{eqnarray*}
@@ -1634,7 +1599,7 @@ have
     x_2)\}}
 \end{equation*}
 
-equation~\eqref{eq:lambda-madogram} suggests a simple estimator
+Equation~\eqref{eq:lambda-madogram} suggests a simple estimator
 \begin{equation}
   \label{eq:lambda-madogramEst}
   \hat{\nu}_{\lambda}(x_1 - x_2) = \frac{1}{2n} \sum_{i=1}^n
@@ -1673,7 +1638,7 @@ get an estimator for the dependence measure
 \end{equation}
 
 <<label=lambda-madogram,echo=FALSE>>=
-n.site <- 50
+n.site <- 40
 n.obs <- 100
 x <- runif(n.site, 0, 10)
 y <- runif(n.site, 0, 10)
@@ -1709,7 +1674,7 @@ powered exponential and a Cauchy correlation functions. The code used
 to produce this figure was:
 
 <<eval=FALSE>>=
-n.site <- 50
+n.site <- 40
 n.obs <- 100
 x <- runif(n.site, 0, 10)
 y <- runif(n.site, 0, 10)
@@ -1769,9 +1734,9 @@ $s(\tilde{\theta}_{i,j})$ is the standard deviation related to the
 estimation of $\tilde{\theta}_{i,j}$, estimated by the jacknife
 estimator \citep{Efron1982}.
 
-S.J. Neil, in his M.Phil. thesis, suggests the use of this weighted
+S.J. Neil, in his M.Phil.\ thesis, suggests the use of this weighted
 sum of squares criterion to avoid unsatisfactory fits in regions of
-high dependence i.e. when $\theta_{i,j}$ is close to 1.
+high dependence i.e.\ when $\theta_{i,j}$ is close to 1.
 
 Although \citet{Smith1991} proposed this estimator for his own
 max-stable model, there is no restriction in applying it to any of the
@@ -1932,10 +1897,10 @@ locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
 ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
-param=c(0,1,.2,3, 1.2), maxstable="extr", n = 80)
+param = c(0,1, .2,3, 1.2), maxstable="extr", n = 80)
 ms0 <- t(ms0)
 fitmaxstab(ms0, locations, cov.mod = "whitmat", std.err.type = "none")
-@
+@ 
 
 From this output, we can see that we indeed use the Schlather's
 representation with a Whittle--Matérn correlation function. The
@@ -2026,11 +1991,11 @@ standard optimizers are able to get finite-difference based estimates
 for $H(\hat{\psi}_p)$ so that no extra work is needed to get
 $\hat{H}(\hat{\psi}_p)$.
 
-The estimation of $J(\hat{\psi}_p)$ is more difficult and can be done
-in two different ways \citep{Varin2005}. First, $J(\hat{\psi}_p)$ can
-be estimated using the ``naive'' estimator $\hat{J}(\hat{\psi}_p) =
-\nabla \ell_p(\hat{\psi}_p;\mathbf{y}) {\nabla
-  \ell_p(\hat{\psi}_p;\mathbf{y})}^T$. This estimator is tagged
+The estimation of $J(\hat{\psi}_p)$ is a little bit more difficult and
+can be done in two different ways \citep{Varin2005}. First,
+$J(\hat{\psi}_p)$ can be estimated using the ``naive'' estimator
+$\hat{J}(\hat{\psi}_p) = \nabla \ell_p(\hat{\psi}_p;\mathbf{y})
+{\nabla \ell_p(\hat{\psi}_p;\mathbf{y})}^T$. This estimator is tagged
 \verb|grad| as it uses the gradient of the log pairwise
 likelihood. Another estimator is given by noticing that $J(\psi)$
 corresponds to the variance of the pairwise score equations
@@ -2230,7 +2195,7 @@ The problem with equation~\eqref{eq:likRatioMissp} is that generally
 the distribution of $\sum_{i=1}^p \lambda_i X_i$ is not known
 exactly. This led \citet{Rotnitzki1990} to consider $p W(\kappa_0) /
 \sum_{i=1}^p \lambda_i$ as a $\chi_p^2$ random variable. However, a
-better approximation uses results on quadratic forms of Normal random
+better approximation uses results on quadratic forms of normal random
 distribution.
 
 An application of this approach is given by the following lines:
@@ -2332,11 +2297,11 @@ anova(M0, M1, method = "CB")
 @ 
 
 By using the Chandler and Bate methodology, we draw the same
-conclusion in the previous section, i.e. the observations are
+conclusion in the previous section, i.e.\ the observations are
 consistent with the null hypothesis $\sigma_{11} = 100$.
 
-\chapter{Fitting a Max-Stable Process to Data With Unknown GEV
-  Margins}
+\chapter[Fitting a Max-Stable Process to Data]{Fitting a Max-Stable
+  Process to Data With Unknown GEV Margins}
 \label{cha:fit-maxstab-gev}
 
 
@@ -2389,7 +2354,7 @@ originally unit Fréchet.
 
 One can solve this problem by fitting in \emph{one step} both GEV and
 spatial dependence parameters. As the bivariate distributions for the
-max-stable models introduced in Chapter \ref{cha:an-introduction-max}
+max-stable models introduced in Chapter~\ref{cha:an-introduction-max}
 were imposing unit Fréchet margins, we need to rewrite them for
 unknown GEV margins. To this aim, let define the transformation $t$
 such that
@@ -2408,7 +2373,7 @@ the bivariate distribution of $(Y(x_1), Y(x_2))$ is
 \end{equation*}
 where $z_1 = t(y_1)$ and $z_2 = t(y_2)$. Thus, one can relate the
 bivariate density for $(Y(x_1), Y(x_2))$ to the one for $(Z(x_1),
-Z(x_2))$ that we introduced in Chapter \ref{cha:an-introduction-max}
+Z(x_2))$ that we introduced in Chapter~\ref{cha:an-introduction-max}
 and the log pairwise likelihood becomes
 \begin{equation}
   \label{eq:lplikGEV}
@@ -2505,7 +2470,7 @@ or equivalently in a matrix notation
     \vdots\\
     y_n
   \end{bmatrix}
-   &=
+   =&
   \begin{bmatrix}
     1 & x_{1,1} & x_{1,1}^2\\
     \vdots  & \vdots & \vdots\\
@@ -2528,7 +2493,7 @@ or equivalently in a matrix notation
     \vdots\\
     y_n
   \end{bmatrix}
-  &=
+  =&
   \begin{bmatrix}
     1 & x_{1,1} & \log x_{2,1}\\
     \vdots  & \vdots & \vdots\\
@@ -2561,7 +2526,7 @@ which amounts to solve the equations
 \end{equation*}
 or equivalently in a matrix notation
 \begin{equation*}
-  \mathbf{X}^T (\mathbf{y} -\mathbf{ X\beta}) = 0
+  \mathbf{X}^T (\mathbf{y} -\mathbf{X\beta}) = 0
 \end{equation*}
 so that, provided that $\mathbf{X}^T \mathbf{X}$ is invertible, the
 least squares estimate for $\mathbf{\beta}$ is given by
@@ -2642,13 +2607,13 @@ $\kappa$ so that equation~\eqref{eq:decompBasis} becomes
 \end{equation}
 
 <<label=knotsEffect,echo=FALSE>>=
-set.seed(1)
-x <- runif(200)
+set.seed(12)
+x <- runif(100)
 fun <- function(x) sin(3 * pi * x)
-y <- fun(x) + rnorm(200, 0, 0.15)
+y <- fun(x) + rnorm(100, 0, 0.15)
 knots1 <- quantile(x, prob = 1:2 / 3)
 knots2 <- quantile(x, prob = 1:10 / 11)
-knots3 <- quantile(x, prob = 1:100 / 101)
+knots3 <- quantile(x, prob = 1:50 / 51)
 M0 <- rbpspline(y, x, knots = knots1, degree = 3, penalty = 0)
 M1 <- rbpspline(y, x, knots = knots2, degree = 3, penalty = 0)
 M2 <- rbpspline(y, x, knots = knots3, degree = 3, penalty = 0)
@@ -2672,7 +2637,7 @@ lines(M2, col = 3)
 @ 
   \caption{Impact of the number of knots in the fitted
     $p$-spline. Left panel: $q$ = 2, middle panel: $q = 10$, right
-    panel: $q=100$. The small vertical lines corresponds to the
+    panel: $q=50$. The small vertical lines corresponds to the
     location of each knot.}
   \label{fig:knotsEffect}
 \end{figure}
@@ -2680,59 +2645,19 @@ lines(M2, col = 3)
 The problem with model~\eqref{eq:decompBasis2} is that it is strongly
 affected by the number of knots. Figure~\ref{fig:knotsEffect} depicts
 this problem by fitting the same dataset to
-model~\eqref{eq:decompBasis2} with $q=2, 10$ and $100$. Clearly, the
+model~\eqref{eq:decompBasis2} with $q=2, 10$ and $50$. Clearly, the
 first fit is not satisfactory and we need to increase the number of
 knots. The second one seems plausible while the last one clearly
-overfits. Consequently, there is a pressing need for a kind of
+overfits. This figure was generated with the following lines
+<<eval=FALSE>>=
+<<knotsEffect>>
+@ 
+
+Consequently, there is a pressing need for a kind of
 ``automatic knot selection''. One common strategy to overcome this
 issue is to resort to \emph{penalized splines} or
 \emph{p-splines}. The idea beyond this is to consider a large number
 of knots but to constrain, in a sense to be defined, their influence.
-
-To avoid overfitting, one wish to minimize the sum of square subject
-to some constraint on the $\mathbf{\beta}$ parameter i.e.
-\begin{equation*}
-  \text{minimize } ||\mathbf{y} - \mathbf{X\beta}||^2 \quad
-  \text{subject to } \mathbf{\beta}^T \mathbf{K \beta} \leq C
-\end{equation*}
-for a judicious choice of $C$ and a given matrix $\mathbf{K}$. Using a
-Lagrange multiplier argument, this is equivalent to choosing
-$\mathbf{\beta}$ to minimize
-\begin{equation}
-  \label{eq:constraintLeastSquare}
-  ||\mathbf{y} - \mathbf{X \beta}||^2 + \lambda \mathbf{\beta}^T
-  \mathbf{K \beta}  
-\end{equation}
-for some $\lambda\geq 0$ called the \emph{smoothing parameter} as it
-controls the amount of smoothing. Indeed, if $\lambda =0$, then
-problem~\eqref{eq:constraintLeastSquare} is left unconstrained and
-leads to wiggly fits, while $\lambda$ being large implies smoother
-fits. Figure~\ref{fig:smoothingParamEffect} is a nice illustration of
-the impact of the smoothing parameter on the smoothness of the fitted
-curve. It can be shown that problem~\eqref{eq:constraintLeastSquare}
-has the solution
-\begin{equation}
-  \label{eq:beta.hatPspline}
-  \hat{\mathbf{\beta}}_\lambda = (\mathbf{X}^T \mathbf{X} + \lambda
-  \mathbf{K})^{-1} \mathbf{X}^T \mathbf{y} 
-\end{equation}
-and the corresponding fitted values for a penalized spline are given by
-\begin{equation}
-  \label{eq:fitted.valuesPspline}
-  \hat{\mathbf{y}} = \mathbf{X} (\mathbf{X}^T \mathbf{X} + \lambda
-  \mathbf{K})^{-1} \mathbf{X}^T \mathbf{y}
-\end{equation}
-
-In accordance with the hat matrix with linear models, one can define
-the \emph{smoother matrix} $\mathbf{S}_\lambda$ such that
-\begin{equation}
-  \label{eq:smootherMatrix}
-  \hat{\mathbf{y}} = \mathbf{S}_\lambda \mathbf{y}
-\end{equation}
-where $\mathbf{S}_\lambda = \mathbf{X} (\mathbf{X}^T \mathbf{X} +
-\lambda \mathbf{K})^{-1} \mathbf{X}^T$. Consequently, a kind of
-effective degrees of freedom is given by
-$\mbox{tr}(\mathbf{S}_\lambda)$.
 
 <<label=smoothingParamEffect,echo=FALSE>>=
 M0 <- rbpspline(y, x, knots = knots3, degree = 3, penalty = 0)
@@ -2759,6 +2684,56 @@ lines(M2, col = 3)
   \label{fig:smoothingParamEffect}
 \end{figure}
 
+To avoid overfitting, one wish to minimize the sum of square subject
+to some constraint on the $\mathbf{\beta}$ parameter i.e.
+\begin{equation*}
+  \text{minimize } ||\mathbf{y} - \mathbf{X\beta}||^2 \quad
+  \text{subject to } \mathbf{\beta}^T \mathbf{K \beta} \leq C
+\end{equation*}
+for a judicious choice of $C$ and a given matrix $\mathbf{K}$. Using a
+Lagrange multiplier argument, this is equivalent to choosing
+$\mathbf{\beta}$ to minimize
+\begin{equation}
+  \label{eq:constraintLeastSquare}
+  ||\mathbf{y} - \mathbf{X \beta}||^2 + \lambda \mathbf{\beta}^T
+  \mathbf{K \beta}  
+\end{equation}
+for some $\lambda\geq 0$ called the \emph{smoothing parameter} as it
+controls the amount of smoothing. Indeed, if $\lambda =0$, then
+problem~\eqref{eq:constraintLeastSquare} is left unconstrained and
+leads to wiggly fits, while $\lambda$ being large implies smoother
+fits. Figure~\ref{fig:smoothingParamEffect} is a nice illustration of
+the impact of the smoothing parameter on the smoothness of the fitted
+curve. It was generated using the following code
+<<eval=FALSE>>=
+<<smoothingParamEffect>>
+@ 
+
+It can be shown that problem~\eqref{eq:constraintLeastSquare}
+has the solution
+\begin{equation}
+  \label{eq:beta.hatPspline}
+  \hat{\mathbf{\beta}}_\lambda = (\mathbf{X}^T \mathbf{X} + \lambda
+  \mathbf{K})^{-1} \mathbf{X}^T \mathbf{y} 
+\end{equation}
+and the corresponding fitted values for a penalized spline are given by
+\begin{equation}
+  \label{eq:fitted.valuesPspline}
+  \hat{\mathbf{y}} = \mathbf{X} (\mathbf{X}^T \mathbf{X} + \lambda
+  \mathbf{K})^{-1} \mathbf{X}^T \mathbf{y}
+\end{equation}
+
+In accordance with the hat matrix with linear models, one can define
+the \emph{smoother matrix} $\mathbf{S}_\lambda$ such that
+\begin{equation}
+  \label{eq:smootherMatrix}
+  \hat{\mathbf{y}} = \mathbf{S}_\lambda \mathbf{y}
+\end{equation}
+where $\mathbf{S}_\lambda = \mathbf{X} (\mathbf{X}^T \mathbf{X} +
+\lambda \mathbf{K})^{-1} \mathbf{X}^T$. Consequently, a kind of
+effective degrees of freedom is given by
+$\mbox{tr}(\mathbf{S}_\lambda)$.
+
 If the problem of knot selection seems to be resolved by using these
 constrained least squares minimisation, there is still some open
 questions: given our data and knots, what is the best value for
@@ -2783,8 +2758,7 @@ directly is often too CPU demanding. However, it can be shown
 \citep{Ruppert2003} that
 \begin{equation}
   \label{eq:crossValidationInPractice}
-  CV(\lambda) = \sum_{i=1}^n \{y_i - \hat{f}_{-i}(x_i;\lambda)\}^2 =
-  \sum_{i=1}^n \left(\frac{y_i - \hat{y}_i}{1 -
+  CV(\lambda) = \sum_{i=1}^n \left(\frac{y_i - \hat{y}_i}{1 -
       S_{\lambda,ii}}\right)^2
 \end{equation}
 where $S_{\lambda,ii}$ is the $(i,i)$ element of
@@ -2793,7 +2767,19 @@ equation~\eqref{eq:crossValidationInPractice} does a better job than
 equation~\eqref{eq:crossValidation} as it only requires one fit to
 compute $CV(\lambda)$.
 
-\textbf{Write something about GCV}.
+Sometimes, the weights $1 - S_{\lambda,ii}$ are replaced by the mean
+weight, $\mbox{tr}(\mathbf{Id} - \mathbf{S}_\lambda) / n$, where
+$\mathbf{Id}$ is the identity matrix, leading to the \emph{generalized
+  cross validation} (GCV) score
+\begin{equation}
+  \label{eq:generalizedCrossValidationInPractice}
+  GCV(\lambda) = n^2 \sum_{i=1}^n \left(\frac{y_i -
+      \hat{y}_i}{\mbox{tr}(\mathbf{Id} - \mathbf{S}_\lambda)}
+  \right)^2
+\end{equation}
+
+GCV has computational advantages over CV, and it has also
+computational advantages in term of invariance \citep{Wood2006}.
 
 <<label=CVandGCV,echo=FALSE>>=
 par(mfrow=c(1,3))
@@ -2824,7 +2810,7 @@ fitted p-spline. The selection of $\lambda$ using CV or GCV yield
 approximately to the same smoothing parameter value. These ``best''
 $\lambda$ values are in accordance with the values we held fixed in
 Figure~\ref{fig:smoothingParamEffect}. The fitted curves using eigher
-CV or GCV lead to indistinguishable curves. The code to generate
+CV or GCV lead to indistinguishable curves. The code used to generate
 Figure~\ref{fig:CVandGCV} was
 <<eval=FALSE>>=
 <<CVandGCV>>
@@ -2873,10 +2859,10 @@ The log-likelihood of the spatial GEV model is
 \begin{equation}
   \label{eq:llikSpatGEV}
   \ell(\beta) = \sum_{i=1}^{n.site}
-  \sum_{j=1}^{n.obs} \left[ - \log \sigma_i - \left(1 + \xi_i
+  \sum_{j=1}^{n.obs} \left\{ - \log \sigma_i - \left(1 + \xi_i
       \frac{z_{i,j} - \mu_i}{\sigma_i} \right)^{-1/\xi_i} - \left(1 +
       \frac{1}{\xi_i} \right) \log \left(1 + \xi_i \frac{z_{i,j} -
-        \mu_i}{\sigma_i} \right) \right]
+        \mu_i}{\sigma_i} \right) \right\}
 \end{equation}
 where $\beta = (\beta_\mu, \beta_\sigma, \beta_\xi)$, $\mu_i$,
 $\sigma_i$ and $\xi_i$ are the GEV parameters for the $i$-th site and
@@ -2980,7 +2966,7 @@ The model for p-spline with radial basis function of order $p$, $p$
 being odd, is
 \begin{equation}
   \label{eq:p-splineRadialBasis}
-  f(x) = \beta_0 + \beta_1 x + \ldots + \beta_{m-1} x^{m-1} +
+  f(x) = \beta_0 + \beta_1 x + \cdots + \beta_{m-1} x^{m-1} +
   \sum_{j=1}^q \beta_{m + j} |x - \kappa_j|^{2m - 1}
 \end{equation}
 where $p=2 m - 1$.
@@ -3073,6 +3059,7 @@ and $df(\lambda)$ are obtained through a simple matrix
 multiplication. This is appealing as now the automatic selection for
 $\lambda$ will be cheaper.
 
+\backmatter
 \bibliography{./references}
 \bibliographystyle{apalike}
 \end{document}
