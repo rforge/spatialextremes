@@ -91,9 +91,8 @@ fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, ..., start){
                       cov23 = 0, cov33 = sigma.start)
       }
     }
+    start <- start[!(param %in% names(list(...)))]
   }
-
-  start <- start[!(param %in% names(list(...)))]
 
   if (!is.list(start)) 
     stop("'start' must be a named list")
@@ -151,7 +150,7 @@ fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, ..., start){
   if (dist.dim == 3){
     if (iso){
       formals(fun3diso) <- c(f[m], f[-m])
-      obj.fun <- function(p, ...) fun3d(p, ...)
+      obj.fun <- function(p, ...) fun3diso(p, ...)
       
 
       if (l > 1)
@@ -310,9 +309,9 @@ fitcovariance <- function(data, coord, cov.mod, marge = "mle", ..., start){
 
     if (model == "Geometric")
       start <- c(list(sigma2 = 1), start)
+
+    start <- start[!(param %in% names(list(...)))]
   }
-  
-  start <- start[!(param %in% names(list(...)))]
 
   if (!is.list(start)) 
     stop("'start' must be a named list")
