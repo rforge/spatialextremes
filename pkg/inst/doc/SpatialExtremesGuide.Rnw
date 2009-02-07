@@ -611,12 +611,14 @@ Whittle--Matérn.
 <<label=anisoCovFun,echo=FALSE>>=
 cov.fun <- covariance(sill = 1, range = 1, smooth = 1,
                       cov.mod = "powexp", plot = FALSE)
-A <- matrix(c(cos(pi/4), - sin(pi/4), .5 * sin(pi/4), cos(pi/4)), 2)
+phi <- pi / 4
+r <- sqrt(0.5)
+A <- matrix(c(cos(phi), r^2 * sin(phi), r^2 * sin(phi), cos(phi)), 2)
 cov.fun.aniso <- function(vec.pos)
   cov.fun(sqrt(vec.pos %*% A %*% vec.pos))
 
 rho1 <- rho2 <- matrix(NA, 100, 100)
-xs <- ys <- seq(-3, 3, length = 100)
+xs <- ys <- seq(-4, 4, length = 100)
 for (i in 1:100){
   x <- xs[i]
   for (j in 1:100){
@@ -660,8 +662,8 @@ $\mathbb{R}^2$, a convenient parametrization for $A$ is given by
 \begin{equation*}
   A =
   \begin{bmatrix}
-    \phantom{-}\cos \varphi & r\sin \varphi\\
-    -\sin \varphi & \phantom{r}\cos \varphi
+    \phantom{r^2}\cos \varphi & r^2 \sin \varphi\\
+    r^2 \sin \varphi & \phantom{r^2} \cos \varphi
   \end{bmatrix}
 \end{equation*}
 where $\varphi \in [0, \pi)$ is the rotation angle and $0 < r < 1$ is
