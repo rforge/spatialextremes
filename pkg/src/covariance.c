@@ -8,6 +8,8 @@ double whittleMatern(double *dist, int nPairs, double sill, double range,
   //When ans != 0.0, the whittle-matern parameters are ill-defined.
   
   int i;
+  double igammaSmooth = 1 / gammafn(smooth),
+    twoPower = R_pow(2.0, 1 - smooth);
   
   //Some preliminary steps: Valid points?
   if (smooth < EPS)
@@ -28,13 +30,10 @@ double whittleMatern(double *dist, int nPairs, double sill, double range,
     //feasible region
     return R_pow_di(sill, 2) * MINF;
   
-  for (i=0;i<nPairs;i++){
-
-    rho[i] = sill * R_pow(2, 1 - smooth) / gammafn(smooth) *
+  for (i=nPairs;i--;)
+    rho[i] = sill * twoPower * igammaSmooth *
       R_pow(dist[i] / range, smooth) * 
       bessel_k(dist[i] / range, smooth, 1);
-    
-  }
 
   return 0.0;
 }
@@ -47,6 +46,7 @@ double cauchy(double *dist, int nPairs, double sill, double range,
   //When ans != 0.0, the cauchy parameters are ill-defined.
 
   int i;
+  double irange2;
   
   //Some preliminary steps: Valid points?
   if (smooth < 0)
@@ -61,8 +61,10 @@ double cauchy(double *dist, int nPairs, double sill, double range,
   else if (sill > 1)
     return R_pow_di(sill, 2) * MINF;
 
-  for (i=0;i<nPairs;i++)
-    rho[i] = sill * R_pow(1 + dist[i] * dist[i] / range / range, -smooth);
+  irange2 = 1 / range / range;
+
+  for (i=nPairs;i--;)
+    rho[i] = sill * R_pow(1 + dist[i] * dist[i] * irange2, -smooth);
     
   return 0.0;
 }
@@ -92,7 +94,7 @@ double powerExp(double *dist, int nPairs, double sill, double range,
   else if (sill > 1)
     return R_pow_di(sill, 2) * MINF;
   
-  for (i=0;i<nPairs;i++)
+  for (i=nPairs;i--;)
     rho[i] = sill * exp(-R_pow(dist[i] / range, smooth));
     
   return 0.0;
@@ -108,7 +110,7 @@ double mahalDistFct(double *distVec, int nPairs, double *cov11,
   int i;
   double det;
 
-  det = *cov11 * *cov22 - R_pow_di(*cov12, 2);
+  det = *cov11 * *cov22 - *cov12 * *cov12;
   //We test if the covariance matrix is *not* nonnegative
   //definite e.g. all minor determinant are negative or 0
   if (*cov11 <= 0)
@@ -120,10 +122,10 @@ double mahalDistFct(double *distVec, int nPairs, double *cov11,
   if (det <= 1e-10)
     return R_pow_di(1 - det + 1e-10, 2) * MINF;
   
-  for (i=0;i<nPairs;i++){
+  for (i=nPairs;i--;){
 
     mahal[i] = (*cov11 * distVec[nPairs + i] * distVec[nPairs + i] -
-		2 * *cov12 * distVec[i] * distVec[nPairs + i] +
+		2.0 * *cov12 * distVec[i] * distVec[nPairs + i] +
 		*cov22 * distVec[i] * distVec[i]) / det;
     
     mahal[i] = sqrt(mahal[i]);
@@ -144,7 +146,7 @@ double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
   double det, detMin;
 
   det = *cov11 * *cov22 * *cov33 - R_pow_di(*cov12, 2) * *cov33 -
-    *cov11 * R_pow_di(*cov23, 2) + 2 * *cov12 * *cov13 * *cov23 -
+    *cov11 * R_pow_di(*cov23, 2) + 2.0 * *cov12 * *cov13 * *cov23 -
     R_pow_di(*cov13, 2) * *cov22;
   detMin = *cov11 * *cov22 - R_pow_di(*cov12, 2);
   //We test if the covariance matrix is *not* nonnegative
@@ -158,18 +160,18 @@ double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
   if (detMin <= 0)
     return R_pow_di(1 - detMin, 2);
   
-  for (i=0;i<nPairs;i++){
+  for (i=nPairs;i--;){
 
     mahal[i] = (*cov11 * *cov22 * distVec[2 * nPairs + i] * distVec[2 * nPairs + i] -
 		*cov12 * *cov12 * distVec[2 * nPairs + i] * distVec[2 * nPairs + i] -
-		2 * *cov11 * *cov23 * distVec[nPairs + i] * distVec[2 * nPairs + i] +
-		2 * *cov12 * *cov13 * distVec[nPairs + i] * distVec[2 * nPairs + i] +
-		2 * *cov12 * *cov23 * distVec[i] * distVec[2 * nPairs + i] -
-		2 * *cov13 * *cov22 * distVec[i] * distVec[2 * nPairs + i] +
+		2.0 * *cov11 * *cov23 * distVec[nPairs + i] * distVec[2 * nPairs + i] +
+		2.0 * *cov12 * *cov13 * distVec[nPairs + i] * distVec[2 * nPairs + i] +
+		2.0 * *cov12 * *cov23 * distVec[i] * distVec[2 * nPairs + i] -
+		2.0 * *cov13 * *cov22 * distVec[i] * distVec[2 * nPairs + i] +
 		*cov11 * *cov33 * distVec[nPairs + i] * distVec[nPairs + i] - 
 		*cov13 * *cov13 * distVec[nPairs + i] * distVec[nPairs + i] -
-		2 * *cov12 * *cov33 * distVec[i] * distVec[nPairs + i] +
-		2 * *cov13 * *cov23 * distVec[i] * distVec[nPairs + i] +
+		2.0 * *cov12 * *cov33 * distVec[i] * distVec[nPairs + i] +
+		2.0 * *cov13 * *cov23 * distVec[i] * distVec[nPairs + i] +
 		*cov22 * *cov33 * distVec[i] * distVec[i] -
 		*cov23 * *cov23 * distVec[i] * distVec[i]) / det;
 
@@ -204,8 +206,8 @@ double geomCovariance(double *dist, int nPairs, int covmod,
   if (ans != 0.0)
     return ans;
 
-  for (i=0;i<nPairs;i++)
-    rho[i] = sqrt(2 * sigma2 * (1 - rho[i]));
+  for (i=nPairs;i--;)
+    rho[i] = sqrt(2.0 * sigma2 * (1 - rho[i]));
 
   return ans;
 }
@@ -214,7 +216,7 @@ double nsgeomCovariance(double *dist, int nSite, int covmod,
 			double *sigma2, double sill, double range,
 			double smooth, double *rho){
   
-  int i, j, currentPair = 0, nPairs = nSite * (nSite - 1) / 2;
+  int i, j, currentPair = 0, nPairs = nSite * (nSite - 1) / 2.0;
   double ans = 0.0;
 
   switch (covmod){
@@ -234,7 +236,7 @@ double nsgeomCovariance(double *dist, int nSite, int covmod,
 
   for (i=0;i<(nSite-1);i++){
     for (j=i+1;j<nSite;j++){
-      rho[currentPair] = sqrt(sigma2[i] - 2 * sqrt(sigma2[i] * sigma2[j]) * 
+      rho[currentPair] = sqrt(sigma2[i] - 2.0 * sqrt(sigma2[i] * sigma2[j]) * 
 			      rho[currentPair] + sigma2[j]);
       currentPair++;
     }
