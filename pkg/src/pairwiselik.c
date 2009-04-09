@@ -23,26 +23,24 @@ double lplikschlather(double *data, double *rho, double *jac,
 		  data[k + j * nObs] * rho[currentPair]);
 	
 	//It's the log of the joint CDF
-	lFvec = - (1/data[k + i * nObs] + 1/data[k + j * nObs]) *
-	  (1 + sqrt(1 - 2 * (rho[currentPair] + 1) * data[k + i * nObs] *
-		    data[k + j * nObs] / (data[k + i * nObs] + data[k + j * nObs]) /
-		    (data[k + i * nObs] + data[k + j * nObs]))) / 2.0;
+	lFvec = - (data[k + i * nObs] + data[k + j * nObs] + c1) / 
+	  (2 * data[k + i * nObs] * data[k + j * nObs]);
 	
 	//It's the partial derivative for marge 1
 	dvecM1 = -(rho[currentPair] * data[k + i * nObs] - c1 - 
-		   data[k + j * nObs]) / 2.0 / c1 / data1Square;
+		   data[k + j * nObs]) / (2 * c1 * data1Square);
 
 	//It's the partial derivative for marge 2
 	dvecM2 = -(rho[currentPair] * data[k + j * nObs] - c1 - 
-		   data[k + i * nObs]) / 2.0 / c1 / data2Square;
+		   data[k + i * nObs]) / (2 * c1 * data2Square);
 
 	//Rmq: to have dvecM1 and dvecM2 we have to multiply
 	//them by Fvec[i]. It's not done yet as dvecMixed has to be
 	//computed first.
 
 	//It's the mixed partial derivative
-	dvecMixed = (1 - rho[currentPair] * rho[currentPair]) / 2.0 /
-	  (c1 * c1 * c1) + dvecM1 * dvecM2;
+	dvecMixed = (1 - rho[currentPair] * rho[currentPair]) / 
+	  (2 * c1 * c1 * c1) + dvecM1 * dvecM2;
 
 	//Now the final step, multiplying by Fvec and the gradient
 	dns += log(dvecMixed) + lFvec + jac[k + i * nObs] + jac[k + j * nObs];
@@ -143,29 +141,26 @@ double lplikschlatherind(double *data, double alpha, double *rho,
 		  data[k + j * nObs] * rho[currentPair]);
 	
 	//It's the log of the joint CDF
-	lFvec = (alpha - 1) * (1/data[k + i * nObs] + 1/data[k + j * nObs]) *
-	  (1 + sqrt(1 - 2 * (rho[currentPair] + 1) * data[k + i * nObs] *
-		    data[k + j * nObs] / (data[k + i * nObs] + data[k + j * nObs]) /
-		    (data[k + i * nObs] + data[k + j * nObs]))) / 2.0 -
-	  alpha * (1/data[k + i * nObs] + 1/data[k + j * nObs]);
+	lFvec = ((-alpha - 1) * (data[k + i * nObs] + data[k + j * nObs]) +
+		 (alpha - 1) * c1) / (2 * data[k + i * nObs] * data[k + j * nObs]);
 	
 	//It's the partial derivative for marge 1
 	dvecM1 = (alpha - 1) *(rho[currentPair] * data[k + i * nObs] - c1 - 
-		   data[k + j * nObs]) / 2.0 / c1 / data1Square + alpha /
-	  data1Square;
+			       data[k + j * nObs]) / (2 * c1 * data1Square) +
+	  alpha / data1Square;
 
 	//It's the partial derivative for marge 2
 	dvecM2 = (alpha - 1) * (rho[currentPair] * data[k + j * nObs] - c1 - 
-		   data[k + i * nObs]) / 2.0 / c1 / data2Square + alpha /
-	  data2Square;
+				data[k + i * nObs]) / (2 * c1 * data2Square) +
+	  alpha / data2Square;
 
 	//Rmq: to have dvecM1 and dvecM2 we have to multiply
 	//them by Fvec[i]. It's not done yet as dvecMixed has to be
 	//computed first.
 
 	//It's the mixed partial derivative
-	dvecMixed = (1 - alpha) * (1 - rho[currentPair] * rho[currentPair]) / 2 /
-	  (c1 * c1 * c1) + dvecM1 * dvecM2;
+	dvecMixed = (1 - alpha) * (1 - rho[currentPair] * rho[currentPair]) / 
+	  (2 * c1 * c1 * c1) + dvecM1 * dvecM2;
 
 	//Now the final step, multiplying by Fvec and the gradient
 	dns += log(dvecMixed) + lFvec + jac[k + i * nObs] + jac[k + j * nObs];
