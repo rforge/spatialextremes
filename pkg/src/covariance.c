@@ -145,9 +145,9 @@ double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
   int i;
   double det, detMin;
 
-  det = *cov11 * *cov22 * *cov33 - R_pow_di(*cov12, 2) * *cov33 -
-    *cov11 * R_pow_di(*cov23, 2) + 2.0 * *cov12 * *cov13 * *cov23 -
-    R_pow_di(*cov13, 2) * *cov22;
+  det = *cov11 * *cov22 * *cov33 - *cov12 * *cov12 * *cov33 -
+    *cov11 * *cov23 * *cov23 + 2 * *cov12 * *cov13 * *cov23 -
+    *cov13 * *cov13 * *cov22;
   detMin = *cov11 * *cov22 - R_pow_di(*cov12, 2);
   //We test if the covariance matrix is *not* nonnegative
   //definite e.g. all minor determinant are negative or 0
@@ -164,14 +164,14 @@ double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
 
     mahal[i] = (*cov11 * *cov22 * distVec[2 * nPairs + i] * distVec[2 * nPairs + i] -
 		*cov12 * *cov12 * distVec[2 * nPairs + i] * distVec[2 * nPairs + i] -
-		2.0 * *cov11 * *cov23 * distVec[nPairs + i] * distVec[2 * nPairs + i] +
-		2.0 * *cov12 * *cov13 * distVec[nPairs + i] * distVec[2 * nPairs + i] +
-		2.0 * *cov12 * *cov23 * distVec[i] * distVec[2 * nPairs + i] -
-		2.0 * *cov13 * *cov22 * distVec[i] * distVec[2 * nPairs + i] +
+		2 * *cov11 * *cov23 * distVec[nPairs + i] * distVec[2 * nPairs + i] +
+		2 * *cov12 * *cov13 * distVec[nPairs + i] * distVec[2 * nPairs + i] +
+		2 * *cov12 * *cov23 * distVec[i] * distVec[2 * nPairs + i] -
+		2 * *cov13 * *cov22 * distVec[i] * distVec[2 * nPairs + i] +
 		*cov11 * *cov33 * distVec[nPairs + i] * distVec[nPairs + i] - 
 		*cov13 * *cov13 * distVec[nPairs + i] * distVec[nPairs + i] -
-		2.0 * *cov12 * *cov33 * distVec[i] * distVec[nPairs + i] +
-		2.0 * *cov13 * *cov23 * distVec[i] * distVec[nPairs + i] +
+		2 * *cov12 * *cov33 * distVec[i] * distVec[nPairs + i] +
+		2 * *cov13 * *cov23 * distVec[i] * distVec[nPairs + i] +
 		*cov22 * *cov33 * distVec[i] * distVec[i] -
 		*cov23 * *cov23 * distVec[i] * distVec[i]) / det;
 
