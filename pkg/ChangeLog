@@ -1,3 +1,30 @@
+2009-04-10 13:35  mathieu_ribatet
+
+	* ChangeLog, DESCRIPTION: Update the version number and the
+	  ChangeLog file
+
+2009-04-10 10:06  mathieu_ribatet
+
+	* src/covariance.c: Minor changes
+
+2009-04-10 10:06  mathieu_ribatet
+
+	* R/geomgauss.R, R/gradients.R, src/gradients.c, src/header.h: Add
+	  the computation of the gradient for the geometric gaussian model
+
+2009-04-09 14:18  mathieu_ribatet
+
+	* src/pairwiselik.c: Minor optimizations
+
+2009-04-09 14:17  mathieu_ribatet
+
+	* src/gradients.c: Minor optimizations - and fix a bug in
+	  Schlather's gradient
+
+2009-04-09 14:16  mathieu_ribatet
+
+	* src/covariance.c: Minor optimizations
+
 2009-04-07 15:45  mathieu_ribatet
 
 	* src/utils.c: Some minor optimizations
