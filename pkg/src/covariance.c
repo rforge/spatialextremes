@@ -206,9 +206,9 @@ double geomCovariance(double *dist, int nPairs, int covmod,
   if (ans != 0.0)
     return ans;
 
-  for (i=nPairs;i--;)
-    rho[i] = sqrt(2.0 * sigma2 * (1 - rho[i]));
-
+  for (i=nPairs;i--;)    
+    rho[i] = sqrt(2 * sigma2 * (1 - rho[i]));
+  
   return ans;
 }
 
@@ -216,7 +216,7 @@ double nsgeomCovariance(double *dist, int nSite, int covmod,
 			double *sigma2, double sill, double range,
 			double smooth, double *rho){
   
-  int i, j, currentPair = 0, nPairs = nSite * (nSite - 1) / 2.0;
+  int i, j, currentPair = 0, nPairs = nSite * (nSite - 1) / 2;
   double ans = 0.0;
 
   switch (covmod){
@@ -236,7 +236,7 @@ double nsgeomCovariance(double *dist, int nSite, int covmod,
 
   for (i=0;i<(nSite-1);i++){
     for (j=i+1;j<nSite;j++){
-      rho[currentPair] = sqrt(sigma2[i] - 2.0 * sqrt(sigma2[i] * sigma2[j]) * 
+      rho[currentPair] = sqrt(sigma2[i] - 2 * sqrt(sigma2[i] * sigma2[j]) * 
 			      rho[currentPair] + sigma2[j]);
       currentPair++;
     }
