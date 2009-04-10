@@ -1150,5 +1150,283 @@ void spatgevgrad(double *data, int *nSite, int *nObs, double *locdsgnmat,
   return;
 }
 
-	   
+void geomgaussgrad(int *covmod, double *data, double *dist, int *nSite,
+		   int *nObs, double *locdsgnmat, int *nloccoeff,
+		   double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
+		   int *nshapecoeff, double *loccoeff, double *scalecoeff,
+		   double *shapecoeff, double *sigma2, double *sill, double *range,
+		   double *smooth, int *fitmarge, double *grad){
+  /* This function computes the gradient of the log-pairwise
+     likelihood for the geometric gaussian model.
+     
+     Remember that this model shares the same bivariate density as the
+     Smith model except that the Mahalanobis distance is modified. */
+  
+  const int nPairs = *nSite * (*nSite - 1) / 2;
+  int i, j, k, l, currentPair = -1;
+  double c1, c2, dAa, dAz1, dAz2, B, dBa, dBz1, dBz2, C, dCa, dCz1,
+    dCz2, D, dDa, dDz1, dDz2, rho, *mahalDist, *locs, *scales, *shapes,
+    jacCommon, *jac, *frech, dz1loc, dz2loc, dz1scale, dz2scale, dz1shape,
+    dz2shape, dE, flag;
+  //c1 is a useful quantity
+  //A, B, C, D are part of the log-bivariate density
+  //dB, dC and dD are their derivatives with respect to the
+  //covariance function
+  //jacCommon is the common part of all the jacobians
+  
+  jac = (double *)R_alloc(*nObs * *nSite, sizeof(double));
+  mahalDist = (double *)R_alloc(nPairs, sizeof(double));
+  locs = (double *)R_alloc(*nSite, sizeof(double));
+  scales = (double *)R_alloc(*nSite, sizeof(double));
+  shapes = (double *)R_alloc(*nSite, sizeof(double));
+  frech = (double *)R_alloc(*nObs * *nSite, sizeof(double));
+  
+  //Stage 0: Compute the covariance at each location
+  flag = geomCovariance(dist, nPairs, *covmod, *sigma2, *sill, *range,
+			*smooth, mahalDist);
+  
+  //Compute the GEV parameters using the design matrix
+  if (*fitmarge){
+    
+    flag = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat,
+			 loccoeff, scalecoeff, shapecoeff, *nSite,
+			 *nloccoeff, *nscalecoeff, *nshapecoeff,
+			 locs, scales, shapes);
+    
+    //Stage 1: Transformation to unit Frechet
+    flag = gev2frech(data, *nObs, *nSite, locs, scales, shapes,
+		     jac, frech);
+      
+  }
+  
+  else
+    for (i=0;i<*nSite;i++)
+      for (j=0;j<*nObs;j++)
+	frech[i * *nObs + j] = data[i * *nObs + j];
+  
+  //Stage 2: Gradient computations;
+  // a- Covariance part
+  for (k=0;k<*nObs;k++){
+    currentPair = -1;
+    for (i=0;i<(*nSite-1);i++){
+      for (j=i+1;j<*nSite;j++){
+	currentPair++;
+	rho = 1 - mahalDist[currentPair] * mahalDist[currentPair] /
+	  (2 * *sigma2);
+	c1 = log(frech[k + j * *nObs] / frech[k + i * *nObs]) /
+	  mahalDist[currentPair] + mahalDist[currentPair] / 2;
+	c2 = mahalDist[currentPair] - c1;
+      
+	//A = - pnorm(c1, 0., 1., 1, 0) / frech[k + i * *nObs] -
+	//  - pnorm(c2, 0., 1., 1, 0) / frech[k + j * *nObs];
+	B = - dnorm(c1, 0., 1., 0) / mahalDist[currentPair] /
+	  frech[k + i * *nObs] / frech[k + j * *nObs] +
+	  pnorm(c2, 0., 1., 1, 0) / frech[k + j * *nObs] / frech[k + j * *nObs] +
+	  dnorm(c2, 0., 1., 0) / mahalDist[currentPair] / 
+	  frech[k + j * *nObs] / frech[k + j * *nObs];
+	C = - dnorm(c2, 0., 1., 0) / mahalDist[currentPair] /
+	  frech[k + i * *nObs] / frech[k + j * *nObs] +
+	  pnorm(c1, 0., 1., 1, 0) / frech[k + i * *nObs] / frech[k + i * *nObs] +
+	  dnorm(c1, 0., 1., 0) / mahalDist[currentPair] / 
+	  frech[k + i * *nObs] / frech[k + i * *nObs];
+	D = c2 * dnorm(c1, 0., 1., 0) / frech[k + j * *nObs] /
+	  (mahalDist[currentPair] * mahalDist[currentPair] * frech[k + i * *nObs] *
+	   frech[k + i * *nObs]) + c1 * dnorm(c2, 0., 1., 0) / frech[k + i * *nObs] /
+	  (mahalDist[currentPair] * mahalDist[currentPair] * frech[k + j * *nObs] *
+	   frech[k + j * *nObs]);
 
+	dAa = - c2 * dnorm(c1, 0., 1., 0) / frech[k + i * *nObs] /
+	  mahalDist[currentPair] - c1 * dnorm(c2, 0., 1., 0) / 
+	  frech[k + j * *nObs] / mahalDist[currentPair];
+	dBa = (c1 * c1 - 1) * dnorm(c2, 0., 1., 0) /
+	  (mahalDist[currentPair] * mahalDist[currentPair] * frech[k + j * *nObs] *
+	   frech[k + j * *nObs]) + (1 + c1 * c2 ) * dnorm(c1, 0., 1., 0) /
+	  frech[k + i * *nObs] / frech[k + j * *nObs] / mahalDist[currentPair] /
+	  mahalDist[currentPair];
+	dCa = (c2 * c2 - 1) * dnorm(c1, 0., 1., 0) /
+	  (mahalDist[currentPair] * mahalDist[currentPair] * frech[k + i * *nObs] *
+	   frech[k + i * *nObs]) + (1 + c1 * c2) * dnorm(c2, 0., 1., 0) /
+	  frech[k + i * *nObs] / frech[k + j * *nObs] / mahalDist[currentPair] /
+	  mahalDist[currentPair];
+	dDa = (c1 - c1 * c2 * c2 - 2 * c2) * dnorm(c1, 0., 1., 0) / 
+	  (mahalDist[currentPair] * mahalDist[currentPair] * mahalDist[currentPair]) /
+	  frech[k + i * *nObs] / frech[k + i * *nObs] / frech[k + j * *nObs] +
+	  (c2 - c1 * c1 *c2 - 2 * c1) * dnorm(c2, 0., 1., 0) /
+	  (mahalDist[currentPair] * mahalDist[currentPair] * mahalDist[currentPair]) /
+	  frech[k + i * *nObs] / frech[k + j * *nObs] / frech[k + j * *nObs];
+
+	jacCommon = dAa + (dBa * C + B * dCa + dDa) / (B*C + D);
+
+	grad[k] += mahalDist[currentPair] / (2 * *sigma2) * jacCommon;
+	grad[*nObs + k] -= *sigma2 * rho / (mahalDist[currentPair] * *sill) *
+	  jacCommon;
+
+	switch (*covmod){
+	case 1:
+	  //i.e. Whittle-Matern
+	  grad[2 * *nObs + k] -= *sigma2 * rho * 
+	    (-2 * *smooth / *range + dist[currentPair] * 
+	     bessel_k(dist[currentPair] / *range, *smooth + 1, 1)) / 
+	    (bessel_k(dist[currentPair] / *range, *smooth, 1) * *range * *range *
+	     mahalDist[currentPair]) * jacCommon;
+	  //The Whittle-Matern covariance function is not
+	  //differentiable w.r.t. to the smooth parameter
+	  grad[3 * *nObs + k] = R_NaReal;
+	  break;
+	case 2:
+	  //i.e. cauchy
+	  grad[2 * *nObs + k] -= 2 * *sigma2 * dist[currentPair] * dist[currentPair] *
+	    *sill * *smooth * R_pow(1 + dist[currentPair] * dist[currentPair] /
+				    (*range * *range), - *smooth - 1) /
+	    (*range * *range * *range * mahalDist[currentPair]) * jacCommon; 
+	  grad[3 * *nObs + k] += *sigma2 * rho * 
+	    log(1 + dist[currentPair] *dist[currentPair] / ( *range * *range)) /
+	    mahalDist[currentPair] * jacCommon;
+	  break;
+	case 3:
+	  //i.e. powered exponential
+	  grad[2 * *nObs + k] -= *sigma2 * rho * R_pow(dist[currentPair] / *range, *smooth) *
+	    *smooth / (*range * mahalDist[currentPair]) * jacCommon;
+	  grad[3 * *nObs + k] += *sigma2 * rho *
+	    R_pow(dist[currentPair] / *range, *smooth) * log(dist[currentPair] / *range) /
+	    mahalDist[currentPair] * jacCommon;
+	  break;	   
+	}
+      }
+    }
+  }
+
+  if (*fitmarge){
+    // b- Marginal part
+    for (k=0;k<*nObs;k++){
+      currentPair = -1;
+      for (i=0;i<(*nSite-1);i++){
+	for (j=i+1;j<*nSite;j++){
+	 
+	  currentPair++;
+	 
+	  c1 = log(frech[k + j * *nObs] / frech[k + i * *nObs]) /
+	    mahalDist[currentPair] + mahalDist[currentPair] / 2;
+	  c2 = mahalDist[currentPair] - c1;
+	 
+	  //A = - pnorm(c1, 0., 1., 1, 0) / frech[k + i * *nObs] -
+	  //  - pnorm(c2, 0., 1., 1, 0) / frech[k + j * *nObs];
+	  B = - dnorm(c1, 0., 1., 0) / mahalDist[currentPair] /
+	    frech[k + i * *nObs] / frech[k + j * *nObs] +
+	    pnorm(c2, 0., 1., 1, 0) / frech[k + j * *nObs] / frech[k + j * *nObs] +
+	    dnorm(c2, 0., 1., 0) / mahalDist[currentPair] / frech[k + j * *nObs] /
+	    frech[k + j * *nObs];
+	  C = - dnorm(c2, 0., 1., 0) / mahalDist[currentPair] /
+	    frech[k + i * *nObs] / frech[k + j * *nObs] +
+	    pnorm(c1, 0., 1., 1, 0) / frech[k + i * *nObs] / frech[k + i * *nObs] +
+	    dnorm(c1, 0., 1., 0) / mahalDist[currentPair] / frech[k + i * *nObs] /
+	    frech[k + i * *nObs];
+	  D = c2 * dnorm(c1, 0., 1., 0) / frech[k + j * *nObs] /
+	    (mahalDist[currentPair] * mahalDist[currentPair] * frech[k + i * *nObs] *
+	     frech[k + i * *nObs]) + c1 * dnorm(c2, 0., 1., 0) / frech[k + i * *nObs] /
+	    (mahalDist[currentPair] * mahalDist[currentPair] * frech[k + j * *nObs] *
+	     frech[k + j * *nObs]);
+
+	  dAz1 = dnorm(c1, 0., 1., 0) / mahalDist[currentPair] /
+	    frech[k + i * *nObs] / frech[k + i * *nObs] + pnorm(c1, 0., 1., 1, 0) /
+	    frech[k + i * *nObs] / frech[k + i * *nObs] - dnorm(c2, 0., 1., 0) / 
+	    mahalDist[currentPair] / frech[k + i * *nObs] / frech[k + j * *nObs];
+	  dAz2 = dnorm(c2, 0., 1., 0) / mahalDist[currentPair] /
+	    frech[k + j * *nObs] / frech[k + j * *nObs] + pnorm(c2, 0., 1., 1, 0) /
+	    frech[k + j * *nObs] / frech[k + j * *nObs] - dnorm(c1, 0., 1., 0) / 
+	    mahalDist[currentPair] / frech[k + i * *nObs] / frech[k + j * *nObs];
+	  dBz1 = D;
+	  dBz2 = (mahalDist[currentPair] + c1) * dnorm(c1, 0., 1., 0) / 
+	    frech[k + i * *nObs] / (frech[k + j * *nObs] * frech[k + j * *nObs] * 
+	  			    mahalDist[currentPair] * mahalDist[currentPair]) -
+	    2 * pnorm(c2, 0., 1., 1, 0) / frech[k + j * *nObs] / frech[k + j * *nObs] /
+	    frech[k + j * *nObs]  - (2.0 * mahalDist[currentPair] + c1) * dnorm(c2, 0., 1., 0) /
+	    frech[k + j * *nObs] / frech[k + j * *nObs] / frech[k + j * *nObs] / 
+	    mahalDist[currentPair] / mahalDist[currentPair];
+	  dCz1 = (mahalDist[currentPair] + c2) * dnorm(c2, 0., 1., 0) /
+	    frech[k + j * *nObs] / (frech[k + i * *nObs] * frech[k + i * *nObs] * 
+	  			    mahalDist[currentPair] * mahalDist[currentPair]) -
+	    2 * pnorm(c1, 0., 1., 1, 0) / frech[k + i * *nObs] / frech[k + i * *nObs] /
+	    frech[k + i * *nObs] - (2.0 * mahalDist[currentPair] + c2) * dnorm(c1, 0., 1., 0) /
+	    frech[k + i * *nObs] / frech[k + i * *nObs] / frech[k + i * *nObs] / 
+	    mahalDist[currentPair] / mahalDist[currentPair];
+	  dCz2 = D;
+	  dDz1 = (1 - c2 * (mahalDist[currentPair] + c2)) *
+	    dnorm(c1, 0., 1., 0) / mahalDist[currentPair] / mahalDist[currentPair] /
+	    mahalDist[currentPair] / frech[k + i * *nObs] / frech[k + i * *nObs] /
+	    frech[k + i * *nObs] / frech[k + j * *nObs] - (1 + c1 * (mahalDist[currentPair] + c2)) *
+	    dnorm(c2, 0., 1., 0) / mahalDist[currentPair] / mahalDist[currentPair] /
+	    mahalDist[currentPair] / (frech[k + i * *nObs] * frech[k + i * *nObs] * 
+				      frech[k + j * *nObs] * frech[k + j * *nObs]);
+	  dDz2 = (1 - c1 * (mahalDist[currentPair] + c1)) *
+	    dnorm(c2, 0., 1., 0) / mahalDist[currentPair] / mahalDist[currentPair] /
+	    mahalDist[currentPair] / frech[k + j * *nObs] / frech[k + j * *nObs] / 
+	    frech[k + j * *nObs] / frech[k + i * *nObs] - (1 + c2 * (mahalDist[currentPair] + c1)) *
+	    dnorm(c1, 0., 1., 0) / mahalDist[currentPair] / mahalDist[currentPair] /
+	    mahalDist[currentPair] / (frech[k + i * *nObs] * frech[k + i * *nObs] * 
+				      frech[k + j * *nObs] * frech[k + j * *nObs]);
+	 
+	  for (l=0;l<*nloccoeff;l++){
+	    dE = (shapes[i] - 1) * locdsgnmat[i + *nSite * l] /
+	      scales[i] / R_pow(frech[k + i * *nObs], shapes[i]) +
+	      (shapes[j] - 1) * locdsgnmat[j + *nSite * l] /
+	      scales[j] / R_pow(frech[k + j * *nObs], shapes[j]);
+
+	    dz1loc = - R_pow(frech[k + i * *nObs], 1 - shapes[i]) /
+	      scales[i] * locdsgnmat[i + *nSite * l];
+	    dz2loc = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) /
+	      scales[j] * locdsgnmat[j + *nSite * l];
+
+	    grad[(4 + l) * *nObs + k] += (dAz1 * dz1loc + dAz2 * dz2loc) +
+	      ((dBz1 * dz1loc + dBz2 * dz2loc) * C + B * 
+	       (dCz1 * dz1loc + dCz2 * dz2loc) + (dDz1 * dz1loc + dDz2 * dz2loc)) /
+	      (B * C + D) + dE;
+	  }
+	  
+	  for (l=0;l<*nscalecoeff;l++){
+	    dE = scaledsgnmat[i + *nSite * l] * (locs[i] - scales[i] - data[k + i * *nObs]) /
+	      scales[i] / scales[i] / R_pow(frech[k + i * *nObs], shapes[i]) +
+	      scaledsgnmat[j + *nSite * l] * (locs[j] - scales[j] - data[k + j * *nObs]) /
+	      scales[j] / scales[j] / R_pow(frech[k + j * *nObs], shapes[j]);
+
+	    dz1scale = - R_pow(frech[k + i * *nObs], 1 - shapes[i]) *
+	      (data[k + i * *nObs] - locs[i]) / scales[i] / scales[i] *
+	      scaledsgnmat[i + *nSite * l];
+	    dz2scale = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) *
+	      (data[k + j * *nObs] - locs[j]) / scales[j] / scales[j] *
+	      scaledsgnmat[j + *nSite * l];
+
+	    grad[(4 + *nloccoeff + l) * *nObs + k] += (dAz1 * dz1scale + dAz2 * dz2scale) +
+	      ((dBz1 * dz1scale + dBz2 * dz2scale) * C + B * 
+	       (dCz1 * dz1scale + dCz2 * dz2scale) + (dDz1 * dz1scale + dDz2 * dz2scale)) /
+	      (B * C + D) + dE;
+	  }
+
+	  for (l=0;l<*nshapecoeff;l++){
+	    dE = -shapedsgnmat[i + *nSite * l] * log(frech[k + i * *nObs]) /
+	      shapes[i] + (1/shapes[i] - 1) * (data[k + i * *nObs] - locs[i]) *
+	      shapedsgnmat[i + *nSite * l] / scales[i] / R_pow(frech[k + i * *nObs], shapes[i]) -
+	      shapedsgnmat[j + *nSite * l] * log(frech[k + j * *nObs]) /
+	      shapes[j] + (1/shapes[j] - 1) * (data[k + j * *nObs] - locs[j]) *
+	      shapedsgnmat[j + *nSite * l] / scales[j] / R_pow(frech[k + j * *nObs], shapes[j]);	      
+
+	    dz1shape = frech[k + i * *nObs] * shapedsgnmat[i + *nSite * l] * 
+	      (-log(frech[k + i * *nObs]) / shapes[i] + (data[k + i * *nObs] - locs[i]) /
+	       shapes[i] / scales[i] / R_pow(frech[k + i * *nObs], shapes[i]));
+	    dz2shape = frech[k + j * *nObs] * shapedsgnmat[j + *nSite * l] * 
+	      (-log(frech[k + j * *nObs]) / shapes[j] + (data[k + j * *nObs] - locs[j]) /
+	       shapes[j] / scales[j] / R_pow(frech[k + j * *nObs], shapes[j]));
+
+	    grad[(4 + *nloccoeff + *nscalecoeff + l) * *nObs + k] += 
+	      (dAz1 * dz1shape + dAz2 * dz2shape) +
+	      ((dBz1 * dz1shape + dBz2 * dz2shape) * C + B * 
+	       (dCz1 * dz1shape + dCz2 * dz2shape) + (dDz1 * dz1shape + dDz2 * dz2shape)) /
+	      (B * C + D) + dE;
+	  }
+	}
+      }
+    }
+  }
+   
+  return;
+}
