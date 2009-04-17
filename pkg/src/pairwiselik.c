@@ -133,7 +133,7 @@ double lplikschlatherind(double *data, double alpha, double *rho,
     for (j=i+1;j<nSite;j++){
       currentPair++;
       
-      for (k=0;k<nObs;k++){
+      for (k=nObs;k--;){
 	data1Square = data[k + i * nObs] * data[k + i * nObs];
 	data2Square = data[k + j * nObs] * data[k + j * nObs];
 
