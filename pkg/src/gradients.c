@@ -292,8 +292,8 @@ void smithgrad3d(double *data, double *distVec, int *nSite,
     *cov13 * *cov13 * *cov22;
 
   //Computing the Mahalanobis distance
-  flag = mahalDistFct(distVec, nPairs, cov11, cov12,
-		      cov22, mahalDist);
+  flag = mahalDistFct3d(distVec, nPairs, cov11, cov12, cov13,
+			cov22, cov23, cov33, mahalDist);
 
   //Compute the GEV parameters using the design matrix
   if (*fitmarge){
@@ -321,7 +321,7 @@ void smithgrad3d(double *data, double *distVec, int *nSite,
       for (j=i+1;j<*nSite;j++){
 	 
 	currentPair++;
-	 
+
 	c1 = log(frech[k + j * *nObs] / frech[k + i * *nObs]) /
 	  mahalDist[currentPair] + mahalDist[currentPair] / 2;
 	c2 = mahalDist[currentPair] - c1;
@@ -365,76 +365,56 @@ void smithgrad3d(double *data, double *distVec, int *nSite,
 	  frech[k + i * *nObs] / frech[k + j * *nObs] / frech[k + j * *nObs];
 
 	jacCommonSigma = dAa + (dBa * C + B * dCa + dDa) / (B*C + D);
-	
-	grad[k] -= (*cov12 * *cov23 * distVec[2 * nPairs + currentPair] -
-		    *cov13 * *cov22 * distVec[2 * nPairs + currentPair] -
-		    *cov12 * *cov33 * distVec[nPairs + currentPair] +
-		    *cov13 * *cov23 * distVec[nPairs + currentPair] +
-		    *cov22 * *cov33 * distVec[currentPair] -
-		    *cov23 * *cov23 * distVec[currentPair]) *
-	  (*cov12 * *cov23 * distVec[2 * nPairs + currentPair] -
-	   *cov13 * *cov22 * distVec[2 * nPairs + currentPair] -
-	   *cov12 * *cov33 * distVec[nPairs + currentPair] +
-	   *cov13 * *cov23 * distVec[nPairs + currentPair] +
-	   *cov22 * *cov33 * distVec[currentPair] -
-	   *cov23 * *cov23 * distVec[currentPair]) /
+
+	grad[k] -= ((*cov22 * *cov33 - *cov23 * *cov23) * distVec[currentPair] +
+		    (*cov13 * *cov23 - *cov12 * *cov33) * distVec[nPairs + currentPair] +
+		    (*cov12 * *cov23 - *cov13 * *cov22) * distVec[2 * nPairs + currentPair]) *
+	  ((*cov22 * *cov33 - *cov23 * *cov23) * distVec[currentPair] +
+	   (*cov13 * *cov23 - *cov12 * *cov33) * distVec[nPairs + currentPair] +
+	   (*cov12 * *cov23 - *cov13 * *cov22) * distVec[2 * nPairs + currentPair]) /
 	  (2 * det * det * mahalDist[currentPair]) * jacCommonSigma;
 
-	grad[*nObs + k] += (*cov11 * *cov23 * distVec[2 * nPairs + currentPair] -
-			    *cov12 * *cov13 * distVec[2 * nPairs + currentPair] -
-			    *cov11 * *cov33 * distVec[nPairs + currentPair] +
-			    *cov13 * *cov13 * distVec[nPairs + currentPair] +
-			    *cov12 * *cov33 * distVec[currentPair] - *cov13 *
-			    *cov23 * distVec[currentPair]) *
-	  (*cov12 * *cov23 * distVec[2 * nPairs + currentPair] - *cov13 * *cov22 * 
-	   distVec[2 * nPairs + currentPair] - *cov12 * *cov33 * distVec[nPairs + currentPair] +
-	   *cov13 * *cov23 * distVec[nPairs + currentPair] + *cov22 * *cov33 * distVec[currentPair] -
-	   *cov23 * *cov23 * distVec[currentPair]) / (det * det * mahalDist[currentPair]) *
-	  jacCommonSigma;
+	grad[*nObs + k] += ((*cov12 * *cov33 - *cov13 * *cov23) * distVec[currentPair] +
+			    (*cov13 * *cov13 - *cov11 * *cov33) * distVec[nPairs + currentPair] +
+			    (*cov11 * *cov23 - *cov12 * *cov13) * distVec[2 * nPairs + currentPair]) *
+	  ((*cov12 * *cov23 - *cov13 * *cov22) * distVec[2 * nPairs + currentPair] +
+	   (*cov22 * *cov33 - *cov23 * *cov23) * distVec[currentPair] +
+	   (*cov13 * *cov23 - *cov12 * *cov33) * distVec[nPairs + currentPair]) /
+	  (det * det * mahalDist[currentPair]) * jacCommonSigma;
 
-	grad[2 * *nObs + k] -= (*cov11 * *cov22 * distVec[2 * nPairs + currentPair] -
-				*cov12 * *cov12 * distVec[2 * nPairs + currentPair] -
-				*cov11 * *cov23 * distVec[nPairs + currentPair] +
-				*cov12 * *cov13 * distVec[nPairs + currentPair] +
-				*cov12 * *cov23 * distVec[currentPair] - *cov13 *
-				*cov22 * distVec[currentPair]) *
-	  (*cov12 * *cov23 * distVec[2 * nPairs + currentPair] - *cov13 * *cov22 * 
-	   distVec[2 * nPairs + currentPair] - *cov12 * *cov33 * distVec[nPairs + currentPair] + *cov13 *
-	   *cov23 * distVec[nPairs + currentPair] + *cov22 * *cov33 * distVec[currentPair] -
-	   *cov23 * *cov23 * distVec[currentPair]) / (det * det * mahalDist[currentPair]) *
-	  jacCommonSigma;
-
+	grad[2 * *nObs + k] -= ((*cov22 * *cov33 - *cov23 * *cov23) * distVec[currentPair] +
+				(*cov13 * *cov23 - *cov12 * *cov33) * distVec[nPairs + currentPair] +
+				(*cov12 * *cov23 - *cov13 * *cov22) * distVec[2 * nPairs + currentPair]) *
+	  ((*cov11 * *cov22 - *cov12 * *cov12) * distVec[2 * nPairs + currentPair] +
+	   (*cov12 * *cov23 - *cov13 * *cov22) * distVec[currentPair] +
+	   (*cov12 * *cov13 - *cov11 * *cov23) * distVec[nPairs + currentPair]) /
+	  (det * det * mahalDist[currentPair]) * jacCommonSigma;
+	
 	grad[3 * *nObs + k] -= 
-	  (*cov11 * *cov23 * distVec[2 * nPairs + currentPair] - *cov12 * *cov13 *
-	   distVec[2 * nPairs + currentPair] - *cov11 * *cov33 * distVec[nPairs + currentPair] +
-	   *cov13 * *cov13 * distVec[nPairs + currentPair] + *cov12 * *cov33 * distVec[currentPair] -
-		   *cov13 * *cov23 * distVec[currentPair]) *
-	  (*cov11 * *cov23 * distVec[2 * nPairs + currentPair] - *cov12 * *cov13 *
-	   distVec[2 * nPairs + currentPair] - *cov11 * *cov33 * distVec[nPairs + currentPair] +
-	   *cov13 * *cov13 * distVec[nPairs + currentPair] + *cov12 * *cov33 * distVec[currentPair] -
-		   *cov13 * *cov23 * distVec[currentPair]) / 
+	  ((*cov11 * *cov23 - *cov12 * *cov13) * distVec[2 * nPairs + currentPair] +
+	   (*cov13 * *cov13 - *cov11 * *cov33) * distVec[nPairs + currentPair] +
+	   (*cov12 * *cov33 - *cov13 * *cov23) * distVec[currentPair]) *
+	  ((*cov11 * *cov23 - *cov12 * *cov13) * distVec[2 * nPairs + currentPair] +
+	   (*cov13 * *cov13 - *cov11 * *cov33) * distVec[nPairs + currentPair] +
+	   (*cov12 * *cov33 - *cov13 * *cov23) * distVec[currentPair]) / 
 	  (2 * det * det * mahalDist[currentPair]) * jacCommonSigma;
 
 	grad[4 * *nObs + k] += 
-	  (*cov11 * *cov22 * distVec[2 * nPairs + currentPair] - *cov12 * *cov12 *
-	   distVec[2 * nPairs + currentPair] - *cov11 * *cov23 * distVec[nPairs + currentPair] + *cov12 *
-	   *cov13 * distVec[nPairs + currentPair] + *cov12 * *cov23 * distVec[currentPair] - *cov13 *
-	   *cov22 * distVec[currentPair]) * (*cov11 * *cov23 * distVec[2 * nPairs + currentPair] - *cov12 * 
-					     *cov13 * distVec[2 * nPairs + currentPair] - *cov11 * *cov33 *
-					     distVec[nPairs + currentPair] + *cov13 * *cov13 *
-					     distVec[nPairs + currentPair] + *cov12 * *cov33 *
-					     distVec[currentPair] - *cov13 * *cov23 * distVec[currentPair]) /
+	  ((*cov11 * *cov23 - *cov12 * *cov13) * distVec[2 * nPairs + currentPair] +
+	   (*cov12 * *cov33 - *cov13 * *cov23) * distVec[currentPair] +
+	   (*cov13 * *cov13 - *cov11 * *cov33) * distVec[nPairs + currentPair]) *
+	  ((*cov11 * *cov22 - *cov12 * *cov12) * distVec[2 * nPairs + currentPair] +
+	   (*cov12 * *cov13 - *cov11 * *cov23) * distVec[nPairs + currentPair] +
+	   (*cov12 * *cov23 - *cov13 * *cov22) * distVec[currentPair]) /
 	  (det * det * mahalDist[currentPair]) * jacCommonSigma;
 
 	grad[5 * *nObs + k] -= 
-	  (*cov11 * *cov22 * distVec[2 * nPairs + currentPair] - *cov12 * *cov12 *
-	   distVec[2 * nPairs + currentPair] - *cov11 * *cov23 * distVec[nPairs + currentPair] +
-	   *cov12 * *cov13 * distVec[nPairs + currentPair] + *cov12 * *cov23 * distVec[currentPair] -
-	   *cov13 * *cov22 * distVec[currentPair]) *
-	  (*cov11 * *cov22 * distVec[2 * nPairs + currentPair] - *cov12 * *cov12 *
-	   distVec[2 * nPairs + currentPair] - *cov11 * *cov23 * distVec[nPairs + currentPair] +
-	   *cov12 * *cov13 * distVec[nPairs + currentPair] + *cov12 * *cov23 * distVec[currentPair] -
-	   *cov13 * *cov22 * distVec[currentPair]) /
+	  ((*cov11 * *cov22 - *cov12 * *cov12) * distVec[2 * nPairs + currentPair] +
+	   (*cov12 * *cov13 - *cov11 * *cov23) * distVec[nPairs + currentPair] +
+	   (*cov12 * *cov23 - *cov13 * *cov22) * distVec[currentPair]) *
+	  ((*cov11 * *cov22 - *cov12 * *cov12) * distVec[2 * nPairs + currentPair] +
+	   (*cov12 * *cov13 - *cov11 * *cov23) * distVec[nPairs + currentPair] +
+	   (*cov12 * *cov23 - *cov13 * *cov22) * distVec[currentPair]) /
 	  (2 * det * det * mahalDist[currentPair]) * jacCommonSigma;
       }
     }
@@ -450,103 +430,99 @@ void smithgrad3d(double *data, double *distVec, int *nSite,
 	  currentPair++;
 	 
 	  c1 = log(frech[k + j * *nObs] / frech[k + i * *nObs]) /
-	    mahalDist[currentPair] + mahalDist[currentPair] / 2.0;
-	  c2 = log(frech[k + i * *nObs] / frech[k + j * *nObs]) /
-	    mahalDist[currentPair] + mahalDist[currentPair] / 2.0;
+	    mahalDist[currentPair] + mahalDist[currentPair] / 2;
+	  c2 = mahalDist[currentPair] - c1;
 	 
 	  //A = - pnorm(c1, 0., 1., 1, 0) / frech[k + i * *nObs] -
 	  //  - pnorm(c2, 0., 1., 1, 0) / frech[k + j * *nObs];
 	  B = - dnorm(c1, 0., 1., 0) / mahalDist[currentPair] /
 	    frech[k + i * *nObs] / frech[k + j * *nObs] +
-	    pnorm(c2, 0., 1., 1, 0) / R_pow_di(frech[k + j * *nObs], 2) +
-	    dnorm(c2, 0., 1., 0) / mahalDist[currentPair] / 
-	    R_pow_di(frech[k + j * *nObs], 2);
+	    pnorm(c2, 0., 1., 1, 0) / frech[k + j * *nObs] / frech[k + j * *nObs] +
+	    dnorm(c2, 0., 1., 0) / mahalDist[currentPair] / frech[k + j * *nObs] /
+	    frech[k + j * *nObs];
 	  C = - dnorm(c2, 0., 1., 0) / mahalDist[currentPair] /
 	    frech[k + i * *nObs] / frech[k + j * *nObs] +
-	    pnorm(c1, 0., 1., 1, 0) / R_pow_di(frech[k + i * *nObs], 2) +
-	    dnorm(c1, 0., 1., 0) / mahalDist[currentPair] / 
-	    R_pow_di(frech[k + i * *nObs], 2);
+	    pnorm(c1, 0., 1., 1, 0) / frech[k + i * *nObs] / frech[k + i * *nObs] +
+	    dnorm(c1, 0., 1., 0) / mahalDist[currentPair] / frech[k + i * *nObs] /
+	    frech[k + i * *nObs];
 	  D = c2 * dnorm(c1, 0., 1., 0) / frech[k + j * *nObs] /
-	    R_pow_di(mahalDist[currentPair] * frech[k + i * *nObs], 2) +
-	    c1 * dnorm(c2, 0., 1., 0) / frech[k + i * *nObs] /
-	    R_pow_di(mahalDist[currentPair] * frech[k + j * *nObs], 2);
+	    (mahalDist[currentPair] * mahalDist[currentPair] * frech[k + i * *nObs] *
+	     frech[k + i * *nObs]) + c1 * dnorm(c2, 0., 1., 0) / frech[k + i * *nObs] /
+	    (mahalDist[currentPair] * mahalDist[currentPair] * frech[k + j * *nObs] *
+	     frech[k + j * *nObs]);
 
 	  dAz1 = dnorm(c1, 0., 1., 0) / mahalDist[currentPair] /
-	    R_pow_di(frech[k + i * *nObs], 2) + pnorm(c1, 0., 1., 1, 0) /
-	    R_pow_di(frech[k + i * *nObs], 2) - dnorm(c2, 0., 1., 0) / 
+	    frech[k + i * *nObs] / frech[k + i * *nObs] + pnorm(c1, 0., 1., 1, 0) /
+	    frech[k + i * *nObs] / frech[k + i * *nObs] - dnorm(c2, 0., 1., 0) / 
 	    mahalDist[currentPair] / frech[k + i * *nObs] / frech[k + j * *nObs];
 	  dAz2 = dnorm(c2, 0., 1., 0) / mahalDist[currentPair] /
-	    R_pow_di(frech[k + j * *nObs], 2) + pnorm(c2, 0., 1., 1, 0) /
-	    R_pow_di(frech[k + j * *nObs], 2) - dnorm(c1, 0., 1., 0) / 
+	    frech[k + j * *nObs] / frech[k + j * *nObs] + pnorm(c2, 0., 1., 1, 0) /
+	    frech[k + j * *nObs] / frech[k + j * *nObs] - dnorm(c1, 0., 1., 0) / 
 	    mahalDist[currentPair] / frech[k + i * *nObs] / frech[k + j * *nObs];
-	  dBz1 = c1 * dnorm(c2, 0., 1., 0) / frech[k + i * *nObs] /
-	    R_pow_di(frech[k + j * *nObs] * mahalDist[currentPair], 2) +
-	    c2 * dnorm(c1, 0., 1., 0) / frech[k + j * *nObs] /
-	    R_pow_di(frech[k + i * *nObs] * mahalDist[currentPair], 2);
+	  dBz1 = D;
 	  dBz2 = (mahalDist[currentPair] + c1) * dnorm(c1, 0., 1., 0) / 
-	    frech[k + i * *nObs] /
-	    R_pow_di(frech[k + j * *nObs] * mahalDist[currentPair], 2) -
-	    2.0 * pnorm(c2, 0., 1., 1, 0) / R_pow_di(frech[k + j * *nObs], 3)  - 
-	    (2.0 * mahalDist[currentPair] + c1) * dnorm(c2, 0., 1., 0) /
-	    R_pow_di(frech[k + j * *nObs], 3) / 
-	    R_pow_di(mahalDist[currentPair], 2);
+	    frech[k + i * *nObs] / (frech[k + j * *nObs] * frech[k + j * *nObs] * 
+	  			    mahalDist[currentPair] * mahalDist[currentPair]) -
+	    2.0 * pnorm(c2, 0., 1., 1, 0) / frech[k + j * *nObs] / frech[k + j * *nObs] /
+	    frech[k + j * *nObs]  - (2.0 * mahalDist[currentPair] + c1) * dnorm(c2, 0., 1., 0) /
+	    frech[k + j * *nObs] / frech[k + j * *nObs] / frech[k + j * *nObs] / 
+	    mahalDist[currentPair] / mahalDist[currentPair];
 	  dCz1 = (mahalDist[currentPair] + c2) * dnorm(c2, 0., 1., 0) /
-	    frech[k + j * *nObs] /
-	    R_pow_di(frech[k + i * *nObs] * mahalDist[currentPair], 2) -
-	    2.0 * pnorm(c1, 0., 1., 1, 0) / R_pow_di(frech[k + i * *nObs], 3)  - 
-	    (2.0 * mahalDist[currentPair] + c2) * dnorm(c1, 0., 1., 0) /
-	    R_pow_di(frech[k + i * *nObs], 3) / 
-	    R_pow_di(mahalDist[currentPair], 2);
-	  dCz2 = c2 * dnorm(c1, 0., 1., 0) / frech[k + j * *nObs] /
-	    R_pow_di(frech[k + i * *nObs] * mahalDist[currentPair], 2) +
-	    c1 * dnorm(c2, 0., 1., 0) / frech[k + i * *nObs] /
-	    R_pow_di(frech[k + j * *nObs] * mahalDist[currentPair], 2);
+	    frech[k + j * *nObs] / (frech[k + i * *nObs] * frech[k + i * *nObs] * 
+	  			    mahalDist[currentPair] * mahalDist[currentPair]) -
+	    2.0 * pnorm(c1, 0., 1., 1, 0) / frech[k + i * *nObs] / frech[k + i * *nObs] /
+	    frech[k + i * *nObs] - (2.0 * mahalDist[currentPair] + c2) * dnorm(c1, 0., 1., 0) /
+	    frech[k + i * *nObs] / frech[k + i * *nObs] / frech[k + i * *nObs] / 
+	    mahalDist[currentPair] / mahalDist[currentPair];
+	  dCz2 = D;
 	  dDz1 = (1 - c2 * (mahalDist[currentPair] + c2)) *
-	    dnorm(c1, 0., 1., 0) / R_pow_di(mahalDist[currentPair], 3) /
-	    R_pow_di(frech[k + i * *nObs], 3) / frech[k + j * *nObs] -
-	    (1 + c1 * (mahalDist[currentPair] + c2)) * dnorm(c2, 0., 1., 0) /
-	    R_pow_di(mahalDist[currentPair], 3) / 
-	    R_pow_di(frech[k + i * *nObs] * frech[k + j * *nObs], 2);
+	    dnorm(c1, 0., 1., 0) / mahalDist[currentPair] / mahalDist[currentPair] /
+	    mahalDist[currentPair] / frech[k + i * *nObs] / frech[k + i * *nObs] /
+	    frech[k + i * *nObs] / frech[k + j * *nObs] - (1 + c1 * (mahalDist[currentPair] + c2)) *
+	    dnorm(c2, 0., 1., 0) / mahalDist[currentPair] / mahalDist[currentPair] /
+	    mahalDist[currentPair] / (frech[k + i * *nObs] * frech[k + i * *nObs] * 
+				      frech[k + j * *nObs] * frech[k + j * *nObs]);
 	  dDz2 = (1 - c1 * (mahalDist[currentPair] + c1)) *
-	    dnorm(c2, 0., 1., 0) / R_pow_di(mahalDist[currentPair], 3) /
-	    R_pow_di(frech[k + j * *nObs], 3) / frech[k + i * *nObs] -
-	    (1 + c2 * (mahalDist[currentPair] + c1)) * dnorm(c1, 0., 1., 0) /
-	    R_pow_di(mahalDist[currentPair], 3) / 
-	    R_pow_di(frech[k + i * *nObs] * frech[k + j * *nObs], 2);
+	    dnorm(c2, 0., 1., 0) / mahalDist[currentPair] / mahalDist[currentPair] /
+	    mahalDist[currentPair] / frech[k + j * *nObs] / frech[k + j * *nObs] / 
+	    frech[k + j * *nObs] / frech[k + i * *nObs] - (1 + c2 * (mahalDist[currentPair] + c1)) *
+	    dnorm(c1, 0., 1., 0) / mahalDist[currentPair] / mahalDist[currentPair] /
+	    mahalDist[currentPair] / (frech[k + i * *nObs] * frech[k + i * *nObs] * 
+				      frech[k + j * *nObs] * frech[k + j * *nObs]);
 	 
 	  for (l=0;l<*nloccoeff;l++){
-	    dE = (shapes[i] - 1) * locdsgnmat[i + *nSite * l] /
-	      scales[i] / R_pow(frech[k + i * *nObs], shapes[i]) +
-	      (shapes[j] - 1) * locdsgnmat[j + *nSite * l] /
-	      scales[j] / R_pow(frech[k + j * *nObs], shapes[j]);
-	    
-	    dz1loc = - R_pow(frech[k + i * *nObs], 1 - shapes[i]) /
-	      scales[i] * locdsgnmat[i + *nSite * l];
-	    dz2loc = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) /
-	      scales[j] * locdsgnmat[j + *nSite * l];
+	    dE = scaledsgnmat[i + *nSite * l] * (locs[i] - scales[i] - data[k + i * *nObs]) /
+	      scales[i] / scales[i] / R_pow(frech[k + i * *nObs], shapes[i]) +
+	      scaledsgnmat[j + *nSite * l] * (locs[j] - scales[j] - data[k + j * *nObs]) /
+	      scales[j] / scales[j] / R_pow(frech[k + j * *nObs], shapes[j]);
 
-	    grad[(6 + l) * *nObs + k] = grad[(6 + l) * *nObs + k] +
-	      (dAz1 * dz1loc + dAz2 * dz2loc) +
-	      ((dBz1 * dz1loc + dBz2 * dz2loc) * C + B * 
-	       (dCz1 * dz1loc + dCz2 * dz2loc) + (dDz1 * dz1loc + dDz2 * dz2loc)) /
+	    dz1scale = - R_pow(frech[k + i * *nObs], 1 - shapes[i]) *
+	      (data[k + i * *nObs] - locs[i]) / scales[i] / scales[i] *
+	      scaledsgnmat[i + *nSite * l];
+	    dz2scale = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) *
+	      (data[k + j * *nObs] - locs[j]) / scales[j] / scales[j] *
+	      scaledsgnmat[j + *nSite * l];
+
+	    grad[(6 + *nloccoeff + l) * *nObs + k] += (dAz1 * dz1scale + dAz2 * dz2scale) +
+	      ((dBz1 * dz1scale + dBz2 * dz2scale) * C + B * 
+	       (dCz1 * dz1scale + dCz2 * dz2scale) + (dDz1 * dz1scale + dDz2 * dz2scale)) /
 	      (B * C + D) + dE;
 	  }
 
 	  for (l=0;l<*nscalecoeff;l++){
 	    dE = scaledsgnmat[i + *nSite * l] * (locs[i] - scales[i] - data[k + i * *nObs]) /
-	      R_pow_di(scales[i], 2) / R_pow(frech[k + i * *nObs], shapes[i]) +
+	      scales[i] / scales[i] / R_pow(frech[k + i * *nObs], shapes[i]) +
 	      scaledsgnmat[j + *nSite * l] * (locs[j] - scales[j] - data[k + j * *nObs]) /
-	      R_pow_di(scales[j], 2) / R_pow(frech[k + j * *nObs], shapes[j]);
-	    
+	      scales[j] / scales[j] / R_pow(frech[k + j * *nObs], shapes[j]);
+
 	    dz1scale = - R_pow(frech[k + i * *nObs], 1 - shapes[i]) *
-	      (data[k + i * *nObs] - locs[i]) / R_pow_di(scales[i], 2) *
+	      (data[k + i * *nObs] - locs[i]) / scales[i] / scales[i] *
 	      scaledsgnmat[i + *nSite * l];
 	    dz2scale = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) *
-	      (data[k + j * *nObs] - locs[j]) / R_pow_di(scales[j], 2) *
+	      (data[k + j * *nObs] - locs[j]) / scales[j] / scales[j] *
 	      scaledsgnmat[j + *nSite * l];
 
-	    grad[(6 + *nloccoeff + l) * *nObs + k] = grad[(6 + *nloccoeff + l) * *nObs + k] +
-	      (dAz1 * dz1scale + dAz2 * dz2scale) +
+	    grad[(6 + *nloccoeff + l) * *nObs + k] += (dAz1 * dz1scale + dAz2 * dz2scale) +
 	      ((dBz1 * dz1scale + dBz2 * dz2scale) * C + B * 
 	       (dCz1 * dz1scale + dCz2 * dz2scale) + (dDz1 * dz1scale + dDz2 * dz2scale)) /
 	      (B * C + D) + dE;
@@ -558,7 +534,7 @@ void smithgrad3d(double *data, double *distVec, int *nSite,
 	      shapedsgnmat[i + *nSite * l] / scales[i] / R_pow(frech[k + i * *nObs], shapes[i]) -
 	      shapedsgnmat[j + *nSite * l] * log(frech[k + j * *nObs]) /
 	      shapes[j] + (1/shapes[j] - 1) * (data[k + j * *nObs] - locs[j]) *
-	      shapedsgnmat[j + *nSite * l] / scales[j] / R_pow(frech[k + j * *nObs], shapes[j]);
+	      shapedsgnmat[j + *nSite * l] / scales[j] / R_pow(frech[k + j * *nObs], shapes[j]);	      
 
 	    dz1shape = frech[k + i * *nObs] * shapedsgnmat[i + *nSite * l] * 
 	      (-log(frech[k + i * *nObs]) / shapes[i] + (data[k + i * *nObs] - locs[i]) /
@@ -567,8 +543,7 @@ void smithgrad3d(double *data, double *distVec, int *nSite,
 	      (-log(frech[k + j * *nObs]) / shapes[j] + (data[k + j * *nObs] - locs[j]) /
 	       shapes[j] / scales[j] / R_pow(frech[k + j * *nObs], shapes[j]));
 
-	    grad[(6 + *nloccoeff + *nscalecoeff + l) * *nObs + k] = 
-	      grad[(6 + *nloccoeff + *nscalecoeff + l) * *nObs + k] +
+	    grad[(6 + *nloccoeff + *nscalecoeff + l) * *nObs + k] += 
 	      (dAz1 * dz1shape + dAz2 * dz2shape) +
 	      ((dBz1 * dz1shape + dBz2 * dz2shape) * C + B * 
 	       (dCz1 * dz1shape + dCz2 * dz2shape) + (dDz1 * dz1shape + dDz2 * dz2shape)) /
