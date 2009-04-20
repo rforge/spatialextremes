@@ -1,3 +1,22 @@
+2009-04-17 15:48  mathieu_ribatet
+
+	* src/gradients.c: Fix a bug in the computation of the gradient for
+	  smith3d. Now it's
+	  correct!
+
+2009-04-17 15:29  mathieu_ribatet
+
+	* src/pairwiselik.c: Minor optimization
+
+2009-04-17 15:28  mathieu_ribatet
+
+	* src/covariance.c: Try to optimize the computation of all the
+	  covariance
+
+2009-04-10 13:37  mathieu_ribatet
+
+	* ChangeLog: Update the ChangeLog
+
 2009-04-10 13:35  mathieu_ribatet
 
 	* ChangeLog, DESCRIPTION: Update the version number and the
