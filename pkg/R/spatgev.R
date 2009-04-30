@@ -45,24 +45,9 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
   n.pparscale <- scale.model$n.ppar
   n.pparshape <- shape.model$n.ppar
   
-
-  if (n.loccoeff == 1)
-    loc.names <- "locCoeff"
-
-  else
-    loc.names <- paste("locCoeff", 1:n.loccoeff, sep="")
-
-  if (n.scalecoeff == 1)
-    scale.names <- "scaleCoeff"
-
-  else
-    scale.names <- paste("scaleCoeff", 1:n.scalecoeff, sep="")
-
-  if (n.shapecoeff == 1)
-    shape.names <- "shapeCoeff"
-
-  else
-    shape.names <- paste("shapeCoeff", 1:n.shapecoeff, sep="")
+  loc.names <- paste("locCoeff", 1:n.loccoeff, sep="")
+  scale.names <- paste("scaleCoeff", 1:n.scalecoeff, sep="")
+  shape.names <- paste("shapeCoeff", 1:n.shapecoeff, sep="")
 
   param <- c(loc.names, scale.names, shape.names)
 
@@ -108,12 +93,11 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
     if (any(scales.hat <= 0))
       scaleCoeff[1] <- scaleCoeff[1] - 1.001 * min(scales.hat)
   
-    names(locCoeff) <- names(scaleCoeff) <- names(shapeCoeff) <- NULL
+    names(locCoeff) <- loc.names
+    names(scaleCoeff) <- scale.names
+    names(shapeCoeff) <- shape.names
     
-    start <- as.list(unlist(list(locCoeff = locCoeff,
-                                 scaleCoeff = scaleCoeff,
-                                 shapeCoeff = shapeCoeff)))
-
+    start <- as.list(c(locCoeff, scaleCoeff, shapeCoeff))
     start <- start[!(param %in% names(list(...)))]
 
   }
