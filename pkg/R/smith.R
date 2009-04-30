@@ -358,9 +358,14 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
                     3, 3)
   
   iSigma <- solve(Sigma)
-  
-  ext.coeff <- function(posVec)
-    2 * pnorm(sqrt(posVec %*% iSigma %*% posVec) / 2)
+
+  if (iso)
+    ext.coeff <- function(h)
+      2 * pnorm(sqrt(h^2 / param["cov11"]) / 2)
+
+  else
+    ext.coeff <- function(h)
+      2 * pnorm(sqrt(h %*% iSigma %*% h) / 2)
   
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
                  var.cov = var.cov, fixed = unlist(fixed.param), param = param,
@@ -369,7 +374,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
                  logLik = -opt$value, opt.value = opt$value, model = "Smith",
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = "Gaussian",
                  lik.fun = nllh, coord = coord, ihessian = ihessian, jacobian = jacobian,
-                 marg.cov = NULL, nllh = nllh)
+                 marg.cov = NULL, nllh = nllh, iso = iso)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
@@ -442,23 +447,9 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   n.pparshape <- shape.model$n.ppar
   
 
-  if (n.loccoeff == 1)
-    loc.names <- "locCoeff"
-
-  else
-    loc.names <- paste("locCoeff", 1:n.loccoeff, sep="")
-
-  if (n.scalecoeff == 1)
-    scale.names <- "scaleCoeff"
-
-  else
-    scale.names <- paste("scaleCoeff", 1:n.scalecoeff, sep="")
-
-  if (n.shapecoeff == 1)
-    shape.names <- "shapeCoeff"
-
-  else
-    shape.names <- paste("shapeCoeff", 1:n.shapecoeff, sep="")
+  loc.names <- paste("locCoeff", 1:n.loccoeff, sep="")
+  scale.names <- paste("scaleCoeff", 1:n.scalecoeff, sep="")
+  shape.names <- paste("shapeCoeff", 1:n.shapecoeff, sep="")
 
   if (dist.dim == 2){
     if (iso)
@@ -726,8 +717,12 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   
   iSigma <- solve(Sigma)
 
-  ext.coeff <- function(posVec)
-    2 * pnorm(sqrt(posVec %*% iSigma %*% posVec) / 2)
+  if (iso)
+    ext.coeff <- function(h)
+      2 * pnorm(sqrt(h^2 / param["cov11"]) / 2)
+  else
+    ext.coeff <- function(h)
+      2 * pnorm(sqrt(h %*% iSigma %*% h) / 2)
   
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
                  var.cov = var.cov, fixed = unlist(fixed.param), param = param,
@@ -738,7 +733,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
                  loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                  lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
                  shape.type = shape.type, ihessian = ihessian, jacobian = jacobian,
-                 marg.cov = marg.cov, nllh = nllh)
+                 marg.cov = marg.cov, nllh = nllh, iso = iso)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
