@@ -11,8 +11,8 @@ covariance <- function(fitted, sill, range, smooth, cov.mod = "whitmat",
   if (cov.mod == "gauss")
     stop("''covariance'' is not implemented for the Smith's model")
 
-  if (!(cov.mod %in% c("whitmat", "cauchy", "powexp")))
-    stop("Invalid covariance model. ''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp'")
+  if (!(cov.mod %in% c("whitmat", "cauchy", "powexp", "bessel")))
+    stop("Invalid covariance model. ''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel'")
   
   if (cov.mod == "whitmat"){
     if ((smooth <= 0) || (range <= 0) || (smooth > 150) || (sill <= 0) ||
@@ -41,6 +41,14 @@ covariance <- function(fitted, sill, range, smooth, cov.mod = "whitmat",
       stop("invalid parameter for the powered exponential covariance function")
 
     cov.fun <- function(dist) sill * exp(-(dist / range)^smooth)
+  }
+
+  if (cov.mod == "bessel"){
+    if ((range <= 0) || (sill <= 0) || (sill > 1))
+      stop("invalid parameter for the Bessel covariance function")
+
+    cov.fun <- function(dist) sill * (2 * range / dist)^smooth * gamma(smooth + 1) *
+      besselJ(dist / range, smooth)
   }
 
   if (plot){

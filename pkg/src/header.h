@@ -9,10 +9,10 @@
 //  From schlather.c
 //
 void schlatherfull(int *covmod, double *data, double *dist, int *nSite, int *nObs,
-		   double *locs, double *scales, double *shapes, double *sill,
+		   int *dim, double *locs, double *scales, double *shapes, double *sill,
 		   double *range, double *smooth, int *fitmarge, double *dns);
 void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
-		      double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
+		      int *dim, double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
 		      double *locpenalty, double *scaledsgnmat, double *scalepenmat,
 		      int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
 		      double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
@@ -23,11 +23,11 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 //  From schlatherind.c
 //
 void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
-		      int *nObs, double *locs, double *scales, double *shapes,
+		      int *nObs, int *dim, double *locs, double *scales, double *shapes,
 		      double *alpha, double *sill, double *range, double *smooth,
 		      int *fitmarge,double *dns);
 void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
-			 double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
+			 int *dim, double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
 			 double *locpenalty, double *scaledsgnmat, double *scalepenmat,
 			 int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
 			 double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
@@ -38,11 +38,11 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
 //  From geomgauss.c
 //
 void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
-		   int *nObs, double *locs, double *scales, double *shapes,
+		   int *nObs, int *dim, double *locs, double *scales, double *shapes,
 		   double *sigma2, double *sill, double *range, double *smooth,
 		   int *fitmarge,double *dns);
 void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
-		      double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
+		      int *dim, double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
 		      double *locpenalty, double *scaledsgnmat, double *scalepenmat,
 		      int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
 		      double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
@@ -53,12 +53,12 @@ void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 //  From nsgeomgauss.c
 //
 void nsgeomgaussfull(int *covmod, double *data, double *dist, int *nSite,
-		     int *nObs, double *locs, double *scales, double *shapes,
+		     int *nObs, int *dim, double *locs, double *scales, double *shapes,
 		     double *sigma2dsgnmat, double *sigma2coeff, int *nsigma2coeff,
 		     double *sill, double *range, double *smooth, int *fitmarge,
 		     double *dns);
 void nsgeomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
-			double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
+			int *dim, double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
 			double *locpenalty, double *scaledsgnmat, double *scalepenmat,
 			int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
 			double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
@@ -136,15 +136,17 @@ double cauchy(double *dist, int nPairs, double sill, double range,
 	      double smooth, double *rho);
 double powerExp(double *dist, int nPairs, double sill, double range,
 		double smooth, double *rho);
+double bessel(double *dist, int nPairs, int dim, double sill,
+	      double range, double smooth, double *rho);
 double mahalDistFct(double *distVec, int nPairs, double *cov11,
 		    double *cov12, double *cov22, double *mahal);
 double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
 		      double *cov12, double *cov13, double *cov22, 
 		      double *cov23, double *cov33, double *mahal);
-double geomCovariance(double *dist, int nPairs, int covmod,
+double geomCovariance(double *dist, int nPairs, int dim, int covmod,
 		      double sigma2, double sill, double range,
 		      double smooth, double *rho);
-double nsgeomCovariance(double *dist, int nSite, int covmod,
+double nsgeomCovariance(double *dist, int nSite, int dim, int covmod,
 			double *sigma2, double sill, double range,
 			double smooth, double *rho);
 
@@ -230,13 +232,13 @@ void fitcovmat3d(double *cov11, double *cov12, double *cov13,
 		 int *nPairs, double *dist, double *extcoeff,
 		 double *weights, double *ans);
 void fitcovariance(int *covmod, double *sill, double *range, double *smooth,
-		   int *nPairs, double *distVec, double *extcoeff,
+		   int *nPairs, int *dim, double *distVec, double *extcoeff,
 		   double *weights, double *ans);
 void fiticovariance(int *covmod, double *alpha, double *sill, double *range,
-		    double *smooth, int *nPairs, double *dist, double *extcoeff,
+		    double *smooth, int *nPairs, int *dim, double *dist, double *extcoeff,
 		    double *weights, double *ans);
 void fitgcovariance(int *covmod, double *sigma2, double *sill, double *range,
-		    double *smooth, int *nPairs, double *dist, double *extcoeff,
+		    double *smooth, int *nPairs, int *dim, double *dist, double *extcoeff,
 		    double *weights, double *ans);
 
 ///////////////////////////////////
@@ -257,3 +259,10 @@ void spatgevlik(double *data, double *covariables, int *nSite, int *nObs,
 void madogram(double *data, int *nObs, int *nSite, double *mado);
 void lmadogram(double *data, int *nObs, int *nSite, double *lambda,
 	       int *nLambda, double *lmado);
+
+///////////////////////////////////
+//  From simmaxstab.c
+//
+void rsmith(double *coord, double *center, double *edge, int *nObs,
+	    int *nSites, double *cov11, double *cov12, double *cov22,
+	    double *ans);

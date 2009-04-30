@@ -16,12 +16,9 @@ shape.form, marg.cov = NULL, iso = FALSE, \dots, fit.marge = FALSE, warn
     location. Each row corresponds to one location.}
   \item{cov.mod}{A character string corresponding the the covariance
     model in the max-stable representation. Must be one of "gauss" for
-    the Smith's model; or "whitmat", "cauchy" or "powexp" for
-    the Whittle-Matern, the Cauchy and the Powered Exponential
-    covariance family with the Schlather's model. These 3 last
-    covariance models could have an additional prefix "i" or "g" for the
-    mixture of independent Frechet field and Schlather's model or the
-    geometric gaussian model.} 
+    the Smith's model; or "whitmat", "cauchy", "powexp" or "bessel" for
+    the Whittle-Matern, the Cauchy, the Powered Exponential and the
+    Bessel covariance family with the Schlather's model.} 
   \item{loc.form, scale.form, shape.form}{R formulas defining the
     spatial linear model for the GEV parameters. May be missing. See
     section details.}
@@ -120,8 +117,9 @@ shape.form, marg.cov = NULL, iso = FALSE, \dots, fit.marge = FALSE, warn
 
   \describe{
     \item{\code{grad}}{\eqn{J} is estimated from the gradient e.g. \eqn{J
-	= \nabla \ell_P \nabla \ell_P^T}{J = grad(llik_P)
-    grad(llik_P)^T}.}
+	= \sum_{i=1}^n \left\{ \nabla \ell_P(\hat{\theta}; y_i) \nabla
+    \ell_P(\hat{\theta},y_i)^T \right\}}{J = sum_{i=1}^n
+    [grad(llik_P(hat(theta); y_i)) grad(llik_P(hat(theta);y_i))^T]}.}
     \item{\code{score}}{\eqn{J} is estimated directly from the variance of
       the observed score function.}
   }

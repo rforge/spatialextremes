@@ -18,8 +18,8 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
 
   dist <- distance(coord)
   
-  if (!(cov.mod %in% c("whitmat","cauchy","powexp")))
-    stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp'")
+  if (!(cov.mod %in% c("whitmat","cauchy","powexp","bessel")))
+    stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel'")
 
   if (cov.mod == "whitmat")
     cov.mod.num <- 1
@@ -27,6 +27,8 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
     cov.mod.num <- 2
   if (cov.mod == "powexp")
     cov.mod.num <- 3
+  if (cov.mod == "bessel")
+    cov.mod.num <- 4
   
   ##First create a "void" function
   nplk <- function(x) x
@@ -40,7 +42,7 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
     
     param <- c("sill", "range", "smooth", loc.names, scale.names, shape.names)
 
-    body(nplk) <- parse(text = paste("-.C('schlatherfull', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs),",
+    body(nplk) <- parse(text = paste("-.C('schlatherfull', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim),",
                             paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
@@ -48,7 +50,7 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
   }
 
   else{
-    body(nplk) <- parse(text = paste("-.C('schlatherfull', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs),",
+    body(nplk) <- parse(text = paste("-.C('schlatherfull', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim),",
                             paste("as.double(rep(1,", n.site, ")), "),
                             paste("as.double(rep(1,", n.site, ")), "),
                             paste("as.double(rep(1,", n.site, ")), "),
@@ -61,6 +63,14 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
   if ((cov.mod == "whitmat") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
     if (warn)
       warning("The Whittle-Matern covariance function is not differentiable w.r.t. the ''smooth'' parameter
+Standard errors are not available unless you fix it.")
+    
+    std.err.type <- "none"
+  }
+
+  if ((cov.mod == "bessel") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
+    if (warn)
+      warning("The Bessel covariance function is not differentiable w.r.t. the ''smooth'' parameter
 Standard errors are not available unless you fix it.")
     
     std.err.type <- "none"
@@ -304,12 +314,13 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   ##coord is a matrix giving the coordinates (1 row = 1 station)
   n.site <- ncol(data)
   n.obs <- nrow(data)
+  dist.dim <- ncol(coord)
   n.pair <- n.site * (n.site - 1) / 2
 
   dist <- distance(coord)
      
-  if (!(cov.mod %in% c("whitmat","cauchy","powexp")))
-    stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp'")
+  if (!(cov.mod %in% c("whitmat","cauchy","powexp","bessel")))
+    stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel'")
 
   if (cov.mod == "whitmat")
     cov.mod.num <- 1
@@ -317,7 +328,9 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
     cov.mod.num <- 2
   if (cov.mod == "powexp")
     cov.mod.num <- 3
-
+  if (cov.mod == "bessel")
+    cov.mod.num <- 4
+  
   ##With our notation, formula must be of the form y ~ xxxx
   loc.form <- update(loc.form, y ~ .)
   scale.form <- update(scale.form, y ~ .)
@@ -361,24 +374,9 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   n.pparscale <- scale.model$n.ppar
   n.pparshape <- shape.model$n.ppar
   
-
-  if (n.loccoeff == 1)
-    loc.names <- "locCoeff"
-
-  else
-    loc.names <- paste("locCoeff", 1:n.loccoeff, sep="")
-
-  if (n.scalecoeff == 1)
-    scale.names <- "scaleCoeff"
-
-  else
-    scale.names <- paste("scaleCoeff", 1:n.scalecoeff, sep="")
-
-  if (n.shapecoeff == 1)
-    shape.names <- "shapeCoeff"
-
-  else
-    shape.names <- paste("shapeCoeff", 1:n.shapecoeff, sep="")
+  loc.names <- paste("locCoeff", 1:n.loccoeff, sep="")
+  scale.names <- paste("scaleCoeff", 1:n.scalecoeff, sep="")
+  shape.names <- paste("shapeCoeff", 1:n.shapecoeff, sep="")
   
   param <- c("sill", "range", "smooth", loc.names, scale.names, shape.names)
 
@@ -387,7 +385,7 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
 
   ##And define the "body" of the function as the number of parameters
   ##to estimate depends on n.site
-   body(nplk) <- parse(text = paste("-.C('schlatherdsgnmat', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
+   body(nplk) <- parse(text = paste("-.C('schlatherdsgnmat', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
                           paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                           paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                           paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
@@ -449,6 +447,14 @@ Standard errors are not available unless you fix it.")
     std.err.type <- "none"
   }
 
+  if ((cov.mod == "bessel") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
+    if (warn)
+      warning("The Bessel covariance function is not differentiable w.r.t. the ''smooth'' parameter
+Standard errors are not available unless you fix it.")
+    
+    std.err.type <- "none"
+  }
+  
   if (std.err.type == "none")
     hessian <- FALSE
 

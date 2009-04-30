@@ -599,6 +599,11 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
   case 3:
     flag = powerExp(dist, nPairs, *sill, *range, *smooth, rho);
     break;
+  case 4:
+    //Here we use 0 for dim as we don't care for the computation of
+    //the gradient
+    flag = bessel(dist, nPairs, 0, *sill, *range, *smooth, rho);
+    break;
   }
   
   //Compute the GEV parameters using the design matrix
@@ -684,7 +689,15 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 	  grad[2 * *nObs + k] -= rho[currentPair] *
 	    R_pow(dist[currentPair] / *range, *smooth) * log(dist[currentPair] / *range) *
 	    jacCommonRho;
-	  break;	   
+	  break;
+	case 4:
+	  //i.e. Bessel
+	  grad[*nObs + k] += rho[currentPair] * dist[currentPair] * 
+	    bessel_j(dist[currentPair] / *range, *smooth + 1) /
+	    (bessel_j(dist[currentPair] / *range, *smooth) * *range * *range) *
+	    jacCommonRho;
+	  grad[2 * *nObs + k] = R_NaReal;
+	  break;
 	}
       }
     }
@@ -849,6 +862,11 @@ void schlatherindgrad(int *covmod, double *data, double *dist, int *nSite,
   case 3:
     flag = powerExp(dist, nPairs, *sill, *range, *smooth, rho);
     break;
+  case 4:
+    //Here we use 0 for dim as we don't care for the computation of
+    //the gradient
+    flag = bessel(dist, nPairs, 0, *sill, *range, *smooth, rho);
+    break;
   }
   
   //Compute the GEV parameters using the design matrix
@@ -948,7 +966,15 @@ void schlatherindgrad(int *covmod, double *data, double *dist, int *nSite,
 	  grad[3 * *nObs + k] -= rho[currentPair] *
 	    R_pow(dist[currentPair] / *range, *smooth) * log(dist[currentPair] / *range) *
 	    jacCommonRho;
-	  break;	   
+	  break;
+	case 4:
+	  //i.e. Bessel
+	  grad[*nObs + k] += rho[currentPair] * dist[currentPair] * 
+	    bessel_j(dist[currentPair] / *range, *smooth + 1) /
+	    (bessel_j(dist[currentPair] / *range, *smooth) * *range * *range) *
+	    jacCommonRho;
+	  grad[2 * *nObs + k] = R_NaReal;
+	  break;
 	}
       }
     }
@@ -1157,7 +1183,7 @@ void geomgaussgrad(int *covmod, double *data, double *dist, int *nSite,
   frech = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   
   //Stage 0: Compute the covariance at each location
-  flag = geomCovariance(dist, nPairs, *covmod, *sigma2, *sill, *range,
+  flag = geomCovariance(dist, nPairs, 0, *covmod, *sigma2, *sill, *range,
 			*smooth, mahalDist);
   
   //Compute the GEV parameters using the design matrix
@@ -1265,7 +1291,15 @@ void geomgaussgrad(int *covmod, double *data, double *dist, int *nSite,
 	  grad[3 * *nObs + k] += *sigma2 * rho *
 	    R_pow(dist[currentPair] / *range, *smooth) * log(dist[currentPair] / *range) /
 	    mahalDist[currentPair] * jacCommon;
-	  break;	   
+	  break;
+	case 4:
+	  //i.e. Bessel
+	  grad[2 * *nObs + k] -= *sigma2 * rho * dist[currentPair] * 
+	    bessel_j(dist[currentPair] / *range, *smooth + 1) /
+	    (bessel_j(dist[currentPair] / *range, *smooth) * *range * *range *
+	     mahalDist[currentPair]) * jacCommon;
+	  grad[3 * *nObs + k] = R_NaReal;
+	  break;
 	}
       }
     }

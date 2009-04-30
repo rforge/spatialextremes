@@ -6,7 +6,8 @@
   non-parametric estimates of the pairwise extremal coefficients.
 }
 \usage{
-fitcovariance(data, coord, cov.mod, marge = "mle", ..., start)
+fitcovariance(data, coord, cov.mod, marge = "mle", control = list(),
+..., start)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -14,20 +15,20 @@ fitcovariance(data, coord, cov.mod, marge = "mle", ..., start)
   \item{coord}{A matrix that gives the coordinates of each
     location. Each row corresponds to one location.}
   \item{cov.mod}{A character string corresponding the the covariance
-    model in the Schlather's model. Must be one of "whitmat", "cauchy"
-    or "powexp" for the Whittle-Matern, the Cauchy and the Powered
-    Exponential covariance family. If the prefixes "i" or "g" are used
-    then the independent Schlather and geometric Gaussian models are
-    used respectively.}
+    model in the Schlather's model. Must be one of "whitmat", "cauchy",
+    "powexp" or "bessel" for the Whittle-Matern, the Cauchy, the Powered
+    Exponential and the Bessel covariance family.}
   \item{marge}{Character string specifying how margins are transformed
     to unit Frechet. Must be one of "emp", "frech" or "mle" - see
     function \code{\link{fitextcoeff}}.}
+  \item{control}{The control arguments to be passed to the
+    \code{\link{optim}} function.}
+  \item{\dots}{Optional arguments to be passed to the \code{\link{optim}}
+    function.}
   \item{start}{A named list giving the initial values for the
     parameters over which the weighted sum of square is to be
     minimized. If \code{start} is omitted the routine attempts to find
     good starting values.}
-  \item{\dots}{Optional arguments to be passed to the \code{\link{optim}}
-    function.}
 }
 \details{
   The fitting procedure is based on weighted least squares. More
