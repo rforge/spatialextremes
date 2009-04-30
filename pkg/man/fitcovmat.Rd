@@ -6,7 +6,8 @@
   non-parametric estimates of the pairwise extremal coefficients.
 }
 \usage{
-fitcovmat(data, coord, marge = "mle", iso = FALSE, ..., start)
+fitcovmat(data, coord, marge = "mle", iso = FALSE, control = list(),
+..., start)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -18,12 +19,14 @@ fitcovmat(data, coord, marge = "mle", iso = FALSE, ..., start)
     function \code{\link{fitextcoeff}}.}
   \item{iso}{Logical. If \code{TRUE}, isotropy is supposed. Otherwise
     (default), anisotropy is allowed.}
+  \item{control}{The control arguments to be passed to the
+    \code{\link{optim}} function.}
+  \item{\dots}{Optional arguments to be passed to the \code{\link{optim}}
+    function.}
   \item{start}{A named list giving the initial values for the
     parameters over which the weighted sum of square is to be
     minimized. If \code{start} is omitted the routine attempts to find
     good starting values.}
-  \item{\dots}{Optional arguments to be passed to the \code{\link{optim}}
-    function.}
 }
 \details{
   The fitting procedure is based on weighted least squares. More
