@@ -81,10 +81,10 @@ double lpliksmith(double *data, double *mahalDist, double *jac,
 	c1 = log(data[k + j * nObs] * idata1) * imahal + mahalDist[currentPair] / 2;
 	c2 = mahalDist[currentPair] - c1;
 	
-	dnormc1 = dnorm(c1, 0., 1., 0);
-	dnormc2 = dnorm(c2, 0., 1., 0);
-	pnormc1 = pnorm(c1, 0., 1., 1, 0);
-	pnormc2 = pnorm(c2, 0., 1., 1, 0);
+	dnormc1 = dnorm(c1, 0, 1, 0);
+	dnormc2 = dnorm(c2, 0, 1, 0);
+	pnormc1 = pnorm(c1, 0, 1, 1, 0);
+	pnormc2 = pnorm(c2, 0, 1, 1, 0);
 
 	//It's the log of the joint CDF
 	lFvec = -pnormc1 * idata1 - pnormc2 * idata2;
