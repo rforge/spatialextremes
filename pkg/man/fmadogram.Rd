@@ -3,14 +3,16 @@
 \title{Computes the F-madogram}
 \description{Computes the F-madogram for max-stable processes.}
 \usage{
-fmadogram(data, coord, n.bins, which = c("mado", "ext"), xlab, ylab,
-angles = NULL, marge = "mle", ...)
+fmadogram(data, coord, fitted, n.bins, which = c("mado", "ext"), xlab,
+ylab, col = c(1, 2), angles = NULL, marge = "mle", add = FALSE, ...)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
     one location.}
   \item{coord}{A matrix that gives the coordinates of each
     location. Each row corresponds to one location.}
+  \item{fitted}{An object of class maxstab - usually the output of the
+    \code{\link{fitmaxstab}} function. May be missing.}
   \item{n.bins}{The number of bins to be used. If missing, pairwise
     F-madogram estimates will be computed.}
   \item{which}{A character vector of maximum size 2. It specifies if the
@@ -18,11 +20,15 @@ angles = NULL, marge = "mle", ...)
     plotted.}
   \item{xlab,ylab}{The x-axis and y-axis labels. May be missing. Note
     that \code{ylab} must have the same length has \code{which}.}
+  \item{col}{The colors used for the points and optionnaly the fitted
+    curve.}
   \item{angles}{A numeric vector. A partition of the interval
     \eqn{(-\pi, \pi)}{(-\pi, \pi)} to help detecting anisotropy.}
   \item{marge}{Character string. If 'emp', the probabilities of non
     exceedances are estimated using the empirical CDF. If 'mle'
     (default), maximum likelihood estimates are used.}
+  \item{add}{Logical. If \code{TRUE}, the plot is added to the current
+    figure; otherwhise (default) a new plot is computed.}
   \item{\dots}{Additional options to be passed to the \code{\link{plot}}
     function.} 
 }
