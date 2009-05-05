@@ -646,7 +646,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
     
   if (std.err.type != "none"){
     
-    var.cov <- try(solve(qr(opt$hessian)), silent = TRUE)
+    var.cov <- try(solve(opt$hessian), silent = TRUE)
     if(!is.matrix(var.cov)){
       if (warn)
         warning("observed information matrix is singular; passing std.err.type to ''none''")

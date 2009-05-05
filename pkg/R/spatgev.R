@@ -185,34 +185,24 @@ fitspatgev <- function(data, covariables, loc.form, scale.form, shape.form,
   param <- param[param.names]
 
   if (std.err.flag){
-    tol <- .Machine$double.eps^0.5
-    var.cov <- qr(opt$hessian, tol = tol)
+    var.cov <- try(solve(opt$hessian), silent = TRUE)
     
-    if(var.cov$rank != ncol(var.cov$qr)){
+    if(!is.matrix(var.cov)){
       std.err.flag <- FALSE
       warning("observed information matrix is singular; std. err. won't be computed")
     }
     
     else{
-      var.cov <- try(solve(var.cov, tol = tol), silent = TRUE)
+      ihessian <- var.cov
+      jacobian <- .spatgevgrad(param, data, loc.dsgn.mat,scale.dsgn.mat,
+                               shape.dsgn.mat, std.err.type,
+                               fixed.param = names(fixed.param), param.names = param.names)
       
-      if(!is.matrix(var.cov)){
+      if (any(is.na(jacobian))){
+        if (warn)
+          warning("observed information matrix is singular; std. err. won't be computed")
+        
         std.err.flag <- FALSE
-        warning("observed information matrix is singular; std.err. won't be computed")
-      }
-      
-      else{
-        ihessian <- var.cov
-        jacobian <- .spatgevgrad(param, data, loc.dsgn.mat,scale.dsgn.mat,
-                                 shape.dsgn.mat, std.err.type,
-                                 fixed.param = names(fixed.param), param.names = param.names)
-
-        if (any(is.na(jacobian))){
-          if (warn)
-            warning("observed information matrix is singular; std. err. won't be computed")
-          
-          std.err.flag <- FALSE
-        }
       }
     }
   }
