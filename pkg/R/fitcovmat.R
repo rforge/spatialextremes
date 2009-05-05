@@ -215,15 +215,20 @@ fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, control = list(),
   
   iSigma <- solve(Sigma)
 
-  ext.coeff <- function(posVec)
-    2 * pnorm(sqrt(posVec %*% iSigma %*% posVec) / 2)
+  if (iso)
+    ext.coeff <- function(h)
+      2 * pnorm(sqrt(h^2 / param["cov11"]) / 2)
+
+  else
+    ext.coeff <- function(posVec)
+      2 * pnorm(sqrt(posVec %*% iSigma %*% posVec) / 2)
 
   fitted <- list(fitted.values = opt$par, fixed = unlist(fixed.param),
                  param = param, convergence = opt$convergence,
                  counts = opt$counts, message = opt$message, data = data,
                  est = "Least Square", opt.value = opt$value, model = "Smith",
                  coord = coord, fit.marge = FALSE, cov.mod = "Gaussian",
-                 ext.coeff = ext.coeff)
+                 ext.coeff = ext.coeff, iso = iso)
 
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
