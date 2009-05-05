@@ -18,13 +18,13 @@ grid = FALSE, ...)
   model. Currenlty only \code{gauss}, i.e. the Smith model, is
   available.}
   \item{cov11, cov12, cov22}{The parameters for the Smith model.}
-  \item{grid}{Logical. Does the coordinates represents grid points? If
-  \code{TRUE} then \code{n} is automatically set to 1.}
+  \item{grid}{Logical. Does the coordinates represents grid points?}
   \item{\dots}{Unused.}
 }
 \value{
   A matrix containing observations from the required max-stable
-  model. Each column represents one stations unless \code{grid = TRUE}.
+  model. Each column represents one stations. If \code{grid = TRUE}, the
+  function returns an array of dimension nrow(coord) x nrow(coord) x n.
 }
 \references{
   Schlather, M. (2002) Models for Stationary Max-Stable Random
@@ -41,6 +41,6 @@ x <- seq(0, 10, length = 200)
 coord <- cbind(x, x)
 data <- rmaxstab(1, coord, cov11 = 9/8, cov22 = 9/8, grid = TRUE)
 ##We change the margins for visibility
-filled.contour(x, x, data^0.25)
+filled.contour(x, x, data[,,1]^0.25)
 }
 \keyword{distribution}
