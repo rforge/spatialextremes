@@ -220,8 +220,8 @@ fitcovmat <- function(data, coord, marge = "mle", iso = FALSE, control = list(),
       2 * pnorm(sqrt(h^2 / param["cov11"]) / 2)
 
   else
-    ext.coeff <- function(posVec)
-      2 * pnorm(sqrt(posVec %*% iSigma %*% posVec) / 2)
+    ext.coeff <- function(h)
+      2 * pnorm(sqrt(h %*% iSigma %*% h) / 2)
 
   fitted <- list(fitted.values = opt$par, fixed = unlist(fixed.param),
                  param = param, convergence = opt$convergence,
