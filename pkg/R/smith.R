@@ -16,6 +16,12 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
   n.obs <- nrow(data)
   dist.dim <- ncol(coord)
   n.pair <- n.site * (n.site - 1) / 2
+
+  if (iso && (method == "Nelder"))
+    method2 <- "BFGS"
+
+  else
+    method2 <- method
   
   if (std.err.type == "none")
     hessian <- FALSE
@@ -151,12 +157,12 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
     }
 
     if (length(fixed.param) > 0){
-      args <- c(list(data = data, coord = coord, marge = "emp", iso = iso), fixed.param)
+      args <- c(list(data = data, coord = coord, marge = "emp", iso = iso, method = method2), fixed.param)
       cov.start <- do.call("fitcovmat", args)$param
     }
       
     else
-      cov.start <- fitcovmat(data, coord, marge = "emp", iso = iso)$param
+      cov.start <- fitcovmat(data, coord, marge = "emp", iso = iso, method = method2)$param
 
     if (iso){
       cov.start <- cov.start[1]
@@ -183,14 +189,6 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
   if(any(is.na(m))) 
     stop("'start' specifies unknown arguments")
 
-  ##We use the parscale option to help the optimizer
-  ##We do not overwrite user config
-  if (is.null(control$parscale)){
-    parscale <- abs(unlist(start))
-    parscale[parscale == 0] <- 1
-    control$parscale <- parscale
-  }
-  
   formals(nplk) <- c(f[m], f[-m])
   nllh <- function(p, ...) nplk(p, ...)
 
@@ -540,14 +538,6 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   if(any(is.na(m))) 
     stop("'start' specifies unknown arguments")
 
-  ##We use the parscale option to help the optimizer
-  ##We do not overwrite user config
-  if (is.null(control$parscale)){
-    parscale <- abs(unlist(start))
-    parscale[parscale == 0] <- 1
-    control$parscale <- parscale
-  }
-  
   formals(nplk) <- c(f[m], f[-m])
   nllh <- function(p, ...) nplk(p, ...)
 

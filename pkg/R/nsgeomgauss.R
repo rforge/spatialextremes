@@ -146,14 +146,6 @@ nsgeomgaussfull <- function(data, coord, cov.mod, sigma2.form,
   if(any(is.na(m))) 
     stop("'start' specifies unknown arguments")
 
-  ##We use the parscale option to help the optimizer
-  ##We do not overwrite user config
-  if (is.null(control$parscale)){
-    parscale <- abs(unlist(start))
-    parscale[parscale == 0] <- 1
-    control$parscale <- parscale
-  }
-    
   formals(nplk) <- c(f[m], f[-m])
   nllh <- function(p, ...) nplk(p, ...)
 
@@ -458,14 +450,6 @@ nsgeomgaussform <- function(data, coord, cov.mod = cov.mod, sigma2.form, ...,
   if(any(is.na(m))) 
     stop("'start' specifies unknown arguments")
 
-  ##We use the parscale option to help the optimizer
-  ##We do not overwrite user config
-  if (is.null(control$parscale)){
-    parscale <- abs(unlist(start))
-    parscale[parscale == 0] <- 1
-    control$parscale <- parscale
-  }
-    
   formals(nplk) <- c(f[m], f[-m])
   nllh <- function(p, ...) nplk(p, ...)
 

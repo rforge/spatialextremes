@@ -86,9 +86,7 @@ profile.maxstab <- function(fitted, param, range, n = 10,
 
   llik <- rep(NA, n)
   par <- matrix(NA, ncol = n.param - 1, nrow = n)
-  parscale <- abs(unlist(start))
-  parscale[parscale == 0] <- 1
-
+  
   for (i in 1:n){
     fixed.val <- fixed.values[i]
 
@@ -107,8 +105,7 @@ profile.maxstab <- function(fitted, param, range, n = 10,
     else
       reltol <- 1e-6
     
-    opt <- optim(start, optfun, control = list(parscale = parscale, reltol = reltol,
-                                  maxit = 10000))
+    opt <- optim(start, optfun, control = list(reltol = reltol, maxit = 10000))
     llik[i] <- -opt$value
     par[i,] <- opt$par
   }

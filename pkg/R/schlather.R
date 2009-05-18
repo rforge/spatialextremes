@@ -135,14 +135,6 @@ Standard errors are not available unless you fix it.")
   if(any(is.na(m))) 
     stop("'start' specifies unknown arguments")
 
-  ##We use the parscale option to help the optimizer
-  ##We do not overwrite user config
-  if (is.null(control$parscale)){
-    parscale <- abs(unlist(start))
-    parscale[parscale == 0] <- 1
-    control$parscale <- parscale
-  }
-  
   formals(nplk) <- c(f[m], f[-m])
   nllh <- function(p, ...) nplk(p, ...)
 
@@ -422,14 +414,6 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   if(any(is.na(m))) 
     stop("'start' specifies unknown arguments")
 
-  ##We use the parscale option to help the optimizer
-  ##We do not overwrite user config
-  if (is.null(control$parscale)){
-    parscale <- abs(unlist(start))
-    parscale[parscale == 0] <- 1
-    control$parscale <- parscale
-  }
-  
   formals(nplk) <- c(f[m], f[-m])
   nllh <- function(p, ...) nplk(p, ...)
 
