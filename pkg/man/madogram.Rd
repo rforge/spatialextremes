@@ -72,19 +72,16 @@ c("mado", "ext"), xlab, ylab, col = c(1, 2), angles = NULL, marge =
   \code{\link{fmadogram}}, \code{\link{lmadogram}}
 }
 \examples{
-require(RandomFields)
 n.site <- 50
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
 ##Simulate a max-stable process - with unit Frechet margins
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
-                   param=c(0,1,0,1, 2), maxstable="extr",
-                   n = 40)
-ms0 <- t(ms0)
+data <- rmaxstab(40, locations, cov.mod = "whitmat", sill = 1, range = 1,
+smooth = 2)
 
 ##Compute the madogram
-madogram(ms0, locations)
+madogram(data, locations)
 }
 \author{Mathieu Ribatet}
 \keyword{hplot}

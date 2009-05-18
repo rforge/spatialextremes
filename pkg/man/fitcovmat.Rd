@@ -52,27 +52,19 @@ fitcovmat(data, coord, marge = "mle", iso = FALSE, control = list(),
 \seealso{\code{\link{fitcovariance}}, \code{\link{fitmaxstab}},
   \code{\link{fitextcoeff}}}
 \examples{
-require(RandomFields)
 n.site <- 50
 n.obs <- 100
-
 locations <- matrix(runif(2*n.site, 0, 40), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
-sigma <- matrix(c(200, 0, 0, 200),ncol = 2)
-sigma.inv <- solve(sigma)
-sqrtCinv <- t(chol(sigma.inv))
-
-model <- list(list(model = "gauss", var = 1, aniso = sqrtCinv / 2))
-
 ## Simulate a max-stable process - with unit Frechet margins
-ms1 <- MaxStableRF(locations, model = model, maxstable = "Bool", grid = FALSE, n = n.obs)
-ms1 <- t(ms1)
+data <- rmaxstab(50, locations, cov.mod = "gauss", cov11 = 200, cov12 =
+0, cov22 = 200)
 
-fitcovmat(ms1, locations, marge = "emp")
+fitcovmat(data, locations, marge = "emp")
 
 ##Force an isotropic model
-fitcovmat(ms1, locations, marge = "emp", iso = TRUE)
+fitcovmat(data, locations, marge = "emp", iso = TRUE)
 }
 \keyword{htest}
 

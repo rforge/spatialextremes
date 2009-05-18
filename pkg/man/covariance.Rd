@@ -72,13 +72,11 @@ locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
 ##Simulate a max-stable process - with unit Frechet margins
-ms0 <- MaxStableRF(locations[,1], locations[,2], grid=FALSE, model="wh",
-                   param=c(0,1,0,3, .5), maxstable="extr",
-                   n = 30)
-ms0 <- t(ms0)
+data <- rmaxstab(30, locations, cov.mod = "whitmat", sill = 1, range =
+3, smooth = 0.5) 
 
 ##Fit a max-stable model
-fitted <- fitmaxstab(ms0, locations, "whitmat", std.err.type = "none")
+fitted <- fitmaxstab(data, locations, "whitmat", std.err.type = "none")
 covariance(fitted, ylim = c(0, 1))
 covariance(sill = 1, range = 3, smooth = .5, cov.mod = "whitmat", add =
 TRUE, col = 3)

@@ -54,19 +54,16 @@ fitcovariance(data, coord, cov.mod, marge = "mle", control = list(),
 \seealso{\code{\link{fitcovmat}}, \code{\link{fitmaxstab}},
   \code{\link{fitextcoeff}}}
 \examples{
-require(RandomFields)
 n.site <- 50
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
 ##Simulating a max-stable process using RandomFields
 ##This is the Schlather's approach
-ms0 <- MaxStableRF(locations, grid=FALSE, model="wh",
-                   param=c(0,1,0,30, 1), maxstable="extr",
-                   n = 100)
-ms0 <- t(ms0)
+data <- rmaxstab(50, locations, cov.mod = "whitmat", sill = 1, range =
+30, smooth = 1)
 
-fitcovariance(ms0, locations, "whitmat", marge = "emp")
+fitcovariance(data, locations, "whitmat", marge = "emp")
 }
 \keyword{htest}
 

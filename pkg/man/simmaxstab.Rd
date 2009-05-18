@@ -6,20 +6,27 @@
   random field.}
 
 \usage{
-rmaxstab(n, coord, model = "gauss", cov11 = 1, cov12 = 0, cov22 = 1,
-grid = FALSE, ...)
+rmaxstab(n, coord, cov.mod = "gauss", grid = FALSE, ...)
 }
 
 \arguments{
   \item{n}{Integer. The number of observations.}
-  \item{coord}{A matrix that gives the coordinates of each
-  location. Each row corresponds to one location.}
-  \item{model}{A character string that gives the max-stable
-  model. Currenlty only \code{gauss}, i.e. the Smith model, is
-  available.}
-  \item{cov11, cov12, cov22}{The parameters for the Smith model.}
-  \item{grid}{Logical. Does the coordinates represents grid points?}
-  \item{\dots}{Unused.}
+  \item{coord}{A vector or matrix that gives the coordinates of each
+    location. Each row corresponds to one location - if any.}
+  \item{cov.mod}{A character string that gives the max-stable
+    model. This must be one of "gauss" for the Smith model or "whitmat",
+  "cauchy", "powexp" and "bessel" for the Schlather model with the given
+  correlation family.}
+  \item{grid}{Logical. Does the coordinates represent grid points?}
+  \item{\dots}{The parameters of the max-stable model. See details.}
+}
+\details{
+  Users must supply the parameters for the max-stable model. For the
+  Schlather model, users should supply the "sill", "range" and "smooth"
+  parameter values. For the Smith model, if \code{coord} is univariate
+  you must specify \code{var}, otherwise users should supply the
+  covariance parameters i.e. parameters with names such as \code{cov11},
+  \code{cov12}, \ldots
 }
 \value{
   A matrix containing observations from the required max-stable
@@ -36,11 +43,17 @@ grid = FALSE, ...)
 \author{Mathieu Ribatet}
 \seealso{\code{\fitmaxstab}}
 \examples{
+## 1. Smith's model
 set.seed(8)
 x <- seq(0, 10, length = 200)
 coord <- cbind(x, x)
-data <- rmaxstab(1, coord, cov11 = 9/8, cov22 = 9/8, grid = TRUE)
+data <- rmaxstab(1, coord, cov11 = 9/8, cov12 = 0, cov22 = 9/8, grid = TRUE)
 ##We change the margins for visibility
-filled.contour(x, x, data[,,1]^0.25)
+filled.contour(x, x, sqrt(data[,,1]))
+
+## 2. Schlather's model
+coord <- matrix(runif(100, 0, 15), ncol = 2)
+data <- rmaxstab(100, coord, cov.mod = "whitmat", sill = 1, range = 10,
+smooth = 1)
 }
 \keyword{distribution}
