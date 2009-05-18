@@ -16,14 +16,15 @@ double whittleMatern(double *dist, int nPairs, double sill, double range,
     return (1 - smooth + EPS) * (1 - smooth + EPS) * MINF;
 
   else if (smooth > 150)
-    //Required because it could lead to infinite rho values
-    return (smooth - 150) * (smooth - 150) * MINF;
+    /* Required because it could lead to infinite rho values - gamma
+    function */
+    return (smooth - 149) * (smooth - 149) * MINF;
 
-  if (range <= 0.0)
-    return (1 - range) * (1 - range) * MINF;
+  if (range < 1e-2)
+    return (1.01 - range) * (1.01 - range) * MINF;
 
-  if (sill <= 0.0)
-    return (1 - sill) * (1 - sill) * MINF;
+  if (sill <= 1e-2)
+    return (1.01 - sill) * (1.01 - sill) * MINF;
   
   else if (sill > 1)
     return sill *sill * MINF;
@@ -49,7 +50,7 @@ double cauchy(double *dist, int nPairs, double sill, double range,
   //Some preliminary steps: Valid points?
   if (smooth < 0)
     return (1 - smooth) * (1 - smooth) * MINF;
-
+  
   if (range <= 0.0)
     return (1 - range) * (1 - range)* MINF;
 
@@ -78,7 +79,7 @@ double powerExp(double *dist, int nPairs, double sill, double range,
   double irange = 1 / range;
     
   //Some preliminary steps: Valid points?
-  if ((smooth < 0) || (smooth >= 2.0))
+  if ((smooth < 0) || (smooth > 2.0))
     return (1 - smooth) * (1 - smooth) * MINF;
 
   if (range <= 0.0)
@@ -107,8 +108,12 @@ double bessel(double *dist, int nPairs, int dim, double sill,
     cst2;
 
   //Some preliminary steps: Valid points?
-  if (smooth < ((dim - 2) / 2))
-    return (1 + (dim - 2) / 2 - smooth) * (1 + (dim - 2) / 2 - smooth) * MINF;
+  if (smooth < (0.5 * (dim - 2)))
+    return (1 + 0.5 * (dim - 2) - smooth) * (1 + 0.5 * (dim - 2) - smooth) * MINF;
+
+  else if (smooth > 150)
+    //Require as bessel_j will be mostly infinite otherwise
+    return (smooth - 149) * (smooth - 149) * MINF;
 
   if (range <= 0)
     return (1 - range) * (1 - range) * MINF;
