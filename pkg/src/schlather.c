@@ -65,9 +65,6 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite, int *nOb
     *dns = lplikschlather(data, rho, jac, *nObs, *nSite);
   }  
 
-  if (!R_FINITE(*dns))
-    *dns = MINF;
-  
   return;
 
 }
@@ -144,9 +141,6 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   if (*shapepenalty > 0)
     *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty,
 			 *nshapecoeff, *npparshape);
-
-  if (!R_FINITE(*dns))
-    *dns = MINF;
 
   return;
   
