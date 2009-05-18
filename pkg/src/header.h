@@ -1,6 +1,7 @@
 #include <R.h>
 #include <Rmath.h>
 #include <Rinternals.h>
+#include <R_ext/Lapack.h>
 
 #define MINF -1.0e15
 #define EPS DBL_EPSILON
@@ -261,8 +262,48 @@ void lmadogram(double *data, int *nObs, int *nSite, double *lambda,
 	       int *nLambda, double *lmado);
 
 ///////////////////////////////////
-//  From simmaxstab.c
+//  From simsmith.c
 //
-void rsmith(double *coord, double *center, double *edge, int *nObs,
-	    int *nSites, double *cov11, double *cov12, double *cov22,
+void rsmith1d(double *coord, double *center, double *edge, int *nObs,
+	      int *nSites, double *var, double *ans);
+void rsmith2d(double *coord, double *center, double *edge, int *nObs,
+	      int *nSites, int *grid, double *cov11, double *cov12,
+	      double *cov22, double *ans);
+
+///////////////////////////////////
+//  From direct.c
+//
+void buildcovmat(int *nSite, int *grid, int *covmod, double *coord, int *dim,
+		 double *nugget, double *sill, double *range, double *smooth,
+		 double *covMat);
+void direct(int *n, int *nSite, int *grid, int *covmod, double *coord, int *dim,
+	    double *nugget, double *sill, double *range, double *smooth,
 	    double *ans);
+
+///////////////////////////////////
+//  From randomlines.c
+//
+void vandercorput(int *n, double *coord);
+void rotation(double *coord, int *n, double *u, double *v, double *w,
+	      double *angle);
+
+///////////////////////////////////
+//  From turningbands.c
+//
+void tbm(int *nobs, int *nsite, int *dim, int *covmod, int *grid, 
+	 double *coord, double *nugget, double *sill, double *range,
+	 double *smooth, int *nlines, double *ans);
+void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
+	     int *grid, double *coord, double *nugget, double *sill,
+	     double *range, double *smooth, int *nlines, double *lines,
+	     double *ans);
+
+///////////////////////////////////
+//  From simschlather.c
+//
+void rschlathertbm(double *coord, int *nObs, int *nSites, int *dim,
+		   int *covmod, int *grid, double *sill, double *range,
+		   double *smooth, double *ans);
+void rschlatherdirect(double *coord, int *nObs, int *nSites, int *dim,
+		      int *covmod, int *grid, double *sill, double *range,
+		      double *smooth, double *ans);
