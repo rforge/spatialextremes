@@ -491,21 +491,19 @@ void smithgrad3d(double *data, double *distVec, int *nSite,
 				      frech[k + j * *nObs] * frech[k + j * *nObs]);
 	 
 	  for (l=0;l<*nloccoeff;l++){
-	    dE = scaledsgnmat[i + *nSite * l] * (locs[i] - scales[i] - data[k + i * *nObs]) /
-	      scales[i] / scales[i] / R_pow(frech[k + i * *nObs], shapes[i]) +
-	      scaledsgnmat[j + *nSite * l] * (locs[j] - scales[j] - data[k + j * *nObs]) /
-	      scales[j] / scales[j] / R_pow(frech[k + j * *nObs], shapes[j]);
+	    dE = (shapes[i] - 1) * locdsgnmat[i + *nSite * l] /
+	      scales[i] / R_pow(frech[k + i * *nObs], shapes[i]) +
+	      (shapes[j] - 1) * locdsgnmat[j + *nSite * l] /
+	      scales[j] / R_pow(frech[k + j * *nObs], shapes[j]);
 
-	    dz1scale = - R_pow(frech[k + i * *nObs], 1 - shapes[i]) *
-	      (data[k + i * *nObs] - locs[i]) / scales[i] / scales[i] *
-	      scaledsgnmat[i + *nSite * l];
-	    dz2scale = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) *
-	      (data[k + j * *nObs] - locs[j]) / scales[j] / scales[j] *
-	      scaledsgnmat[j + *nSite * l];
+	    dz1loc = - R_pow(frech[k + i * *nObs], 1 - shapes[i]) /
+	      scales[i] * locdsgnmat[i + *nSite * l];
+	    dz2loc = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) /
+	      scales[j] * locdsgnmat[j + *nSite * l];	    
 
-	    grad[(6 + *nloccoeff + l) * *nObs + k] += (dAz1 * dz1scale + dAz2 * dz2scale) +
-	      ((dBz1 * dz1scale + dBz2 * dz2scale) * C + B * 
-	       (dCz1 * dz1scale + dCz2 * dz2scale) + (dDz1 * dz1scale + dDz2 * dz2scale)) /
+	    grad[(6 + *nloccoeff + l) * *nObs + k] += (dAz1 * dz1loc + dAz2 * dz2loc) +
+	      ((dBz1 * dz1loc + dBz2 * dz2loc) * C + B * 
+	       (dCz1 * dz1loc + dCz2 * dz2loc) + (dDz1 * dz1loc + dDz2 * dz2loc)) /
 	      (B * C + D) + dE;
 	  }
 

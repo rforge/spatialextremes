@@ -5,7 +5,7 @@ void buildcovmat(int *nSite, int *grid, int *covmod, double *coord, int *dim,
 		 double *smooth, double *covMat){
 
   int i, j, currentPair, nPairs, *effnSite, zero = 0;
-  double *dist, *rho, flag, *coordGrid;
+  double *dist, *rho, flag = 0, *coordGrid;
 
   effnSite = (int *)R_alloc(1, sizeof(int));
 
@@ -80,7 +80,7 @@ void direct(int *n, int *nSite, int *grid, int *covmod, double *coord, int *dim,
 	    double *nugget, double *sill, double *range, double *smooth,
 	    double *ans){
 
-  int neffSite, i, j, k, l, lwork, info = 0, vec = 1;
+  int neffSite, i, j, k, lwork, info = 0;
   double *covmat, one = 1, zero = 0, *work, *xvals,
     tmp, *d, *u, *v, sum, dummy;
 

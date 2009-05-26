@@ -636,7 +636,7 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
 
   else{
     //coord doesn't define a grid
-    int k, l, m;
+    int k;
     double freq, eucProd, u1, u2, G, phase;
     switch (*dim){
     case 2:

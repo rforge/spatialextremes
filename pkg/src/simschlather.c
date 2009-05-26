@@ -181,7 +181,7 @@ void rschlatherdirect(double *coord, int *nObs, int *nSite, int *dim,
        ans: the generated random field */
 
   const double uBound = 3.5;
-  int i, j, k, l, lwork, nKO, info = 0, neffSite;
+  int i, j, k, lwork, nKO, info = 0, neffSite;
   double poisson, ipoisson, thresh, *gp, nugget = 1 - *sill,
     *covmat, one = 1, zero = 0, *work, *xvals, tmp, *d, *u,
     *v, sum, dummy;

@@ -2,8 +2,8 @@
 
 void vandercorput(int *n, double *coord){
   //This function computes the Van der Corput sequence in R^3
-  int i, j, k, r;
-  double base, u, v, w, norm, angle;
+  int i, k, r;
+  double base, u, v, w;
   
   for (i=0;i<*n;i++){
     //Binary decomposition
