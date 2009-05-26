@@ -13,7 +13,7 @@ void rsmith1d(double *coord, double *center, double *edge, int *nObs,
        ans: the generated random field */
 
   const double uBound = M_1_SQRT_2PI / sqrt(*var);
-  int i, j, k, nKO;
+  int i, j, nKO;
   double poisson, ipoisson, u, y, thresh, lebesgue;
 
   if (*var <= 0)
