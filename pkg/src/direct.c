@@ -4,38 +4,32 @@ void buildcovmat(int *nSite, int *grid, int *covmod, double *coord, int *dim,
 		 double *nugget, double *sill, double *range,
 		 double *smooth, double *covMat){
 
-  int i, j, currentPair, nPairs, *effnSite, zero = 0;
-  double *dist, *rho, flag = 0, *coordGrid;
+  int i, j, currentPair, nPairs, effnSite, zero = 0;
+  double *dist, *rho, flag = 0;
 
-  effnSite = (int *)R_alloc(1, sizeof(int));
+  if (*grid)
+    effnSite = R_pow_di(*nSite, *dim);
+    
+  else
+    effnSite = *nSite;
 
-  if (*grid){
-    *effnSite = *nSite * *nSite;
-    coordGrid = (double *)R_alloc(*effnSite * *dim, sizeof(double));
-    nPairs = *effnSite * (*effnSite - 1) / 2;
-  }
-
-  else{
-    *effnSite = *nSite;
-    nPairs = *nSite * (*nSite - 1) / 2;
-  }
+  nPairs = effnSite * (effnSite - 1) / 2;
 
   dist = (double *)R_alloc(nPairs, sizeof(double));
   rho = (double *)R_alloc(nPairs, sizeof(double));
 
-  //Initialize dist
-  for (i=nPairs;i--;)
-    dist[i] = 0;
-
   if (*grid){
     //Coord specify a grid
+    double *coordGrid;
+    coordGrid = (double *)R_alloc(effnSite * *dim, sizeof(double));
+
     for (i=*nSite;i--;)
       for (j=*nSite;j--;){
 	coordGrid[j + i * *nSite] = coord[i];
 	coordGrid[*nSite * (*nSite + i) + j] = coord[j];
       }
 
-    distance(coordGrid, dim, effnSite, &zero, dist);
+    distance(coordGrid, dim, &effnSite, &zero, dist);
   }
 
   else
@@ -61,17 +55,17 @@ void buildcovmat(int *nSite, int *grid, int *covmod, double *coord, int *dim,
     error("The covariance parameters seem to be ill-defined. Please check\n");
   
   currentPair = -1;
-  for (i=0;i<(*effnSite-1);i++){
-    for (j=i+1;j<*effnSite;j++){
+  for (i=0;i<(effnSite-1);i++){
+    for (j=i+1;j<effnSite;j++){
       currentPair++;
-      covMat[*effnSite * i + j] = rho[currentPair];
-      covMat[*effnSite * j + i] = rho[currentPair];
+      covMat[effnSite * i + j] = rho[currentPair];
+      covMat[effnSite * j + i] = rho[currentPair];
     }
   }
   
   //Fill the diagonal of sill + nugget
-  for (i=*effnSite;i--;)
-    covMat[i * (*effnSite + 1)] = *sill + *nugget;
+  for (i=effnSite;i--;)
+    covMat[i * (effnSite + 1)] = *sill + *nugget;
 
   return;
 }
@@ -85,7 +79,7 @@ void direct(int *n, int *nSite, int *grid, int *covmod, double *coord, int *dim,
     tmp, *d, *u, *v, sum, dummy;
 
   if (*grid)
-    neffSite = R_pow(*nSite, *dim);
+    neffSite = R_pow_di(*nSite, *dim);
 
   else
     neffSite = *nSite;
