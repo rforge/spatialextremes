@@ -41,7 +41,7 @@ rmaxstab(n, coord, cov.mod = "gauss", grid = FALSE, ...)
   extremes. Unpublished manuscript.
 }
 \author{Mathieu Ribatet}
-\seealso{\code{\fitmaxstab}}
+\seealso{\code{fitmaxstab}}
 \examples{
 ## 1. Smith's model
 set.seed(8)
