@@ -2,7 +2,8 @@
 
 void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 	      int *covmod, int *grid, double *sigma2, double *sill,
-	      double *range, double *smooth, double *ans){
+	      double *range, double *smooth, double *uBound,
+	      int *nlines, double *ans){
   /* This function generates random fields from the geometric model
 
      coord: the coordinates of the locations
@@ -15,9 +16,11 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
       sill: the sill parameter - (1 - sill) is a nugget effect
      range: the range parameter
     smooth: the smooth parameter
+    uBound: the uniform upper bound for the stoch. proc.
+    nlines: the number of lines used in the TBM algo
        ans: the generated random field */
 
-  int i, nlines = 500;
+  int i;
   double *lines;
 
   //rescale the coordinates
@@ -26,14 +29,14 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
     coord[i] = coord[i] * irange;
   }
 
-  lines = (double *)R_alloc(3 * nlines, sizeof(double));
+  lines = (double *)R_alloc(3 * *nlines, sizeof(double));
   
   if ((*covmod == 3) && (*smooth == 2))
     //This is the gaussian case
     *covmod = 5;
 
   //Generate lines
-  vandercorput(&nlines, lines);
+  vandercorput(nlines, lines);
   
   GetRNGstate();
   if (*grid){
@@ -47,7 +50,7 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 	/* The stopping rule is reached when nKO = 0 i.e. when each site
 	   satisfies the condition in Eq. (8) of Schlather (2002) */
 	int j;
-	double sigma = sqrt(*sigma2), uBound = exp(3 * sigma - 0.5 * *sigma2),
+	double sigma = sqrt(*sigma2),// uBound = exp(3.5 * sigma - 0.5 * *sigma2),
 	  nugget = 1 - *sill, ipoisson, u, v, w, angle, norm, thresh,
 	  *gp;
 
@@ -65,12 +68,12 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 	v /= norm;
 	w /= norm;
 	
-	rotation(lines, &nlines, &u, &v, &w, &angle);
+	rotation(lines, nlines, &u, &v, &w, &angle);
 	/* -------------- end of rotation ---------------*/
 	
 	poisson += exp_rand();
 	ipoisson = 1 / poisson;
-	thresh = uBound * ipoisson;
+	thresh = *uBound * ipoisson;
 	
 	/* We simulate one realisation of a gaussian random field with
 	   the required covariance function */
@@ -79,7 +82,7 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 	  gp[j] = 0;
 
 	tbmcore(nSite, &neffSite, dim, covmod, grid, coord, &nugget,
-		sill, range, smooth, &nlines, lines, gp);
+		sill, range, smooth, nlines, lines, gp);
 	
 	nKO = neffSite;
 	for (j=neffSite;j--;){
@@ -93,11 +96,6 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 	}
       }
     }
-
-    //Lastly we multiply by 1 / E[Y(o)]
-    /* const double imean = 1 / exp(0.5 * *sigma2 - sqrt(*sigma2));
-    for (i=(neffSite * *nObs);i--;)
-    ans[i] *= imean; */
   }
 
   else{
@@ -111,7 +109,7 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 	/* The stopping rule is reached when nKO = 0 i.e. when each site
 	   satisfies the condition in Eq. (8) of Schlather (2002) */
 	int j;
-	double sigma = sqrt(*sigma2), uBound = exp(3 * sigma - 0.5 * *sigma2),
+	double sigma = sqrt(*sigma2),// uBound = exp(3.5 * sigma - 0.5 * *sigma2),
 	  nugget = 1 - *sill, ipoisson, u, v, w, angle, norm, thresh, *gp;
 
 	gp = (double *)R_alloc(neffSite, sizeof(double));
@@ -128,12 +126,12 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 	v /= norm;
 	w /= norm;
 	
-	rotation(lines, &nlines, &u, &v, &w, &angle);
+	rotation(lines, nlines, &u, &v, &w, &angle);
 	/* -------------- end of rotation ---------------*/
 
 	poisson += exp_rand();
 	ipoisson = 1 / poisson;
-	thresh = uBound * ipoisson;
+	thresh = *uBound * ipoisson;
 	
 	/* We simulate one realisation of a gaussian random field with
 	   the required covariance function */
@@ -141,7 +139,7 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 	  gp[j] = 0;
 	
 	tbmcore(nSite, &neffSite, dim, covmod, grid, coord, &nugget,
-		sill, range, smooth, &nlines, lines, gp);
+		sill, range, smooth, nlines, lines, gp);
 	
 	nKO = neffSite;
 	for (j=*nSite;j--;){
@@ -154,11 +152,6 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 	}
       }
     }
-
-    //Lastly we multiply by 1 / E[Y(o)]
-    /* const double imean = 1 / exp(0.5 * *sigma2 - sqrt(*sigma2));
-    for (i=(neffSite * *nObs);i--;)      
-    ans[i] *= imean;*/
   }
 
   PutRNGstate();
@@ -168,7 +161,8 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 
 void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
 		 int *covmod, int *grid, double *sigma2, double *sill,
-		 double *range, double *smooth, double *ans){
+		 double *range, double *smooth, double *uBound,
+		 double *ans){
   /* This function generates random fields for the geometric model
 
      coord: the coordinates of the locations
@@ -183,7 +177,7 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
     smooth: the smooth parameter
        ans: the generated random field */
 
-  const double sigma = sqrt(*sigma2), uBound = exp(3.5 * sigma - 0.5 * *sigma2);
+  const double sigma = sqrt(*sigma2);//, uBound = exp(3.5 * sigma - 0.5 * *sigma2);
   int i, j, k, lwork, nKO, info = 0, neffSite;
   double poisson, ipoisson, thresh, *gp, nugget = 1 - *sill,
     *covmat, one = 1, zero = 0, *work, *xvals, tmp, *d, *u,
@@ -258,7 +252,7 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
 	   satisfies the condition in Eq. (8) of Schlather (2002) */
 	poisson += exp_rand();
 	ipoisson = 1 / poisson;
-	thresh = uBound * ipoisson;
+	thresh = *uBound * ipoisson;
 	
 	/* We simulate one realisation of a gaussian random field with
 	   the required covariance function */
@@ -298,7 +292,7 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
 	   satisfies the condition in Eq. (8) of Schlather (2002) */
 	poisson += exp_rand();
 	ipoisson = 1 / poisson;
-	thresh = uBound * ipoisson;
+	thresh = *uBound * ipoisson;
 	
 	/* We simulate one realisation of a gaussian random field with
 	   the required covariance function */
@@ -327,10 +321,6 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
   }
 
   PutRNGstate();
-  //Lastly we multiply by 1 / E[Y(o)]
-  /* const double imean = 1 / exp(0.5 * *sigma2 - sigma);
-  for (i=(neffSite * *nObs);i--;)
-  ans[i] *= imean; */
-  
+
   return;
 }

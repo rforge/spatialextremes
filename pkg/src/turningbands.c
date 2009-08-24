@@ -89,7 +89,7 @@ void tbm(int *nobs, int *nsite, int *dim, int *covmod, int *grid,
 	case 3:
 	  //Powered exponential
 	  for (j=*nlines;j--;){
-	    u1 = -log(unif_rand());
+	    u1 = rexp(1);
 	    u2 = runif(-M_PI_2, M_PI_2);
 	    G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -1 / *smooth) *
 		     R_pow(cos(u2 - 0.5 * *smooth * (u2 - M_PI_2)) / u1, 
@@ -182,7 +182,7 @@ void tbm(int *nobs, int *nsite, int *dim, int *covmod, int *grid,
 	case 3:
 	  //Powered exponential
 	  for (j=*nlines;j--;){
-	    u1 = -log(unif_rand());
+	    u1 = rexp(1);
 	    u2 = runif(-M_PI_2, M_PI_2);
 	    G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -1 / *smooth) *
 		     R_pow(cos(u2 - 0.5 * *smooth * (u2 - M_PI_2)) / u1, 
@@ -290,7 +290,7 @@ void tbm(int *nobs, int *nsite, int *dim, int *covmod, int *grid,
 	case 3:
 	  //Powered exponential
 	  for (j=*nlines;j--;){
-	    u1 = -log(unif_rand());
+	    u1 = rexp(1);
 	    u2 = runif(-M_PI_2, M_PI_2);
 	    G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -1 / *smooth) *
 		     R_pow(cos(u2 - 0.5 * *smooth * (u2 - M_PI_2)) / u1, 
@@ -363,7 +363,7 @@ void tbm(int *nobs, int *nsite, int *dim, int *covmod, int *grid,
 	case 3:
 	  //Powered exponential
 	  for (j=*nlines;j--;){
-	    u1 = -log(unif_rand());
+	    u1 = rexp(1);
 	    u2 = runif(-M_PI_2, M_PI_2);
 	    G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -1 / *smooth) *
 		     R_pow(cos(u2 - 0.5 * *smooth * (u2 - M_PI_2)) / u1, 
@@ -435,6 +435,8 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
     int k, l, m;
     double freq, eucProd, u1, u2, G, phase;
     double cl, lj, cl1, cl2;
+    double halfSmooth = 0.5 * *smooth, ismooth = 1 / *smooth;
+    double u3;
 
     switch (*dim){
     case 2:
@@ -476,11 +478,12 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
       case 3:
 	//Powered exponential
 	for (j=*nlines;j--;){
-	  u1 = -log(unif_rand());
+	  u1 = rexp(1);
 	  u2 = runif(-M_PI_2, M_PI_2);
-	  G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -1 / *smooth) *
-		   R_pow(cos(u2 - 0.5 * *smooth * (u2 - M_PI_2)) / u1, 
-			 (2 - *smooth) / *smooth));
+	  u3 = halfSmooth * (u2 - M_PI_2);
+
+	  G = fabs(sin(u3) * R_pow(cos(u2), -ismooth) *
+		   R_pow(cos(u2 - u3) / u1, (2 - *smooth) * ismooth));
 	  
 	  freq = sqrt(rchisq(3) * M_SQRT_3 / G);
 	  phase = M_2PI * unif_rand();
@@ -574,7 +577,7 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
       case 3:
 	//Powered exponential
 	for (j=*nlines;j--;){
-	  u1 = -log(unif_rand());
+	  u1 = rexp(1);
 	  u2 = runif(-M_PI_2, M_PI_2);
 	  G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -1 / *smooth) *
 		   R_pow(cos(u2 - 0.5 * *smooth * (u2 - M_PI_2)) / u1, 
@@ -668,7 +671,7 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
        case 3:
 	 //Powered exponential
 	 for (j=*nlines;j--;){
-	   u1 = -log(unif_rand());
+	   u1 = rexp(1);
 	   u2 = runif(-M_PI_2, M_PI_2);
 	   G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -1 / *smooth) *
 		    R_pow(cos(u2 - 0.5 * *smooth * (u2 - M_PI_2)) / u1, 
@@ -740,7 +743,7 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
       case 3:
 	//Powered exponential
 	for (j=*nlines;j--;){
-	  u1 = -log(unif_rand());
+	  u1 = rexp(1);
 	  u2 = runif(-M_PI_2, M_PI_2);
 	  G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -1 / *smooth) *
 		   R_pow(cos(u2 - 0.5 * *smooth * (u2 - M_PI_2)) / u1, 
