@@ -7,7 +7,7 @@
 
 \usage{
 rmaxstab(n, coord, cov.mod = "gauss", grid = FALSE, control =
-list(), ...)
+list(), \dots)
 }
 
 \arguments{
