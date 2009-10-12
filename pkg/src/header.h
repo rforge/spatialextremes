@@ -293,10 +293,6 @@ void rotation(double *coord, int *n, double *u, double *v, double *w,
 void tbm(int *nobs, int *nsite, int *dim, int *covmod, int *grid, 
 	 double *coord, double *nugget, double *sill, double *range,
 	 double *smooth, int *nlines, double *ans);
-void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
-	     int *grid, double *coord, double *nugget, double *sill,
-	     double *range, double *smooth, int *nlines, double *lines,
-	     double *ans);
 
 ///////////////////////////////////
 //  From simschlather.c
@@ -308,6 +304,10 @@ void rschlathertbm(double *coord, int *nObs, int *nSites, int *dim,
 void rschlatherdirect(double *coord, int *nObs, int *nSites, int *dim,
 		      int *covmod, int *grid, double *sill, double *range,
 		      double *smooth, double *uBound, double *ans);
+void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
+	     int *grid, double *coord, double *nugget, double *sill,
+	     double *range, double *smooth, int *nlines, double *lines,
+	     double *ans);
 
 ///////////////////////////////////
 //  From simgeometric.c
