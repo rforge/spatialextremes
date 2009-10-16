@@ -50,7 +50,7 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
 	   satisfies the condition in Eq. (8) of Schlather (2002) */
 	int j;
 	double nugget = 1 - *sill, ipoisson, u, v, w,
-	  angle, norm, thresh, *gp;
+	  angle, inorm, thresh, *gp;
 
 	gp = (double *)R_alloc(neffSite, sizeof(double));
 
@@ -60,11 +60,11 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
 	w = unif_rand() - 0.5;
 	angle = runif(0, M_2PI);
 	
-	norm = sqrt(u * u + v * v + w * w);
+	inorm = 1 / sqrt(u * u + v * v + w * w);
 	
-	u /= norm;
-	v /= norm;
-	w /= norm;
+	u *= inorm;
+	v *= inorm;
+	w *= inorm;
 	
 	rotation(lines, nlines, &u, &v, &w, &angle);
 	/* -------------- end of rotation ---------------*/
@@ -113,7 +113,7 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
 	   satisfies the condition in Eq. (8) of Schlather (2002) */
 	int j;
 	double nugget = 1 - *sill, ipoisson, u, v, w,
-	  angle, norm, thresh, *gp;
+	  angle, inorm, thresh, *gp;
 
 	gp = (double *)R_alloc(neffSite, sizeof(double));
 
@@ -123,11 +123,11 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
 	w = unif_rand() - 0.5;
 	angle = runif(0, M_2PI);
 	
-	norm = sqrt(u * u + v * v + w * w);
+	inorm = 1 / sqrt(u * u + v * v + w * w);
 	
-	u /= norm;
-	v /= norm;
-	w /= norm;
+	u *= inorm;
+	v *= inorm;
+	w *= inorm;
 	
 	rotation(lines, nlines, &u, &v, &w, &angle);
 	/* -------------- end of rotation ---------------*/
@@ -328,6 +328,388 @@ void rschlatherdirect(double *coord, int *nObs, int *nSite, int *dim,
   for (i=(neffSite * *nObs);i--;){
     const double imean = M_SQRT2 * M_SQRT_PI;
     ans[i] *= imean;
+  }
+  
+  return;
+}
+
+void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
+	     int *grid, double *coord, double *nugget, double *sill,
+	     double *range, double *smooth, int *nlines, double *lines,
+	     double *ans){
+  /* This function is the same as the tbm function except that it
+     generates only one realisation of the random field. This is only
+     useful for the call by rschlathertbm - for CPU reasons. */
+
+  int j;
+  
+  if (*grid){
+    //coord defines a grid
+    int k, l, m;
+    double freq, eucProd, u1, u2, G, phase;
+    double cl, lj, cl1, cl2;
+    double halfSmooth = 0.5 * *smooth, ismooth = 1 / *smooth;
+    double u3;
+
+    switch (*dim){
+    case 2:
+      switch (*covmod){
+      case 1:
+	//Whittle-Matern
+	for (j=*nlines;j--;){
+	  freq = sqrt(0.5 * rchisq(3) / rgamma(*smooth, 1));
+	  phase = M_2PI * unif_rand();
+	  
+	  lj = lines[2 * *nlines + j];
+	  
+	  for (k=*nsite;k--;){
+	    cl = coord[k] * lines[*nlines + j];
+	    for (l=*nsite;l--;){
+	      eucProd =  cl + coord[*nsite + l] * lj;
+	      ans[k  + l * *nsite] += cos(freq * eucProd + phase);
+	    }
+	  }
+	}
+	break;
+      case 2:
+	//Cauchy
+	for (j=*nlines;j--;){
+	  freq = sqrt(2 * rchisq(3) * rgamma(*smooth, 1));
+	  phase = M_2PI * unif_rand();
+	  
+	  lj = lines[2 * *nlines + j];
+	  
+	  for (k=*nsite;k--;){
+	    cl = coord[k] * lines[*nlines + j];
+	    for (l=*nsite;l--;){
+	      eucProd = cl + coord[*nsite + l] * lj;
+	      ans[k  + l * *nsite] += cos(freq * eucProd + phase);
+	    }
+	  }
+	}
+	break;
+      case 3:
+	//Powered exponential
+	for (j=*nlines;j--;){
+	  u1 = rexp(1);
+	  u2 = runif(-M_PI_2, M_PI_2);
+	  u3 = halfSmooth * (u2 - M_PI_2);
+
+	  G = fabs(sin(u3) * R_pow(cos(u2), -ismooth) *
+		   R_pow(cos(u2 - u3) / u1, (2 - *smooth) * ismooth));
+	  
+	  freq = sqrt(rchisq(3) * M_SQRT_3 / G);
+	  phase = M_2PI * unif_rand();
+	  
+	  lj = lines[2 * *nlines + j];
+	  
+	  for (k=*nsite;k--;){
+	    cl = coord[k] * lines[*nlines + j];
+	    for (l=*nsite;l--;){
+	      eucProd = cl + coord[*nsite + l] * lj;
+	      ans[k  + l * *nsite] += cos(freq * eucProd + phase);
+	    }
+	  }
+	}
+	break;
+      case 4:
+	//Bessel
+	for (j=*nlines;j--;){
+	  freq = sqrt(beta(1.5, *smooth - 0.5) * *range);
+	  phase = M_2PI * unif_rand();
+	  
+	  lj = lines[2 * *nlines + j];
+	  
+	  for (k=*nsite;k--;){
+	    cl = coord[k] * lines[*nlines + j];
+	    for (l=*nsite;l--;){
+	      eucProd = cl + coord[*nsite + l] * lj;
+	      ans[k  + l * *nsite] += cos(freq * eucProd + phase);
+	    }
+	  }
+	}
+	break;
+      case 5:
+	//Gaussian
+	for (j=*nlines;j--;){
+	  freq = sqrt(2 * rchisq(3));
+	  phase = M_2PI * unif_rand();
+	  
+	  lj = lines[2 * *nlines + j];
+	  
+	  for (k=*nsite;k--;){
+	    cl = coord[k] * lines[*nlines + j];
+	    for (l=*nsite;l--;){
+	      eucProd = cl + coord[*nsite + l] * lj;
+	      ans[k  + l * *nsite] += cos(freq * eucProd + phase);
+	    }
+	  }
+	}
+	break;
+      }
+      break;
+      
+    case 3:
+      switch (*covmod){
+      case 1:
+	//Whittle-Matern
+	for (j=*nlines;j--;){
+	  freq = sqrt(0.5 * rchisq(3) / rgamma(*smooth, 1));
+	  phase = M_2PI * unif_rand();
+	  
+	  for (k=*nsite;k--;){
+	    cl1 = coord[k] * lines[j];
+	    for (l=*nsite;l--;){
+	      cl2 = coord[*nsite + l] * lines[*nlines + j];
+	      for (m=*nsite;m--;){
+		eucProd = cl1 + cl2 + coord[2 * *nsite + m] * lines[2 * *nlines + j];
+		ans[k + *nsite * ( l + m * *nsite)] += cos(freq * eucProd + phase);
+	      }
+	    }
+	  }
+	}
+	break;
+      case 2:
+	//Cauchy
+	for (j=*nlines;j--;){
+	  freq = sqrt(2 * rchisq(3) * rgamma(*smooth ,1));
+	  phase = M_2PI * unif_rand();
+	  
+	  for (k=*nsite;k--;){
+	    cl1 = coord[k] * lines[j];
+	    for (l=*nsite;l--;){
+	      cl2 = coord[*nsite + l] * lines[*nlines + j];
+	      for (m=*nsite;m--;){
+		eucProd = cl1 + cl2 + coord[2 * *nsite + m] * lines[2 * *nlines + j];
+		ans[k + *nsite * ( l + m * *nsite)] += cos(freq * eucProd + phase);
+	      }
+	    }
+	  }
+	}
+	break;
+      case 3:
+	//Powered exponential
+	for (j=*nlines;j--;){
+	  u1 = rexp(1);
+	  u2 = runif(-M_PI_2, M_PI_2);
+	  G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -1 / *smooth) *
+		   R_pow(cos(u2 - 0.5 * *smooth * (u2 - M_PI_2)) / u1, 
+			 (2 - *smooth) / *smooth));
+	
+	  freq = sqrt(rchisq(3) * M_SQRT_3 / G);
+	  phase = M_2PI * unif_rand();
+	
+	  for (k=*nsite;k--;){
+	    cl1 = coord[k] * lines[j];
+	    for (l=*nsite;l--;){
+	      cl2 = coord[*nsite + l] * lines[*nlines + j];
+	      for (m=*nsite;m--;){
+		eucProd = cl1 + cl2 + coord[2 * *nsite + m] * lines[2 * *nlines + j];
+		ans[k + *nsite * ( l + m * *nsite)] += cos(freq * eucProd + phase);
+	      }
+	    }
+	  }
+	}
+	break;
+      case 4:
+	//Bessel
+	for (j=*nlines;j--;){
+	  freq = sqrt(beta(1.5, *smooth - 0.5) * *range);
+	  phase = M_2PI * unif_rand();
+	
+	  for (k=*nsite;k--;){
+	    cl1 = coord[k] * lines[j];
+	    for (l=*nsite;l--;){
+	      cl2 = coord[*nsite + l] * lines[*nlines + j];
+	      for (m=*nsite;m--;){
+		eucProd = cl1 + cl2 + coord[2 * *nsite + m] * lines[2 * *nlines + j];
+		ans[k + *nsite * ( l + m * *nsite)] += cos(freq * eucProd + phase);
+	      }
+	    }
+	  }
+	}
+	break;
+      case 5:
+	//Gaussian
+	for (j=*nlines;j--;){
+	  freq = sqrt(2 * rchisq(3));
+	  phase = M_2PI * unif_rand();
+	
+	  for (k=*nsite;k--;){
+	    cl1 = coord[k] * lines[j];
+	    for (l=*nsite;l--;){
+	      cl2 = coord[*nsite + l] * lines[*nlines + j];
+	      for (m=*nsite;m--;){
+		eucProd = cl1 + cl2 + coord[2 * *nsite + m] * lines[2 * *nlines + j];
+		ans[k + *nsite * ( l + m * *nsite)] += cos(freq * eucProd + phase);
+	      }
+	    }
+	  }
+	}    
+      }
+    }
+  }  
+
+  else{
+    //coord doesn't define a grid
+    int k;
+    double freq, eucProd, u1, u2, G, phase;
+    switch (*dim){
+    case 2:
+      switch (*covmod){
+      case 1:
+	//Whittle-Matern
+	for (j=*nlines;j--;){
+	  freq = sqrt(0.5 * rchisq(3) / rgamma(*smooth, 1));
+	  phase = M_2PI * unif_rand();
+	  
+	  for (k=*nsite;k--;){
+	    eucProd = coord[k] * lines[*nlines + j] + coord[*nsite + k] * lines[2 * *nlines + j];
+	    ans[k] += cos(freq * eucProd + phase);
+	   }
+	 }
+	 break;
+       case 2:
+	 //Cauchy
+	 for (j=*nlines;j--;){
+	   freq = sqrt(2 * rchisq(3) * rgamma(*smooth, 1));
+	   phase = M_2PI * unif_rand();
+	
+	   for (k=*nsite;k--;){
+	     eucProd = coord[k] * lines[*nlines + j] + coord[*nsite + k] * lines[2 * *nlines + j];
+	     ans[k] += cos(freq * eucProd + phase);
+	   }
+	 }
+	 break;
+       case 3:
+	 //Powered exponential
+	 for (j=*nlines;j--;){
+	   u1 = rexp(1);
+	   u2 = runif(-M_PI_2, M_PI_2);
+	   G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -1 / *smooth) *
+		    R_pow(cos(u2 - 0.5 * *smooth * (u2 - M_PI_2)) / u1, 
+			  (2 - *smooth) / *smooth));
+	
+	   freq = sqrt(rchisq(3) * M_SQRT_3 / G);
+	   phase = M_2PI * unif_rand();
+	
+	   for (k=*nsite;k--;){
+	     eucProd = coord[k] * lines[*nlines + j] + coord[*nsite + k] * lines[2 * *nlines + j];
+	     ans[k] += cos(freq * eucProd + phase);
+	   }
+	 }
+	 break;
+       case 4:
+	 //Bessel
+	 for (j=*nlines;j--;){
+	   freq = sqrt(beta(1.5, *smooth - 0.5) * *range);
+	   phase = M_2PI * unif_rand();
+	
+	   for (k=*nsite;k--;){
+	     eucProd = coord[k] * lines[*nlines + j] + coord[*nsite + k] * lines[2 * *nlines + j];
+	     ans[k] += cos(freq * eucProd + phase);
+	   }
+	 }
+	 break;
+       case 5:
+	 //Gaussian
+	 for (j=*nlines;j--;){
+	   freq = sqrt(2 * rchisq(3));
+	   phase = M_2PI * unif_rand();
+	
+	   for (k=*nsite;k--;){
+	     eucProd = coord[k] * lines[*nlines + j] + coord[*nsite + k] * lines[2 * *nlines + j];
+	     ans[k] += cos(freq * eucProd + phase);
+	   }
+	 }
+	 break;
+      }
+      break;    
+    case 3:
+      switch (*covmod){
+      case 1:
+	//Whittle-Matern
+	for (j=*nlines;j--;){
+	  freq = sqrt(0.5 * rchisq(3) / rgamma(*smooth, 1));
+	  phase = M_2PI * unif_rand();
+	  
+	  for (k=*nsite;k--;){
+	    eucProd = coord[k] * lines[j] + coord[*nsite + k] * lines[*nlines + j] +
+	      coord[2 * *nsite + k] * lines[2 * *nlines + j];
+	    ans[k] += cos(freq * eucProd + phase);
+	  }
+	}
+	break;
+      case 2:
+	//Cauchy
+	for (j=*nlines;j--;){
+	  freq = sqrt(2 * rchisq(3) * rgamma(*smooth ,1));
+	  phase = M_2PI * unif_rand();
+	  
+	  for (k=*nsite;k--;){
+	    eucProd = coord[k] * lines[j] + coord[*nsite + k] * lines[*nlines + j] +
+	      coord[2 * *nsite + k] * lines[2 * *nlines + j];
+	    ans[k] += cos(freq * eucProd + phase);
+	  }
+	}
+	break;
+      case 3:
+	//Powered exponential
+	for (j=*nlines;j--;){
+	  u1 = rexp(1);
+	  u2 = runif(-M_PI_2, M_PI_2);
+	  G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -1 / *smooth) *
+		   R_pow(cos(u2 - 0.5 * *smooth * (u2 - M_PI_2)) / u1, 
+			 (2 - *smooth) / *smooth));
+	  
+	  freq = sqrt(rchisq(3) * M_SQRT_3 / G);
+	  phase = M_2PI * unif_rand();
+	  
+	  for (k=*nsite;k--;){
+	    eucProd = coord[k] * lines[j] + coord[*nsite + k] * lines[*nlines + j] +
+	      coord[2 * *nsite + k] * lines[2 * *nlines + j];
+	    ans[k] += cos(freq * eucProd + phase);
+	  }
+	}
+	break;
+      case 4:
+	//Bessel
+	for (j=*nlines;j--;){
+	  freq = sqrt(beta(1.5, *smooth - 0.5) * *range);
+	  phase = M_2PI * unif_rand();
+	  
+	  for (k=*nsite;k--;){
+	    eucProd = coord[k] * lines[j] + coord[*nsite + k] * lines[*nlines + j] +
+	      coord[2 * *nsite + k] * lines[2 * *nlines + j];
+	    ans[k] += cos(freq * eucProd + phase);
+	  }
+	}
+	break;
+      case 5:
+	//Gaussian
+	for (j=*nlines;j--;){
+	  freq = sqrt(2 * rchisq(3));
+	  phase = M_2PI * unif_rand();
+	  
+	  for (k=*nsite;k--;){
+	    eucProd = coord[k] * lines[j] + coord[*nsite + k] * lines[*nlines + j] +
+	      coord[2 * *nsite + k] * lines[2 * *nlines + j];
+	    ans[k] += cos(freq * eucProd + phase);
+	  }
+	}    
+      }
+    }
+  }  
+
+  for (j=*neffSite;j--;){
+    const double normConst = sqrt(2 * *sill / *nlines);
+    ans[j] *= normConst;
+  }
+
+  if (*nugget != 0){
+    const double sdnugget = sqrt(*nugget);
+    for (j=*neffSite;j--;)
+      ans[j] += sdnugget * norm_rand();
   }
   
   return;

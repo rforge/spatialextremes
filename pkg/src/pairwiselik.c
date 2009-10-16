@@ -1,7 +1,7 @@
 #include "header.h"
 
-R_INLINE double lplikschlather(double *data, double *rho, double *jac,
-			       int nObs, int nSite){
+double lplikschlather(double *data, double *rho, double *jac,
+		      int nObs, int nSite){
   //This function computes the log-pairwise likelihood for the
   //schlather model.
 
@@ -66,8 +66,8 @@ R_INLINE double lplikschlather(double *data, double *rho, double *jac,
 
 }
 
-R_INLINE double lpliksmith(double *data, double *mahalDist, double *jac,
-			   int nObs, int nSite){
+double lpliksmith(double *data, double *mahalDist, double *jac,
+		  int nObs, int nSite){
   //This function computes the log-pairwise likelihood for the
   //smith model.
   
@@ -136,8 +136,8 @@ R_INLINE double lpliksmith(double *data, double *mahalDist, double *jac,
   return dns;
 }
 
-R_INLINE double lplikschlatherind(double *data, double alpha, double *rho,
-				  double *jac, int nObs, int nSite){
+double lplikschlatherind(double *data, double alpha, double *rho,
+			 double *jac, int nObs, int nSite){
   //This function computes the log-pairwise likelihood for the
   //schlather model allowing for independence.
 
