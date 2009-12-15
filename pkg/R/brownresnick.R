@@ -47,12 +47,6 @@ brownresnickfull <- function(data, coord, start, ..., fit.marge = FALSE,
 
   fixed.param <- list(...)[names(list(...)) %in% param]
 
-  if (std.err.type == "none")
-    hessian <- FALSE
-
-  else
-    hessian <- FALSE
-
   ##Define the formal arguments of the function
   form.nplk <- NULL
   for (i in 1:length(param))
@@ -142,7 +136,7 @@ brownresnickfull <- function(data, coord, start, ..., fit.marge = FALSE,
   
   if (method == "nlm"){
     start <- as.numeric(start)
-    opt <- nlm(nllh, start, hessian = hessian, ...)
+    opt <- nlm(nllh, start, ...)
     opt$counts <- opt$iterations
     names(opt$counts) <- "function"
     opt$value <- opt$minimum
@@ -163,8 +157,7 @@ brownresnickfull <- function(data, coord, start, ..., fit.marge = FALSE,
   }
 
   if (!(method %in% c("nlm", "nlminb"))){
-    opt <- optim(start, nllh, hessian = hessian, ..., method = method,
-                 control = control)
+    opt <- optim(start, nllh, ..., method = method, control = control)
   
     if ((opt$convergence != 0) || (opt$value >= 1.0e15)) {
       
@@ -190,34 +183,23 @@ brownresnickfull <- function(data, coord, start, ..., fit.marge = FALSE,
   param <- param[param.names]
 
   if (std.err.type != "none"){
-    opt$hessian <- .brownresnickhess(param, data, dist, 0, 0, 0, fit.marge,
-                                     fixed.param, param.names)
-    var.cov <- try(solve(opt$hessian), silent = TRUE)
+    std.err <- .brownresnickstderr(param, data, dist, as.double(0), as.double(0), as.double(0),
+                                   fit.marge = fit.marge, std.err.type = std.err.type,
+                                   fixed.param = names(fixed.param), param.names = param.names)
     
-    if(!is.matrix(var.cov)){
+    opt$hessian <- std.err$hess
+    var.score <- std.err$var.score
+    ihessian <- try(solve(opt$hessian), silent = TRUE)
+    
+    if(!is.matrix(ihessian)){
       if (warn)
         warning("observed information matrix is singular; passing std.err.type to ''none''")
       
       std.err.type <- "none"
-      return
     }
 
-    else{
-      ihessian <- var.cov
-      jacobian <- .brownresnickgrad(param, data, dist, as.double(0), as.double(0), as.double(0),
-                                    fit.marge = fit.marge, std.err.type = std.err.type,
-                                    fixed.param = names(fixed.param), param.names = param.names)
-
-      if(any(is.na(jacobian))){
-        if (warn)
-          warning("observed information matrix is singular; passing std.err.type to ''none''")
-        
-        std.err.type <- "none"
-      }
-    }
-
-    if (std.err.type != "none"){      
-      var.cov <- var.cov %*% jacobian %*% var.cov
+    else{     
+      var.cov <- ihessian %*% var.score %*% ihessian
       std.err <- diag(var.cov)
 
       std.idx <- which(std.err <= 0)
@@ -259,7 +241,7 @@ brownresnickfull <- function(data, coord, start, ..., fit.marge = FALSE,
                  logLik = -opt$value, opt.value = opt$value, model = "Brown-Resnick",
                  cov.mod = "brown", fit.marge = fit.marge, ext.coeff = ext.coeff,
                  hessian = opt$hessian, lik.fun = nllh, coord = coord, ihessian = ihessian,
-                 jacobian = jacobian, marg.cov = NULL, nllh = nllh)
+                 jacobian = var.score, marg.cov = NULL, nllh = nllh)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
@@ -383,12 +365,6 @@ brownresnickform <- function(data, coord, loc.form, scale.form, shape.form,
   
   fixed.param <- list(...)[names(list(...)) %in% param]
 
-  if (std.err.type == "none")
-    hessian <- FALSE
-
-  else
-    hessian <- FALSE
-
   if(any(!(param %in% c(nm,names(fixed.param)))))
     stop("unspecified parameters")
   
@@ -416,7 +392,7 @@ brownresnickform <- function(data, coord, loc.form, scale.form, shape.form,
   
   if (method == "nlm"){
     start <- as.numeric(start)
-    opt <- nlm(nllh, start, hessian = hessian, ...)
+    opt <- nlm(nllh, start, ...)
     opt$counts <- opt$iterations
     names(opt$counts) <- "function"
     opt$value <- opt$minimum
@@ -438,8 +414,7 @@ brownresnickform <- function(data, coord, loc.form, scale.form, shape.form,
   }
 
   if (!(method %in% c("nlm", "nlminb"))){
-    opt <- optim(start, nllh, hessian = hessian, ..., method = method,
-                 control = control)
+    opt <- optim(start, nllh, ..., method = method, control = control)
     
     if ((opt$convergence != 0) || (opt$value >= 1.0e15)){
       if (warn)
@@ -464,36 +439,26 @@ brownresnickform <- function(data, coord, loc.form, scale.form, shape.form,
   param <- param[param.names]
 
   if (std.err.type != "none"){
-    opt$hessian <- .brownresnickhess(param, data, dist, loc.dsgn.mat, scale.dsgn.mat,
-                                     shape.dsgn.mat, fit.marge, fixed.param, param.names)
-    var.cov <- try(solve(opt$hessian), silent = TRUE)
+    std.err <- .brownresnickstderr(param, data, dist, loc.dsgn.mat, scale.dsgn.mat,
+                                   shape.dsgn.mat, fit.marge = fit.marge,
+                                   std.err.type = std.err.type,
+                                   fixed.param = names(fixed.param), param.names =
+                                   param.names)
+
+
+    opt$hessian <- std.err$hess
+    var.score <- std.err$var.score
+    ihessian <- try(solve(opt$hessian), silent = TRUE)
     
     if(!is.matrix(var.cov)){
       if (warn)
         warning("observed information matrix is singular; passing std.err.type to ''none''")
       
       std.err.type <- "none"
-      return
     }
 
-    else{
-      ihessian <- var.cov
-      jacobian <- .brownresnickgrad(param, data, dist, loc.dsgn.mat, scale.dsgn.mat,
-                                    shape.dsgn.mat, fit.marge = fit.marge,
-                                    std.err.type = std.err.type,
-                                    fixed.param = names(fixed.param), param.names =
-                                    param.names)
-
-      if(any(is.na(jacobian))){
-        if (warn)
-          warning("observed information matrix is singular; passing std.err.type to ''none''")
-        
-        std.err.type <- "none"
-      }
-    }
-
-    if (std.err.type != "none"){      
-      var.cov <- var.cov %*% jacobian %*% var.cov
+    else{  
+      var.cov <- ihessian %*% var.score %*% ihessian
       
       std.err <- diag(var.cov)
       
@@ -538,7 +503,7 @@ brownresnickform <- function(data, coord, loc.form, scale.form, shape.form,
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = "brown", cov.fun = NA,
                  loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                  lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
-                 shape.type = shape.type, ihessian = ihessian, jacobian = jacobian,
+                 shape.type = shape.type, ihessian = ihessian, jacobian = var.score,
                  marg.cov = marg.cov, nllh = nllh)
   
   class(fitted) <- c(fitted$model, "maxstab")

@@ -111,12 +111,6 @@ Standard errors are not available unless you fix it.")
     std.err.type <- "none"
   }
   
-  if (std.err.type == "none")
-    hessian <- FALSE
-
-  else
-    hessian <- FALSE
-
   ##Define the formal arguments of the function
   form.nplk <- NULL
   for (i in 1:length(param))
@@ -207,7 +201,7 @@ Standard errors are not available unless you fix it.")
   
   if (method == "nlm"){
     start <- as.numeric(start)
-    opt <- nlm(nllh, start, hessian = hessian, ...)
+    opt <- nlm(nllh, start, ...)
     opt$counts <- opt$iterations
     names(opt$counts) <- "function"
     opt$value <- opt$minimum
@@ -228,8 +222,7 @@ Standard errors are not available unless you fix it.")
   }
 
   if (!(method %in% c("nlm", "nlminb"))){
-    opt <- optim(start, nllh, hessian = hessian, ..., method = method,
-                 control = control)
+    opt <- optim(start, nllh, ..., method = method, control = control)
   
     if ((opt$convergence != 0) || (opt$value >= 1.0e15)) {
       
@@ -271,35 +264,24 @@ Standard errors are not available unless you fix it.")
   }
   
   if (std.err.type != "none"){
-    opt$hessian <- .geomgausshess(param, data, dist, cov.mod.num, 0, 0, 0,
-                                  fit.marge, fixed.param, param.names)
-    var.cov <- try(solve(opt$hessian), silent = TRUE)
+    std.err <- .geomgaussstderr(param, data, dist, cov.mod.num, as.double(0),
+                                as.double(0), as.double(0), fit.marge = fit.marge,
+                                std.err.type = std.err.type, fixed.param = names(fixed.param),
+                                param.names = param.names)
+                                   
+    opt$hessian <- std.err$hessian
+    var.score <- std.err$var.score
+    ihessian <- try(solve(opt$hessian), silent = TRUE)
     
-    if(!is.matrix(var.cov)){
+    if(!is.matrix(ihessian)){
       if (warn)
         warning("observed information matrix is singular; passing std.err.type to ''none''")
       
       std.err.type <- "none"
-      return
     }
 
-    else{
-      ihessian <- var.cov
-      jacobian <- .geomgaussgrad(param, data, dist, cov.mod.num, as.double(0),
-                                 as.double(0), as.double(0), fit.marge = fit.marge,
-                                 std.err.type = std.err.type, fixed.param = names(fixed.param),
-                                 param.names = param.names)
-
-      if(any(is.na(jacobian))){
-        if (warn)
-          warning("observed information matrix is singular; passing std.err.type to ''none''")
-        
-        std.err.type <- "none"
-      }
-    }
-
-    if (std.err.type != "none"){      
-      var.cov <- var.cov %*% jacobian %*% var.cov
+    else{    
+      var.cov <- ihessian %*% var.score %*% ihessian
       std.err <- diag(var.cov)
 
       std.idx <- which(std.err <= 0)
@@ -328,7 +310,7 @@ Standard errors are not available unless you fix it.")
 
   if (std.err.type == "none"){
     std.err <- std.err.type <- corr.mat <- NULL
-    var.cov <- ihessian <- jacobian <- NULL
+    var.cov <- ihessian <- var.score <- NULL
   }
 
   if (cov.mod == "caugen")
@@ -350,7 +332,7 @@ Standard errors are not available unless you fix it.")
                  logLik = -opt$value, opt.value = opt$value, model = "Geometric",
                  cov.mod = cov.mod, fit.marge = fit.marge, ext.coeff = ext.coeff,
                  hessian = opt$hessian, lik.fun = nllh, coord = coord, ihessian = ihessian,
-                 jacobian = jacobian, marg.cov = NULL, nllh = nllh)
+                 jacobian = var.score, marg.cov = NULL, nllh = nllh)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
@@ -523,12 +505,6 @@ Standard errors are not available unless you fix it.")
     std.err.type <- "none"
   }
 
-  if (std.err.type == "none")
-    hessian <- FALSE
-
-  else
-    hessian <- FALSE
-
   if(any(!(param %in% c(nm,names(fixed.param)))))
     stop("unspecified parameters")
   
@@ -556,7 +532,7 @@ Standard errors are not available unless you fix it.")
   
   if (method == "nlm"){
     start <- as.numeric(start)
-    opt <- nlm(nllh, start, hessian = hessian, ...)
+    opt <- nlm(nllh, start, ...)
     opt$counts <- opt$iterations
     names(opt$counts) <- "function"
     opt$value <- opt$minimum
@@ -578,8 +554,7 @@ Standard errors are not available unless you fix it.")
   }
 
   if (!(method %in% c("nlm", "nlminb"))){
-    opt <- optim(start, nllh, hessian = hessian, ..., method = method,
-                 control = control)
+    opt <- optim(start, nllh, ..., method = method, control = control)
     
     if ((opt$convergence != 0) || (opt$value >= 1.0e15)){
       if (warn)
@@ -620,37 +595,24 @@ Standard errors are not available unless you fix it.")
   }
   
   if (std.err.type != "none"){
-    opt$hessian <- .geomgausshess(param, data, dist, cov.mod.num, loc.dsgn.mat,
-                                  scale.dsgn.mat, shape.dsgn.mat, fit.marge,
-                                  fixed.param, param.names)
-    var.cov <- try(solve(opt$hessian), silent = TRUE)
+    std.err <- .geomgaussstderr(param, data, dist, cov.mod.num, loc.dsgn.mat,
+                                scale.dsgn.mat, shape.dsgn.mat,
+                                fit.marge = fit.marge, std.err.type = std.err.type,
+                                fixed.param = names(fixed.param), param.names =
+                                param.names)
+    opt$hessian <- std.err$hess
+    var.score <- std.err$var.score
+    ihessian <- try(solve(opt$hessian), silent = TRUE)
     
     if(!is.matrix(var.cov)){
       if (warn)
         warning("observed information matrix is singular; passing std.err.type to ''none''")
       
       std.err.type <- "none"
-      return
     }
 
-    else{
-      ihessian <- var.cov
-      jacobian <- .geomgaussgrad(param, data, dist, cov.mod.num, loc.dsgn.mat,
-                                 scale.dsgn.mat, shape.dsgn.mat,
-                                 fit.marge = fit.marge, std.err.type = std.err.type,
-                                 fixed.param = names(fixed.param), param.names =
-                                 param.names)
-
-      if(any(is.na(jacobian))){
-        if (warn)
-          warning("observed information matrix is singular; passing std.err.type to ''none''")
-        
-        std.err.type <- "none"
-      }
-    }
-
-    if (std.err.type != "none"){      
-      var.cov <- var.cov %*% jacobian %*% var.cov
+    else{     
+      var.cov <- ihessian %*% var.score %*% ihessian
       
       std.err <- diag(var.cov)
       
@@ -681,7 +643,7 @@ Standard errors are not available unless you fix it.")
 
   if (std.err.type == "none"){
     std.err <- std.err.type <- corr.mat <- NULL
-    var.cov <- ihessian <- jacobian <- NULL
+    var.cov <- ihessian <- var.score <- NULL
   }
 
   if (cov.mod == "caugen")
@@ -704,7 +666,7 @@ Standard errors are not available unless you fix it.")
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = cov.mod, cov.fun = cov.fun,
                  loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                  lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
-                 shape.type = shape.type, ihessian = ihessian, jacobian = jacobian,
+                 shape.type = shape.type, ihessian = ihessian, jacobian = var.score,
                  marg.cov = marg.cov, nllh = nllh)
   
   class(fitted) <- c(fitted$model, "maxstab")

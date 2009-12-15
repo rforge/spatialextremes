@@ -23,12 +23,6 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
   else
     method2 <- method
   
-  if (std.err.type == "none")
-    hessian <- FALSE
-
-  else
-    hessian <- TRUE
-
   distVec <- distance(coord, vec = TRUE)
     
   ##First create a "void" function
@@ -223,7 +217,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
   
   if (method == "nlm"){
     start <- as.numeric(start)
-    opt <- nlm(nllh, start, hessian = hessian, ...)
+    opt <- nlm(nllh, start, ...)
     opt$counts <- opt$iterations
     names(opt$counts) <- "function"
     opt$value <- opt$minimum
@@ -244,8 +238,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
   }
 
   if (!(method %in% c("nlm", "nlminb"))){
-    opt <- optim(start, nllh, hessian = hessian, ..., method = method,
-                 control = control)
+    opt <- optim(start, nllh, ..., method = method, control = control)
 
     if ((opt$convergence != 0) || (opt$value >= 1.0e15)) {
       if (warn)
@@ -284,35 +277,24 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
   }
   
   if (std.err.type != "none"){
+    std.err <- .smithstderr(param, data, distVec, as.double(0), as.double(0),
+                            as.double(0), fit.marge = fit.marge, std.err.type =
+                            std.err.type, fixed.param = names(fixed.param),
+                            param.names = param.names, iso = iso)
 
-    var.cov <- try(solve(opt$hessian), silent = TRUE)
+    opt$hessian <- std.err$hessian
+    var.score <- std.err$var.score
+    ihessian <- try(solve(opt$hessian), silent = TRUE)
 
-    if(!is.matrix(var.cov)){
+    if(!is.matrix(ihessian) || any(is.na(var.score))){
       if (warn)
         warning("observed information matrix is singular; passing std.err.type to ''none''")
       
       std.err.type <- "none"
-      return
     }
 
-    else{
-      ihessian <- var.cov
-
-      jacobian <- .smithgrad(param, data, distVec, as.double(0), as.double(0),
-                             as.double(0), fit.marge = fit.marge, std.err.type =
-                             std.err.type, fixed.param = names(fixed.param),
-                             param.names = param.names, iso = iso)
-
-      if (any(is.na(jacobian))){
-        if (warn)
-          warning("observed information matrix is singular; passing std.err.type to ''none''")
-        
-        std.err.type <- "none"
-      }
-    }
-
-    if (std.err.type != "none"){      
-      var.cov <- var.cov %*% jacobian %*% var.cov
+    else {
+      var.cov <- ihessian %*% var.score %*% ihessian
       std.err <- diag(var.cov)
       
       std.idx <- which(std.err <= 0)
@@ -342,7 +324,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
   
   if (std.err.type == "none"){
     std.err <- std.err.type <- corr.mat <- NULL
-    var.cov <- ihessian <- jacobian <- NULL
+    var.cov <- ihessian <- var.score <- NULL
   }
   
   if (dist.dim == 2)
@@ -371,7 +353,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
                  counts = opt$counts, message = opt$message, data = data, est = "MPLE",
                  logLik = -opt$value, opt.value = opt$value, model = "Smith",
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = "Gaussian",
-                 lik.fun = nllh, coord = coord, ihessian = ihessian, jacobian = jacobian,
+                 lik.fun = nllh, coord = coord, ihessian = ihessian, jacobian = var.score,
                  marg.cov = NULL, nllh = nllh, iso = iso)
   
   class(fitted) <- c(fitted$model, "maxstab")
@@ -394,12 +376,6 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   n.pair <- n.site * (n.site - 1) / 2
 
   distVec <- distance(coord, vec = TRUE)
-     
-  if (std.err.type == "none")
-    hessian <- FALSE
-
-  else
-    hessian <- TRUE
 
   ##With our notation, formula must be of the form y ~ xxxx
   loc.form <- update(loc.form, y ~ .)
@@ -465,8 +441,6 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
       param <- c("cov11", "cov12", "cov13", "cov22", "cov23", "cov33", loc.names, scale.names, shape.names)
   }
   
-  param.names <- param
-
   ##First create a "void" function
   nplk <- function(x) x
 
@@ -574,7 +548,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   
   if (method == "nlm"){
     start <- as.numeric(start)
-    opt <- nlm(nllh, start, hessian = hessian, ...)
+    opt <- nlm(nllh, start, ...)
     opt$counts <- opt$iterations
     names(opt$counts) <- "function"
     opt$value <- opt$minimum
@@ -596,8 +570,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
 
   if(!(method %in% c("nlm", "nlminb"))) {
     
-    opt <- optim(start, nllh, hessian = hessian, ..., method = method,
-                 control = control)
+    opt <- optim(start, nllh, ..., method = method, control = control)
     
     if ((opt$convergence != 0) || (opt$value >= 1.0e15)) {
       if (warn)
@@ -617,6 +590,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
     opt$convergence <- "Stayed at start. val."
   }
 
+  param.names <- param
   param <- c(opt$par, unlist(fixed.param))
   param <- param[param.names]
 
@@ -635,9 +609,17 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   }
     
   if (std.err.type != "none"){
+    std.err <- .smithstderr(param, data, distVec, loc.dsgn.mat,
+                            scale.dsgn.mat, shape.dsgn.mat,
+                            fit.marge = fit.marge, std.err.type =
+                            std.err.type, fixed.param = names(fixed.param),
+                            param.names = param.names, iso = iso)
+
+    opt$hessian <- std.err$hessian
+    var.score <- std.err$var.score
+    ihessian <- try(solve(opt$hessian), silent = TRUE)
     
-    var.cov <- try(solve(opt$hessian), silent = TRUE)
-    if(!is.matrix(var.cov)){
+    if(!is.matrix(ihessian) || any(is.na(var.score))){
       if (warn)
         warning("observed information matrix is singular; passing std.err.type to ''none''")
       
@@ -645,24 +627,8 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
       return
     }
 
-    else{
-      ihessian <- var.cov
-      jacobian <- .smithgrad(param, data, distVec, loc.dsgn.mat,
-                             scale.dsgn.mat, shape.dsgn.mat,
-                             fit.marge = fit.marge, std.err.type =
-                             std.err.type, fixed.param = names(fixed.param),
-                             param.names = param.names, iso = iso)
-
-      if(any(is.na(jacobian))){
-        if (warn)
-          warning("observed information matrix is singular; passing std.err.type to ''none''")
-        
-        std.err.type <- "none"
-      }
-    }
-
-    if (std.err.type != "none"){      
-      var.cov <- var.cov %*% jacobian %*% var.cov
+    else{     
+      var.cov <- ihessian %*% var.score %*% ihessian
       std.err <- diag(var.cov)
       
       std.idx <- which(std.err <= 0)
@@ -685,14 +651,14 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
       else
         corr.mat <- NULL
       
-      colnames(var.cov) <- rownames(var.cov) <- 
-        colnames(ihessian) <- rownames(ihessian) <- names(std.err) <- nm
+      colnames(var.cov) <- rownames(var.cov) <- colnames(ihessian) <-
+        rownames(ihessian) <- names(std.err) <- nm
     }
   }
 
   if (std.err.type == "none"){
     std.err <- std.err.type <- corr.mat <- NULL
-    var.cov <- ihessian <- jacobian <- NULL
+    var.cov <- ihessian <- var.score <- NULL
   }
 
   if (dist.dim == 2)
@@ -722,7 +688,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = "Gaussian",
                  loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                  lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
-                 shape.type = shape.type, ihessian = ihessian, jacobian = jacobian,
+                 shape.type = shape.type, ihessian = ihessian, jacobian = var.score,
                  marg.cov = marg.cov, nllh = nllh, iso = iso)
   
   class(fitted) <- c(fitted$model, "maxstab")
