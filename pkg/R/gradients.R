@@ -89,11 +89,8 @@
 
   n.fixed <- length(fixed.param)
   if (n.fixed > 0){
-    idx <- NULL
-    for (i in 1:n.fixed)
-      idx <- c(idx, which(param.names == fixed.param[i]))
-    
-    grad <- grad[,-idx]
+    idx <- which(param.names %in % fixed.param)
+    grad <- grad[, -idx, drop = FALSE]
   }
 
   if (any(is.na(grad)))
@@ -131,7 +128,19 @@
   n.site <- ncol(data)
   n.obs <- nrow(data)
   n.pairs <- n.site * (n.site - 1) / 2
-    
+
+  sill <- par["sill"]
+  range <- par["range"]
+  smooth <- par["smooth"]
+
+  if (cov.mod == 5)
+    ##i.e. Generalized Cauchy
+    smooth2 <- par["smooth2"]
+
+  else
+    ##it won't be used anyway...
+    smooth2 <- 0
+  
   if (fit.marge){
 
     n.loccoeff <- ncol(loc.dsgn.mat)
@@ -141,10 +150,7 @@
     loc.idx <- which(substr(names(par), 1, 3) == "loc")
     scale.idx <- which(substr(names(par), 1, 6) == "scaleC")
     shape.idx <- which(substr(names(par), 1, 5) == "shape")
-
-    sill <- par["sill"]
-    range <- par["range"]
-    smooth <- par["smooth"]
+    
     loc.param <- par[loc.idx]
     scale.param <- par[scale.idx]
     shape.param <- par[shape.idx]
@@ -154,9 +160,7 @@
     n.loccoeff <- 1
     n.scalecoeff <- 1
     n.shapecoeff <- 1
-    sill <- par["sill"]
-    range <- par["range"]
-    smooth <- par["smooth"]
+    
     loc.param <- 1
     scale.param <- 1
     shape.param <- 1
@@ -170,18 +174,15 @@
              as.integer(n.shapecoeff), as.double(loc.param),
              as.double(scale.param), as.double(shape.param),
              as.double(sill), as.double(range), as.double(smooth),
-             fit.marge, grad = double(n.obs * length(param.names)),
+             as.double(smooth2), fit.marge, grad = double(n.obs * length(param.names)),
              PACKAGE = "SpatialExtremes")$grad
 
   grad <- matrix(grad, nrow = n.obs, ncol = length(param.names))
 
   n.fixed <- length(fixed.param)
   if (n.fixed > 0){
-    idx <- NULL
-    for (i in 1:n.fixed)
-      idx <- c(idx, which(param.names == fixed.param[i]))
-    
-    grad <- grad[,-idx]
+    idx <- which(param.names %in% fixed.param)
+    grad <- grad[, -idx, drop = FALSE]
   }
 
   if (any(is.na(grad)))
@@ -217,7 +218,20 @@
   n.site <- ncol(data)
   n.obs <- nrow(data)
   n.pairs <- n.site * (n.site - 1) / 2
-    
+
+  alpha <- par["alpha"]
+  sill <- par["sill"]
+  range <- par["range"]
+  smooth <- par["smooth"]
+
+  if (cov.mod == 5)
+    ##i.e. Generalized cauchy
+    smooth2 <- par["smooth2"]
+
+  else
+    ##It won't be used anyway
+    smooth2 <- 0
+  
   if (fit.marge){
 
     n.loccoeff <- ncol(loc.dsgn.mat)
@@ -227,11 +241,7 @@
     loc.idx <- which(substr(names(par), 1, 3) == "loc")
     scale.idx <- which(substr(names(par), 1, 6) == "scaleC")
     shape.idx <- which(substr(names(par), 1, 5) == "shape")
-
-    alpha <- par["alpha"]
-    sill <- par["sill"]
-    range <- par["range"]
-    smooth <- par["smooth"]
+    
     loc.param <- par[loc.idx]
     scale.param <- par[scale.idx]
     shape.param <- par[shape.idx]
@@ -241,10 +251,7 @@
     n.loccoeff <- 1
     n.scalecoeff <- 1
     n.shapecoeff <- 1
-    alpha <- par["alpha"]
-    sill <- par["sill"]
-    range <- par["range"]
-    smooth <- par["smooth"]
+    
     loc.param <- 1
     scale.param <- 1
     shape.param <- 1
@@ -258,18 +265,16 @@
              as.integer(n.shapecoeff), as.double(loc.param),
              as.double(scale.param), as.double(shape.param),
              as.double(alpha), as.double(sill), as.double(range),
-             as.double(smooth), fit.marge, grad = double(n.obs * length(param.names)),
+             as.double(smooth), as.double(smooth2), fit.marge,
+             grad = double(n.obs * length(param.names)),
              PACKAGE = "SpatialExtremes")$grad
 
   grad <- matrix(grad, nrow = n.obs, ncol = length(param.names))
 
   n.fixed <- length(fixed.param)
   if (n.fixed > 0){
-    idx <- NULL
-    for (i in 1:n.fixed)
-      idx <- c(idx, which(param.names == fixed.param[i]))
-    
-    grad <- grad[,-idx]
+    idx <- which(param.names %in% fixed.param)
+    grad <- grad[, -idx, drop = FALSE]
   }
 
   if (any(is.na(grad)))
@@ -305,7 +310,20 @@
   n.site <- ncol(data)
   n.obs <- nrow(data)
   n.pairs <- n.site * (n.site - 1) / 2
-    
+
+  sigma2 <- par["sigma2"]
+  sill <- par["sill"]
+  range <- par["range"]
+  smooth <- par["smooth"]
+
+  if (cov.mod == 5)
+    ##i.e. Generalized cauchy
+    smooth2 <- par["smooth2"]
+
+  else
+    ##it won't be used anyway
+    smooth2 <- 0
+  
   if (fit.marge){
 
     n.loccoeff <- ncol(loc.dsgn.mat)
@@ -316,10 +334,6 @@
     scale.idx <- which(substr(names(par), 1, 6) == "scaleC")
     shape.idx <- which(substr(names(par), 1, 5) == "shape")
 
-    sigma2 <- par["sigma2"]
-    sill <- par["sill"]
-    range <- par["range"]
-    smooth <- par["smooth"]
     loc.param <- par[loc.idx]
     scale.param <- par[scale.idx]
     shape.param <- par[shape.idx]
@@ -329,10 +343,7 @@
     n.loccoeff <- 1
     n.scalecoeff <- 1
     n.shapecoeff <- 1
-    sigma2 <- par["sigma2"]
-    sill <- par["sill"]
-    range <- par["range"]
-    smooth <- par["smooth"]
+    
     loc.param <- 1
     scale.param <- 1
     shape.param <- 1
@@ -346,18 +357,16 @@
              as.integer(n.shapecoeff), as.double(loc.param),
              as.double(scale.param), as.double(shape.param),
              as.double(sigma2), as.double(sill), as.double(range),
-             as.double(smooth), fit.marge, grad = double(n.obs * length(param.names)),
+             as.double(smooth), as.double(smooth2), fit.marge,
+             grad = double(n.obs * length(param.names)),
              PACKAGE = "SpatialExtremes")$grad
 
   grad <- matrix(grad, nrow = n.obs, ncol = length(param.names))
 
   n.fixed <- length(fixed.param)
   if (n.fixed > 0){
-    idx <- NULL
-    for (i in 1:n.fixed)
-      idx <- c(idx, which(param.names == fixed.param[i]))
-    
-    grad <- grad[,-idx]
+    idx <- which(param.names %in% fixed.param)    
+  grad <- grad[, -idx, drop = FALSE]
   }
 
   if (any(is.na(grad)))
@@ -415,11 +424,8 @@
 
   n.fixed <- length(fixed.param)
   if (n.fixed > 0){
-    idx <- NULL
-    for (i in 1:n.fixed)
-      idx <- c(idx, which(param.names == fixed.param[i]))
-    
-    grad <- grad[,-idx]
+    idx <- which(param.names %in% fixed.param)
+    grad <- grad[, -idx, drop = FALSE]
   }
 
   if (any(is.na(grad)))
@@ -437,6 +443,84 @@
       }
     }
     
+    return(jacobian)
+  }
+
+  else
+    return(as.double(colSums(grad)))
+}
+
+
+.brownresnickgrad <- function(par, data, dist, loc.dsgn.mat, scale.dsgn.mat,
+                              shape.dsgn.mat, fit.marge, std.err.type = "score",
+                              fixed.param, param.names, jacobian = TRUE){
+
+  ##data is a matrix with each column corresponds to one location
+  ##distVec is the a matrix giving the "distance vector" for each pair
+  ##(1 row = 1 station)
+  n.site <- ncol(data)
+  n.obs <- nrow(data)
+  n.pairs <- n.site * (n.site - 1) / 2
+
+  range <- par["range"]
+  smooth <- par["smooth"]
+
+  if (fit.marge){
+
+    n.loccoeff <- ncol(loc.dsgn.mat)
+    n.scalecoeff <- ncol(scale.dsgn.mat)
+    n.shapecoeff <- ncol(shape.dsgn.mat)
+
+    loc.idx <- which(substr(names(par), 1, 3) == "loc")
+    scale.idx <- which(substr(names(par), 1, 6) == "scaleC")
+    shape.idx <- which(substr(names(par), 1, 5) == "shape")
+
+    loc.param <- par[loc.idx]
+    scale.param <- par[scale.idx]
+    shape.param <- par[shape.idx]
+  }
+
+  else {
+    n.loccoeff <- 1
+    n.scalecoeff <- 1
+    n.shapecoeff <- 1
+    
+    loc.param <- 1
+    scale.param <- 1
+    shape.param <- 1
+  }
+  
+  grad <- .C("brownresnickgrad", as.double(data), as.double(dist), as.integer(n.site),
+             as.integer(n.obs), as.double(loc.dsgn.mat), as.integer(n.loccoeff),
+             as.double(scale.dsgn.mat), as.integer(n.scalecoeff), as.double(shape.dsgn.mat),
+             as.integer(n.shapecoeff), as.double(loc.param), as.double(scale.param),
+             as.double(shape.param), as.double(range), as.double(smooth), fit.marge,
+             grad = double(n.obs * length(param.names)),
+             PACKAGE = "SpatialExtremes")$grad
+
+  grad <- matrix(grad, nrow = n.obs, ncol = length(param.names))
+
+  n.fixed <- length(fixed.param)
+  if (n.fixed > 0){
+    idx <- which(param.names %in% fixed.param)
+    grad <- grad[, -idx, drop = FALSE]
+  }
+
+  if (any(is.na(grad)))
+    return(NA)
+
+  if (jacobian){
+    if (std.err.type == "score")
+      jacobian <- var(grad) * n.obs
+    
+    if (std.err.type == "grad"){
+      jacobian <- 0
+      for (i in 1:n.obs){
+        grad.vec <- matrix(grad[i,], ncol = 1)
+        jacobian <- jacobian + grad.vec %*% t(grad.vec)
+      }
+    }
+
     return(jacobian)
   }
 
