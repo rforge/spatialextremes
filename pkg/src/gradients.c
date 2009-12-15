@@ -501,7 +501,7 @@ void smithgrad3d(double *data, double *distVec, int *nSite,
 	    dz2loc = - R_pow(frech[k + j * *nObs], 1 - shapes[j]) /
 	      scales[j] * locdsgnmat[j + *nSite * l];	    
 
-	    grad[(6 + *nloccoeff + l) * *nObs + k] += (dAz1 * dz1loc + dAz2 * dz2loc) +
+	    grad[(6 + l) * *nObs + k] += (dAz1 * dz1loc + dAz2 * dz2loc) +
 	      ((dBz1 * dz1loc + dBz2 * dz2loc) * C + B * 
 	       (dCz1 * dz1loc + dCz2 * dz2loc) + (dDz1 * dz1loc + dDz2 * dz2loc)) /
 	      (B * C + D) + dE;
