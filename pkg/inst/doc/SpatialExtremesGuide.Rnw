@@ -768,8 +768,8 @@ relies on the following property \citep{Davis1987}.
   \end{equation*}
   The covariance of $Y$ is therefore
   \begin{equation*}
-    \mathbb{E}[Y Y^T] = \mathbb{E}[D^{1/2} X X^T (D^{1/2})^T] =
-    \mathbb{E}[D^{1/2} I_n (D^{1/2})^T] = D^{1/2} (D^{1/2})^T = D
+    \mathbb{E}[Y Y^T] = D^{1/2} \mathbb{E}[X X^T] (D^{1/2})^T =
+    D^{1/2} I_n (D^{1/2})^T = D^{1/2} (D^{1/2})^T = D
   \end{equation*}
   where $I_n$ is the $n \times n$ identity matrix.
 \end{proof}
