@@ -11,14 +11,14 @@
 //
 void schlatherfull(int *covmod, double *data, double *dist, int *nSite, int *nObs,
 		   int *dim, double *locs, double *scales, double *shapes, double *sill,
-		   double *range, double *smooth, int *fitmarge, double *dns);
+		   double *range, double *smooth, double *smooth2, int *fitmarge, double *dns);
 void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
 		      int *dim, double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
 		      double *locpenalty, double *scaledsgnmat, double *scalepenmat,
 		      int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
 		      double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
 		      double *loccoeff, double *scalecoeff, double *shapecoeff, double *sill,
-		      double *range, double *smooth, double *dns);
+		      double *range, double *smooth, double *smooth2, double *dns);
 
 ///////////////////////////////////
 //  From schlatherind.c
@@ -26,29 +26,30 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
 		      int *nObs, int *dim, double *locs, double *scales, double *shapes,
 		      double *alpha, double *sill, double *range, double *smooth,
-		      int *fitmarge,double *dns);
+		      double *smooth2, int *fitmarge,double *dns);
 void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
 			 int *dim, double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
 			 double *locpenalty, double *scaledsgnmat, double *scalepenmat,
 			 int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
 			 double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
 			 double *loccoeff, double *scalecoeff, double *shapecoeff, double *alpha,
-			 double *sill, double *range, double *smooth, double *dns);
+			 double *sill, double *range, double *smooth, double *smoth2, double *dns);
 
 ///////////////////////////////////
 //  From geomgauss.c
 //
 void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
 		   int *nObs, int *dim, double *locs, double *scales, double *shapes,
-		   double *sigma2, double *sill, double *range, double *smooth,
-		   int *fitmarge,double *dns);
+		   double *sigma2, double *sigma2Bound, double *sill, double *range,
+		   double *smooth, double *smooth2, int *fitmarge,double *dns);
 void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
 		      int *dim, double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
 		      double *locpenalty, double *scaledsgnmat, double *scalepenmat,
 		      int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
 		      double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
 		      double *loccoeff, double *scalecoeff, double *shapecoeff, double *sigma2,
-		      double *sill, double *range, double *smooth, double *dns);
+		      double *sigma2Bound, double *sill, double *range, double *smooth,
+		      double *smooth2, double *dns);
 
 ///////////////////////////////////
 //  From nsgeomgauss.c
@@ -56,7 +57,7 @@ void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 void nsgeomgaussfull(int *covmod, double *data, double *dist, int *nSite,
 		     int *nObs, int *dim, double *locs, double *scales, double *shapes,
 		     double *sigma2dsgnmat, double *sigma2coeff, int *nsigma2coeff,
-		     double *sill, double *range, double *smooth, int *fitmarge,
+		     double *sill, double *range, double *smooth, double *smooth2, int *fitmarge,
 		     double *dns);
 void nsgeomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
 			int *dim, double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
@@ -65,7 +66,21 @@ void nsgeomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int
 			double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
 			double *sigma2dsgnmat, int *nsigma2coeff, double *loccoeff, double *scalecoeff,
 			double *shapecoeff, double *sigma2coeff, double *sill, double *range,
-			double *smooth, double *dns);
+			double *smooth, double *smooth2, double *dns);
+
+///////////////////////////////////
+//  From brownResnick.c
+//
+void brownresnickfull(double *data, double *dist, int *nSite, int *nObs, double *locs,
+		      double *scales, double *shapes, double *range, double *smooth,
+		      int *fitmarge, double *dns);
+void brownresnickdsgnmat(double *data, double *dist, int *nSite, int *nObs,
+			 double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
+			 double *locpenalty, double *scaledsgnmat, double *scalepenmat,
+			 int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
+			 double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
+			 double *loccoeff, double *scalecoeff, double *shapecoeff, double *range,
+			 double *smooth, double *dns);
 
 ///////////////////////////////////
 //  From smith.c
@@ -135,6 +150,8 @@ double whittleMatern(double *dist, int nPairs, double sill, double range,
 		     double smooth, double *rho);
 double cauchy(double *dist, int nPairs, double sill, double range,
 	      double smooth, double *rho);
+double caugen(double *dist, int nPairs, double sill, double range,
+	      double smooth, double smooth2, double *rho);
 double powerExp(double *dist, int nPairs, double sill, double range,
 		double smooth, double *rho);
 double bessel(double *dist, int nPairs, int dim, double sill,
@@ -145,11 +162,14 @@ double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
 		      double *cov12, double *cov13, double *cov22, 
 		      double *cov23, double *cov33, double *mahal);
 double geomCovariance(double *dist, int nPairs, int dim, int covmod,
-		      double sigma2, double sill, double range,
-		      double smooth, double *rho);
+		      double sigma2, double sigma2Bound, double sill,
+		      double range, double smooth, double smooth2,
+		      double *rho);
 double nsgeomCovariance(double *dist, int nSite, int dim, int covmod,
 			double *sigma2, double sill, double range,
-			double smooth, double *rho);
+			double smooth, double smooth2, double *rho);
+double brownResnick(double *dist, int nPairs, double range, double smooth,
+		    double *rho);
 
 ///////////////////////////////////
 //  From mcmc.c
@@ -177,13 +197,13 @@ void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
 		   double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
 		   int *nshapecoeff, double *loccoeff, double *scalecoeff,
 		   double *shapecoeff, double *sill, double *range, double *smooth,
-		   int *fitmarge, double *grad);
+		   double *smooth2, int *fitmarge, double *grad);
 void schlatherindgrad(int *covmod, double *data, double *dist, int *nSite,
 		      int *nObs, double *locdsgnmat, int *nloccoeff,
 		      double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
 		      int *nshapecoeff, double *loccoeff, double *scalecoeff,
 		      double *shapecoeff, double *alpha, double *sill, double *range,
-		      double *smooth, int *fitmarge, double *grad);
+		      double *smooth, double *smooth2, int *fitmarge, double *grad);
 void spatgevgrad(double *data, int *nSite, int *nObs, double *locdsgnmat,
 		 int *nloccoeff, double *scaledsgnmat, int *nscalecoeff,
 		 double *shapedsgnmat, int *nshapecoeff, double *loccoeff,
@@ -193,7 +213,51 @@ void geomgaussgrad(int *covmod, double *data, double *dist, int *nSite,
 		   double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
 		   int *nshapecoeff, double *loccoeff, double *scalecoeff,
 		   double *shapecoeff, double *sigma2, double *sill, double *range,
-		   double *smooth, int *fitmarge, double *grad);
+		   double *smooth, double *smooth2, int *fitmarge, double *grad);
+void brownresnickgrad(double *data, double *dist, int *nSite, int *nObs,
+		      double *locdsgnmat, int *nloccoeff, double *scaledsgnmat,
+		      int *nscalecoeff, double *shapedsgnmat, int *nshapecoeff,
+		      double *loccoeff, double *scalecoeff, double *shapecoeff,
+		      double *range, double *smooth, int *fitmarge, double *grad);
+
+///////////////////////////////////
+//  From hessians.c
+//
+void smithhess(double *data, double *distVec, int *nSite,
+	       int *nObs, double *locdsgnmat, int *nloccoeff,
+	       double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
+	       int *nshapecoeff, double *loccoeff, double *scalecoeff,
+	       double *shapecoeff, double *cov11, double *cov12,
+	       double *cov22, int *fitmarge, double *hess);
+void smithhess3d(double *data, double *distVec, int *nSite,
+		 int *nObs, double *locdsgnmat, int *nloccoeff,
+		 double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
+		 int *nshapecoeff, double *loccoeff, double *scalecoeff,
+		 double *shapecoeff, double *cov11, double *cov12, double *cov13,
+		 double *cov22, double *cov23, double *cov33, int *fitmarge, double *hess);
+void schlatherhess(int *covmod, double *data, double *dist, int *nSite,
+		   int *nObs, double *locdsgnmat, int *nloccoeff,
+		   double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
+		   int *nshapecoeff, double *loccoeff, double *scalecoeff,
+		   double *shapecoeff, double *sill, double *range, double *smooth,
+		   double *smooth2, int *fitmarge, double *hess);
+void schlatherindhess(int *covmod, double *data, double *dist, int *nSite,
+		      int *nObs, double *locdsgnmat, int *nloccoeff,
+		      double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
+		      int *nshapecoeff, double *loccoeff, double *scalecoeff,
+		      double *shapecoeff, double *alpha, double *sill, double *range,
+		      double *smooth, double *smooth2, int *fitmarge, double *hess);
+void geomgausshess(int *covmod, double *data, double *dist, int *nSite,
+		   int *nObs, double *locdsgnmat, int *nloccoeff,
+		   double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
+		   int *nshapecoeff, double *loccoeff, double *scalecoeff,
+		   double *shapecoeff, double *sigma2, double *sill, double *range,
+		   double *smooth, double *smooth2, int *fitmarge, double *hess);
+void brownresnickhess(double *data, double *dist, int *nSite, int *nObs,
+		      double *locdsgnmat, int *nloccoeff, double *scaledsgnmat,
+		      int *nscalecoeff, double *shapedsgnmat, int *nshapecoeff,
+		      double *loccoeff, double *scalecoeff, double *shapecoeff,
+		      double *range, double *smooth, int *fitmarge, double *hess);
 
 ///////////////////////////////////
 //  From pairwiselik.c
@@ -233,14 +297,18 @@ void fitcovmat3d(double *cov11, double *cov12, double *cov13,
 		 int *nPairs, double *dist, double *extcoeff,
 		 double *weights, double *ans);
 void fitcovariance(int *covmod, double *sill, double *range, double *smooth,
-		   int *nPairs, int *dim, double *distVec, double *extcoeff,
-		   double *weights, double *ans);
+		   double *smooth2, int *nPairs, int *dim, double *distVec,
+		   double *extcoeff, double *weights, double *ans);
 void fiticovariance(int *covmod, double *alpha, double *sill, double *range,
-		    double *smooth, int *nPairs, int *dim, double *dist, double *extcoeff,
-		    double *weights, double *ans);
-void fitgcovariance(int *covmod, double *sigma2, double *sill, double *range,
-		    double *smooth, int *nPairs, int *dim, double *dist, double *extcoeff,
-		    double *weights, double *ans);
+		    double *smooth, double *smooth2, int *nPairs, int *dim,
+		    double *dist, double *extcoeff, double *weights, double *ans);
+void fitgcovariance(int *covmod, double *sigma2, double *sigma2Bound, double *sill,
+		    double *range, double *smooth, double *smooth2, int *nPairs,
+		    int *dim, double *dist, double *extcoeff, double *weights,
+		    double *ans);
+void fitbrcovariance(double *range, double *smooth, int *nPairs,
+		     double *dist, double *extcoeff, double *weights,
+		     double *ans);
 
 ///////////////////////////////////
 //  From spatgevlik.c
@@ -320,3 +388,15 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
 		 int *covmod, int *grid, double *sigma2, double *sill,
 		 double *range, double *smooth, double *uBound,
 		 double *ans);
+///////////////////////////////////
+//  From gpdproc.c
+//
+void gpdprocfull(double *data, double *distVec, int *nSite,
+		 int *nObs, double *excRates, double *threshs, double *scales,
+		 double *shapes, double *cov11, double *cov12,
+		 double *cov22, int *fitmarge, double *dns);
+double gpd2ugpd(double *data, int nObs, int nSite, double *excRates,
+		double *threshs, double *scales, double *shapes,
+		double *jac, double *ugpd);
+double lpliksmithgpd(double *data, double *mahalDist, double *jac,
+		     double *excRates, int nObs, int nSite);
