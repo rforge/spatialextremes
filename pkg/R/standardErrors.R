@@ -97,7 +97,7 @@
 
   n.fixed <- length(fixed.param)
   if (n.fixed > 0){
-    idx <- which(param.names %in % fixed.param)
+    idx <- which(param.names %in% fixed.param)
     grad <- grad[, -idx, drop = FALSE]
     hess <- hess[, -idx, drop = FALSE]
   }
