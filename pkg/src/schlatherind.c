@@ -3,7 +3,7 @@
 void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
 		      int *nObs, int *dim, double *locs, double *scales, double *shapes,
 		      double *alpha, double *sill, double *range, double *smooth,
-		      int *fitmarge,double *dns){
+		      double *smooth2, int *fitmarge,double *dns){
   //This is the independent Schlater's model. It's a wrapper to several
   //sub-functions. It's named xxxfull as it either assume that the
   //margins are unit Frechet, or the GEV parameters are estimated at
@@ -47,6 +47,9 @@ void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
   case 4:
     *dns = bessel(dist, nPairs, *dim, *sill, *range, *smooth, rho);
     break;
+  case 5:
+    *dns = caugen(dist, nPairs, *sill, *range, *smooth, *smooth2, rho);
+    break;
   }
   
   if (*dns != 0.0)
@@ -83,7 +86,7 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
 			 int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
 			 double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
 			 double *loccoeff, double *scalecoeff, double *shapecoeff, double *alpha,
-			 double *sill, double *range, double *smooth, double *dns){
+			 double *sill, double *range, double *smooth, double *smooth2, double *dns){
   //This is the independent Schlater's model.
   //The GEV parameters are defined using a polynomial response surface
   //or p-splines.
@@ -116,6 +119,9 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
     break;
   case 4:
     *dns = bessel(dist, nPairs, *dim, *sill, *range, *smooth, rho);
+    break;
+  case 5:
+    *dns = caugen(dist, nPairs, *sill, *range, *smooth, *smooth2, rho);
     break;
   }
 
