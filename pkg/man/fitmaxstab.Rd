@@ -16,9 +16,10 @@ shape.form, marg.cov = NULL, iso = FALSE, \dots, fit.marge = FALSE, warn
     location. Each row corresponds to one location.}
   \item{cov.mod}{A character string corresponding the the covariance
     model in the max-stable representation. Must be one of "gauss" for
-    the Smith's model; or "whitmat", "cauchy", "powexp" or "bessel" for
-    the Whittle-Matern, the Cauchy, the Powered Exponential and the
-    Bessel covariance family with the Schlather's model.} 
+    the Smith's model; or "whitmat", "cauchy", "powexp", "bessel" or
+    "caugen" for the Whittle-Matern, the Cauchy, the Powered Exponential, the
+    Bessel and the Generalized Cauchy correlation families with the
+    Schlather's model; "brown" for Brown-Resnick processes.} 
   \item{loc.form, scale.form, shape.form}{R formulas defining the
     spatial linear model for the GEV parameters. May be missing. See
     section details.}
