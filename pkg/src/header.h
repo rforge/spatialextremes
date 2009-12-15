@@ -221,45 +221,6 @@ void brownresnickgrad(double *data, double *dist, int *nSite, int *nObs,
 		      double *range, double *smooth, int *fitmarge, double *grad);
 
 ///////////////////////////////////
-//  From hessians.c
-//
-void smithhess(double *data, double *distVec, int *nSite,
-	       int *nObs, double *locdsgnmat, int *nloccoeff,
-	       double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
-	       int *nshapecoeff, double *loccoeff, double *scalecoeff,
-	       double *shapecoeff, double *cov11, double *cov12,
-	       double *cov22, int *fitmarge, double *hess);
-void smithhess3d(double *data, double *distVec, int *nSite,
-		 int *nObs, double *locdsgnmat, int *nloccoeff,
-		 double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
-		 int *nshapecoeff, double *loccoeff, double *scalecoeff,
-		 double *shapecoeff, double *cov11, double *cov12, double *cov13,
-		 double *cov22, double *cov23, double *cov33, int *fitmarge, double *hess);
-void schlatherhess(int *covmod, double *data, double *dist, int *nSite,
-		   int *nObs, double *locdsgnmat, int *nloccoeff,
-		   double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
-		   int *nshapecoeff, double *loccoeff, double *scalecoeff,
-		   double *shapecoeff, double *sill, double *range, double *smooth,
-		   double *smooth2, int *fitmarge, double *hess);
-void schlatherindhess(int *covmod, double *data, double *dist, int *nSite,
-		      int *nObs, double *locdsgnmat, int *nloccoeff,
-		      double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
-		      int *nshapecoeff, double *loccoeff, double *scalecoeff,
-		      double *shapecoeff, double *alpha, double *sill, double *range,
-		      double *smooth, double *smooth2, int *fitmarge, double *hess);
-void geomgausshess(int *covmod, double *data, double *dist, int *nSite,
-		   int *nObs, double *locdsgnmat, int *nloccoeff,
-		   double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
-		   int *nshapecoeff, double *loccoeff, double *scalecoeff,
-		   double *shapecoeff, double *sigma2, double *sill, double *range,
-		   double *smooth, double *smooth2, int *fitmarge, double *hess);
-void brownresnickhess(double *data, double *dist, int *nSite, int *nObs,
-		      double *locdsgnmat, int *nloccoeff, double *scaledsgnmat,
-		      int *nscalecoeff, double *shapedsgnmat, int *nshapecoeff,
-		      double *loccoeff, double *scalecoeff, double *shapecoeff,
-		      double *range, double *smooth, int *fitmarge, double *hess);
-
-///////////////////////////////////
 //  From pairwiselik.c
 //
 double lpliksmith(double *data, double *rho, double *jac,
@@ -388,6 +349,7 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
 		 int *covmod, int *grid, double *sigma2, double *sill,
 		 double *range, double *smooth, double *uBound,
 		 double *ans);
+
 ///////////////////////////////////
 //  From gpdproc.c
 //
@@ -400,3 +362,46 @@ double gpd2ugpd(double *data, int nObs, int nSite, double *excRates,
 		double *jac, double *ugpd);
 double lpliksmithgpd(double *data, double *mahalDist, double *jac,
 		     double *excRates, int nObs, int nSite);
+
+///////////////////////////////////
+//  From standardErrors.c
+//
+void smithstderr(double *data, double *distVec, int *nSite,
+		 int *nObs, double *locdsgnmat, int *nloccoeff,
+		 double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
+		 int *nshapecoeff, double *loccoeff, double *scalecoeff,
+		 double *shapecoeff, double *cov11, double *cov12,
+		 double *cov22, int *fitmarge, double *hess, double *grad);
+void smithstderr3d(double *data, double *distVec, int *nSite,
+		   int *nObs, double *locdsgnmat, int *nloccoeff,
+		   double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
+		   int *nshapecoeff, double *loccoeff, double *scalecoeff,
+		   double *shapecoeff, double *cov11, double *cov12, double *cov13,
+		   double *cov22, double *cov23, double *cov33, int *fitmarge, double *hess,
+		   double *grad);
+void schlatherstderr(int *covmod, double *data, double *dist, int *nSite,
+		     int *nObs, double *locdsgnmat, int *nloccoeff,
+		     double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
+		     int *nshapecoeff, double *loccoeff, double *scalecoeff,
+		     double *shapecoeff, double *sill, double *range, double *smooth,
+		     double *smooth2, int *fitmarge, double *hess, double *grad);
+void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite,
+			int *nObs, double *locdsgnmat, int *nloccoeff,
+			double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
+			int *nshapecoeff, double *loccoeff, double *scalecoeff,
+			double *shapecoeff, double *alpha, double *sill, double *range,
+			double *smooth, double *smooth2, int *fitmarge, double *hess,
+			double *grad);
+void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite,
+		     int *nObs, double *locdsgnmat, int *nloccoeff,
+		     double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
+		     int *nshapecoeff, double *loccoeff, double *scalecoeff,
+		     double *shapecoeff, double *sigma2, double *sill, double *range,
+		     double *smooth, double *smooth2, int *fitmarge, double *hess,
+		     double *grad);
+void brownresnickstderr(double *data, double *dist, int *nSite, int *nObs,
+			double *locdsgnmat, int *nloccoeff, double *scaledsgnmat,
+			int *nscalecoeff, double *shapedsgnmat, int *nshapecoeff,
+			double *loccoeff, double *scalecoeff, double *shapecoeff,
+			double *range, double *smooth, int *fitmarge, double *hess,
+			double *grad);
