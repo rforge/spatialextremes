@@ -2,15 +2,15 @@
 
 void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
 		   int *nObs, int *dim, double *locs, double *scales, double *shapes,
-		   double *sigma2, double *sill, double *range, double *smooth,
-		   int *fitmarge,double *dns){
+		   double *sigma2, double *sigma2Bound, double *sill, double *range,
+		   double *smooth, double *smooth2, int *fitmarge, double *dns){
   //This is the geometric gaussian model. It computes the pairwise
   //log-likelihood
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
   int i;
   double *jac, *rho, *frech;
-  
+
   jac = (double *)R_alloc(*nSite * *nObs, sizeof(double));
   rho = (double *)R_alloc(nPairs, sizeof(double));
   frech = (double *)R_alloc(*nSite * *nObs, sizeof(double));
@@ -26,8 +26,8 @@ void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
   }
    
   //Stage 0: Compute the covariance at each location
-  *dns = geomCovariance(dist, nPairs, *dim, *covmod, *sigma2, *sill, *range,
-			*smooth, rho);
+  *dns = geomCovariance(dist, nPairs, *dim, *covmod, *sigma2, *sigma2Bound,
+			*sill, *range, *smooth, *smooth2, rho);
 
   if (*dns != 0.0)
     return;
@@ -63,13 +63,14 @@ void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 		      int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
 		      double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
 		      double *loccoeff, double *scalecoeff, double *shapecoeff, double *sigma2,
-		      double *sill, double *range, double *smooth, double *dns){
+		      double *sigma2Bound, double *sill, double *range, double *smooth,
+		      double *smooth2, double *dns){
   //This is the geometric gaussian model
   //The GEV parameters are defined using a polynomial response surface
   
   const int nPairs = *nSite * (*nSite - 1) / 2;
   double *jac, *rho, *locs, *scales, *shapes, *frech;
-    
+
   jac = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   rho = (double *)R_alloc(nPairs, sizeof(double));
   locs = (double *)R_alloc(*nSite, sizeof(double));
@@ -78,8 +79,8 @@ void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   frech = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   
   //Stage 1: Compute the covariance at each location
-  *dns = geomCovariance(dist, nPairs, *dim, *covmod, *sigma2, *sill, *range,
-			*smooth, rho);
+  *dns = geomCovariance(dist, nPairs, *dim, *covmod, *sigma2, *sigma2Bound,
+			*sill, *range, *smooth, *smooth2, rho);
 
   if (*dns != 0.0)
     return;
