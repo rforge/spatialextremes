@@ -19,9 +19,15 @@ geomgaussfull <- function(data, coord, start, cov.mod = "whitmat", ...,
 
   dist <- distance(coord)
   
-  if (!(cov.mod %in% c("whitmat","cauchy","powexp", "bessel")))
-    stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel'")
+  if (!(cov.mod %in% c("whitmat","cauchy","powexp", "bessel", "caugen")))
+    stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel', 'caugen'")
 
+  if (is.null(control$sigma2Bound))
+    sigma2Bound <- 50
+
+  else
+    sigma2Bound <- control$sigma2Bound
+  
   if (cov.mod == "whitmat")
     cov.mod.num <- 1
   if (cov.mod == "cauchy")
@@ -30,6 +36,8 @@ geomgaussfull <- function(data, coord, start, cov.mod = "whitmat", ...,
     cov.mod.num <- 3
   if (cov.mod == "bessel")
     cov.mod.num <- 4
+  if (cov.mod == "caugen")
+    cov.mod.num <- 5
   
   ##First create a "void" function
   nplk <- function(x) x
@@ -41,22 +49,48 @@ geomgaussfull <- function(data, coord, start, cov.mod = "whitmat", ...,
     scale.names <- paste("scale", 1:n.site, sep="")
     shape.names <- paste("shape", 1:n.site, sep="")
     
-    param <- c("sigma2", "sill", "range", "smooth", loc.names, scale.names, shape.names)
+    param <- c("sigma2", "sill", "range", "smooth")
 
-    body(nplk) <- parse(text = paste("-.C('geomgaussfull', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim),",
+    if (cov.mod == "caugen")
+      param <- c(param, "smooth2")
+    
+    param <- c(param, loc.names, scale.names, shape.names)
+
+    if (cov.mod == "caugen")
+      body(nplk) <- parse(text = paste("-.C('geomgaussfull', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim),",
                             paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                            "as.double(sigma2), as.double(sill), as.double(range), as.double(smooth), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+                            "as.double(sigma2), as.double(sigma2Bound), as.double(sill), as.double(range), as.double(smooth), as.double(smooth2), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+
+    else
+      body(nplk) <- parse(text = paste("-.C('geomgaussfull', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim),",
+                            paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
+                            paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
+                            paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
+                            "as.double(sigma2), as.double(sigma2Bound), as.double(sill), as.double(range), as.double(smooth), double(1), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
   }
 
   else{
-    body(nplk) <- parse(text = paste("-.C('geomgaussfull', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim),",
-                            paste("as.double(rep(1,", n.site, ")), "),
-                            paste("as.double(rep(1,", n.site, ")), "),
-                            paste("as.double(rep(1,", n.site, ")), "),
-                            "as.double(sigma2), as.double(sill), as.double(range), as.double(smooth), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+
     param <- c("sigma2", "sill", "range", "smooth")
+
+    if (cov.mod == "caugen"){
+      body(nplk) <- parse(text = paste("-.C('geomgaussfull', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim),",
+                            paste("as.double(rep(1,", n.site, ")), "),
+                            paste("as.double(rep(1,", n.site, ")), "),
+                            paste("as.double(rep(1,", n.site, ")), "),
+                            "as.double(sigma2), as.double(sigma2Bound), as.double(sill), as.double(range), as.double(smooth), as.double(smooth2), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+    param <- c(param, "smooth2")
+    }
+
+    else
+     body(nplk) <- parse(text = paste("-.C('geomgaussfull', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim),",
+                            paste("as.double(rep(1,", n.site, ")), "),
+                            paste("as.double(rep(1,", n.site, ")), "),
+                            paste("as.double(rep(1,", n.site, ")), "),
+                            "as.double(sigma2), as.double(sigma2Bound), as.double(sill), as.double(range), as.double(smooth), double(1), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns")) 
+    
   }
 
   fixed.param <- list(...)[names(list(...)) %in% param]
@@ -81,7 +115,7 @@ Standard errors are not available unless you fix it.")
     hessian <- FALSE
 
   else
-    hessian <- TRUE
+    hessian <- FALSE
 
   ##Define the formal arguments of the function
   form.nplk <- NULL
@@ -109,15 +143,8 @@ Standard errors are not available unless you fix it.")
     }
 
     if (length(fixed.param) > 0){
-      if (any(names(fixed.param) == "sigma2")){
-        idx <- which(names(fixed.param) == "sigma2")
-        args <- c(list(data = data, coord = coord, cov.mod = cov.mod, marge = "emp"),
-                  fixed.param[-idx])
-      }
-
-      else
-        args <- c(list(data = data, coord = coord, cov.mod = paste("g", cov.mod, sep=""),
-                       marge = "emp"), fixed.param)
+      args <- c(list(data = data, coord = coord, cov.mod = paste("g", cov.mod, sep=""),
+                     marge = "emp"), fixed.param)
       
       cov.start <- do.call("fitcovariance", args)$param
     }
@@ -244,8 +271,10 @@ Standard errors are not available unless you fix it.")
   }
   
   if (std.err.type != "none"){
-    
+    opt$hessian <- .geomgausshess(param, data, dist, cov.mod.num, 0, 0, 0,
+                                  fit.marge, fixed.param, param.names)
     var.cov <- try(solve(opt$hessian), silent = TRUE)
+    
     if(!is.matrix(var.cov)){
       if (warn)
         warning("observed information matrix is singular; passing std.err.type to ''none''")
@@ -302,11 +331,17 @@ Standard errors are not available unless you fix it.")
     var.cov <- ihessian <- jacobian <- NULL
   }
 
-  cov.fun <-  covariance(sill = param["sill"], range = param["range"],
-                         smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
+  if (cov.mod == "caugen")
+    cov.fun <-  covariance(sill = param["sill"], range = param["range"],
+                           smooth = param["smooth"], smooth2 = param["smooth2"],
+                           cov.mod = cov.mod, plot = FALSE)
+
+  else
+    cov.fun <-  covariance(sill = param["sill"], range = param["range"],
+                           smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
   
   ext.coeff <- function(h)
-    2 * pnorm(sqrt(param["sigma2"] * (1 - cov.fun(h)) / 2))
+    2 * pnorm(sqrt(0.5 * param["sigma2"] * (1 - cov.fun(h))))
 
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
                  var.cov = var.cov, param = param, cov.fun = cov.fun, fixed = unlist(fixed.param),
@@ -338,8 +373,14 @@ geomgaussform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
 
   dist <- distance(coord)
      
-  if (!(cov.mod %in% c("whitmat","cauchy","powexp", "bessel")))
-    stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel'")
+  if (!(cov.mod %in% c("whitmat","cauchy","powexp", "bessel", "caugen")))
+    stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel', 'caugen'")
+
+  if (is.null(control$sigma2Bound))
+    sigma2Bound <- 50
+
+  else
+    sigma2Bound <- control$sigma2Bound
 
   if (cov.mod == "whitmat")
     cov.mod.num <- 1
@@ -349,6 +390,8 @@ geomgaussform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
     cov.mod.num <- 3
   if (cov.mod == "bessel")
     cov.mod.num <- 4
+  if (cov.mod == "caugen")
+    cov.mod.num <- 5
 
   ##With our notation, formula must be of the form y ~ xxxx
   loc.form <- update(loc.form, y ~ .)
@@ -397,18 +440,32 @@ geomgaussform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   scale.names <- paste("scaleCoeff", 1:n.scalecoeff, sep="")
   shape.names <- paste("shapeCoeff", 1:n.shapecoeff, sep="")
   
-  param <- c("sigma2", "sill", "range", "smooth", loc.names, scale.names, shape.names)
+  param <- c("sigma2", "sill", "range", "smooth")
+
+  if (cov.mod == "caugen")
+    param <- c(param, "smooth2")
+  
+  param <- c(param, loc.names, scale.names, shape.names)
 
   ##First create a "void" function
   nplk <- function(x) x
 
   ##And define the "body" of the function as the number of parameters
   ##to estimate depends on n.site
-   body(nplk) <- parse(text = paste("-.C('geomgaussdsgnmat', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
+  if (cov.mod == "caugen")
+    body(nplk) <- parse(text = paste("-.C('geomgaussdsgnmat', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
                           paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                           paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                           paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                         "as.double(sigma2), as.double(sill), as.double(range), as.double(smooth), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+                          "as.double(sigma2), as.double(sigma2Bound), as.double(sill), as.double(range), as.double(smooth), as.double(smooth2), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+
+  else
+    body(nplk) <- parse(text = paste("-.C('geomgaussdsgnmat', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
+                          paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
+                          paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
+                          paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
+                          "as.double(sigma2), as.double(sigma2Bound), as.double(sill), as.double(range), as.double(smooth), double(1), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+  
   ##Define the formal arguments of the function
   form.nplk <- NULL
   for (i in 1:length(param))
@@ -470,7 +527,7 @@ Standard errors are not available unless you fix it.")
     hessian <- FALSE
 
   else
-    hessian <- TRUE
+    hessian <- FALSE
 
   if(any(!(param %in% c(nm,names(fixed.param)))))
     stop("unspecified parameters")
@@ -563,8 +620,11 @@ Standard errors are not available unless you fix it.")
   }
   
   if (std.err.type != "none"){
-    
+    opt$hessian <- .geomgausshess(param, data, dist, cov.mod.num, loc.dsgn.mat,
+                                  scale.dsgn.mat, shape.dsgn.mat, fit.marge,
+                                  fixed.param, param.names)
     var.cov <- try(solve(opt$hessian), silent = TRUE)
+    
     if(!is.matrix(var.cov)){
       if (warn)
         warning("observed information matrix is singular; passing std.err.type to ''none''")
@@ -624,11 +684,17 @@ Standard errors are not available unless you fix it.")
     var.cov <- ihessian <- jacobian <- NULL
   }
 
-  cov.fun <- covariance(sill = param["sill"], range = param["range"],
-                        smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
+  if (cov.mod == "caugen")
+    cov.fun <- covariance(sill = param["sill"], range = param["range"],
+                          smooth = param["smooth"], smooth2 = param["smooth2"],
+                          cov.mod = cov.mod, plot = FALSE)
+
+  else
+    cov.fun <- covariance(sill = param["sill"], range = param["range"],
+                          smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
   
   ext.coeff <- function(h)
-    2 * pnorm(sqrt(param["sigma2"] * (1 - cov.fun(h)) / 2))
+    2 * pnorm(sqrt(0.5 * param["sigma2"] * (1 - cov.fun(h))))
   
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
                  var.cov = var.cov, fixed = unlist(fixed.param), param = param,
