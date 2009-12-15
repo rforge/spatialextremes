@@ -5,8 +5,13 @@ fitmaxstab <- function(data, coord, cov.mod, loc.form, scale.form, shape.form,
 
   if (!(std.err.type) %in% c("none", "score", "grad"))
     stop("'std.err.type' must be one of 'none', 'score' or 'grad'")
-  
-  if (nrow(coord) != ncol(data))
+
+  if (is.null(dim(coord))){
+    if (length(coord) != ncol(data))
+      stop("'data' and 'coord' don't match")
+  }
+
+  else if (nrow(coord) != ncol(data))
     stop("'data' and 'coord' don't match")
 
   if (!is.null(marg.cov) && is.null(colnames(marg.cov)))
@@ -55,7 +60,15 @@ be given for *ALL* GEV parameters")
                        warn = warn, method = method, control = control, std.err.type =
                        std.err.type, corr = corr, start = start))
   
-  
+  else if (cov.mod == "brown")
+    fitted <- switch(reg.mod, "full" = brownresnickfull(data, coord, ..., fit.marge = fit.marge,
+                                warn = warn, method = method, control = control, std.err.type = std.err.type,
+                                corr = corr, start = start),
+                         "spatgev" = brownresnickform(data, coord, ..., loc.form = loc.form,
+                           scale.form = scale.form, shape.form = shape.form,
+                           fit.marge = fit.marge, marg.cov = marg.cov, warn = warn,
+                           method = method, control = control, std.err.type = std.err.type, corr = corr,
+                           start = start))
   else{
 
     if (substr(cov.mod, 1, 1) == "i")

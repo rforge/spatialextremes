@@ -18,8 +18,13 @@ madogram <- function(data, coord, fitted, n.bins, gev.param = c(0, 1, 0),
       ext.coeff.fit <- fitted$ext.coeff
     }
   }
-  
-  if (nrow(coord) != ncol(data))
+
+  if (is.null(dim(coord))){
+    if (length(coord) != ncol(data))
+      stop("'data' and 'coord' don't match")
+  }
+
+  else if (nrow(coord) != ncol(data))
     stop("'data' and 'coord' don't match")
   
   if (!is.null(angles) & !missing(n.bins))
@@ -174,10 +179,15 @@ fmadogram <- function(data, coord, fitted, n.bins, which = c("mado", "ext"),
       ext.coeff.fit <- fitted$ext.coeff
     }
   }
-  
-  if (nrow(coord) != ncol(data))
-    stop("'data' and 'coord' don't match")
 
+  if (is.null(dim(coord))){
+    if (length(coord) != ncol(data))
+      stop("'data' and 'coord' don't match")
+  }
+
+  else if (nrow(coord) != ncol(data))
+    stop("'data' and 'coord' don't match")
+  
   if (!is.null(angles) & !missing(n.bins))
     stop("'It is not possible to pass 'n.bins' and 'angles' at the same time")
 
@@ -292,10 +302,24 @@ fmadogram <- function(data, coord, fitted, n.bins, which = c("mado", "ext"),
 }
 
 lmadogram <- function(data, coord, n.bins, xlab, ylab, zlab, n.lambda = 11,
-                      marge = "mle", col = terrain.colors(50, alpha = 0.5),
-                      theta = 90, phi = 20, border = NA, ...){
-  
-  if (nrow(coord) != ncol(data))
+                      marge = "emp", col = terrain.colors(50, alpha = 0.5),
+                      theta = 90, phi = 20, border = NA, rgl = TRUE, ...){
+
+  if (rgl){
+    is.present <- try(library(rgl), silent = TRUE)
+
+    if (class(is.present) == "try-error"){
+      warning("'rlg' package must be installed. The 3d feature won't be accessible.")
+      rgl <- FALSE
+    }
+  }
+
+  if (is.null(dim(coord))){
+    if (length(coord) != ncol(data))
+      stop("'data' and 'coord' don't match")
+  }
+
+  else if (nrow(coord) != ncol(data))
     stop("'data' and 'coord' don't match")
 
   if (!(marge %in% c("mle", "emp")))
@@ -323,32 +347,41 @@ lmadogram <- function(data, coord, n.bins, xlab, ylab, zlab, n.lambda = 11,
               PACKAGE = "SpatialExtremes")$lmado
   lmado <- matrix(lmado, nrow = n.lambda, ncol = n.pairs)
 
+  if (anyDuplicated(dist)){
+    ##If we have identical pairwise distances, we average over them
+    unique.dist <- unique(dist)
+    n.pairs <- length(unique.dist)
+    lmadoBinned <- matrix(NA, ncol = n.pairs, nrow = n.lambda)
+    
+    for (i in 1:n.pairs){
+      unique.idx <- which(dist == unique.dist[i])
+      lmadoBinned[,i] <- rowMeans(lmado[,unique.idx, drop = FALSE])
+    }
+    
+    dist <- sort(unique.dist, index.return = TRUE)
+    idx <- dist$ix
+    dist <- dist$x
+    lmado <- lmadoBinned[,idx]
+    ##lmado <- lmado[,idx]
+  }
+
   if (!missing(n.bins)){
-    bins <- c(0, quantile(dist, 1:n.bins/(n.bins + 1)), max(dist))
-    lmadoBinned <- matrix(NA, ncol = n.bins + 1, nrow = n.lambda)
+    bins <- unique(unname(c(0, quantile(dist, 1:n.bins/(n.bins + 1)), max(dist))))
+    n.bins <- length(bins) - 2
+    lmadoBinned <- matrix(0, ncol = n.bins + 1, nrow = n.lambda)
     
     for (k in 1:(n.bins+1)){
       idx <- which((dist <= bins[k+1]) & (dist > bins[k]))
-      
-      if (length(idx) == 1)
-        lmadoBinned[,k] <- lmado[,idx]
 
-      else if (length(idx) > 1)
-        lmadoBinned[,k] <- rowMeans(lmado[,idx])
+      if (length(idx) > 0)
+        lmadoBinned[,k] <- rowMeans(lmado[,idx, drop = FALSE])
     }
     
     lmado <- lmadoBinned
     dist <- (bins[-1] + bins[-(n.bins+2)])/2
+    n.pairs <-  n.bins+1
   }
 
-  else{
-    ##We need to sort the pairwise distance to use the persp function
-    dist <- sort(dist, index.return = TRUE)
-    idx <- dist$ix
-    dist <- dist$x
-    lmado <- lmado[,idx]
-  }
-  
   if (missing(xlab))
     xlab <- "lambda"
 
@@ -358,19 +391,21 @@ lmadogram <- function(data, coord, n.bins, xlab, ylab, zlab, n.lambda = 11,
   if (missing(zlab))
     zlab <- "lambda-madogram"
 
-  if (missing(n.bins))
-    zfacet <- lmado[-1,-1] + lmado[-1, -n.pairs] + lmado[-n.lambda,-1] +
-      lmado[-n.lambda, -n.pairs]
-
-  else
-    zfacet <- lmado[-1,-1] + lmado[-1, -(n.bins+1)] + lmado[-n.lambda,-1] +
-      lmado[-n.lambda, -(n.bins+1)]
+  zfacet <- lmado[-1,-1] + lmado[-1, -n.pairs] + lmado[-n.lambda,-1] +
+    lmado[-n.lambda, -n.pairs]
   
   facetcol <- cut(zfacet, length(col))
 
-  persp(lambda, dist, lmado, xlab = xlab, ylab = ylab, zlab = zlab,
-        col = col[facetcol], theta = theta, phi = phi, border = border,
-        ...)
+  if (rgl){
+    persp3d(lambda, dist, lmado, xlab = xlab, ylab = ylab, zlab = zlab,
+            col = col[lmado %/% (0.25 / length(col)) + 1], ...)
+    play3d(spin3d(axis = c(0, 0, 1), rpm = 10), duration = 6)
+  }
+
+  else
+    persp(lambda, dist, lmado, xlab = xlab, ylab = ylab, zlab = zlab,
+          col = col[facetcol], theta = theta, phi = phi, border = border,
+          ...)
 
   invisible(list(lambda = lambda, dist = dist, madogram = lmado))
 }
