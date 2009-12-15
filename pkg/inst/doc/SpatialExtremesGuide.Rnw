@@ -35,7 +35,7 @@ coord <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 data <- rmaxstab(40, coord, "whitmat", sill = 1, range = 1, smooth = 2)
 
 ##Compute the lambda-madogram
-lmadogram(data, coord, n.bins = 25, border = "grey", box = FALSE)
+lmadogram(data, coord, n.bins = 25, border = "grey", box = FALSE, rgl = FALSE)
 @ 
   \end{center}
 \end{titlepage}
@@ -1888,8 +1888,8 @@ data1 <- rmaxstab(n.obs, coord, "powexp", sill = 1, range = 1, smooth = 1)
 data2 <- rmaxstab(n.obs, coord, "cauchy", sill = 1, range = 1, smooth = 1)
 
 par(mfrow=c(1,2), pty = "s")
-lmadogram(data1, coord, n.bins = 60)
-lmadogram(data2, coord, n.bins = 60)
+lmadogram(data1, coord, n.bins = 60, rgl = FALSE)
+lmadogram(data2, coord, n.bins = 60, rgl = FALSE)
 @ 
 
 \begin{figure}
