@@ -43,7 +43,7 @@
 
   args <- c(list(data = data, covariables = as.matrix(covariables), loc.form = loc.form,
                  scale.form = scale.form, shape.form = shape.form, std.err.type = "none",
-                 method = method), fixed.param.gev)
+                 method = method, warn = FALSE), fixed.param.gev)
 
   spatgev <- do.call("fitspatgev", args)
 
@@ -96,7 +96,7 @@
 
   args <- c(list(data = data, covariables = as.matrix(covariables), loc.form = loc.form,
                  scale.form = scale.form, shape.form = shape.form, std.err.type = "none",
-                 method = method), fixed.param.gev)
+                 method = method, warn = FALSE), fixed.param.gev)
 
   spatgev <- do.call("fitspatgev", args)
 
@@ -150,7 +150,7 @@
 
   args <- c(list(data = data, covariables = as.matrix(covariables), loc.form = loc.form,
                  scale.form = scale.form, shape.form = shape.form, std.err.type = "none",
-                 method = method), fixed.param.gev)
+                 method = method, warn = FALSE), fixed.param.gev)
 
   spatgev <- do.call("fitspatgev", args)
 
@@ -203,7 +203,7 @@
 
   args <- c(list(data = data, covariables = as.matrix(covariables), loc.form = loc.form,
                  scale.form = scale.form, shape.form = shape.form, std.err.type = "none",
-                 method = method), fixed.param.gev)
+                 method = method, warn = FALSE), fixed.param.gev)
 
   spatgev <- do.call("fitspatgev", args)
 
@@ -271,7 +271,7 @@
 
   args <- c(list(data = data, covariables = as.matrix(covariables), loc.form = loc.form,
                  scale.form = scale.form, shape.form = shape.form, std.err.type = "none",
-                 method = method), fixed.param.gev)
+                 method = method, warn = FALSE), fixed.param.gev)
 
   spatgev <- do.call("fitspatgev", args)
 
@@ -327,7 +327,7 @@
 
   args <- c(list(data = data, covariables = as.matrix(covariables), loc.form = loc.form,
                  scale.form = scale.form, shape.form = shape.form, std.err.type = "none",
-                 method = method), fixed.param.gev)
+                 method = method, warn = FALSE), fixed.param.gev)
 
   spatgev <- do.call("fitspatgev", args)
 
