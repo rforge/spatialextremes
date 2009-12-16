@@ -332,7 +332,7 @@ Standard errors are not available unless you fix it.")
                  logLik = -opt$value, opt.value = opt$value, model = "Geometric",
                  cov.mod = cov.mod, fit.marge = fit.marge, ext.coeff = ext.coeff,
                  hessian = opt$hessian, lik.fun = nllh, coord = coord, ihessian = ihessian,
-                 jacobian = var.score, marg.cov = NULL, nllh = nllh)
+                 var.score = var.score, marg.cov = NULL, nllh = nllh)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
@@ -600,11 +600,12 @@ Standard errors are not available unless you fix it.")
                                 fit.marge = fit.marge, std.err.type = std.err.type,
                                 fixed.param = names(fixed.param), param.names =
                                 param.names)
-    opt$hessian <- std.err$hess
+    
+    opt$hessian <- std.err$hessian
     var.score <- std.err$var.score
     ihessian <- try(solve(opt$hessian), silent = TRUE)
     
-    if(!is.matrix(var.cov)){
+    if(!is.matrix(ihessian)){
       if (warn)
         warning("observed information matrix is singular; passing std.err.type to ''none''")
       
@@ -666,7 +667,7 @@ Standard errors are not available unless you fix it.")
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = cov.mod, cov.fun = cov.fun,
                  loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                  lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
-                 shape.type = shape.type, ihessian = ihessian, jacobian = var.score,
+                 shape.type = shape.type, ihessian = ihessian, var.score = var.score,
                  marg.cov = marg.cov, nllh = nllh)
   
   class(fitted) <- c(fitted$model, "maxstab")

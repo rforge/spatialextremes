@@ -8,10 +8,10 @@ TIC.default <- function(object, ..., k = 2){
 
     object <- all.objects[[i]]
     ihessian <- object$ihessian
-    jacobian <- object$jacobian
+    var.score <- object$var.score
     
-    if (!is.null(ihessian) && !is.null(jacobian)){
-      penalty <- jacobian %*% ihessian
+    if (!is.null(ihessian) && !is.null(var.score)){
+      penalty <- var.score %*% ihessian
       tic[i] <- deviance(object) + k * sum(diag(penalty))
     }
     
@@ -77,7 +77,7 @@ anova.maxstab <- function(object, object2, method = "RJ",
     theta0 <- M0$param
     theta0 <- theta0[colnames(ihessian)]
 
-    jac <- M1$jacobian
+    jac <- M1$var.score
     ijac <- try(solve(jac), silent = TRUE)
     hessian <- try(solve(ihessian), silent = TRUE)
 
@@ -220,7 +220,7 @@ anova.spatgev <- function(object, object2, method = "RJ",
     theta0 <- M0$param
     theta0 <- theta0[colnames(ihessian)]
 
-    jac <- M1$jacobian    
+    jac <- M1$var.score    
     ijac <- try(solve(jac), silent = TRUE)
     hessian <- try(solve(ihessian), silent = TRUE)
 

@@ -228,7 +228,7 @@ brownresnickfull <- function(data, coord, start, ..., fit.marge = FALSE,
 
   if (std.err.type == "none"){
     std.err <- std.err.type <- corr.mat <- NULL
-    var.cov <- ihessian <- jacobian <- NULL
+    var.cov <- ihessian <- var.score <- NULL
   }
 
   ext.coeff <- function(h)
@@ -241,7 +241,7 @@ brownresnickfull <- function(data, coord, start, ..., fit.marge = FALSE,
                  logLik = -opt$value, opt.value = opt$value, model = "Brown-Resnick",
                  cov.mod = "brown", fit.marge = fit.marge, ext.coeff = ext.coeff,
                  hessian = opt$hessian, lik.fun = nllh, coord = coord, ihessian = ihessian,
-                 jacobian = var.score, marg.cov = NULL, nllh = nllh)
+                 var.score = var.score, marg.cov = NULL, nllh = nllh)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
@@ -450,7 +450,7 @@ brownresnickform <- function(data, coord, loc.form, scale.form, shape.form,
     var.score <- std.err$var.score
     ihessian <- try(solve(opt$hessian), silent = TRUE)
     
-    if(!is.matrix(var.cov)){
+    if(!is.matrix(ihessian)){
       if (warn)
         warning("observed information matrix is singular; passing std.err.type to ''none''")
       
@@ -489,7 +489,7 @@ brownresnickform <- function(data, coord, loc.form, scale.form, shape.form,
 
   if (std.err.type == "none"){
     std.err <- std.err.type <- corr.mat <- NULL
-    var.cov <- ihessian <- jacobian <- NULL
+    var.cov <- ihessian <- var.score <- NULL
   }
 
   ext.coeff <- function(h)
@@ -503,7 +503,7 @@ brownresnickform <- function(data, coord, loc.form, scale.form, shape.form,
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = "brown", cov.fun = NA,
                  loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                  lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
-                 shape.type = shape.type, ihessian = ihessian, jacobian = var.score,
+                 shape.type = shape.type, ihessian = ihessian, var.score = var.score,
                  marg.cov = marg.cov, nllh = nllh)
   
   class(fitted) <- c(fitted$model, "maxstab")

@@ -353,7 +353,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
                  counts = opt$counts, message = opt$message, data = data, est = "MPLE",
                  logLik = -opt$value, opt.value = opt$value, model = "Smith",
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = "Gaussian",
-                 lik.fun = nllh, coord = coord, ihessian = ihessian, jacobian = var.score,
+                 lik.fun = nllh, coord = coord, ihessian = ihessian, var.score = var.score,
                  marg.cov = NULL, nllh = nllh, iso = iso)
   
   class(fitted) <- c(fitted$model, "maxstab")
@@ -688,7 +688,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = "Gaussian",
                  loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                  lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
-                 shape.type = shape.type, ihessian = ihessian, jacobian = var.score,
+                 shape.type = shape.type, ihessian = ihessian, var.score = var.score,
                  marg.cov = marg.cov, nllh = nllh, iso = iso)
   
   class(fitted) <- c(fitted$model, "maxstab")
