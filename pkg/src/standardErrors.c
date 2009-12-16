@@ -9,8 +9,7 @@ void smithstderr(double *data, double *distVec, int *nSite,
 
   //This is the Smith model. It computes the hessian of the pairwise log-likelihood
   
-  const int nPairs = *nSite * (*nSite - 1) / 2,
-    nPar = *nloccoeff + *nscalecoeff + *nshapecoeff + 3;
+  const int nPairs = *nSite * (*nSite - 1) / 2;
   int i, j, k, l, currentPair = -1;
   double c1, c2, dAa, dAz1, dAz2, B, dBa, dBz1, dBz2, C,
     dCa, dCz1, dCz2, D, dDa, dDz1, dDz2, *mahalDist, *locs,
