@@ -178,49 +178,6 @@ SEXP gibbs(SEXP n, SEXP np, SEXP thin, SEXP init,
 	   SEXP psd, SEXP f, SEXP rho);
 
 ///////////////////////////////////
-//  From gradients.c
-//
-void smithgrad(double *data, double *distVec, int *nSite,
-	       int *nObs, double *locdsgnmat, int *nloccoeff,
-	       double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
-	       int *nshapecoeff, double *loccoeff, double *scalecoeff,
-	       double *shapecoeff, double *cov11, double *cov12,
-	       double *cov22, int *fitmarge, double *grad);
-void smithgrad3d(double *data, double *distVec, int *nSite,
-		 int *nObs, double *locdsgnmat, int *nloccoeff,
-		 double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
-		 int *nshapecoeff, double *loccoeff, double *scalecoeff,
-		 double *shapecoeff, double *cov11, double *cov12, double *cov13,
-		 double *cov22, double *cov23, double *cov33, int *fitmarge, double *grad);
-void schlathergrad(int *covmod, double *data, double *dist, int *nSite,
-		   int *nObs, double *locdsgnmat, int *nloccoeff,
-		   double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
-		   int *nshapecoeff, double *loccoeff, double *scalecoeff,
-		   double *shapecoeff, double *sill, double *range, double *smooth,
-		   double *smooth2, int *fitmarge, double *grad);
-void schlatherindgrad(int *covmod, double *data, double *dist, int *nSite,
-		      int *nObs, double *locdsgnmat, int *nloccoeff,
-		      double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
-		      int *nshapecoeff, double *loccoeff, double *scalecoeff,
-		      double *shapecoeff, double *alpha, double *sill, double *range,
-		      double *smooth, double *smooth2, int *fitmarge, double *grad);
-void spatgevgrad(double *data, int *nSite, int *nObs, double *locdsgnmat,
-		 int *nloccoeff, double *scaledsgnmat, int *nscalecoeff,
-		 double *shapedsgnmat, int *nshapecoeff, double *loccoeff,
-		 double *scalecoeff, double *shapecoeff, double *grad);
-void geomgaussgrad(int *covmod, double *data, double *dist, int *nSite,
-		   int *nObs, double *locdsgnmat, int *nloccoeff,
-		   double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
-		   int *nshapecoeff, double *loccoeff, double *scalecoeff,
-		   double *shapecoeff, double *sigma2, double *sill, double *range,
-		   double *smooth, double *smooth2, int *fitmarge, double *grad);
-void brownresnickgrad(double *data, double *dist, int *nSite, int *nObs,
-		      double *locdsgnmat, int *nloccoeff, double *scaledsgnmat,
-		      int *nscalecoeff, double *shapedsgnmat, int *nshapecoeff,
-		      double *loccoeff, double *scalecoeff, double *shapecoeff,
-		      double *range, double *smooth, int *fitmarge, double *grad);
-
-///////////////////////////////////
 //  From pairwiselik.c
 //
 double lpliksmith(double *data, double *rho, double *jac,
@@ -405,3 +362,8 @@ void brownresnickstderr(double *data, double *dist, int *nSite, int *nObs,
 			double *loccoeff, double *scalecoeff, double *shapecoeff,
 			double *range, double *smooth, int *fitmarge, double *hess,
 			double *grad);
+void spatgevstderr(double *data, int *nSite, int *nObs, double *locdsgnmat,
+		   int *nloccoeff, double *scaledsgnmat, int *nscalecoeff,
+		   double *shapedsgnmat, int *nshapecoeff, double *loccoeff,
+		   double *scalecoeff, double *shapecoeff, double *hess, 
+		   double *grad);
