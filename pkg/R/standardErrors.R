@@ -82,7 +82,7 @@
       grad[,1] <- rowSums(grad[,c(1,3)])
       grad <- grad[,-(2:3)]
 
-      hess[,1] <- rowSums(hes[,c(1,3)])
+      hess[,1] <- rowSums(hess[,c(1,3)])
       hess <- hess[,-(2:3)]
     }
 
@@ -102,27 +102,26 @@
     hess <- hess[, -idx, drop = FALSE]
   }
 
-  if (any(is.na(grad)) || any(is.na(hess)))
-    return(NA)
+  if (any(is.na(grad)))
+    return(list(var.score = NA, hessian = NA, gradient = NA))
 
-  if (std.err.type == "score")
+  if (std.err.type == "score"){
     var.score <- var(grad) * n.obs
+    hessian <- var(hess) * n.obs * n.pairs
+  }
   
   if (std.err.type == "grad"){
-    var.score <- 0
-    for (i in 1:n.obs){
-      grad.vec <- matrix(grad[i,], ncol = 1)
-      var.score <- var.score + grad.vec %*% t(grad.vec)
-    }
+    var.score <- matrix(0, ncol(grad), ncol(grad))
+    for (i in 1:n.obs)
+      var.score <- var.score + grad[i,] %*% t(grad[i,])
+
+    hessian <- matrix(0, ncol(hess), ncol(hess))
+    for (i in 1:(n.obs * n.pairs))
+      hessian <- hessian + hess[i,] %*% t(hess[i,])
   }
   
   gradient <- as.double(colSums(grad))
-
-  hessian <- matrix(0, ncol(hess), ncol(hess))
   
-  for (i in 1:(n.obs * n.pairs))
-    hessian <- hessian + hess[i,] %*% t(hess[i,])
-
   return(list(var.score = var.score, hessian = hessian, gradient = gradient))  
 }
 
@@ -196,26 +195,25 @@
     hess <- hess[, -idx, drop = FALSE]
   }
 
-  if (any(is.na(grad)) || any(is.na(hess)))
-    return(NA)
+  if (any(is.na(grad)))
+    return(list(var.score = NA, hessian = NA, gradient = NA))
 
-  if (std.err.type == "score")
+  if (std.err.type == "score"){
     var.score <- var(grad) * n.obs
+    hessian <- var(hess) * n.obs * n.pairs
+  }
   
   if (std.err.type == "grad"){
-    var.score <- 0
-    for (i in 1:n.obs){
-      grad.vec <- matrix(grad[i,], ncol = 1)
-      var.score <- var.score + grad.vec %*% t(grad.vec)
-    }
+    var.score <- matrix(0, ncol(grad), ncol(grad))
+    for (i in 1:n.obs)
+      var.score <- var.score + grad[i,] %*% t(grad[i,])
+
+    hessian <- matrix(0, ncol(hess), ncol(hess))
+    for (i in 1:(n.obs * n.pairs))
+      hessian <- hessian + hess[i,] %*% t(hess[i,])
   }
 
   gradient <- as.double(colSums(grad))
-
-  hessian <- matrix(0, ncol(hess), ncol(hess))
-  
-  for (i in 1:(n.obs * n.pairs))
-    hessian <- hessian + hess[i,] %*% t(hess[i,])
 
   return(list(var.score = var.score, hessian = hessian, gradient = gradient))
 }
@@ -294,25 +292,24 @@
   }
 
   if (any(is.na(grad)))
-    return(NA)
+    return(list(var.score = NA, hessian = NA, gradient = NA))
 
-  if (std.err.type == "score")
+  if (std.err.type == "score"){
+    hessian <- var(hess) * n.obs * n.pairs
     var.score <- var(grad) * n.obs
+  }
   
   if (std.err.type == "grad"){
-    var.score <- 0
-    for (i in 1:n.obs){
-      grad.vec <- matrix(grad[i,], ncol = 1)
-      var.score <- var.score + grad.vec %*% t(grad.vec)
-    }
+    var.score <- matrix(0, ncol(grad), ncol(grad))
+    for (i in 1:n.obs)
+      var.score <- var.score + grad[i,] %*% t(grad[i,])
+
+    hessian <- matrix(0, ncol(hess), ncol(hess))
+    for (i in 1:(n.obs * n.pairs))
+      hessian <- hessian + hess[i,] %*% t(hess[i,])
   }
 
   gradient <- as.double(colSums(grad))
-
-  hessian <- matrix(0, ncol(hess), ncol(hess))
-  
-  for (i in 1:(n.obs * n.pairs))
-    hessian <- hessian + hess[i,] %*% t(hess[i,])
 
   return(list(var.score = var.score, hessian = hessian, gradient))
 }
@@ -390,26 +387,25 @@
     hess <- hess[, -idx, drop = FALSE]
   }
 
-  if (any(is.na(grad)) || any(is.na(hess)))
-    return(NA)
+  if (any(is.na(grad)))
+    return(list(var.score = NA, hessian = NA, gradient = NA))
 
-  if (std.err.type == "score")
+  if (std.err.type == "score"){
+    hessian <- var(hess) * n.obs * n.pairs
     var.score <- var(grad) * n.obs
+  }
   
   if (std.err.type == "grad"){
-    var.score <- 0
-    for (i in 1:n.obs){
-      grad.vec <- matrix(grad[i,], ncol = 1)
-      var.score <- var.score + grad.vec %*% t(grad.vec)
-    }
+    var.score <- matrix(0, ncol(grad), ncol(grad))
+    for (i in 1:n.obs)
+      var.score <- var.score + grad[i,] %*% t(grad[i,])
+
+    hessian <- matrix(0, ncol(hess), ncol(hess))
+    for (i in 1:(n.obs * n.pairs))
+      hessian <- hessian + hess[i,] %*% t(hess[i,])
   }
   
   gradient <- as.double(colSums(grad))
-
-  hessian <- matrix(0, ncol(hess), ncol(hess))
-  
-  for (i in 1:(n.obs * n.pairs))
-    hessian <- hessian + hess[i,] %*% t(hess[i,])
 
   return(list(var.score = var.score, hessian = hessian, gradient))
 }
@@ -473,26 +469,89 @@
     hess <- hess[, -idx, drop = FALSE]
   }
 
-  if (any(is.na(grad)) || any(is.na(hess)))
-    return(NA)
+  if (any(is.na(grad)))
+    return(list(var.score = NA, hessian = NA, gradient = NA))
 
-  if (std.err.type == "score")
+  if (std.err.type == "score"){
+    hessian <- var(hess) * n.obs * n.pairs
     var.score <- var(grad) * n.obs
+  }
     
   if (std.err.type == "grad"){
-    var.score <- 0
-    for (i in 1:n.obs){
-      grad.vec <- matrix(grad[i,], ncol = 1)
-      var.score <- var.score + grad.vec %*% t(grad.vec)
-    }
+    var.score <- matrix(0, ncol(grad), ncol(grad))
+    for (i in 1:n.obs)
+      var.score <- var.score + grad[i,] %*% t(grad[i,])
+
+    hessian <- matrix(0, ncol(hess), ncol(hess))
+    for (i in 1:(n.obs * n.pairs))
+      hessian <- hessian + hess[i,] %*% t(hess[i,])
   }
   
   gradient <- as.double(colSums(grad))
 
-  hessian <- matrix(0, ncol(hess), ncol(hess))
-  
-  for (i in 1:(n.obs * n.pairs))
-    hessian <- hessian + hess[i,] %*% t(hess[i,])
-
   return(list(var.score = var.score, hessian = hessian, gradient))
+}
+
+.spatgevstderr <- function(par, data, loc.dsgn.mat, scale.dsgn.mat,
+                           shape.dsgn.mat, std.err.type = "score",
+                           fixed.param, param.names){
+
+  ##data is a matrix with each column corresponds to one location
+  n.site <- ncol(data)
+  n.obs <- nrow(data)
+  n.param <- length(param.names)
+  
+  n.loccoeff <- ncol(loc.dsgn.mat)
+  n.scalecoeff <- ncol(scale.dsgn.mat)
+  n.shapecoeff <- ncol(shape.dsgn.mat)
+
+  loc.idx <- which(substr(names(par), 1, 3) == "loc")
+  scale.idx <- which(substr(names(par), 1, 6) == "scaleC")
+  shape.idx <- which(substr(names(par), 1, 5) == "shape")
+
+  loc.param <- par[loc.idx]
+  scale.param <- par[scale.idx]
+  shape.param <- par[shape.idx]
+  
+  std.err <- .C("spatgevstderr", as.double(data), as.integer(n.site),
+                as.integer(n.obs), as.double(loc.dsgn.mat),
+                as.integer(n.loccoeff), as.double(scale.dsgn.mat),
+                as.integer(n.scalecoeff), as.double(shape.dsgn.mat),
+                as.integer(n.shapecoeff), as.double(loc.param),
+                as.double(scale.param), as.double(shape.param),
+                hess = double(n.obs * n.param * n.site),
+                grad = double(n.obs * n.param),
+                PACKAGE = "SpatialExtremes")
+
+  grad <- matrix(std.err$grad, nrow = n.obs, ncol = n.param)
+  hess <- matrix(std.err$hess, nrow = n.obs * n.site, ncol = n.param)
+  
+  n.fixed <- length(fixed.param)
+  if (n.fixed > 0){
+    idx <- which(param.names %in% fixed.param)
+    hess <- hess[, -idx, drop = FALSE]
+    grad <- grad[, -idx, drop = FALSE]
+  }
+
+  if (any(is.na(grad)))
+    return(list(gradient = NA, var.score = NA, hessian = NA))
+
+  if (std.err.type == "score"){
+    hessian <- var(hess) * n.obs * n.site
+    var.score <- var(grad) * n.obs
+  }
+  
+  if (std.err.type == "grad"){
+    var.score <- matrix(0, ncol(grad), ncol(grad))
+    for (i in 1:n.obs)
+      var.score <- var.score + grad[i,] %*% t(grad[i,])
+
+    hessian <- matrix(0, ncol(hess), ncol(hess))
+    for (i in 1:(n.obs * n.site))
+      hessian <- hessian + hess[i,] %*% t(hess[i,])
+  }
+
+  gradient <- as.double(colSums(grad))
+
+  return(list(var.score = var.score, hessian = hessian, gradient = gradient))
 }
