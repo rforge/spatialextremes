@@ -1,6 +1,6 @@
 madogram <- function(data, coord, fitted, n.bins, gev.param = c(0, 1, 0),
                      which = c("mado", "ext"), xlab, ylab, col = c(1, 2),
-                     angles = NULL, marge = "mle", add = FALSE, ...){
+                     angles = NULL, marge = "emp", add = FALSE, ...){
   
   if (missing(fitted) && missing(data) && missing(coord))
     stop("You must either specify a fitted model OR 'data' and 'coord'")
@@ -159,7 +159,7 @@ madogram <- function(data, coord, fitted, n.bins, gev.param = c(0, 1, 0),
 }
 
 fmadogram <- function(data, coord, fitted, n.bins, which = c("mado", "ext"),
-                      xlab, ylab, col = c(1, 2), angles = NULL, marge = "mle",
+                      xlab, ylab, col = c(1, 2), angles = NULL, marge = "emp",
                       add = FALSE, ...){
 
   if (missing(fitted) && missing(data) && missing(coord))
@@ -303,16 +303,7 @@ fmadogram <- function(data, coord, fitted, n.bins, which = c("mado", "ext"),
 
 lmadogram <- function(data, coord, n.bins, xlab, ylab, zlab, n.lambda = 11,
                       marge = "emp", col = terrain.colors(50, alpha = 0.5),
-                      theta = 90, phi = 20, border = NA, rgl = TRUE, ...){
-
-  if (rgl){
-    is.present <- try(library(rgl), silent = TRUE)
-
-    if (class(is.present) == "try-error"){
-      warning("'rlg' package must be installed. The 3d feature won't be accessible.")
-      rgl <- FALSE
-    }
-  }
+                      theta = 90, phi = 20, border = NA, ...){
 
   if (is.null(dim(coord))){
     if (length(coord) != ncol(data))
@@ -396,16 +387,9 @@ lmadogram <- function(data, coord, n.bins, xlab, ylab, zlab, n.lambda = 11,
   
   facetcol <- cut(zfacet, length(col))
 
-  if (rgl){
-    persp3d(lambda, dist, lmado, xlab = xlab, ylab = ylab, zlab = zlab,
-            col = col[lmado %/% (0.25 / length(col)) + 1], ...)
-    play3d(spin3d(axis = c(0, 0, 1), rpm = 10), duration = 6)
-  }
-
-  else
-    persp(lambda, dist, lmado, xlab = xlab, ylab = ylab, zlab = zlab,
-          col = col[facetcol], theta = theta, phi = phi, border = border,
-          ...)
+  persp(lambda, dist, lmado, xlab = xlab, ylab = ylab, zlab = zlab,
+        col = col[facetcol], theta = theta, phi = phi, border = border,
+        ...)
 
   invisible(list(lambda = lambda, dist = dist, madogram = lmado))
 }

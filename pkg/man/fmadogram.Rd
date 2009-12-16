@@ -4,7 +4,7 @@
 \description{Computes the F-madogram for max-stable processes.}
 \usage{
 fmadogram(data, coord, fitted, n.bins, which = c("mado", "ext"), xlab,
-ylab, col = c(1, 2), angles = NULL, marge = "mle", add = FALSE, ...)
+ylab, col = c(1, 2), angles = NULL, marge = "emp", add = FALSE, ...)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to

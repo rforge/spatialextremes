@@ -5,7 +5,7 @@
 \usage{
 madogram(data, coord, fitted, n.bins, gev.param = c(0, 1, 0), which =
 c("mado", "ext"), xlab, ylab, col = c(1, 2), angles = NULL, marge =
-"mle", add = FALSE, ...)
+"emp", add = FALSE, ...)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
