@@ -1,6 +1,7 @@
 print.spatgev <- function(x, digits = max(3, getOption("digits") - 3), ...){
 
   cat("   Deviance:", x$deviance, "\n")
+  cat("        TIC:", TIC(x), "\n\n")
 
   param <- x$fitted.values
   loc.idx <- which(substr(names(param), 1, 3) == "loc")
