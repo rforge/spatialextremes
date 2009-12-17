@@ -78,12 +78,13 @@ colnames(locations) <- c("lon", "lat")
 
 ##Simulate a max-stable process - with unit Frechet margins
 data <- rmaxstab(30, locations, cov.mod = "whitmat", sill = 1, range =
-3, smooth = 0.5) 
+3, smooth = 1) 
 
 ##Fit a max-stable model
-fitted <- fitmaxstab(data, locations, "whitmat", std.err.type = "none")
+fitted <- fitmaxstab(data, locations, "whitmat", std.err.type = "none",
+sill = 1)
 covariance(fitted, ylim = c(0, 1))
-covariance(sill = 1, range = 3, smooth = .5, cov.mod = "whitmat", add =
+covariance(sill = 1, range = 3, smooth = 1, cov.mod = "whitmat", add =
 TRUE, col = 3)
 title("Whittle-Matern covariance function")
 legend("topright", c("Theo.", "Fitted"), lty = 1, col = c(3,1), inset =
