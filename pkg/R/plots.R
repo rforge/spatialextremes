@@ -1,12 +1,12 @@
 extcoeff <- function(fitted, cov.mod, param, n = 200, xlab, ylab, ...){
 
-  if (all(class(fitted) != "maxstab"))
-    stop("The 'extcoeff' function is only available for object of class 'maxstab'")
-  
   if (missing(fitted) && (missing(cov.mod) || missing(param)))
     stop("You must specify either 'fitted' either 'cov.mod' AND 'param'")
 
   if (!missing(fitted)){
+    if (all(class(fitted) != "maxstab"))
+      stop("The 'extcoeff' function is only available for object of class 'maxstab'")
+  
     if (ncol(fitted$coord) > 2)
       stop("It's not possible to use this function when the coordinate space has a dimension > 2")
   
@@ -68,9 +68,17 @@ extcoeff <- function(fitted, cov.mod, param, n = 200, xlab, ylab, ...){
   }
 
   if (model == "Schlather"){
-    fun <- function(h) abs(1.7 - extCoeff(h))
-    opt1 <- optim(param[2]/100, fun, method = "BFGS")$par
+    fun <- function(h) {
+      theta <- extCoeff(h)
 
+      if (theta < 1 + sqrt(0.5))
+        abs(1.7 - extCoeff(h))
+
+      else
+        h^2
+    }
+    
+    opt1 <- optimize(fun, c(0, 100 * param[2]))$minimum
     y.range <- x.range <- c(-abs(opt1), abs(opt1))
   }
 
