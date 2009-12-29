@@ -1,0 +1,33 @@
+
+**************  Changes in SpatialExtremes Version 1.5-0  **************
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+  ° The 'map' and 'condmap' functions now allow covariates
+
+  ° fitmaxstab allows weights in the pairwise likelihood
+
+  ° predict will display standard errors if possible
+
+NEW FEATURES
+
+  ° Brown-Resnick processes are available
+
+  ° The generalized Cauchy correlation function is available
+
+  ° New function 'lsmaxstab' that wraps 'fitcovariance' and 'fitcovmat'
+    and is similar to 'fitmaxstab' but uses least squares
+
+  ° Composite version of the BIC is available
+
+  ° The standard errors are now computed without the use of the finite
+    difference based estimate of the Hessian matrix
+
+DEPRECATED & DEFUNCT
+
+  ° The 'fitcovmat' and 'fitcovariance' will be removed soon as the
+    new 'lsmaxstab' wraps them
+
+BUG FIXES
+
+  ° Fix a bug in simulating smith's max-stable process on a grid
