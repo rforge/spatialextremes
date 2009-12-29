@@ -14,7 +14,7 @@ map(fitted, x, y, covariates = NULL, param = "quant", ret.per = 100, col
   \item{x,y}{Numeric vector that gives the coordinates of the grid.}
   \item{covariates}{An array specifying the covariates at each grid
     point defined by \code{x} and \code{y}. If \code{NULL}, no covariate
-    is needed. See details to see how to build it.}
+    is needed. See the example to see how to build it.}
   \item{param}{A character string. Must be one of "loc", "scale",
     "shape" or "quant" for a map of the location, scale, shape
     parameters or for a map of a specified quantile.}

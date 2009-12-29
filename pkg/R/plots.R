@@ -204,35 +204,69 @@ map <- function(fitted, x, y, covariates = NULL, param = "quant",
   invisible(list(x = x, y = y, z = ans))
 }
 
-condmap <- function(fitted, fix.coord, x, y, marg.cov = NULL, ...,
+condmap <- function(fitted, fix.coord, x, y, covariates = NULL,
                     ret.per1 = 100, ret.per2 = ret.per1,
-                    col = terrain.colors(length(x)), plot.contour = TRUE){
+                    col = terrain.colors(64), plot.contour = TRUE, ...){
 
   if (ncol(fitted$coord) > 2)
     stop("It's not possible to use this function when the coordinate space has a dimension >= 2")
+
+  if (is.null(covariates) && !is.null(fitted$marg.cov))
+    stop("Your model seems to make use of covariate but you supplied none")
+  
+  if (!is.null(covariates)){
+    if (missing(x) || missing(y))
+      stop("if 'covariates' is supplied 'x' and 'y' must be too")
+
+    if (!is.array(covariates))
+      stop("'covariates' must be an array - see the example")
+
+    covariates.names <- dimnames(covariates)[[3]]
+    model.names <- colnames(fitted$marg.cov)
+
+    if (is.null(model.names))
+      stop("Your fitted model doesn't seem to make use of covariates")
+
+    if (!all(model.names %in% covariates.names))
+      stop("Some required covariates are missing. Please check")
+
+    dim.cov <- dim(covariates)
+    
+    if ((dim.cov[1] != length(x)) || (dim.cov[2] != length(y)))
+      stop("'covariates' doesn't match with 'x' and 'y'")
+  }
+
+  else
+    covariates.names <- NULL
+
+  if (missing(x)){
+    x.range <- range(fitted$coord[,1])
+    x <- seq(x.range[1], x.range[2], length = 100)
+  }
+
+  if (missing(y)){
+    y.range <- range(fitted$coord[,2])
+    y <- seq(y.range[1], y.range[2], length = 100)
+  }
+
+  if (any(x == fix.coord[1]) & any(y == fix.coord[2]))
+    stop("'fix.coord' belongs to your grid. This is not possible!")
   
   n.x <- length(x)
   n.y <- length(y)
 
-  if (!is.null(marg.cov)){
-    idx.na <- which(!is.finite(marg.cov))
-    marg.cov[idx.na] <- 0
-  }
-  
-  ans <- matrix(NA, nrow = n.x, ncol = n.y)
+  ans <- double(n.x * n.y)
+  new.data <- matrix(NA, nrow = n.x * n.y, ncol = 2 + length(covariates.names))
+
+  for (i in 1:n.x)
+    new.data[(n.y * (i - 1) + 1):(n.y * i),] <- cbind(x[i], y, covariates[i,,])
+
+  colnames(new.data) <- c(colnames(fitted$coord), covariates.names)
+  param <- predict(fitted, new.data, std.err = FALSE)
 
   ##z1: quantile related to ret.per1
   z1 <- - 1 / log(1 - 1/ret.per1)
 
-  new.data <- rep(NA, 3)
-  n.new.data <- 2
-  names(new.data)[1:2] <- colnames(fitted$coord)
-
-  if (!is.null(marg.cov)){
-    n.new.data <- 3
-    names(new.data)[3] <- colnames(fitted$marg.cov)
-  }
-  
   if (fitted$model == "Smith"){
     Sigma <- matrix(c(fitted$param[1:2], fitted$param[2:3]), 2)
     iSigma <- solve(Sigma)
@@ -244,37 +278,23 @@ condmap <- function(fitted, fix.coord, x, y, marg.cov = NULL, ...,
                                    exp(-pnorm(c1) / z1 - pnorm(c2) / z2))
     }
 
-    for (i in 1:n.x){
-      for (j in 1:n.y){
-        new.data[1:n.new.data] <- c(x[i], y[j], marg.cov[i,j]) 
-        delta <- fix.coord - new.data[1:2]
-        a <- sqrt(delta %*% iSigma %*% delta)
-        ans[i,j] <- uniroot(cond.prob, c(1e-4, 1e5), ...)$root
-        param <- predict(fitted, new.data)
-        
-        ans[i,j] <- frech2gev(ans[i,j], param[,"loc"], param[,"scale"],
-                              param[,"shape"])
-      }
+    for (i in 1:(n.x * n.y)){
+      delta <- fix.coord - new.data[i,1:2]
+      a <- sqrt(delta %*% iSigma %*% delta)
+      ans[i] <- uniroot(cond.prob, c(1e-4, 1e5), ...)$root
     }
   }    
 
   if (fitted$model == "Schlather"){
     cond.prob <- function(z2)
-      1 - 1/ret.per2 +
-        (exp(-0.5 * (1/z1 + 1/z2) *
-             (1 + sqrt(1 - 2 * (fitted$cov.fun(h) + 1) * z1 * z2 /
-                       (z1 + z2)^2))) - exp(-1/z2)) / (1 - exp(-1/z1))
+      ret.per1 * (exp(-0.5 * (1/z1 + 1/z2) *
+                      (1 + sqrt(1 - 2 * (fitted$cov.fun(h) + 1) *
+                                z1 * z2 / (z1 + z2)^2))) +
+                  1 / ret.per1 - exp(-1/z2)) - 1 / ret.per2
 
-    for (i in 1:n.x){
-      for (j in 1:n.y){
-        new.data[1:2] <- c(x[i], y[j]) 
-        h <- sqrt(sum((fix.coord - new.data[1:2])^2))
-        ans[i,j] <- uniroot(cond.prob, c(1e-4, 1e5), ...)$root
-        param <- predict(fitted, new.data)
-        
-        ans[i,j] <- frech2gev(ans[i,j], param[,"loc"], param[,"scale"],
-                              param[,"shape"])
-      }
+    for (i in 1:(n.x * n.y)){
+      h <- sqrt(sum((fix.coord - new.data[i,1:2])^2))
+      ans[i] <- uniroot(cond.prob, c(1e-4, 1e5), ...)$root
     }
   }    
 
@@ -287,17 +307,10 @@ condmap <- function(fitted, fix.coord, x, y, marg.cov = NULL, ...,
                                  exp(-pnorm(c1) / z1 - pnorm(c2) / z2))
     }
 
-    for (i in 1:n.x){
-      for (j in 1:n.y){
-        new.data[1:n.new.data] <- c(x[i], y[j], marg.cov[i,j]) 
-        h <- sqrt(sum((fix.coord - new.data[1:2])^2))
-        a <- sqrt(2 * fitted$par["sigma2"] * (1 - fitted$cov.fun(h)))
-        ans[i,j] <- uniroot(cond.prob, c(1e-4, 1e5), ...)$root
-        param <- predict(fitted, new.data)
-        
-        ans[i,j] <- frech2gev(ans[i,j], param[,"loc"], param[,"scale"],
-                              param[,"shape"])
-      }
+    for (i in 1:(n.x * n.y)){
+      h <- sqrt(sum((fix.coord - new.data[i,1:2])^2))
+      a <- sqrt(2 * fitted$par["sigma2"] * (1 - fitted$cov.fun(h)))
+      ans[i] <- uniroot(cond.prob, c(1e-4, 1e5), ...)$root
     }
   }
 
@@ -310,28 +323,17 @@ condmap <- function(fitted, fix.coord, x, y, marg.cov = NULL, ...,
                                  exp(-pnorm(c1) / z1 - pnorm(c2) / z2))
     }
 
-    for (i in 1:n.x){
-      for (j in 1:n.y){
-        new.data[1:n.new.data] <- c(x[i], y[j], marg.cov[i,j])
-        h <- sqrt(sum((fix.coord - new.data[1:2])^2))
-        a <- (h / fitted$param["range"])^(0.5 * fitted$param["smooth"])
-        ans[i,j] <- uniroot(cond.prob, c(1e-4, 1e5), ...)$root
-        param <- predict(fitted, new.data)
-        
-        ans[i,j] <- frech2gev(ans[i,j], param[,"loc"], param[,"scale"],
-                              param[,"shape"])
-      }
+    for (i in 1:(n.x * n.y)){
+      h <- sqrt(sum((fix.coord - new.data[i,1:2])^2))
+      a <- (h / fitted$param["range"])^(0.5 * fitted$param["smooth"])
+      ans[i] <- uniroot(cond.prob, c(1e-4, 1e5), ...)$root
     }
   }
   
-  if (!is.null(marg.cov))
-    ans[idx.na] <- NA
+  ans <- matrix(.frech2gev(ans, param[,"loc"], param[,"scale"], param[,"shape"]),
+                n.x, n.y, byrow = TRUE)
   
-  coord.names <- colnames(fitted$coord)
-  xlab <- coord.names[1]
-  ylab <- coord.names[2]
-  
-  image(x, y, ans, ..., col = col, xlab = xlab, ylab = ylab)
+  image(x, y, ans, ..., col = col)
 
   if (plot.contour)
     contour(x, y, ans, add = TRUE)
