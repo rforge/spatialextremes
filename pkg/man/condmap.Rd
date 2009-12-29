@@ -52,19 +52,18 @@ ret.per2 = ret.per1, col = terrain.colors(64), plot.contour = TRUE,
   \code{\link{rainbow}}
 }
 \examples{
-\dontrun{
 ##Define the coordinate of each location
 n.site <- 30
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
 ##Simulate a max-stable process - with unit Frechet margins
-data <- rmaxstab(50, locations, cov.mod = "gauss", cov11 = 4, cov12 =
-1, cov22 = 3)
+data <- rmaxstab(50, locations, cov.mod = "whitmat", sill = 1, range =
+2, smooth = 1)
 
 ##Now define the spatial model for the GEV parameters
 param.loc <- -10 - 4 * locations[,1] + locations[,2]^2
-param.scale <- 5 + locations[,1] + locations[,2]^2 / 10
+param.scale <- 5 + locations[,2] + locations[,1]^2 / 10
 param.shape <- rep(.2, n.site)
 
 ##Transform the unit Frechet margins to GEV 
@@ -76,16 +75,17 @@ param.shape[i])
 ##shape ~ 1 stands for the GEV shape parameter is constant
 ##over the region
 loc.form <- loc ~ lon + I(lat^2)
-scale.form <- scale ~ lon + I(lat^2)
-shape.form <- shape ~ lat + lon
+scale.form <- scale ~ lat + I(lon^2)
+shape.form <- shape ~ 1
 
 ##  1- Fit a max-stable process
-fitted <- fitmaxstab(data, locations, "gauss", loc.form, scale.form,
-                     shape.form, std.err.type = "none")
+fitted <- fitmaxstab(data, locations, "whitmat", loc.form, scale.form,
+                     shape.form, sill = 1, std.err.type = "none")
 
-condmap(fitted, c(1, 1), seq(0, 10, length = 25), seq(0,10, length =
-25))
-}
+cond.coord <- c(5.1, 5.1)
+condmap(fitted, cond.coord, seq(0, 10, length = 25), seq(0,10, length
+ =25), ret.per1 = 100, ret.per2 = 1.5)
+points(t(cond.coord), pch = "*", col = 2, cex = 2)
 }
 \author{Mathieu Ribatet}
 \keyword{hplot}
