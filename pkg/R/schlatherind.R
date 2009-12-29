@@ -8,7 +8,8 @@
 ##estimated.
 schlatherindfull <- function(data, coord, start, cov.mod = "whitmat", ...,
                              fit.marge = FALSE, warn = TRUE, method = "BFGS",
-                             control = list(), std.err.type = "none", corr = FALSE){
+                             control = list(), std.err.type = "none", corr = FALSE,
+                             weights = NULL){
   ##data is a matrix with each column corresponds to one location
   ##locations is a matrix giving the coordinates (1 row = 1 station)
   n.site <- ncol(data)
@@ -17,6 +18,11 @@ schlatherindfull <- function(data, coord, start, cov.mod = "whitmat", ...,
   n.pairs <- n.site * (n.site - 1) / 2
 
   dist <- distance(coord)
+  weighted <- !is.null(weights)
+
+  if (!weighted)
+    ##Set the weights to 0 as they won't be used anyway
+    weights <- 0
   
   if (!(cov.mod %in% c("whitmat","cauchy","powexp","bessel","caugen")))
     stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel', 'caugen'")
@@ -31,59 +37,37 @@ schlatherindfull <- function(data, coord, start, cov.mod = "whitmat", ...,
     cov.mod.num <- 4
   if (cov.mod == "caugen")
     cov.mod.num <- 5
+
+  param <- c("alpha", "sill", "range", "smooth")
+
+  if (cov.mod == "caugen")
+    param <- c(param, "smooth2")
+  
+  else
+    ##Fix it to 0 as it won't be used anyway
+    smooth2 <- 0
+
+  if (fit.marge){
+    loc.names <- paste("loc", 1:n.site, sep="")
+    scale.names <- paste("scale", 1:n.site, sep="")
+    shape.names <- paste("shape", 1:n.site, sep="")
+    
+    param <- c(param, loc.names, scale.names, shape.names)
+  }
+
+  else
+    loc.names <- scale.names <- shape.names <- rep(1, n.site)
   
   ##First create a "void" function
   nplk <- function(x) x
 
   ##And define the "body" of the function as the number of parameters
   ##to estimate depends on n.site
-  if (fit.marge){
-    loc.names <- paste("loc", 1:n.site, sep="")
-    scale.names <- paste("scale", 1:n.site, sep="")
-    shape.names <- paste("shape", 1:n.site, sep="")
-    
-    param <- c("alpha", "sill", "range", "smooth")
-
-    if (cov.mod == "caugen")
-      param <- c(param, "smooth2")
-    
-    param <- c(param, loc.names, scale.names, shape.names)
-
-    if (cov.mod == "caugen")
-      body(nplk) <- parse(text = paste("-.C('schlatherindfull', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim),",
-                            paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
-                            paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
-                            paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                            "as.double(alpha), as.double(sill), as.double(range), as.double(smooth), as.double(smooth2), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
-
-    else
-      body(nplk) <- parse(text = paste("-.C('schlatherindfull', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim),",
-                            paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
-                            paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
-                            paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                            "as.double(alpha), as.double(sill), as.double(range), as.double(smooth), double(1), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
-  }
-
-  else{
-
-    param <- c("alpha", "sill", "range", "smooth")
-    
-    if (cov.mod == "caugen"){
-      body(nplk) <- parse(text = paste("-.C('schlatherindfull', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim),",
-                            paste("as.double(rep(1,", n.site, ")), "),
-                            paste("as.double(rep(1,", n.site, ")), "),
-                            paste("as.double(rep(1,", n.site, ")), "),
-                            "as.double(alpha), as.double(sill), as.double(range), as.double(smooth), as.double(smooth2), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
-      param <- c(param, "smooth2")
-    }
-
-    else
-      body(nplk) <- parse(text = paste("-.C('schlatherindfull', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim),",
-                            paste("as.double(rep(1,", n.site, ")), "),
-                            paste("as.double(rep(1,", n.site, ")), "),
-                            paste("as.double(rep(1,", n.site, ")), "),
-                            "as.double(alpha), as.double(sill), as.double(range), as.double(smooth), double(1), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
-  }
+  body(nplk) <- parse(text = paste("-.C('schlatherindfull', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim), as.integer(weighted), as.double(weights),",
+                        paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
+                        paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
+                        paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
+                        "as.double(alpha), as.double(sill), as.double(range), as.double(smooth), as.double(smooth2), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
 
   fixed.param <- list(...)[names(list(...)) %in% param]
 
@@ -237,12 +221,16 @@ Standard errors are not available unless you fix it.")
   param.names <- param
   param <- c(opt$par, unlist(fixed.param))
   param <- param[param.names]
+
+  ##Reset the weights to their original values
+  if ((length(weights) == 1) && (weights == 0))
+    weights <- NULL
   
   if (std.err.type != "none"){
     std.err <- .schlatherindstderr(param, data, dist, cov.mod.num, as.double(0),
                                    as.double(0), as.double(0), fit.marge = fit.marge,
                                    std.err.type = std.err.type, fixed.param = names(fixed.param),
-                                   param.names = param.names)
+                                   param.names = param.names, weights = weights)
 
     opt$hessian <- std.err$hess
     var.score <- std.err$var.score
@@ -321,7 +309,7 @@ Standard errors are not available unless you fix it.")
 schlatherindform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form,
                              start, fit.marge = TRUE, marg.cov = NULL, ...,
                              warn = TRUE, method = "BFGS", control = list(),
-                             std.err.type = "none", corr = FALSE){
+                             std.err.type = "none", corr = FALSE, weights = NULL){
   ##data is a matrix with each column corresponds to one location
   ##coord is a matrix giving the coordinates (1 row = 1 station)
   n.site <- ncol(data)
@@ -330,7 +318,12 @@ schlatherindform <- function(data, coord, cov.mod, loc.form, scale.form, shape.f
   n.pair <- n.site * (n.site - 1) / 2
 
   dist <- distance(coord)
-     
+  weighted <- !is.null(weights)
+
+  if (!weighted)
+    ##Set the weights to 0 as they won't be used anyway
+    weights <- 0
+  
   if (!(cov.mod %in% c("whitmat","cauchy","powexp","bessel","caugen")))
     stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel', 'caugen'")
 
@@ -396,6 +389,10 @@ schlatherindform <- function(data, coord, cov.mod, loc.form, scale.form, shape.f
 
   if (cov.mod == "caugen")
     param <- c(param, "smooth2")
+
+  else
+    ##Fix it to 0 as it won't be used anyway
+    smooth2 <- 0
   
   param <- c(param, loc.names, scale.names, shape.names)
 
@@ -404,19 +401,11 @@ schlatherindform <- function(data, coord, cov.mod, loc.form, scale.form, shape.f
 
   ##And define the "body" of the function as the number of parameters
   ##to estimate depends on n.site
-  if (cov.mod == "caugen")
-    body(nplk) <- parse(text = paste("-.C('schlatherinddsgnmat', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
-                          paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
-                          paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
-                          paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                          "as.double(alpha), as.double(sill), as.double(range), as.double(smooth), as.double(smooth2), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
-
-  else
-    body(nplk) <- parse(text = paste("-.C('schlatherinddsgnmat', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
-                          paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
-                          paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
-                          paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                          "as.double(alpha), as.double(sill), as.double(range), as.double(smooth), double(1), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+  body(nplk) <- parse(text = paste("-.C('schlatherinddsgnmat', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim), as.integer(weighted), as.double(weights), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
+                        paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
+                        paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
+                        paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
+                        "as.double(alpha), as.double(sill), as.double(range), as.double(smooth), as.double(smooth2), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
 
   ##Define the formal arguments of the function
   form.nplk <- NULL
@@ -547,13 +536,17 @@ Standard errors are not available unless you fix it.")
   param.names <- param
   param <- c(opt$par, unlist(fixed.param))
   param <- param[param.names]
+
+  ##Reset the weights to their original values
+  if ((length(weights) == 1) && (weights == 0))
+    weights <- NULL
   
   if (std.err.type != "none"){
     std.err <- .schlatherindstderr(param, data, dist, cov.mod.num, loc.dsgn.mat,
                                    scale.dsgn.mat, shape.dsgn.mat,
                                    fit.marge = fit.marge, std.err.type = std.err.type,
                                    fixed.param = names(fixed.param), param.names =
-                                   param.names)
+                                   param.names, weights = weights)
 
     opt$hessian <- std.err$hess
     var.score <- std.err$var.score

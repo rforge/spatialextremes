@@ -9,7 +9,7 @@
 smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
                       ..., warn = TRUE, method = "BFGS",
                       std.err.type = "none", control = list(),
-                      corr = FALSE){
+                      corr = FALSE, weights = NULL){
   ##data is a matrix with each column corresponds to one location
   ##coord is a matrix giving the coordinates (1 row = 1 station)
   n.site <- ncol(data)
@@ -24,105 +24,70 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
     method2 <- method
   
   distVec <- distance(coord, vec = TRUE)
-    
+  weighted <- !is.null(weights)
+
+  if (!weighted)
+    ##Set the weights to 0 as they won't be used anyway
+    weights <- 0
+  
+  if (iso)
+    param <- "cov"
+
+  else{
+    if (dist.dim == 2)
+      param <- c("cov11", "cov12", "cov22")
+
+    else if (dist.dim == 3)
+      param <- c("cov11", , "cov13", "cov22", "cov23", "cov33")
+  }
+
+  if (fit.marge){
+    loc.names <- paste("loc", 1:n.site, sep="")
+    scale.names <- paste("scale", 1:n.site, sep="")
+    shape.names <- paste("shape", 1:n.site, sep="")
+    param <- c(param, loc.names, scale.names, shape.names)
+  }
+
+  else
+    loc.names <- scale.names <- shape.names <- rep(1, n.site)
+  
   ##First create a "void" function
   nplk <- function(x) x
 
   ##And define the "body" of the function as the number of parameters
   ##to estimate depends on n.site
-  if (fit.marge){
-
-    loc.names <- paste("loc", 1:n.site, sep="")
-    scale.names <- paste("scale", 1:n.site, sep="")
-    shape.names <- paste("shape", 1:n.site, sep="")
-
-    if (dist.dim == 2){
-
-      if (iso){
-        param <- c("cov", loc.names, scale.names, shape.names)
-        body(nplk) <- parse(text = paste("-.C('smithfull', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs),",
-                              paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
-                              paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
-                              paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                              "as.double(cov), as.double(0.0), as.double(cov), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
-      }
-
-      else{
-        param <- c("cov11", "cov12", "cov22", loc.names, scale.names, shape.names)
-        body(nplk) <- parse(text = paste("-.C('smithfull', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs),",
-                              paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
-                              paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
-                              paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                              "as.double(cov11), as.double(cov12), as.double(cov22), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
-      }
-    }
-
-    else{
-      if (iso){
-        param <- c("cov", loc.names, scale.names, shape.names)
-        body(nplk) <- parse(text = paste("-.C('smithfull3d', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs),",
-                              paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
-                              paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
-                              paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                              "as.double(cov), as.double(0.0), as.double(0.0), as.double(cov), as.double(0.0), as.double(cov), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
-      }
+  if (dist.dim == 2){
+    if (iso)
+      body(nplk) <- parse(text = paste("-.C('smithfull', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs), as.integer(weighted), as.double(weights),",
+                            paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
+                            paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
+                            paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
+                            "as.double(cov), as.double(0.0), as.double(cov), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
       
-      else{
-        param <- c("cov11", "cov12", "cov13", "cov22", "cov23", "cov33", loc.names, scale.names, shape.names)
-        body(nplk) <- parse(text = paste("-.C('smithfull3d', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs),",
-                              paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
-                              paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
-                              paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                              "as.double(cov11), as.double(cov12), as.double(cov13), as.double(cov22), as.double(cov23), as.double(cov33), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
-      }
-    }
+    else
+      body(nplk) <- parse(text = paste("-.C('smithfull', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs), as.integer(weighted), as.double(weights),",
+                            paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
+                            paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
+                            paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
+                            "as.double(cov11), as.double(cov12), as.double(cov22), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
   }
+
+   if (dist.dim == 3){
+     if (iso)
+       body(nplk) <- parse(text = paste("-.C('smithfull3d', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs), as.integer(weighted), as.double(weights),",
+                             paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
+                             paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
+                             paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
+                             "as.double(cov), as.double(0.0), as.double(0.0), as.double(cov), as.double(0.0), as.double(cov), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+     
+     else
+       body(nplk) <- parse(text = paste("-.C('smithfull3d', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs), as.integer(weighted), as.double(weights),",
+                             paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
+                             paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
+                             paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
+                             "as.double(cov11), as.double(cov12), as.double(cov13), as.double(cov22), as.double(cov23), as.double(cov33), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+   }
   
-  else{
-
-    if (dist.dim == 2){
-      if (iso){
-        param <- "cov"
-        body(nplk) <- parse(text = paste("-.C('smithfull', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs),",
-                              paste("as.double(rep(1,", n.site, ")), "),
-                              paste("as.double(rep(1,", n.site, ")), "),
-                              paste("as.double(rep(1,", n.site, ")), "),
-                              "as.double(cov), as.double(0.0), as.double(cov), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
-      }
-
-      else{
-        param <- c("cov11", "cov12", "cov22")
-        body(nplk) <- parse(text = paste("-.C('smithfull', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs),",
-                              paste("as.double(rep(1,", n.site, ")), "),
-                              paste("as.double(rep(1,", n.site, ")), "),
-                              paste("as.double(rep(1,", n.site, ")), "),
-                              "as.double(cov11), as.double(cov12), as.double(cov22), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
-
-      }
-    }
-
-    else{
-      
-      if (iso){
-        param <- "cov"
-        body(nplk) <- parse(text = paste("-.C('smithfull3d', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs),",
-                              paste("as.double(rep(1,", n.site, ")), "),
-                              paste("as.double(rep(1,", n.site, ")), "),
-                              paste("as.double(rep(1,", n.site, ")), "),
-                              "as.double(cov), as.double(0.0), as.double(0.0), as.double(cov), as.double(0.0), as.double(cov), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
-      }
-      
-      else{
-        param <- c("cov11", "cov12", "cov13", "cov22", "cov23", "cov33")
-        body(nplk) <- parse(text = paste("-.C('smithfull3d', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs),",
-                              paste("as.double(rep(1,", n.site, ")), "),
-                              paste("as.double(rep(1,", n.site, ")), "),
-                              paste("as.double(rep(1,", n.site, ")), "),
-                              "as.double(cov11), as.double(cov12), as.double(cov13), as.double(cov22), as.double(cov23), as.double(cov33), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
-      }
-    }
-  }
-
   fixed.param <- list(...)[names(list(...)) %in% param]
   
   ##Define the formal arguments of the function
@@ -275,12 +240,16 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
                              "cov33")
     }
   }
+
+  ##Reset the weights to their original values
+  if ((length(weights) == 1) && (weights == 0))
+    weights <- NULL
   
   if (std.err.type != "none"){
     std.err <- .smithstderr(param, data, distVec, as.double(0), as.double(0),
                             as.double(0), fit.marge = fit.marge, std.err.type =
                             std.err.type, fixed.param = names(fixed.param),
-                            param.names = param.names, iso = iso)
+                            param.names = param.names, iso = iso, weights = weights)
 
     opt$hessian <- std.err$hessian
     var.score <- std.err$var.score
@@ -367,7 +336,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
 smithform <- function(data, coord, loc.form, scale.form, shape.form,
                       start, fit.marge = TRUE, iso = TRUE, marg.cov = NULL,
                       ..., warn = TRUE, method = "BFGS", std.err.type = "none",
-                      control = list(), corr = FALSE){
+                      control = list(), corr = FALSE, weights = weights){
   ##data is a matrix with each column corresponds to one location
   ##coord is a matrix giving the coordinates (1 row = 1 station)
   n.site <- ncol(data)
@@ -376,7 +345,12 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   n.pair <- n.site * (n.site - 1) / 2
 
   distVec <- distance(coord, vec = TRUE)
+  weighted <- !is.null(weights)
 
+  if (!weighted)
+    ##Set the weights to 0 as they won't be used anyway
+    weights <- 0
+  
   ##With our notation, formula must be of the form y ~ xxxx
   loc.form <- update(loc.form, y ~ .)
   scale.form <- update(scale.form, y ~ .)
@@ -449,14 +423,14 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
   if (dist.dim == 2){
 
     if (iso)
-      body(nplk) <- parse(text = paste("-.C('smithdsgnmat', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
+      body(nplk) <- parse(text = paste("-.C('smithdsgnmat', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs), as.integer(weighted), as.double(weights), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
                             paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
                             "as.double(cov), as.double(0.0), as.double(cov), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
 
     else
-      body(nplk) <- parse(text = paste("-.C('smithdsgnmat', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
+      body(nplk) <- parse(text = paste("-.C('smithdsgnmat', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs), as.integer(weighted), as.double(weights), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
                             paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
@@ -465,14 +439,14 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
 
   else{
     if (iso)
-      body(nplk) <- parse(text = paste("-.C('smithdsgnmat3d', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
+      body(nplk) <- parse(text = paste("-.C('smithdsgnmat3d', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs), as.integer(weighted), as.double(weights), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
                             paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
                             "as.double(cov), as.double(0.0), as.double(0.0), as.double(cov), as.double(0.0), as.double(cov), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
 
     else
-      body(nplk) <- parse(text = paste("-.C('smithdsgnmat3d', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
+      body(nplk) <- parse(text = paste("-.C('smithdsgnmat3d', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs), as.integer(weighted), as.double(weights), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
                             paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
@@ -607,13 +581,17 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form,
                              "cov33")
     }
   }
-    
+
+  ##Reset the weights to their original values
+  if ((length(weights) == 1) && (weights == 0))
+    weights <- NULL
+  
   if (std.err.type != "none"){
     std.err <- .smithstderr(param, data, distVec, loc.dsgn.mat,
                             scale.dsgn.mat, shape.dsgn.mat,
                             fit.marge = fit.marge, std.err.type =
                             std.err.type, fixed.param = names(fixed.param),
-                            param.names = param.names, iso = iso)
+                            param.names = param.names, iso = iso, weights = weights)
 
     opt$hessian <- std.err$hessian
     var.score <- std.err$var.score

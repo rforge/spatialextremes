@@ -10,46 +10,46 @@
 //  From schlather.c
 //
 void schlatherfull(int *covmod, double *data, double *dist, int *nSite, int *nObs,
-		   int *dim, double *locs, double *scales, double *shapes, double *sill,
-		   double *range, double *smooth, double *smooth2, int *fitmarge, double *dns);
-void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
-		      int *dim, double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
-		      double *locpenalty, double *scaledsgnmat, double *scalepenmat,
-		      int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
-		      double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
-		      double *loccoeff, double *scalecoeff, double *shapecoeff, double *sill,
-		      double *range, double *smooth, double *smooth2, double *dns);
+		   int *dim, int *weighted, double *weights, double *locs,
+		   double *scales, double *shapes, double *sill, double *range,
+		   double *smooth, double *smooth2, int *fitmarge, double *dns);
+void schlatherfull(int *covmod, double *data, double *dist, int *nSite, int *nObs,
+		   int *dim, int *weighted, double *weights, double *locs,
+		   double *scales, double *shapes, double *sill, double *range,
+		   double *smooth, double *smooth2, int *fitmarge,double *dns);
 
 ///////////////////////////////////
 //  From schlatherind.c
 //
 void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
-		      int *nObs, int *dim, double *locs, double *scales, double *shapes,
+		      int *nObs, int *dim, int *weighted, double *weights,
+		      double *locs, double *scales, double *shapes, 
 		      double *alpha, double *sill, double *range, double *smooth,
 		      double *smooth2, int *fitmarge,double *dns);
 void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
-			 int *dim, double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
+			 int *dim, int *weighted, double *weights, double *locdsgnmat,
+			 double *locpenmat, int *nloccoeff, int *npparloc,
 			 double *locpenalty, double *scaledsgnmat, double *scalepenmat,
 			 int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
 			 double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
 			 double *loccoeff, double *scalecoeff, double *shapecoeff, double *alpha,
-			 double *sill, double *range, double *smooth, double *smoth2, double *dns);
+			 double *sill, double *range, double *smooth, double *smooth2, double *dns);
 
 ///////////////////////////////////
 //  From geomgauss.c
 //
-void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
-		   int *nObs, int *dim, double *locs, double *scales, double *shapes,
+void geomgaussfull(int *covmod, double *data, double *dist, int *nSite, int *nObs, int *dim,
+		   int *weighted, double *weights, double *locs, double *scales, double *shapes,
 		   double *sigma2, double *sigma2Bound, double *sill, double *range,
 		   double *smooth, double *smooth2, int *fitmarge,double *dns);
 void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
-		      int *dim, double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
-		      double *locpenalty, double *scaledsgnmat, double *scalepenmat,
-		      int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
-		      double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
-		      double *loccoeff, double *scalecoeff, double *shapecoeff, double *sigma2,
-		      double *sigma2Bound, double *sill, double *range, double *smooth,
-		      double *smooth2, double *dns);
+		      int *dim, int *weighted, double *weights, double *locdsgnmat,
+		      double *locpenmat, int *nloccoeff, int *npparloc, double *locpenalty,
+		      double *scaledsgnmat, double *scalepenmat, int *nscalecoeff, int *npparscale,
+		      double *scalepenalty, double *shapedsgnmat, double *shapepenmat, int *nshapecoeff,
+		      int *npparshape, double *shapepenalty, double *loccoeff, double *scalecoeff,
+		      double *shapecoeff, double *sigma2, double *sigma2Bound, double *sill,
+		      double *range, double *smooth, double *smooth2, double *dns);
 
 ///////////////////////////////////
 //  From nsgeomgauss.c
@@ -71,12 +71,12 @@ void nsgeomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int
 ///////////////////////////////////
 //  From brownResnick.c
 //
-void brownresnickfull(double *data, double *dist, int *nSite, int *nObs, double *locs,
-		      double *scales, double *shapes, double *range, double *smooth,
-		      int *fitmarge, double *dns);
-void brownresnickdsgnmat(double *data, double *dist, int *nSite, int *nObs,
-			 double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
-			 double *locpenalty, double *scaledsgnmat, double *scalepenmat,
+void brownresnickfull(double *data, double *dist, int *nSite, int *nObs, int *weighted,
+		      double *weights, double *locs, double *scales, double *shapes,
+		      double *range, double *smooth, int *fitmarge, double *dns);
+void brownresnickdsgnmat(double *data, double *dist, int *nSite, int *nObs, int *weighted,
+			 double *weights, double *locdsgnmat, double *locpenmat, int *nloccoeff,
+			 int *npparloc, double *locpenalty, double *scaledsgnmat, double *scalepenmat,
 			 int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
 			 double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
 			 double *loccoeff, double *scalecoeff, double *shapecoeff, double *range,
@@ -85,28 +85,26 @@ void brownresnickdsgnmat(double *data, double *dist, int *nSite, int *nObs,
 ///////////////////////////////////
 //  From smith.c
 //
-void smithfull(double *data, double *distVec, int *nSite,
-	       int *nObs, double *locs, double *scales, double *shapes,
-	       double *cov11, double *cov12, double *cov22, int *fitmarge,
-	       double *dns);
-void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs, 
-		  double *locdsgnmat, double *locpenmat, int *nloccoeff,
-		  int *npparloc, double *locpenalty, double *scaledsgnmat,
-		  double *scalepenmat, int *nscalecoeff, int *npparscale,
-		  double *scalepenalty, double *shapedsgnmat, double *shapepenmat,
-		  int *nshapecoeff, int *npparshape, double *shapepenalty,
-		  double *loccoeff, double *scalecoeff, double *shapecoeff,
-		  double *cov11, double *cov12, double *cov22, double *dns);
+void smithfull(double *data, double *distVec, int *nSite, int *nObs, int *weighted, double *weights,
+	       double *locs, double *scales, double *shapes, double *cov11, double *cov12,
+	       double *cov22, int *fitmarge, double *dns);
+void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs, int *weighted,
+		  double *weights, double *locdsgnmat, double *locpenmat, int *nloccoeff,
+		  int *npparloc, double *locpenalty, double *scaledsgnmat, double *scalepenmat,
+		  int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
+		  double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
+		  double *loccoeff, double *scalecoeff, double *shapecoeff, double *cov11,
+		  double *cov12, double *cov22, double *dns);
 
 ///////////////////////////////////
 //  From smith3d.c
 //
-void smithfull3d(double *data, double *distVec, int *nSite,
-		 int *nObs, double *locs, double *scales, double *shapes,
+void smithfull3d(double *data, double *distVec, int *nSite, int *nObs, int *weighted,
+		 double *weights, double *locs, double *scales, double *shapes,
 		 double *cov11, double *cov12, double *cov13, double *cov22,
 		 double *cov23, double *cov33, int *fitmarge, double *dns);
-void smithdsgnmat3d(double *data, double *distVec, int *nSite, int *nObs, 
-		    double *locdsgnmat, double *locpenmat, int *nloccoeff,
+void smithdsgnmat3d(double *data, double *distVec, int *nSite, int *nObs, int *weighted,
+		    double *weights, double *locdsgnmat, double *locpenmat, int *nloccoeff,
 		    int *npparloc, double *locpenalty, double *scaledsgnmat,
 		    double *scalepenmat, int *nscalecoeff, int *npparscale,
 		    double *scalepenalty, double *shapedsgnmat, double *shapepenmat,
@@ -186,6 +184,16 @@ double lplikschlather(double *data, double *rho, double *jac,
 		      int nObs, int nSite);
 double lplikschlatherind(double *data, double alpha, double *rho,
 			 double *jac, int nObs, int nSite);
+
+///////////////////////////////////
+//  From weightedPairwiselik.c
+//
+double wlplikschlather(double *data, double *rho, double *jac,
+		       int nObs, int nSite, double *weights);
+double wlpliksmith(double *data, double *mahalDist, double *jac,
+		   int nObs, int nSite, double *weights);
+double wlplikschlatherind(double *data, double alpha, double *rho,
+			  double *jac, int nObs, int nSite, double *weights);
 
 ///////////////////////////////////
 //  From penalizations.c
@@ -367,3 +375,48 @@ void spatgevstderr(double *data, int *nSite, int *nObs, double *locdsgnmat,
 		   double *shapedsgnmat, int *nshapecoeff, double *loccoeff,
 		   double *scalecoeff, double *shapecoeff, double *hess, 
 		   double *grad);
+
+///////////////////////////////////
+//  From weightedStandardErrors.c
+//
+void wsmithstderr(double *data, double *distVec, int *nSite,
+		  int *nObs, double *locdsgnmat, int *nloccoeff,
+		  double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
+		  int *nshapecoeff, double *loccoeff, double *scalecoeff,
+		  double *shapecoeff, double *cov11, double *cov12,
+		  double *cov22, int *fitmarge, double *weights, double *hess,
+		  double *grad);
+void wsmithstderr3d(double *data, double *distVec, int *nSite,
+		    int *nObs, double *locdsgnmat, int *nloccoeff,
+		    double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
+		    int *nshapecoeff, double *loccoeff, double *scalecoeff,
+		    double *shapecoeff, double *cov11, double *cov12, double *cov13,
+		    double *cov22, double *cov23, double *cov33, int *fitmarge,
+		    double *weights, double *hess, double *grad);
+void wschlatherstderr(int *covmod, double *data, double *dist, int *nSite,
+		      int *nObs, double *locdsgnmat, int *nloccoeff,
+		      double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
+		      int *nshapecoeff, double *loccoeff, double *scalecoeff,
+		      double *shapecoeff, double *sill, double *range, double *smooth,
+		      double *smooth2, int *fitmarge, double *weights, double *hess,
+		      double *grad);
+void wschlatherindstderr(int *covmod, double *data, double *dist, int *nSite,
+			 int *nObs, double *locdsgnmat, int *nloccoeff,
+			 double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
+			 int *nshapecoeff, double *loccoeff, double *scalecoeff,
+			 double *shapecoeff, double *alpha, double *sill, double *range,
+			 double *smooth, double *smooth2, int *fitmarge, double *weights,
+			 double *hess, double *grad);
+void wgeomgaussstderr(int *covmod, double *data, double *dist, int *nSite,
+		      int *nObs, double *locdsgnmat, int *nloccoeff,
+		      double *scaledsgnmat, int *nscalecoeff, double *shapedsgnmat,
+		      int *nshapecoeff, double *loccoeff, double *scalecoeff,
+		      double *shapecoeff, double *sigma2, double *sill, double *range,
+		      double *smooth, double *smooth2, int *fitmarge, double *weights,
+		      double *hess, double *grad);
+void wbrownresnickstderr(double *data, double *dist, int *nSite, int *nObs,
+			 double *locdsgnmat, int *nloccoeff, double *scaledsgnmat,
+			 int *nscalecoeff, double *shapedsgnmat, int *nshapecoeff,
+			 double *loccoeff, double *scalecoeff, double *shapecoeff,
+			 double *range, double *smooth, int *fitmarge, double *weights,
+			 double *hess, double *grad);

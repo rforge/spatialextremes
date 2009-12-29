@@ -5,7 +5,7 @@
 ##estimated.
 brownresnickfull <- function(data, coord, start, ..., fit.marge = FALSE,
                              warn = TRUE, method = "BFGS", control = list(),
-                             std.err.type = "none", corr = FALSE){
+                             std.err.type = "none", corr = FALSE, weights = NULL){
   ##data is a matrix with each column corresponds to one location
   ##locations is a matrix giving the coordinates (1 row = 1 station)
   n.site <- ncol(data)
@@ -14,36 +14,35 @@ brownresnickfull <- function(data, coord, start, ..., fit.marge = FALSE,
   n.pairs <- n.site * (n.site - 1) / 2
 
   dist <- distance(coord)
-  
-  ##First create a "void" function
-  nplk <- function(x) x
+  weighted <- !is.null(weights)
 
-  ##And define the "body" of the function as the number of parameters
-  ##to estimate depends on n.site
+  if (!weighted)
+    ##Set the weights to 0 as they won't be used anyway
+    weights <- 0
+  
+  param <- c("range", "smooth")
+
   if (fit.marge){
     loc.names <- paste("loc", 1:n.site, sep="")
     scale.names <- paste("scale", 1:n.site, sep="")
     shape.names <- paste("shape", 1:n.site, sep="")
     
     param <- c("range", "smooth", loc.names, scale.names, shape.names)
-
-    body(nplk) <- parse(text = paste("-.C('brownresnickfull', as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs),",
-                          paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
-                          paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
-                          paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                          "as.double(range), as.double(smooth), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
   }
 
-  else{
+  else
+    loc.names <- scale.names <- shape.names <- rep(1, n.site)
+  
+  ##First create a "void" function
+  nplk <- function(x) x
 
-    param <- c("range", "smooth")
-
-    body(nplk) <- parse(text = paste("-.C('brownresnickfull', as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs),",
-                          paste("as.double(rep(1,", n.site, ")), "),
-                          paste("as.double(rep(1,", n.site, ")), "),
-                          paste("as.double(rep(1,", n.site, ")), "),
-                          "as.double(range), as.double(smooth), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
-  }
+  ##And define the "body" of the function as the number of parameters
+  ##to estimate depends on n.site
+  body(nplk) <- parse(text = paste("-.C('brownresnickfull', as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(weighted), as.double(weights),",
+                        paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
+                        paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
+                        paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
+                        "as.double(range), as.double(smooth), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
 
   fixed.param <- list(...)[names(list(...)) %in% param]
 
@@ -182,10 +181,15 @@ brownresnickfull <- function(data, coord, start, ..., fit.marge = FALSE,
   param <- c(opt$par, unlist(fixed.param))
   param <- param[param.names]
 
+  ##Reset the weights to their original values
+  if ((length(weights) == 1) && (weights == 0))
+    weights <- NULL
+  
   if (std.err.type != "none"){
     std.err <- .brownresnickstderr(param, data, dist, as.double(0), as.double(0), as.double(0),
                                    fit.marge = fit.marge, std.err.type = std.err.type,
-                                   fixed.param = names(fixed.param), param.names = param.names)
+                                   fixed.param = names(fixed.param), param.names = param.names,
+                                   weights = weights)
     
     opt$hessian <- std.err$hess
     var.score <- std.err$var.score
@@ -254,7 +258,7 @@ brownresnickfull <- function(data, coord, start, ..., fit.marge = FALSE,
 brownresnickform <- function(data, coord, loc.form, scale.form, shape.form,
                              start, fit.marge = TRUE, marg.cov = NULL, ...,
                              warn = TRUE, method = "BFGS", control = list(),
-                             std.err.type = "none", corr = FALSE){
+                             std.err.type = "none", corr = FALSE, weights = NULL){
   ##data is a matrix with each column corresponds to one location
   ##coord is a matrix giving the coordinates (1 row = 1 station)
   n.site <- ncol(data)
@@ -263,6 +267,11 @@ brownresnickform <- function(data, coord, loc.form, scale.form, shape.form,
   n.pair <- n.site * (n.site - 1) / 2
 
   dist <- distance(coord)
+  weighted <- !is.null(weights)
+
+  if (!weighted)
+    ##Set the weights to 0 as they won't be used anyway
+    weights <- 0
      
   ##With our notation, formula must be of the form y ~ xxxx
   loc.form <- update(loc.form, y ~ .)
@@ -318,7 +327,7 @@ brownresnickform <- function(data, coord, loc.form, scale.form, shape.form,
 
   ##And define the "body" of the function as the number of parameters
   ##to estimate depends on n.site
-  body(nplk) <- parse(text = paste("-.C('brownresnickdsgnmat', as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
+  body(nplk) <- parse(text = paste("-.C('brownresnickdsgnmat', as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(weighted), as.double(weights), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
                         paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                         paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                         paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
@@ -438,12 +447,16 @@ brownresnickform <- function(data, coord, loc.form, scale.form, shape.form,
   param <- c(opt$par, unlist(fixed.param))
   param <- param[param.names]
 
+  ##Reset the weights to their original values
+  if ((length(weights) == 1) && (weights == 0))
+    weights <- NULL
+  
   if (std.err.type != "none"){
     std.err <- .brownresnickstderr(param, data, dist, loc.dsgn.mat, scale.dsgn.mat,
                                    shape.dsgn.mat, fit.marge = fit.marge,
                                    std.err.type = std.err.type,
                                    fixed.param = names(fixed.param), param.names =
-                                   param.names)
+                                   param.names, weights = weights)
 
 
     opt$hessian <- std.err$hess

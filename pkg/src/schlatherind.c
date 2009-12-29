@@ -1,7 +1,8 @@
 #include "header.h"
 
 void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
-		      int *nObs, int *dim, double *locs, double *scales, double *shapes,
+		      int *nObs, int *dim, int *weighted, double *weights,
+		      double *locs, double *scales, double *shapes, 
 		      double *alpha, double *sill, double *range, double *smooth,
 		      double *smooth2, int *fitmarge,double *dns){
   //This is the independent Schlater's model. It's a wrapper to several
@@ -63,14 +64,22 @@ void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
     if (*dns != 0.0)
       return;
     
-    *dns = lplikschlatherind(frech, *alpha, rho, jac, *nObs, *nSite);
+    if (*weighted)
+      *dns = wlplikschlatherind(frech, *alpha, rho, jac, *nObs, *nSite, weights);
+
+    else
+      *dns = lplikschlatherind(frech, *alpha, rho, jac, *nObs, *nSite);
   }
   
   else {
     for (i=0;i<(*nSite * *nObs);i++)
       jac[i] = 0.0;
 
-    *dns = lplikschlatherind(data, *alpha, rho, jac, *nObs, *nSite);
+    if (*weighted)
+      *dns = wlplikschlatherind(data, *alpha, rho, jac, *nObs, *nSite, weights);
+
+    else
+      *dns = lplikschlatherind(frech, *alpha, rho, jac, *nObs, *nSite);
   }
   
   if (!R_FINITE(*dns))
@@ -81,7 +90,8 @@ void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
 }
 
 void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs,
-			 int *dim, double *locdsgnmat, double *locpenmat, int *nloccoeff, int *npparloc,
+			 int *dim, int *weighted, double *weights, double *locdsgnmat,
+			 double *locpenmat, int *nloccoeff, int *npparloc,
 			 double *locpenalty, double *scaledsgnmat, double *scalepenmat,
 			 int *nscalecoeff, int *npparscale, double *scalepenalty, double *shapedsgnmat,
 			 double *shapepenmat, int *nshapecoeff, int *npparshape, double *shapepenalty,
@@ -144,7 +154,11 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
   if (*dns != 0.0)
     return;
 
-  *dns = lplikschlatherind(frech, *alpha, rho, jac, *nObs, *nSite);
+  if (*weighted)
+    *dns = wlplikschlatherind(frech, *alpha, rho, jac, *nObs, *nSite, weights);
+
+  else
+    *dns = wlplikschlatherind(frech, *alpha, rho, jac, *nObs, *nSite, weights);
     
   //Stage 5: Removing the penalizing terms (if any)
   // 1- For the location parameter
