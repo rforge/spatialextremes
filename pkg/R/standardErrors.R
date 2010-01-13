@@ -348,7 +348,7 @@
 
   gradient <- as.double(colSums(grad))
 
-  return(list(var.score = var.score, hessian = hessian, gradient))
+  return(list(var.score = var.score, hessian = hessian, gradient = gradient))
 }
 
 .geomgaussstderr <- function(par, data, dist, cov.mod, loc.dsgn.mat,
@@ -413,7 +413,7 @@
                   as.double(sigma2), as.double(sill), as.double(range),
                   as.double(smooth), as.double(smooth2), fit.marge,
                   hess = double(n.obs * n.param * n.pairs),
-                    grad = double(n.obs * n.param),
+                  grad = double(n.obs * n.param),
                   PACKAGE = "SpatialExtremes")
   
   else
@@ -455,7 +455,7 @@
   
   gradient <- as.double(colSums(grad))
 
-  return(list(var.score = var.score, hessian = hessian, gradient))
+  return(list(var.score = var.score, hessian = hessian, gradient = gradient))
 }
 
 
@@ -542,7 +542,7 @@
   
   gradient <- as.double(colSums(grad))
 
-  return(list(var.score = var.score, hessian = hessian, gradient))
+  return(list(var.score = var.score, hessian = hessian, gradient = gradient))
 }
 
 .spatgevstderr <- function(par, data, loc.dsgn.mat, scale.dsgn.mat,
