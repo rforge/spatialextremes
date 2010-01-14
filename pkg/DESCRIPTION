@@ -1,6 +1,6 @@
 Package: SpatialExtremes
-Version: 1.5-0
-Date: 2009-29-12
+Version: 1.5-1
+Date: 2009-01-14
 Title: Modelling Spatial Extremes
 Author: Mathieu Ribatet <mathieu.ribatet@epfl.ch>
 Maintainer: Mathieu Ribatet <mathieu.ribatet@epfl.ch>
@@ -8,4 +8,3 @@ Depends: R (>= 1.8.0), RandomFields
 Description: This package proposes several approaches for spatial extremes modelling.
 License: GPL (>= 2)
 URL: http://people.epfl.ch/mathieu.ribatet, http://spatialextremes.r-forge.r-project.org/
-Packaged: Mon Apr 28 09:46:43 2008; mathieu
