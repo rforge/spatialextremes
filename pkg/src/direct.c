@@ -5,6 +5,7 @@ void buildcovmat(int *nSite, int *grid, int *covmod, double *coord, int *dim,
 		 double *smooth, double *covMat){
 
   int i, j, currentPair, nPairs, effnSite, zero = 0;
+  const double one = 1;
   double *dist, *rho, flag = 0;
 
   if (*grid)
@@ -38,16 +39,16 @@ void buildcovmat(int *nSite, int *grid, int *covmod, double *coord, int *dim,
    
   switch (*covmod){
   case 1:
-    flag = whittleMatern(dist, nPairs, *sill, *range, *smooth, rho);
+    flag = whittleMatern(dist, nPairs, one, *range, *smooth, rho);
     break;
   case 2:
-    flag = cauchy(dist, nPairs, *sill, *range, *smooth, rho);
+    flag = cauchy(dist, nPairs, one, *range, *smooth, rho);
     break;
   case 3:
-    flag = powerExp(dist, nPairs, *sill, *range, *smooth, rho);
+    flag = powerExp(dist, nPairs, one, *range, *smooth, rho);
     break;
   case 4:
-    flag = bessel(dist, nPairs, *dim, *sill, *range, *smooth, rho);
+    flag = bessel(dist, nPairs, *dim, one, *range, *smooth, rho);
     break;
   }
   
@@ -58,8 +59,8 @@ void buildcovmat(int *nSite, int *grid, int *covmod, double *coord, int *dim,
   for (i=0;i<(effnSite-1);i++){
     for (j=i+1;j<effnSite;j++){
       currentPair++;
-      covMat[effnSite * i + j] = rho[currentPair];
-      covMat[effnSite * j + i] = rho[currentPair];
+      covMat[effnSite * i + j] = *sill * rho[currentPair];
+      covMat[effnSite * j + i] = *sill * rho[currentPair];
     }
   }
   
