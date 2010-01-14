@@ -1297,13 +1297,13 @@ void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite,
 	  imahalSquare = imahal * imahal;
 
 	for (k=*nObs;k--;){
-	  double ifrech1 = frech[k + i * *nObs],
-	  ifrech2 = frech[k + j * *nObs],
+	  double ifrech1 = 1 / frech[k + i * *nObs],
+	  ifrech2 = 1 / frech[k + j * *nObs],
 	  ifrech1Square = ifrech1 * ifrech1,
 	    ifrech2Square = ifrech2 * ifrech2;
 	  	 
-	  c1 = log(frech[k + j * *nObs] / frech[k + i * *nObs]) /
-	    mahalDist[currentPair] + mahalDist[currentPair] / 2;
+	  c1 = log(frech[k + j * *nObs] * ifrech1) * imahal +
+	    0.5 * mahalDist[currentPair];
 	  c2 = mahalDist[currentPair] - c1;
 	 
 	  double dnormc1 = dnorm(c1, 0., 1., 0),
