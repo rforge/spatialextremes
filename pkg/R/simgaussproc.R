@@ -2,6 +2,16 @@ rgp <- function(n, coord, cov.mod = "powexp", mean = 0, nugget = 0,
                 sill = 1, range = 1, smooth = 1, grid = FALSE,
                 control = list()){
 
+  dist.dim <- ncol(coord)
+
+  if (is.null(dist.dim)){
+    dist.dim <- 1
+    n.site <- length(coord)
+  }
+
+  else
+    n.site <- nrow(coord)
+  
   if (grid && is.null(dim(coord)))
     stop("'grid' cannot be 'TRUE' if you specify univariate coordinates")
 
@@ -22,10 +32,10 @@ rgp <- function(n, coord, cov.mod = "powexp", mean = 0, nugget = 0,
 
   if (is.null(control$method)){
     ##Identify the most accurate method for simulation if not specified
-    if (grid && (nrow(coord)^ncol(coord) > 500))
+    if (grid && (n.site^dist.dim > 500))
       method <- "tbm"
     
-    else if (nrow(coord) > 500)
+    else if (n.site > 500)
       method <- "tbm"
     
     else
