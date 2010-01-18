@@ -51,9 +51,8 @@ void smithfull3d(double *data, double *distVec, int *nSite, int *nObs,
   }
   
   else {
-    for (i=0;i<(*nSite * *nObs);i++)
-      jac[i] = 0.0;    
-
+    memset(jac, 0, *nSite * *nObs * sizeof(double));
+    
     if (*weighted)
       *dns = wlpliksmith(data, mahalDist, jac, *nObs, *nSite, weights);
 
