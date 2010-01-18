@@ -53,6 +53,7 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
 	  angle, inorm, thresh, *gp;
 
 	gp = (double *)R_alloc(neffSite, sizeof(double));
+	memset(gp, 0, neffSite * sizeof(double));
 
 	/* ------- Random rotation of the lines ----------*/
 	u = unif_rand() - 0.5;
@@ -75,10 +76,6 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
 	
 	/* We simulate one realisation of a gaussian random field with
 	   the required covariance function */
-	
-	for (j=neffSite;j--;)
-	  gp[j] = 0;
-
 	tbmcore(nSite, &neffSite, dim, covmod, grid, coord, &nugget,
 		sill, range, smooth, nlines, lines, gp);
 	
@@ -116,6 +113,7 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
 	  angle, inorm, thresh, *gp;
 
 	gp = (double *)R_alloc(neffSite, sizeof(double));
+	memset(gp, 0, neffSite * sizeof(double));
 
 	/* ------- Random rotation of the lines ----------*/
 	u = unif_rand() - 0.5;
@@ -138,9 +136,6 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
 	
 	/* We simulate one realisation of a gaussian random field with
 	   the required covariance function */
-	for (j=neffSite;j--;)
-	  gp[j] = 0;
-	
 	tbmcore(nSite, &neffSite, dim, covmod, grid, coord, &nugget,
 		sill, range, smooth, nlines, lines, gp);
 	
@@ -234,10 +229,10 @@ void rschlatherdirect(double *coord, int *nObs, int *nSite, int *dim,
 
   /* Compute the square root of the covariance matrix */
   // a) First compute diag(sqrt(d)) %*% u
-  for (i=0;i<neffSite;i++){
+  for (i=neffSite;i--;){
     dummy = sqrt(d[i]);
     
-    for (j=0;j<neffSite;j++)
+    for (j=neffSite;j--;)
       u[i + neffSite * j] *= dummy;
   }
 

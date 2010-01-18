@@ -21,10 +21,10 @@ void distance(double *coord, int *nDim, int *nSite,
   }
 
   else{
+    memset(dist, 0, nPair * sizeof(double));
+
     for (i=0;i<(*nSite-1);i++){
       for (j=i+1;j<*nSite;j++){
-	dist[currentPair] = 0;
-
 	for (k=0;k<*nDim;k++)
 	  dist[currentPair] += (coord[i + k * *nSite] -	coord[j + k * *nSite]) *
 	    (coord[i + k * *nSite] - coord[j + k * *nSite]);
@@ -84,12 +84,12 @@ double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
   //when ans > 0.0, the GEV parameters are invalid
   int i, j;
   
+  memset(locs, 0, nSite * sizeof(double));
+  memset(scales, 0, nSite * sizeof(double));
+  memset(shapes, 0, nSite * sizeof(double));
+
   for (i=nSite;i--;){
        
-    locs[i] = 0.0;
-    scales[i] = 0.0;
-    shapes[i] = 0.0;
-    
     for (j=nloccoeff;j--;)
       locs[i] += loccoeff[j] * locdsgnmat[i + nSite * j];
     
@@ -143,11 +143,10 @@ void dsgnmat2Alpha(double *alphadsgnmat, double *alphacoeff,
   //(0,1)
   int i, j;
 
-  for (i=0;i<nSite;i++){
-       
-    alphas[i] = 0.0;
-        
-    for (j=0;j<nalphacoeff;j++)
+  memset(alphas, 0, nSite * sizeof(double));
+
+  for (i=nSite;i--;){
+    for (j=nalphacoeff;j--;)
       alphas[i] += alphacoeff[j] * alphadsgnmat[i + nSite * j];
 
     //We use the expit function to ensure that the alphas lie in [0,1]
@@ -165,11 +164,9 @@ void dsgnmat2Sigma2(double *sigma2dsgnmat, double *sigma2coeff,
   //the 'sigma2' are used in the non-stationary geometric gaussian model
   int i, j;
   
-  for (i=0;i<nSite;i++){
-       
-    sigma2[i] = 0.0;
-        
-    for (j=0;j<nsigma2coeff;j++)
+  memset(sigma2, 0, nSite * sizeof(double));
+  for (i=nSite;i--;){
+    for (j=nsigma2coeff;j--;)
       sigma2[i] += sigma2coeff[j] * sigma2dsgnmat[i + nSite * j];
 
     //We use a log link function to ensure that the sigma2s lie are positive

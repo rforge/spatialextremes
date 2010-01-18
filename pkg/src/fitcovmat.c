@@ -22,7 +22,7 @@ void fitcovmat2d(double *cov11, double *cov12, double *cov22,
     return;
   }
 
-  for (i=0;i<*nPairs;i++){
+  for (i=*nPairs;i--;){
     res = 2 * pnorm(0.5 * mahalDist[i], 0, 1, 1, 0) - extcoeff[i];
     *ans +=  res * res / (weights[i] * weights[i]);
   }
@@ -47,7 +47,7 @@ void fitcovmat3d(double *cov11, double *cov12, double *cov13,
   if (*ans != 0.0)
     return;
 
-  for (i=0;i<*nPairs;i++){
+  for (i=*nPairs;i--;){
     res = 2 * pnorm(0.5 * mahalDist[i], 0, 1, 1, 0) - extcoeff[i];
     *ans += res * res / (weights[i] * weights[i]);
   }
@@ -85,7 +85,7 @@ void fitcovariance(int *covmod, double *sill, double *range, double *smooth,
   if (*ans != 0.0)
     return;
 
-  for (i=0;i<*nPairs;i++){
+  for (i=*nPairs;i--;){
     res = 1 + sqrt(0.5 - 0.5 * rho[i]) - extcoeff[i];
     *ans += res * res / (weights[i] * weights[i]);
   }
@@ -134,7 +134,7 @@ void fiticovariance(int *covmod, double *alpha, double *sill, double *range,
   if (*ans != 0.0)
     return;
 
-  for (i=0;i<*nPairs;i++){
+  for (i=*nPairs;i--;){
     res = 2 * *alpha + (1 - *alpha) * (1 + sqrt(0.5 - 0.5 * rho[i])) - extcoeff[i];
     *ans +=  res * res / (weights[i] * weights[i]);
   }
@@ -159,7 +159,7 @@ void fitgcovariance(int *covmod, double *sigma2, double *sigma2Bound, double *si
   if (*ans != 0.0)
     return;
 
-  for (i=0;i<*nPairs;i++){
+  for (i=*nPairs;i--;){
     res = 2 * pnorm(0.5 * rho[i], 0.0, 1.0, 1, 0) - extcoeff[i];
     *ans += res * res / (weights[i] * weights[i]);
   }
@@ -182,7 +182,7 @@ void fitbrcovariance(double *range, double *smooth, int *nPairs,
   if (*ans != 0.0)
     return;
 
-  for (i=0;i<*nPairs;i++){
+  for (i=*nPairs;i--;){
     res = 2 * pnorm(0.5 * rho[i], 0.0, 1.0, 1, 0) - extcoeff[i];
     *ans += res * res / (weights[i] * weights[i]);
   }

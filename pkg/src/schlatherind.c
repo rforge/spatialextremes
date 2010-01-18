@@ -72,8 +72,7 @@ void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
   }
   
   else {
-    for (i=0;i<(*nSite * *nObs);i++)
-      jac[i] = 0.0;
+    memset(jac, 0, *nSite * *nObs * sizeof(double));
 
     if (*weighted)
       *dns = wlplikschlatherind(data, *alpha, rho, jac, *nObs, *nSite, weights);

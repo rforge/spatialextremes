@@ -16,13 +16,11 @@ void tbm(int *nobs, int *nsite, int *dim, int *covmod, int *grid,
 
 
   if (*grid)
-    for (i=(*nobs * R_pow_di(*nsite, *dim));i--;)
-      ans[i] = 0;
+    memset(ans, 0, *nobs * R_pow_di(*nsite, *dim) * sizeof(double));
 
   else
-    for (i=(*nobs * *nsite);i--;)
-      ans[i] = 0;
-
+    memset(ans, 0, *nobs * *nsite * sizeof(double));
+    
   lines = (double *)R_alloc(3 * *nlines, sizeof(double));
   
   if ((*covmod == 3) && (*smooth == 2))

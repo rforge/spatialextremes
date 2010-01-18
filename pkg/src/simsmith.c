@@ -21,7 +21,7 @@ void rsmith1d(double *coord, double *center, double *edge, int *nObs,
 
   /* We first center the coordinates to avoid repetition of
     unnecessary operations in the while loop */
-  for (i=0;i<*nSites;i++)
+  for (i=*nSites;i--;)
     coord[i] -= center[0];
 
   /* Simulation according to the Schlather methodology. The compact
@@ -94,7 +94,7 @@ void rsmith2d(double *coord, double *center, double *edge, int *nObs,
 
   /* We first center the coordinates to avoid repetition of
     unnecessary operations in the while loop */
-  for (i=0;i<*nSites;i++){
+  for (i=*nSites;i--;){
     coord[i] -= center[0];
     coord[*nSites + i] -= center[1];
   }

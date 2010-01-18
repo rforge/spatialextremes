@@ -13,6 +13,8 @@ double lplikschlather(double *data, double *rho, double *jac,
   for (i=0;i<(nSite - 1);i++){
     for (j=i+1;j<nSite;j++){
       currentPair++;
+
+      double oneMinusRhoSquare = 1 - rho[currentPair] * rho[currentPair];
       
       for (k=nObs;k--;){
 	
@@ -51,8 +53,7 @@ double lplikschlather(double *data, double *rho, double *jac,
 	  //computed first.
 	  
 	  //It's the mixed partial derivative
-	  dvecMixed = (1 - rho[currentPair] * rho[currentPair]) / 
-	    (2 * c1 * c1 * c1) + dvecM1 * dvecM2;
+	  dvecMixed = oneMinusRhoSquare / (2 * c1 * c1 * c1) + dvecM1 * dvecM2;
 	  
 	  //Now the final step, multiplying by Fvec and the gradient
 	  dns += log(dvecMixed) + lFvec + jac[k + i * nObs] + jac[k + j * nObs];

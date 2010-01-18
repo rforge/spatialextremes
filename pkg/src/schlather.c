@@ -9,8 +9,7 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite, int *nOb
   //margins are unit Frechet, or the GEV parameters are estimated at
   //each locations.
   
-  const int nPairs = *nSite * (*nSite - 1) / 2,
-    nSitenObs = *nSite * *nObs;
+  const int nPairs = *nSite * (*nSite - 1) / 2;
   int i;
   double *jac, *rho, *frech;
   
@@ -66,9 +65,8 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite, int *nOb
   }
     
   else {
-    for (i=nSitenObs;i--;)
-      jac[i] = 0.0;
-    
+    memset(jac, 0, *nSite * *nObs * sizeof(double));
+        
     if (*weighted)
       *dns = wlplikschlather(data, rho, jac, *nObs, *nSite, weights);
 
