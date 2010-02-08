@@ -2,6 +2,7 @@
 #include <Rmath.h>
 #include <Rinternals.h>
 #include <R_ext/Lapack.h>
+#include <R_ext/Applic.h>
 
 #define MINF -1.0e15
 #define EPS DBL_EPSILON
@@ -144,29 +145,29 @@ void gpdlik(double *exceed, int *n, double *thresh, double *scale,
 ///////////////////////////////////
 //  From covariance.c
 //
-double whittleMatern(double *dist, int nPairs, double sill, double range,
+double whittleMatern(double *dist, int n, double sill, double range,
 		     double smooth, double *rho);
-double cauchy(double *dist, int nPairs, double sill, double range,
+double cauchy(double *dist, int n, double sill, double range,
 	      double smooth, double *rho);
-double caugen(double *dist, int nPairs, double sill, double range,
+double caugen(double *dist, int n, double sill, double range,
 	      double smooth, double smooth2, double *rho);
-double powerExp(double *dist, int nPairs, double sill, double range,
+double powerExp(double *dist, int n, double sill, double range,
 		double smooth, double *rho);
-double bessel(double *dist, int nPairs, int dim, double sill,
+double bessel(double *dist, int n, int dim, double sill,
 	      double range, double smooth, double *rho);
-double mahalDistFct(double *distVec, int nPairs, double *cov11,
+double mahalDistFct(double *distVec, int n, double *cov11,
 		    double *cov12, double *cov22, double *mahal);
-double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
+double mahalDistFct3d(double *distVec, int n, double *cov11,
 		      double *cov12, double *cov13, double *cov22, 
 		      double *cov23, double *cov33, double *mahal);
-double geomCovariance(double *dist, int nPairs, int dim, int covmod,
+double geomCovariance(double *dist, int n, int dim, int covmod,
 		      double sigma2, double sigma2Bound, double sill,
 		      double range, double smooth, double smooth2,
 		      double *rho);
 double nsgeomCovariance(double *dist, int nSite, int dim, int covmod,
 			double *sigma2, double sill, double range,
 			double smooth, double smooth2, double *rho);
-double brownResnick(double *dist, int nPairs, double range, double smooth,
+double brownResnick(double *dist, int n, double range, double smooth,
 		    double *rho);
 
 ///////////////////////////////////
@@ -420,3 +421,10 @@ void wbrownresnickstderr(double *data, double *dist, int *nSite, int *nObs,
 			 double *loccoeff, double *scalecoeff, double *shapecoeff,
 			 double *range, double *smooth, int *fitmarge, double *weights,
 			 double *hess, double *grad);
+
+///////////////////////////////////
+//  From circulant.c
+//
+void circemb(int *nsim, int *ngrid, double *steps, int *dim, int *covmod,
+	     double *nugget, double *sill, double *range, double *smooth,
+	     double *ans);
