@@ -19,7 +19,7 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
     nlines: the number of lines used for the TBM algo
        ans: the generated random field */
 
-  int i;
+  int i, neffSite;
   double *lines;
 
   //rescale the coordinates
@@ -36,11 +36,16 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
 
   //Generate lines
   vandercorput(nlines, lines);
-  
+
+  if (*grid)
+    neffSite = R_pow_di(*nSite, *dim);
+
+  else
+    neffSite = *nSite;
+
   GetRNGstate();
   if (*grid){
     //coord defines a grid
-    int neffSite = R_pow_di(*nSite, *dim);
     for (i=*nObs;i--;){
       int nKO = neffSite;
       double poisson = 0;
@@ -51,10 +56,9 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
 	int j;
 	double nugget = 1 - *sill, ipoisson, u, v, w,
 	  angle, inorm, thresh, *gp;
-
+	
 	gp = (double *)R_alloc(neffSite, sizeof(double));
-	memset(gp, 0, neffSite * sizeof(double));
-
+  
 	/* ------- Random rotation of the lines ----------*/
 	u = unif_rand() - 0.5;
 	v = unif_rand() - 0.5;
@@ -76,31 +80,22 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
 	
 	/* We simulate one realisation of a gaussian random field with
 	   the required covariance function */
+	memset(gp, 0, neffSite * sizeof(double));
 	tbmcore(nSite, &neffSite, dim, covmod, grid, coord, &nugget,
 		sill, range, smooth, nlines, lines, gp);
 	
 	nKO = neffSite;
 	for (j=neffSite;j--;){
-	  if (thresh > ans[j + i * neffSite])
-	    ans[j + i * neffSite] = fmax2(gp[j] * ipoisson, ans[j + i * neffSite]);
-	  
-	  else
-	    nKO--;
+	  ans[j + i * neffSite] = fmax2(gp[j] * ipoisson, ans[j + i * neffSite]);
+	  nKO -= (thresh <= ans[j + i * neffSite]);
 	  
 	}
       }
-    }
-
-    //Lastly we multiply by 1 / E[max(0, Y)]
-    for (i=(neffSite * *nObs);i--;){
-      const double imean = M_SQRT2 * M_SQRT_PI;
-      ans[i] *= imean;
     }
   }
 
   else{
     //coord doesn't define a grid
-    int neffSite = *nSite;
     for (i=*nObs;i--;){
       double poisson = 0;
       int nKO = neffSite;
@@ -110,11 +105,10 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
 	   satisfies the condition in Eq. (8) of Schlather (2002) */
 	int j;
 	double nugget = 1 - *sill, ipoisson, u, v, w,
-	  angle, inorm, thresh, *gp;
-
+	  angle, inorm, thresh, *gp;	
+	
 	gp = (double *)R_alloc(neffSite, sizeof(double));
-	memset(gp, 0, neffSite * sizeof(double));
-
+  
 	/* ------- Random rotation of the lines ----------*/
 	u = unif_rand() - 0.5;
 	v = unif_rand() - 0.5;
@@ -136,28 +130,26 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
 	
 	/* We simulate one realisation of a gaussian random field with
 	   the required covariance function */
+	memset(gp, 0, neffSite * sizeof(double));
 	tbmcore(nSite, &neffSite, dim, covmod, grid, coord, &nugget,
 		sill, range, smooth, nlines, lines, gp);
 	
 	nKO = neffSite;
 	for (j=*nSite;j--;){
-	  if (thresh > ans[i + j * *nObs])
-	    ans[i + j * *nObs] = fmax2(gp[j] * ipoisson, ans[i + j * *nObs]);
-	  
-	  else
-	    nKO--;
+	  ans[i + j * *nObs] = fmax2(gp[j] * ipoisson, ans[i + j * *nObs]);
+	  nKO -= (thresh <= ans[i + j * *nObs]);
 	}
       }
-    }
-
-    //Lastly we multiply by 1 / E[max(0, Y)]
-    for (i=(neffSite * *nObs);i--;){
-      const double imean = M_SQRT2 * M_SQRT_PI;
-      ans[i] *= imean;
     }
   }
 
   PutRNGstate();
+
+  //Lastly we multiply by 1 / E[max(0, Y)]
+  for (i=(neffSite * *nObs);i--;){
+    const double imean = M_SQRT2 * M_SQRT_PI;
+    ans[i] *= imean;
+  }
 
   return;
 }
@@ -269,12 +261,8 @@ void rschlatherdirect(double *coord, int *nObs, int *nSite, int *dim,
 	
 	nKO = neffSite;
 	for (j=neffSite;j--;){
-	  if (thresh > ans[j + i * neffSite])
-	    ans[j + i * neffSite] = fmax2(gp[j] * ipoisson, ans[j + i * neffSite]);
-	  
-	  else
-	    nKO--;
-	  
+	  ans[j + i * neffSite] = fmax2(gp[j] * ipoisson, ans[j + i * neffSite]);
+	  nKO -= (thresh <= ans[j + i * neffSite]);
 	}
       }
     }
@@ -308,11 +296,8 @@ void rschlatherdirect(double *coord, int *nObs, int *nSite, int *dim,
 	
 	nKO = *nSite;
 	for (j=*nSite;j--;){
-	  if (thresh > ans[i + j * *nObs])
-	    ans[i + j * *nObs] = fmax2(gp[j] * ipoisson, ans[i + j * *nObs]);
-	  
-	  else
-	    nKO--;
+	  ans[i + j * *nObs] = fmax2(gp[j] * ipoisson, ans[i + j * *nObs]);
+	  nKO -= (thresh <= ans[i + j * *nObs]);
 	}
       }
     }

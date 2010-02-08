@@ -48,14 +48,10 @@ void rsmith1d(double *coord, double *center, double *edge, int *nObs,
             
       nKO = *nSites;
       for (j=*nSites;j--;){
-	if (thresh > ans[i + j * *nObs]){
-	  //This is the normal density with 0 mean and variance var
-	  y = exp(-(coord[j] - u) * (coord[j] - u) / (2 * *var)) * thresh;	  
-	  ans[i + j * *nObs] = fmax2(y, ans[i + j * *nObs]);
-	}
-	
-	else
-	  nKO--;
+	//This is the normal density with 0 mean and variance var
+	y = exp(-(coord[j] - u) * (coord[j] - u) / (2 * *var)) * thresh;	  
+	ans[i + j * *nObs] = fmax2(y, ans[i + j * *nObs]);
+	nKO -= (thresh <= ans[i + j * *nObs]);
       }
     }
   }
@@ -127,20 +123,17 @@ void rsmith2d(double *coord, double *center, double *edge, int *nObs,
 	nKO = *nSites * *nSites;
 	for (j=*nSites;j--;){
 	  for (k=*nSites;k--;){
-	    if (thresh > ans[j + k * *nSites + i * *nSites * *nSites]){
-	      /* This is the bivariate normal density with 0 mean and
-		 cov. matrix [cov11, cov12; cov12, cov22] */
-	      y = exp((-*cov22 * (coord[j] - u1) * (coord[j] - u1) + 2 * *cov12 *
-		       (coord[j] - u1) * (coord[*nSites + k] - u2) - *cov11 *
-		       (coord[*nSites + k] - u2) * (coord[*nSites + k] - u2)) *
-		      itwiceDet) * thresh;
+	    /* This is the bivariate normal density with 0 mean and
+	       cov. matrix [cov11, cov12; cov12, cov22] */
+	    y = exp((-*cov22 * (coord[j] - u1) * (coord[j] - u1) + 2 * *cov12 *
+		     (coord[j] - u1) * (coord[*nSites + k] - u2) - *cov11 *
+		     (coord[*nSites + k] - u2) * (coord[*nSites + k] - u2)) *
+		    itwiceDet) * thresh;
 	      
-	      ans[j + k * *nSites + i * *nSites * *nSites] = 
-		fmax2(y, ans[j + k * *nSites + i * *nSites * *nSites]);
-	    }
-	
-	    else
-	      nKO--;
+	    ans[j + k * *nSites + i * *nSites * *nSites] = 
+	      fmax2(y, ans[j + k * *nSites + i * *nSites * *nSites]);
+	    
+	    nKO -= (thresh <= ans[j + k * *nSites + i * *nSites * *nSites]);
 	  }
 	}
       }
@@ -167,19 +160,16 @@ void rsmith2d(double *coord, double *center, double *edge, int *nObs,
       
 	nKO = *nSites;
 	for (j=*nSites;j--;){
-	  if (thresh > ans[i + j * *nObs]){
-	    /* This is the bivariate normal density with 0 mean and
-	       cov. matrix [cov11, cov12; cov12, cov22] */
-	    y = exp((-*cov22 * (coord[j] - u1) * (coord[j] - u1) + 2 * *cov12 *
-		     (coord[j] - u1) * (coord[*nSites + j] - u2) - *cov11 *
-		     (coord[*nSites + j] - u2) * (coord[*nSites + j] - u2)) *
-		    itwiceDet) * thresh;
+	  /* This is the bivariate normal density with 0 mean and
+	     cov. matrix [cov11, cov12; cov12, cov22] */
+	  y = exp((-*cov22 * (coord[j] - u1) * (coord[j] - u1) + 2 * *cov12 *
+		   (coord[j] - u1) * (coord[*nSites + j] - u2) - *cov11 *
+		   (coord[*nSites + j] - u2) * (coord[*nSites + j] - u2)) *
+		  itwiceDet) * thresh;
 	  
-	    ans[i + j * *nObs] = fmax2(y, ans[i + j * *nObs]);
-	  }
-	
-	  else
-	    nKO--;
+	  ans[i + j * *nObs] = fmax2(y, ans[i + j * *nObs]);
+	  
+	  nKO -= (thresh <= ans[i + j * *nObs]);
 	}
       }
     }

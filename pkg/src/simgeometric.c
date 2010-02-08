@@ -42,6 +42,7 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
   if (*grid){
     //coord defines a grid
     int neffSite = R_pow_di(*nSite, *dim);
+    
     for (i=*nObs;i--;){
       int nKO = neffSite;
       double poisson = 0;
@@ -50,9 +51,8 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 	/* The stopping rule is reached when nKO = 0 i.e. when each site
 	   satisfies the condition in Eq. (8) of Schlather (2002) */
 	int j;
-	double sigma = sqrt(*sigma2),// uBound = exp(3.5 * sigma - 0.5 * *sigma2),
-	  nugget = 1 - *sill, ipoisson, u, v, w, angle, norm, thresh,
-	  *gp;
+	double sigma = sqrt(*sigma2), nugget = 1 - *sill, ipoisson,
+	  u, v, w, angle, norm, thresh, *gp;
 
 	gp = (double *)R_alloc(neffSite, sizeof(double));
 
@@ -77,21 +77,16 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 	
 	/* We simulate one realisation of a gaussian random field with
 	   the required covariance function */
-	
-	for (j=neffSite;j--;)
-	  gp[j] = 0;
-
+	memset(gp, 0, neffSite * sizeof(double));
 	tbmcore(nSite, &neffSite, dim, covmod, grid, coord, &nugget,
 		sill, range, smooth, nlines, lines, gp);
 	
 	nKO = neffSite;
 	for (j=neffSite;j--;){
-	  if (thresh > ans[j + i * neffSite])
-	    ans[j + i * neffSite] = fmax2(exp(sigma * gp[j] - 0.5 * *sigma2) *
-					  ipoisson, ans[j + i * neffSite]);
+	  ans[j + i * neffSite] = fmax2(exp(sigma * gp[j] - 0.5 * *sigma2) *
+					ipoisson, ans[j + i * neffSite]);
 	  
-	  else
-	    nKO--;
+	  nKO -= (thresh <= ans[j + i * neffSite]);
 	  
 	}
       }
@@ -101,6 +96,7 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
   else{
     //coord doesn't define a grid
     int neffSite = *nSite;
+    
     for (i=*nObs;i--;){
       double poisson = 0;
       int nKO = neffSite;
@@ -109,8 +105,8 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 	/* The stopping rule is reached when nKO = 0 i.e. when each site
 	   satisfies the condition in Eq. (8) of Schlather (2002) */
 	int j;
-	double sigma = sqrt(*sigma2),// uBound = exp(3.5 * sigma - 0.5 * *sigma2),
-	  nugget = 1 - *sill, ipoisson, u, v, w, angle, norm, thresh, *gp;
+	double sigma = sqrt(*sigma2), nugget = 1 - *sill, ipoisson, u, v,
+	  w, angle, norm, thresh, *gp;
 
 	gp = (double *)R_alloc(neffSite, sizeof(double));
 
@@ -135,20 +131,16 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 	
 	/* We simulate one realisation of a gaussian random field with
 	   the required covariance function */
-	for (j=neffSite;j--;)
-	  gp[j] = 0;
-	
+	memset(gp, 0, neffSite * sizeof(double));
 	tbmcore(nSite, &neffSite, dim, covmod, grid, coord, &nugget,
 		sill, range, smooth, nlines, lines, gp);
 	
 	nKO = neffSite;
 	for (j=*nSite;j--;){
-	  if (thresh > ans[i + j * *nObs])
-	    ans[i + j * *nObs] = fmax2(exp(sigma * gp[j] - 0.5 * *sigma2) *
-				       ipoisson, ans[i + j * *nObs]);
+	  ans[i + j * *nObs] = fmax2(exp(sigma * gp[j] - 0.5 * *sigma2) *
+				     ipoisson, ans[i + j * *nObs]);
 	  
-	  else
-	    nKO--;
+	  nKO -= (thresh <= ans[i + j * *nObs]);
 	}
       }
     }
@@ -269,12 +261,10 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
 	
 	nKO = neffSite;
 	for (j=neffSite;j--;){
-	  if (thresh > ans[j + i * neffSite])
-	    ans[j + i * neffSite] = fmax2(exp(sigma * gp[j] - 0.5 * *sigma2) *
-					  ipoisson, ans[j + i * neffSite]);
+	  ans[j + i * neffSite] = fmax2(exp(sigma * gp[j] - 0.5 * *sigma2) *
+					ipoisson, ans[j + i * neffSite]);
 	  
-	  else
-	    nKO--;
+	  nKO -= (thresh <= ans[j + i * neffSite]);
 	  
 	}
       }
@@ -309,12 +299,10 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
 	
 	nKO = *nSite;
 	for (j=*nSite;j--;){
-	  if (thresh > ans[i + j * *nObs])
-	    ans[i + j * *nObs] = fmax2(exp(sigma * gp[j] - 0.5 * *sigma2) *
-				       ipoisson, ans[i + j * *nObs]);
+	  ans[i + j * *nObs] = fmax2(exp(sigma * gp[j] - 0.5 * *sigma2) *
+				     ipoisson, ans[i + j * *nObs]);
 	  
-	  else
-	    nKO--;
+	  nKO -= (thresh <= ans[i + j * *nObs]);
 	}
       }
     }
