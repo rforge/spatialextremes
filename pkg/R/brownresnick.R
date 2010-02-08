@@ -195,7 +195,7 @@ brownresnickfull <- function(data, coord, start, ..., fit.marge = FALSE,
     var.score <- std.err$var.score
     ihessian <- try(solve(opt$hessian), silent = TRUE)
     
-    if(!is.matrix(ihessian)){
+    if(!is.matrix(ihessian) || any(is.na(var.score))){
       if (warn)
         warning("observed information matrix is singular; passing std.err.type to ''none''")
       
@@ -463,7 +463,7 @@ brownresnickform <- function(data, coord, loc.form, scale.form, shape.form,
     var.score <- std.err$var.score
     ihessian <- try(solve(opt$hessian), silent = TRUE)
     
-    if(!is.matrix(ihessian)){
+    if(!is.matrix(ihessian) || any(is.na(var.score))){
       if (warn)
         warning("observed information matrix is singular; passing std.err.type to ''none''")
       

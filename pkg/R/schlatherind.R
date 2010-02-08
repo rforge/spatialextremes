@@ -236,7 +236,7 @@ Standard errors are not available unless you fix it.")
     var.score <- std.err$var.score
     ihessian <- try(solve(opt$hessian), silent = TRUE)
     
-    if(!is.matrix(ihessian)){
+    if(!is.matrix(ihessian) || any(is.na(var.score))){
       if (warn)
         warning("observed information matrix is singular; passing std.err.type to ''none''")
       
@@ -552,7 +552,7 @@ Standard errors are not available unless you fix it.")
     var.score <- std.err$var.score
     ihessian <- try(solve(opt$hessian), silent = TRUE)
     
-    if(!is.matrix(var.cov)){
+    if(!is.matrix(ihessian) || any(is.na(var.score))){
       if (warn)
         warning("observed information matrix is singular; passing std.err.type to ''none''")
       
