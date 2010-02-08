@@ -26,6 +26,11 @@ void geomgaussfull(int *covmod, double *data, double *dist, int *nSite,
       }
     }
   }
+
+  if (*sill > 1){
+    *dns = *sill * *sill * MINF;
+    return;
+  }
    
   //Stage 0: Compute the covariance at each location
   *dns = geomCovariance(dist, nPairs, *dim, *covmod, *sigma2, *sigma2Bound,
@@ -88,6 +93,11 @@ void geomgaussdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   shapes = (double *)R_alloc(*nSite, sizeof(double));
   frech = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   
+  if (*sill > 1){
+    *dns = *sill * *sill * MINF;
+    return;
+  }
+
   //Stage 1: Compute the covariance at each location
   *dns = geomCovariance(dist, nPairs, *dim, *covmod, *sigma2, *sigma2Bound,
 			*sill, *range, *smooth, *smooth2, rho);

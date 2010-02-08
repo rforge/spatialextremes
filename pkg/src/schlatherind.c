@@ -32,7 +32,12 @@ void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
   if ((*alpha < 0) || (*alpha > 1)){
     *dns = MINF;
     return;
-  }    
+  }
+
+  if (*sill > 1){
+    *dns = *sill * *sill * MINF;
+    return;
+  }
    
   //Stage 0: Compute the covariance at each location
   switch (*covmod){
@@ -112,6 +117,11 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
   
   if ((*alpha < 0) || (*alpha > 1)){
     *dns = MINF;
+    return;
+  }
+
+  if (*sill > 1){
+    *dns = *sill * *sill * MINF;
     return;
   }
 

@@ -26,6 +26,11 @@ void schlatherfull(int *covmod, double *data, double *dist, int *nSite, int *nOb
       }
     }
   }
+
+  if (*sill > 1){
+    *dns = *sill * *sill * MINF;
+    return;
+  }
    
   //Stage 0: Compute the covariance at each location
   switch (*covmod){
@@ -100,6 +105,12 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   shapes = (double *)R_alloc(*nSite, sizeof(double));
   frech = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   
+
+  if (*sill > 1){
+    *dns = *sill * *sill * MINF;
+    return;
+  }
+
   //Stage 1: Compute the covariance at each location
   switch (*covmod){
   case 1:

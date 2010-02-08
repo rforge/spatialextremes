@@ -1,6 +1,6 @@
 #include "header.h"
 
-double whittleMatern(double *dist, int nPairs, double sill, double range,
+double whittleMatern(double *dist, int n, double sill, double range,
 		     double smooth, double *rho){
 
   //This function computes the whittle-matern covariance function
@@ -26,19 +26,20 @@ double whittleMatern(double *dist, int nPairs, double sill, double range,
   if (sill <= 0)
     return (1 - sill) * (1 - sill) * MINF;
   
-  else if (sill > 1)
-    return sill *sill * MINF;
-  
-  for (i=nPairs;i--;){
-    double cst2;
-    cst2 = dist[i] * irange;
-    rho[i] = cst * R_pow(cst2, smooth) * bessel_k(cst2, smooth, 1);
+  for (i=n;i--;){
+    double cst2 = dist[i] * irange;
+
+    if (cst2 == 0)
+      rho[i] = sill;
+
+    else
+      rho[i] = cst * R_pow(cst2, smooth) * bessel_k(cst2, smooth, 1);
   }
 
   return 0.0;
 }
 
-double cauchy(double *dist, int nPairs, double sill, double range,
+double cauchy(double *dist, int n, double sill, double range,
 	      double smooth, double *rho){
 
   //This function computes the cauchy covariance function between each
@@ -61,16 +62,13 @@ double cauchy(double *dist, int nPairs, double sill, double range,
   if (sill <= 0.0)
     return (1 - sill) * (1 - sill) * MINF;
   
-  else if (sill > 1)
-    return sill * sill * MINF;
-
-  for (i=nPairs;i--;)
+  for (i=n;i--;)
     rho[i] = sill * R_pow(1 + dist[i] * dist[i] * irange2, -smooth);
     
   return 0.0;
 }
 
-double caugen(double *dist, int nPairs, double sill, double range,
+double caugen(double *dist, int n, double sill, double range,
 	      double smooth, double smooth2, double *rho){
 
   /*This function computes the generalized cauchy covariance function
@@ -96,17 +94,14 @@ double caugen(double *dist, int nPairs, double sill, double range,
   if (sill <= 0)
     return (1 - sill) * (1 - sill) * MINF;
   
-  else if (sill > 1)
-    return sill * sill * MINF;
-
-  for (i=nPairs;i--;)
+  for (i=n;i--;)
     rho[i] = sill * R_pow(1 + R_pow(dist[i] * irange, smooth2),
 			  ratioSmooth);
     
   return 0.0;
 }
 
-double powerExp(double *dist, int nPairs, double sill, double range,
+double powerExp(double *dist, int n, double sill, double range,
 		double smooth, double *rho){
 
   //This function computes the powered exponential covariance function
@@ -126,16 +121,13 @@ double powerExp(double *dist, int nPairs, double sill, double range,
   if (sill <= 0)
     return (1 - sill) * (1 - sill) * MINF;
   
-  else if (sill > 1)
-    return sill * sill * MINF;
-  
-  for (i=nPairs;i--;)
+  for (i=n;i--;)
     rho[i] = sill * exp(-R_pow(dist[i] * irange, smooth));
     
   return 0.0;
 }
 
-double bessel(double *dist, int nPairs, int dim, double sill,
+double bessel(double *dist, int n, int dim, double sill,
 	      double range, double smooth, double *rho){
   //This function computes the bessel covariance function
   //between each pair of locations.
@@ -158,14 +150,14 @@ double bessel(double *dist, int nPairs, int dim, double sill,
   if (sill <= 0)
     return (1 - sill) * (1 - sill) * MINF;
 
-  else if (sill > 1)
-    return sill * sill * MINF;
-
-  for (i=nPairs;i--;){
+  for (i=n;i--;){
     double cst2;
     cst2 = dist[i] * irange;
 
-    if (cst2 <= 1e5)
+    if (cst2 == 0)
+      rho[i] = sill;
+
+    else if (cst2 <= 1e5)
       rho[i] = cst * R_pow(cst2, -smooth) * bessel_j(cst2, smooth);
 
     else
@@ -177,7 +169,7 @@ double bessel(double *dist, int nPairs, int dim, double sill,
   return 0.0;
 }
   
-double mahalDistFct(double *distVec, int nPairs, double *cov11,
+double mahalDistFct(double *distVec, int n, double *cov11,
 		    double *cov12, double *cov22, double *mahal){
   //This function computes the mahalanobis distance between each pair
   //of locations. Currently this function is only valid in 2D
@@ -199,9 +191,9 @@ double mahalDistFct(double *distVec, int nPairs, double *cov11,
   if (det <= 1e-10)
     return (1 - det + 1e-10) * (1 - det + 1e-10) * MINF;
   
-  for (i=nPairs;i--;){
-    mahal[i] = (*cov11 * distVec[nPairs + i] * distVec[nPairs + i] -
-		2 * *cov12 * distVec[i] * distVec[nPairs + i] +
+  for (i=n;i--;){
+    mahal[i] = (*cov11 * distVec[n + i] * distVec[n + i] -
+		2 * *cov12 * distVec[i] * distVec[n + i] +
 		*cov22 * distVec[i] * distVec[i]) * idet;
     
     mahal[i] = sqrt(mahal[i]);
@@ -210,7 +202,7 @@ double mahalDistFct(double *distVec, int nPairs, double *cov11,
   return 0.0;
 }
 
-double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
+double mahalDistFct3d(double *distVec, int n, double *cov11,
 		      double *cov12, double *cov13, double *cov22, 
 		      double *cov23, double *cov33, double *mahal){
   //This function computes the mahalanobis distance between each pair
@@ -236,14 +228,14 @@ double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
   if (detMin <= 0)
     return (1 - detMin) * (1 - detMin) * MINF;
   
-  for (i=nPairs;i--;){
+  for (i=n;i--;){
 
     mahal[i] = ((*cov22 * *cov33 - *cov23 * *cov23) * distVec[i] * distVec[i] +
-		2 * (*cov13 * *cov23 - *cov12 * *cov33) * distVec[i] * distVec[nPairs + i] +
-		2 * (*cov12 * *cov23 - *cov13 * *cov22) * distVec[i] * distVec[2 *nPairs + i] +
-		(*cov11 * *cov33 - *cov13 * *cov13) * distVec[nPairs + i] * distVec[nPairs + i] +
-		2 * (*cov12 * *cov13 - *cov11 * *cov23) * distVec[nPairs + i] * distVec[2 * nPairs + i] +
-		(*cov11 * *cov22 - *cov12 * *cov12) * distVec[2 * nPairs + i] * distVec[2 * nPairs + i]) *
+		2 * (*cov13 * *cov23 - *cov12 * *cov33) * distVec[i] * distVec[n + i] +
+		2 * (*cov12 * *cov23 - *cov13 * *cov22) * distVec[i] * distVec[2 *n + i] +
+		(*cov11 * *cov33 - *cov13 * *cov13) * distVec[n + i] * distVec[n + i] +
+		2 * (*cov12 * *cov13 - *cov11 * *cov23) * distVec[n + i] * distVec[2 * n + i] +
+		(*cov11 * *cov22 - *cov12 * *cov12) * distVec[2 * n + i] * distVec[2 * n + i]) *
       idet;
 
     mahal[i] = sqrt(mahal[i]);
@@ -252,7 +244,7 @@ double mahalDistFct3d(double *distVec, int nPairs, double *cov11,
   return 0.0;
 }
 
-double geomCovariance(double *dist, int nPairs, int dim, int covmod,
+double geomCovariance(double *dist, int n, int dim, int covmod,
 		      double sigma2, double sigma2Bound, double sill,
 		      double range, double smooth, double smooth2,
 		      double *rho){
@@ -272,25 +264,25 @@ double geomCovariance(double *dist, int nPairs, int dim, int covmod,
 
   switch (covmod){
   case 1:
-    ans = whittleMatern(dist, nPairs, sill, range, smooth, rho);
+    ans = whittleMatern(dist, n, sill, range, smooth, rho);
     break;
   case 2:
-    ans = cauchy(dist, nPairs, sill, range, smooth, rho);
+    ans = cauchy(dist, n, sill, range, smooth, rho);
     break;
   case 3:
-    ans = powerExp(dist, nPairs, sill, range, smooth, rho);
+    ans = powerExp(dist, n, sill, range, smooth, rho);
     break;
   case 4:
-    ans = bessel(dist, nPairs, dim, sill, range, smooth, rho);
+    ans = bessel(dist, n, dim, sill, range, smooth, rho);
     break;
   case 5:
-    ans = caugen(dist, nPairs, sill, range, smooth, smooth2, rho);
+    ans = caugen(dist, n, sill, range, smooth, smooth2, rho);
   }
 
   if (ans != 0.0)
     return ans;
 
-  for (i=nPairs;i--;)    
+  for (i=n;i--;)    
     rho[i] = sqrt(twiceSigma2 * (1 - rho[i]));
   
   return ans;
@@ -336,7 +328,7 @@ double nsgeomCovariance(double *dist, int nSite, int dim, int covmod,
 }
       
 
-double brownResnick(double *dist, int nPairs, double range, double smooth,
+double brownResnick(double *dist, int n, double range, double smooth,
 		    double *rho){
 
   int i;
@@ -345,7 +337,7 @@ double brownResnick(double *dist, int nPairs, double range, double smooth,
   if ((smooth <= 0) || (smooth > 2))
     return (smooth - 1) * (smooth - 1) * MINF;
 
-  for (i=nPairs;i--;)
+  for (i=n;i--;)
     rho[i] = R_pow(dist[i] * irange, halfSmooth);
 
   return 0;
