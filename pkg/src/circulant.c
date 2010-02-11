@@ -4,15 +4,23 @@ void circemb(int *nsim, int *ngrid, double *steps, int *dim, int *covmod,
 	     double *nugget, double *sill, double *range, double *smooth,
 	     double *ans){
 
-  int m = 2, i, j, k, r, nbar = *ngrid * *ngrid;
+  int i, j, k = -1, r, nbar = *ngrid * *ngrid, m;
   //irho is the imaginary part of the covariance -> 0
-  double *rho, *irho; 
+  double *rho, *irho;
+  //Below is a table of highly composite numbers
+  int HCN[39] = {1, 2, 4, 6, 12, 24, 36, 48, 60, 120, 180, 240,
+		 360, 720, 840, 1260, 1680, 2520, 5040, 7560,
+		 10080, 15120, 20160, 25200, 27720, 45360, 50400,
+		 55440, 83160, 110880, 166320, 221760, 277200,
+		 332640, 498960, 554400, 665280, 720720, 1081080};
+
     
   /* Find the smallest size m for the circulant embedding matrix */
   {
     int dummy = 2 * (*ngrid - 1);
     do {
-      m *= 2;
+      k++;
+      m = HCN[k];
     } while (m < dummy);
   }
   
@@ -82,12 +90,13 @@ void circemb(int *nsim, int *ngrid, double *steps, int *dim, int *covmod,
     }
 
     if (notPosDef){
-      halfM = m;
-      m *= 2;
+      k++;
+      m = HCN[k];
+      halfM = m / 2;
       mbar = m * m;
     }
 
-    if (mbar > 1048576)
+    if (k > 30)
       error("Impossible to embbed the covariance matrix");
     
   } while (notPosDef);
@@ -99,12 +108,8 @@ void circemb(int *nsim, int *ngrid, double *steps, int *dim, int *covmod,
     irho[i] = 0;//No imaginary part
   }
 
-  /* The method generates two independent random fields per iteration
-     so there's no need to perform nsim iterations but only
-     neffSim. */
-  int neffSim = *nsim / 2 + *nsim % 2, mdag = m / 2 + 1,
-    mdagbar = mdag * mdag;
-  double *a, *ia, factor = 1 / sqrt(mbar);
+  int mdag = m / 2 + 1, mdagbar = mdag * mdag;
+  double *a, *ia, isqrtMbar = 1 / sqrt(mbar);
 
   a = (double *)R_alloc(mbar, sizeof(double));
   ia = (double *)R_alloc(mbar, sizeof(double));
@@ -117,56 +122,22 @@ void circemb(int *nsim, int *ngrid, double *steps, int *dim, int *covmod,
       /* Below is the procedure 5.2.4 in Wood and Chan */
 
       //Computation of the cardinality of A(j)
-      int i = r % mdag, j = r / mdag, j1, j2;
+      int j1, j2,i = r % mdag, j = r / mdag;
       double u, v;
 
       int card = (i != 0) * (i != halfM) + 2 * (j != 0) * (j != halfM);
       
       switch (card){
-      case 0:
-	j1 = i + m * j;
-	a[j1] = factor * rho[j1] * norm_rand();
-	ia[j1] = 0;
-	break;
-      case 1:
-	//B(1) = 0, B^c(1) = {1}
-	factor *= M_SQRT1_2;
-	j1 = i + m * j;
-	j2 = m - i + m * j;
-	u = norm_rand();
-	v = norm_rand();
-	a[j1] = ia[j1] = factor * rho[j1];
-	a[j1] *= u;
-	ia[j1] *= v;
-	a[j2] = ia[j2] = factor * rho[j2];
-	a[j2] *= u;
-	ia[j2] *= -v;
-	break;
-      case 2:
-	//B(1) = 0, B^c(1) = {2}
-	factor *= M_SQRT1_2;
-	j1 = i + m * j;
-	j2 = i + m * (m - j);
-	u = norm_rand();
-	v = norm_rand();
-	a[j1] = ia[j1] = factor * rho[j1];
-	a[j1] *= u;
-	ia[j1] *= v;
-	a[j2] = ia[j2] = factor * rho[j2];
-	a[j2] *= u;
-	ia[j2] *= -v;
-	break;
       case 3:
 	//B(1) = {1}, B^c(1) = {2}
-	factor *= M_SQRT1_2;
 	j1 = (m - i) + m * j;
 	j2 = i + m * (m - j);
 	u = norm_rand();
 	v = norm_rand();
-	a[j1] = ia[j1] = factor * rho[j1];
+	a[j1] = ia[j1] = M_SQRT1_2 * rho[j1];
 	a[j1] *= u;
 	ia[j1] *= v;
-	a[j2] = ia[j2] = factor * rho[j2];
+	a[j2] = ia[j2] = M_SQRT1_2 * rho[j2];
 	a[j2] *= u;
 	ia[j2] *= -v;
 	
@@ -175,13 +146,44 @@ void circemb(int *nsim, int *ngrid, double *steps, int *dim, int *covmod,
 	j2 = i + m * j;
 	u = norm_rand();
 	v = norm_rand();
-	a[j1] = ia[j1] = factor * rho[j1];
+	a[j1] = ia[j1] = M_SQRT1_2 * rho[j1];
 	a[j1]*= u;
 	ia[j1] *= v;
-	a[j2] = ia[j2] = factor * rho[j2];
+	a[j2] = ia[j2] = M_SQRT1_2 * rho[j2];
 	a[j2]*= u;
 	ia[j2] *= -v;      
 	break;
+      case 1:
+	//B(1) = 0, B^c(1) = {1}
+	j1 = i + m * j;
+	j2 = m - i + m * j;
+	u = norm_rand();
+	v = norm_rand();
+	a[j1] = ia[j1] = M_SQRT1_2 * rho[j1];
+	a[j1] *= u;
+	ia[j1] *= v;
+	a[j2] = ia[j2] = M_SQRT1_2 * rho[j2];
+	a[j2] *= u;
+	ia[j2] *= -v;
+	break;
+      case 2:
+	//B(1) = 0, B^c(1) = {2}
+	j1 = i + m * j;
+	j2 = i + m * (m - j);
+	u = norm_rand();
+	v = norm_rand();
+	a[j1] = ia[j1] = M_SQRT1_2 * rho[j1];
+	a[j1] *= u;
+	ia[j1] *= v;
+	a[j2] = ia[j2] = M_SQRT1_2 * rho[j2];
+	a[j2] *= u;
+	ia[j2] *= -v;
+	break;
+      case 0:
+	j1 = i + m * j;
+	a[j1] = rho[j1] * norm_rand();
+	ia[j1] = 0;
+	break;      
       }
     }
 
@@ -200,25 +202,9 @@ void circemb(int *nsim, int *ngrid, double *steps, int *dim, int *covmod,
     work = (double *)R_alloc(4 * maxf, sizeof(double));
     iwork = (int *)R_alloc(maxp, sizeof(int));
     fft_work(a, ia, 1, m, m, -1, work, iwork);
-    
-    /* ------------ Get the random field ------------ */
-    /*if ((2 * (k + 1)) < *nsim){ 
-      int idx1, idx2;
-      for (i=nbar;i--;){
-	idx1 = i % m;
-	idx2 = i / m;
-	ans[i + 2 * k * nbar] = a[idx1 + m * idx2];
-	ans[i + (2 * k + 1) * nbar] = ia[idx1 + m * idx2];
-      }
-    }
-
-    else 
-      for (i=nbar;i--;)
-	ans[i + 2 * k * nbar] = a[(i % m) + m * (i / m)];
-    */
-
+        
     for (i=nbar;i--;)
-      ans[i + k * nbar] = a[i % *ngrid + m * (i / *ngrid)];
+      ans[i + k * nbar] = isqrtMbar * a[i % *ngrid + m * (i / *ngrid)];
   }
   PutRNGstate();  
     
