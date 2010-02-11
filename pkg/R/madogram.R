@@ -141,7 +141,8 @@ madogram <- function(data, coord, fitted, n.bins, gev.param = c(0, 1, 0),
     
   else{
     if (any(which == "mado")){
-      plot(dist, mado, xlab = xlab, ylab = ylab[1], col = col[1], ...)
+      plot(dist, mado, xlab = xlab, ylab = ylab[1], col = col[1],
+           xlim = c(0, max(dist)), ...)
 
       if (!missing(fitted)){
         if (gev.param[3] == 0)
@@ -158,7 +159,8 @@ madogram <- function(data, coord, fitted, n.bins, gev.param = c(0, 1, 0),
     }
     
     if (any(which == "ext")){
-      plot(dist, ext.coeff, xlab = xlab, ylab = ylab[2], col = col[1], ...)
+      plot(dist, ext.coeff, xlab = xlab, ylab = ylab[2], col = col[1],
+           xlim = c(0, max(dist)), ylim = c(1, 2), ...)
       
       if (fit.curves)
         curve(ext.coeff.fit, from = 0, to = max(dist), add = TRUE, col = col[2], ...)
@@ -299,7 +301,8 @@ fmadogram <- function(data, coord, fitted, n.bins, which = c("mado", "ext"),
 
   else{
     if (any(which == "mado")){
-      plot(dist, fmado, xlab = xlab, ylab = ylab[1], col = col[1], ...)
+      plot(dist, fmado, xlab = xlab, ylab = ylab[1], col = col[1],
+           xlim = c(0, max(dist)), ...)
 
       if (fit.curves){
         fmado.fit <- function(h)
@@ -310,7 +313,8 @@ fmadogram <- function(data, coord, fitted, n.bins, which = c("mado", "ext"),
     }
     
     if (any(which == "ext")){
-      plot(dist, ext.coeff, xlab = xlab, ylab = ylab[2], col = col[1], ...)
+      plot(dist, ext.coeff, xlab = xlab, ylab = ylab[2], col = col[1],
+           xlim = c(0, max(dist)), ylim = c(1, 2), ...)
 
       if (fit.curves)
         curve(ext.coeff.fit, from = 0, to = max(dist), add = TRUE, col = col[2], ...)
