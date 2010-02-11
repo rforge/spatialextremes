@@ -169,7 +169,7 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
     smooth: the smooth parameter
        ans: the generated random field */
 
-  const double sigma = sqrt(*sigma2);//, uBound = exp(3.5 * sigma - 0.5 * *sigma2);
+  const double sigma = sqrt(*sigma2);
   int i, j, k, lwork, nKO, info = 0, neffSite;
   double poisson, ipoisson, thresh, *gp, nugget = 1 - *sill,
     *covmat, one = 1, zero = 0, *work, *xvals, tmp, *d, *u,
@@ -310,5 +310,166 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
 
   PutRNGstate();
 
+  return;
+}
+
+void rgeomcirc(int *nObs, int *ngrid, double *steps, int *dim,
+	       int *covmod, double *sigma2, double *sill, double *range,
+	       double *smooth, double *uBound, double *ans){
+  /* This function generates random fields from the geometric model
+
+     nObs: the number of observations to be generated
+    ngrid: the number of locations along one axis
+      dim: the random field is generated in R^dim
+   covmod: the covariance model
+     sill: the sill parameter - (1 - sill) is a nugget effect
+    range: the range parameter
+   smooth: the smooth parameter
+   uBound: the uniform upper bound for the stoch. proc.
+      ans: the generated random field */
+
+  int i, j, k = -1, nbar = R_pow_di(*ngrid, *dim), r, m;
+  double *rho, *irho;
+  const double sigma = sqrt(*sigma2);
+  //Below is a table of highly composite numbers
+  int HCN[39] = {1, 2, 4, 6, 12, 24, 36, 48, 60, 120, 180, 240,
+		 360, 720, 840, 1260, 1680, 2520, 5040, 7560,
+		 10080, 15120, 20160, 25200, 27720, 45360, 50400,
+		 55440, 83160, 110880, 166320, 221760, 277200,
+		 332640, 498960, 554400, 665280, 720720, 1081080};
+
+    
+  /* Find the smallest size m for the circulant embedding matrix */
+  {
+    int dummy = 2 * (*ngrid - 1);
+    do {
+      k++;
+      m = HCN[k];
+    } while (m < dummy);
+  }
+  
+  /* ---------- beginning of the embedding stage ---------- */
+  int mbar = m * m, halfM = m / 2, notPosDef = 0;
+  do {
+    double *dist;
+    dist = (double *)R_alloc(mbar, sizeof(double));
+
+    notPosDef = 0;
+    //Computation of the distance
+    for (r=mbar;r--;){
+      i = r % m;
+      j = r / m;
+      
+      if (i > halfM)
+	i -= m;
+      
+      if (j > halfM)
+	j -= m;
+      
+      dist[r] = pythag(steps[0] * i, steps[1] * j);
+    }
+
+    //Computations of the covariances
+    rho = (double *)R_alloc(mbar, sizeof(double));
+    irho = (double *)R_alloc(mbar, sizeof(double));
+    memset(irho, 0, mbar * sizeof(double));
+
+    switch (*covmod){
+    case 1:
+      whittleMatern(dist, mbar, *sill, *range, *smooth, rho);
+      break;
+    case 2:
+      cauchy(dist, mbar, *sill, *range, *smooth, rho);
+      break;
+    case 3:
+      powerExp(dist, mbar, *sill, *range, *smooth, rho);
+      break;
+    case 4:
+      bessel(dist, mbar, *dim, *sill, *range, *smooth, rho);
+      break;
+    }
+
+    /* Compute the eigen values to check if the circulant embbeding
+       matrix is positive definite */
+
+    /* Note : The next lines is only valid for 2d random fields. I
+       need to change if there are m_1 \neq m_2 as I suppose that m_1
+       = m_2 = m */
+    int maxf, maxp, *iwork;
+    double *work;
+
+    fft_factor(m, &maxf, &maxp);
+    work = (double *)R_alloc(4 * maxf, sizeof(double));
+    iwork = (int *)R_alloc(maxp, sizeof(int));
+    fft_work(rho, irho, m, m, 1, -1, work, iwork);
+
+    fft_factor(m, &maxf, &maxp);
+    work = (double *)R_alloc(4 * maxf, sizeof(double));
+    iwork = (int *)R_alloc(maxp, sizeof(int));
+    fft_work(rho, irho, 1, m, m, -1, work, iwork);
+
+    //Check if the eigenvalues are all positive
+    for (i=mbar;i--;){
+      notPosDef |= (rho[i] <= 0) || (fabs(irho[i]) > 0.001);
+    }
+
+    if (notPosDef){
+      k++;
+      m = HCN[k];
+      halfM = m / 2;
+      mbar = m * m;
+    }
+
+    if (k > 30)
+      error("Impossible to embbed the covariance matrix");
+    
+  } while (notPosDef);
+  /* --------- end of the embedding stage --------- */
+
+  /* Computation of the square root of the eigenvalues */
+  for (i=mbar;i--;){
+    rho[i] = sqrt(rho[i]);
+    irho[i] = 0;//No imaginary part
+  }
+
+  int mdag = m / 2 + 1, mdagbar = mdag * mdag;
+  double *a, *ia, isqrtMbar = 1 / sqrt(mbar);
+
+  a = (double *)R_alloc(mbar, sizeof(double));
+  ia = (double *)R_alloc(mbar, sizeof(double));
+  
+  GetRNGstate();
+  for (i=*nObs;i--;){
+    int nKO = nbar;
+    double poisson = 0;
+    
+    while (nKO) {
+      /* The stopping rule is reached when nKO = 0 i.e. when each site
+	 satisfies the condition in Eq. (8) of Schlather (2002) */
+      int j;
+      double nugget = 1 - *sill, ipoisson, thresh, *gp;
+      
+      gp = (double *)R_alloc(nbar, sizeof(double));
+      
+      poisson += exp_rand();
+      ipoisson = 1 / poisson;
+      thresh = *uBound * ipoisson;
+      
+      /* We simulate one realisation of a gaussian random field with
+	 the required covariance function */
+      circcore(rho, a, ia, m, halfM, mdag, mdagbar, *ngrid, nbar, isqrtMbar, nugget, gp);
+      
+      nKO = nbar;
+      for (j=nbar;j--;){
+	ans[j + i * nbar] = fmax2(exp(sigma * gp[j] - 0.5 * *sigma2) * 
+				  ipoisson, ans[j + i * nbar]);
+	nKO -= (thresh <= ans[j + i * nbar]);
+	
+      }
+    }
+  }
+  
+  PutRNGstate();
+  
   return;
 }
