@@ -303,6 +303,9 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
 	     int *grid, double *coord, double *nugget, double *sill,
 	     double *range, double *smooth, int *nlines, double *lines,
 	     double *ans);
+void circcore(double *rho, double *a, double *ia, int m, int halfM, int mdag,
+	      int mdagbar, int ngrid, int nbar, double isqrtMbar, double nugget,
+	      double *ans);
 
 ///////////////////////////////////
 //  From simgeometric.c
@@ -315,6 +318,9 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
 		 int *covmod, int *grid, double *sigma2, double *sill,
 		 double *range, double *smooth, double *uBound,
 		 double *ans);
+void rgeomcirc(int *nObs, int *ngrid, double *steps, int *dim,
+	       int *covmod, double *sigma2, double *sill, double *range,
+	       double *smooth, double *uBound, double *ans);
 
 ///////////////////////////////////
 //  From gpdproc.c
