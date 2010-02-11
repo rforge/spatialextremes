@@ -32,20 +32,10 @@ rgp <- function(n, coord, cov.mod = "powexp", mean = 0, nugget = 0,
 
   ##Check if a regular grid is specified
   if (grid){
-    x.diff <- diff(coord[,1])
-    y.diff <- diff(coord[,2])
-
-    eps.x <- diff(range(x.diff))
-    eps.y <- diff(range(y.diff))
-
-    if ((eps.x <= 1e-4) && (eps.y <= 1e-4)){
-      reg.grid <- TRUE
-      steps <- c(mean(x.diff), mean(y.diff))
-      ngrid <- nrow(coord)
-    }
-
-    else
-      reg.grid <- FALSE
+    reg.grid <- .isregulargrid(coord[,1], coord[,2])
+    steps <- reg.grid$steps
+    reg.grid <- reg.grid$reg.grid
+    ngrid <- nrow(coord)
   }
     
   if (is.null(control$method)){

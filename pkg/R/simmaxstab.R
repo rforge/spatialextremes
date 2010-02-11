@@ -6,8 +6,8 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
                        "gwhitmat", "gcauchy", "gpowexp", "gbessel")))
     stop("'cov.mod' must be one of 'gauss', '(i/g)whitmat', '(i/g)cauchy', '(i/g)powexp' or '(i/g)bessel'")
 
-  if (!is.null(control$method) && !(control$method %in% c("exact", "tbm")))
-    stop("the argument 'method' for 'control' must be one of 'exact' and 'tbm'")
+  if (!is.null(control$method) && !(control$method %in% c("exact", "tbm", "circ")))
+    stop("the argument 'method' for 'control' must be one of 'exact', 'tbm' and 'circ'")
 
   if (cov.mod == "gauss")
     model <- "Smith"
@@ -102,8 +102,12 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
   cov.mod <- switch(cov.mod, "gauss" = "gauss", "whitmat" = 1, "cauchy" = 2,
                     "powexp" = 3, "bessel" = 4)
 
-  if (grid)
+  if (grid){
     ans <- double(n * n.site^dist.dim)
+    reg.grid <- .isregulargrid(coord[,1], coord[,2])
+    steps <- reg.grid$steps
+    reg.grid <- reg.grid$reg.grid
+  }
 
   else
     ans <- double(n * n.site)
@@ -120,7 +124,10 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
   else if (model == "Schlather"){
 
     if (is.null(control$method)){
-      if ((length(ans) / n) > 600)
+      if (grid && reg.grid)
+        method <- "circ"
+      
+      else if ((length(ans) / n) > 600)
         method <- "tbm"
         
       else
@@ -141,7 +148,12 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
                 as.integer(dist.dim), as.integer(cov.mod), grid, as.double(sill),
                 as.double(range), as.double(smooth), as.double(uBound), ans = ans,
                 PACKAGE = "SpatialExtremes")$ans
-
+    
+    else if (method == "circ")
+      ans <- .C("rschlathercirc", as.integer(n), as.integer(n.site), as.double(steps),
+                as.integer(dist.dim), as.integer(cov.mod), as.double(sill), as.double(range),
+                as.double(smooth),  as.double(uBound), ans = ans, PACKAGE = "SpatialExtremes")$ans
+    
     else {
       if (is.null(control$nlines))
         nlines <- 1000
@@ -159,7 +171,11 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
   else if (model == "Geometric"){
 
     if (is.null(control$method)){
-      if ((length(ans) / n) > 600)
+
+      if (grid && reg.grid)
+        method <- "circ"
+      
+      else if ((length(ans) / n) > 600)
         method <- "tbm"
     
       else
@@ -181,6 +197,12 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
                 as.double(sill), as.double(range), as.double(smooth),
                 as.double(uBound), ans = ans, PACKAGE = "SpatialExtremes")$ans
 
+    else if (method == "circ")
+      ans <- .C("rgeomcirc", as.integer(n), as.integer(n.site), as.double(steps),
+                as.integer(dist.dim), as.integer(cov.mod), as.double(sigma2),
+                as.double(sill), as.double(range), as.double(smooth),  as.double(uBound),
+                ans = ans, PACKAGE = "SpatialExtremes")$ans
+    
     else {
 
       if (is.null(control$nlines))
