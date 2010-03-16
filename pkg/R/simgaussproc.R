@@ -15,8 +15,8 @@ rgp <- function(n, coord, cov.mod = "powexp", mean = 0, nugget = 0,
   if (grid && is.null(dim(coord)))
     stop("'grid' cannot be 'TRUE' if you specify univariate coordinates")
 
-  if (!(cov.mod %in% c("whitmat","cauchy","powexp","bessel")))
-    stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel'")
+  if (!(cov.mod %in% c("whitmat","cauchy","powexp","bessel", "fbm")))
+    stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel', 'fbm'")
 
   if (!is.null(control$method) && !(control$method %in% c("exact", "tbm", "circ")))
     stop("the argument 'method' for 'control' must be one of 'exact', 'tbm' or 'circ'")
@@ -29,6 +29,8 @@ rgp <- function(n, coord, cov.mod = "powexp", mean = 0, nugget = 0,
     cov.mod.num <- 3
   if (cov.mod == "bessel")
     cov.mod.num <- 4
+  if (cov.mod == "fbm")
+    cov.mod.num <- 6
 
   ##Check if a regular grid is specified
   if (grid){
@@ -37,6 +39,9 @@ rgp <- function(n, coord, cov.mod = "powexp", mean = 0, nugget = 0,
     reg.grid <- reg.grid$reg.grid
     ngrid <- nrow(coord)
   }
+
+  else
+    reg.grid <- FALSE
     
   if (is.null(control$method)){
     ##Identify the most accurate method for simulation if not specified
@@ -47,7 +52,7 @@ rgp <- function(n, coord, cov.mod = "powexp", mean = 0, nugget = 0,
     else if (grid && (n.site^dist.dim > 500))
       method <- "tbm"
     
-    else if (n.site > 500)
+    else if ((n.site > 500) && (dist.dim > 1))
       method <- "tbm"
     
     else
