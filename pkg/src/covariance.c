@@ -343,5 +343,46 @@ double brownResnick(double *dist, int n, double range, double smooth,
   return 0;
 }
 
+double fbm(double *coord, double *dist, int dim, int nSite, double sill, double range,
+	   double smooth, double *rho){
+
+  /* This function computes the covariance function related to a
+  fractional Brownian motion.  When ans != 0.0, the parameters are
+  ill-defined. */
   
-  
+  int i, j, currentPair = -1;
+  const double irange = 1 / range;
+  double *distOrig;
+
+  distOrig = (double *)R_alloc(nSite, sizeof(double));
+
+  //Some preliminary steps: Valid points?
+  if (smooth < EPS)
+    return (1 - smooth + EPS) * (1 - smooth + EPS) * MINF;
+
+  else if (smooth > 2)
+    return (smooth - 1) * (smooth - 1) * MINF;
+
+  if (range <= 0)
+    return (1 - range) * (1 - range) * MINF;
+
+  if (sill <= 0)
+    return (1 - sill) * (1 - sill) * MINF;
+
+  distance2orig(coord, nSite, dim, distOrig);
+
+  /* Rmk: 0.5 Var[Z(x)] = \gamma(||x||) as Z(o) = 0, where \gamma is
+     the semi-variogram */
+  for (i=nSite;i--;)
+    distOrig[i] = R_pow(distOrig[i] * irange, smooth);
+
+  for (i=0;i<(nSite-1);i++){
+    for (j=i+1;j<nSite;j++){
+      currentPair++;
+      rho[currentPair] = sill * (distOrig[i] + distOrig[j] -  
+				 R_pow(dist[currentPair] * irange, smooth));
+    }
+  }
+
+  return 0;
+}
