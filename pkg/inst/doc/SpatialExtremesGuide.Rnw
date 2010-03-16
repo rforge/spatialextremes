@@ -1508,7 +1508,7 @@ par(mfrow=c(1,2))
 madogram(data, coord, which = "mado", ylim = c(0, log(2)))
 plot(mado1, from = 0, to = 12, add = TRUE, col = 2, lwd = 1.5)
 madogram(data, coord, which = "mado", ylim = c(0, log(2)),
-         n.bins = 100, xlim = c(0, 12))
+         n.bins = 100)
 plot(mado1, from = 0, to = 12, add = TRUE, col = 2, lwd = 1.5)
 @
 
@@ -1586,7 +1586,7 @@ mado <- function(h)
 par(mfrow=c(1,2))
 madogram(data, coord, which = "mado", ylim = c(0, log(2)))
 plot(mado, from = 0, to = 12, col = 2, lwd = 1.5, add = TRUE)
-madogram(data, coord, which = "ext", ylim = c(1, 2))
+madogram(data, coord, which = "ext")
 plot(ext.coeff, from = 0, to = 12, col = 2, lwd = 1.5, add = TRUE)
 @ 
 
@@ -1649,7 +1649,7 @@ Fmado <- function(h)
 par(mfrow=c(1,2))
 fmadogram(data, coord, which = "mado", ylim = c(0, 1/5))
 plot(Fmado, from = 0, to = 13, add = TRUE, col = 2, lwd = 1.5)
-fmadogram(data, coord, which = "ext", ylim = c(1, 2.4))
+fmadogram(data, coord, which = "ext")
 plot(ext.coeff, from = 0, to = 13, add = TRUE, col = 2, lwd = 1.5)
 @
 
