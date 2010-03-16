@@ -418,3 +418,70 @@ lmadogram <- function(data, coord, n.bins, xlab, ylab, zlab, n.lambda = 11,
 
   invisible(list(lambda = lambda, dist = dist, madogram = lmado))
 }
+
+variogram <- function(data, coord, n.bins, xlab, ylab, angles = NULL,
+                      add = FALSE, ...){
+  
+  if (is.null(dim(coord))){
+    if (length(coord) != ncol(data))
+      stop("'data' and 'coord' don't match")
+  }
+
+  else if (nrow(coord) != ncol(data))
+    stop("'data' and 'coord' don't match")
+  
+  if (!is.null(angles) & !missing(n.bins))
+    stop("'It is not possible to pass 'n.bins' and 'angles' at the same time")
+  
+  n.site <- ncol(data)
+  n.obs <- nrow(data)
+  n.pairs <- (n.site - 1) * n.site / 2
+  dist <- distance(coord)
+  
+  if (!is.null(angles)){
+    distVec <- distance(coord, vec = TRUE)
+    n.angles <- length(angles)
+    angles.coord <- atan2(distVec[,2], distVec[,1])
+    
+    col <- rep(NA, n.site * (n.site - 1) / 2)
+    idx.angles <- list()
+    for (i in 2:n.angles){
+      idx <- which((angles.coord < angles[i]) & (angles.coord >= angles[i-1]))
+      idx.angles <- c(idx.angles, list(idx))
+      col[idx] <- i-1
+    }
+  }
+  
+  vario <- .C("variogram", as.double(data), as.integer(n.obs),
+             as.integer(n.site), vario = double(n.pairs),
+             PACKAGE = "SpatialExtremes")$vario
+  
+  if (!missing(n.bins)){
+    bins <- c(0, quantile(dist, 1:n.bins/(n.bins + 1)), max(dist))
+    varioBinned <- rep(NA, length = n.bins + 1)
+    
+    for (k in 1:(n.bins + 1)){
+      idx <- which((dist <= bins[k+1]) & (dist > bins[k]))
+      
+      if (length(idx)>0)
+        varioBinned[k] <- mean(vario[idx])
+    }
+    
+    vario <- varioBinned
+    dist <- (bins[-1] + bins[-(n.bins+2)])/2
+  }
+  
+  if (missing(xlab))
+    xlab <- "h"
+  
+  if (missing(ylab))
+    ylab <- expression(gamma(h))
+  
+  if (add)
+    points(dist, vario, ...)
+
+  else
+    plot(dist, vario, xlab = xlab, ylab = ylab, xlim = c(0, max(dist)), ...)
+
+  invisible(cbind(dist = dist, variogram = vario))
+}
