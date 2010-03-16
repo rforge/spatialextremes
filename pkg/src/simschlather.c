@@ -538,14 +538,13 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
 	for (j=*nlines;j--;){
 	  u1 = rexp(1);
 	  u2 = runif(-M_PI_2, M_PI_2);
-	  u3 = halfSmooth * (u2 - M_PI_2);
-
-	  G = fabs(sin(u3) * R_pow(cos(u2), -ismooth) *
-		   R_pow(cos(u2 - u3) / u1, (2 - *smooth) * ismooth));
+	  G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -2 / *smooth) *
+		   R_pow(cos(u2 - 0.5 * *smooth * (u2 - M_PI_2)) / u1, 
+			 (2 - *smooth) / *smooth));
 	  
-	  freq = sqrt(rchisq(3) * M_SQRT_3 / G);
+	  freq = sqrt(2 * rchisq(3) * G);
 	  phase = M_2PI * unif_rand();
-	  
+	
 	  lj = lines[2 * *nlines + j];
 	  
 	  for (k=*nsite;k--;){
@@ -560,7 +559,7 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
       case 4:
 	//Bessel
 	for (j=*nlines;j--;){
-	  freq = sqrt(beta(1.5, *smooth - 0.5) * *range);
+	  freq = sqrt(beta(1.5, *smooth - 0.5));
 	  phase = M_2PI * unif_rand();
 	  
 	  lj = lines[2 * *nlines + j];
@@ -637,11 +636,11 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
 	for (j=*nlines;j--;){
 	  u1 = rexp(1);
 	  u2 = runif(-M_PI_2, M_PI_2);
-	  G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -1 / *smooth) *
+	  G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -2 / *smooth) *
 		   R_pow(cos(u2 - 0.5 * *smooth * (u2 - M_PI_2)) / u1, 
 			 (2 - *smooth) / *smooth));
 	
-	  freq = sqrt(rchisq(3) * M_SQRT_3 / G);
+	  freq = sqrt(2 * rchisq(3) * G);
 	  phase = M_2PI * unif_rand();
 	
 	  for (k=*nsite;k--;){
@@ -659,7 +658,7 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
       case 4:
 	//Bessel
 	for (j=*nlines;j--;){
-	  freq = sqrt(beta(1.5, *smooth - 0.5) * *range);
+	  freq = sqrt(beta(1.5, *smooth - 0.5));
 	  phase = M_2PI * unif_rand();
 	
 	  for (k=*nsite;k--;){
@@ -731,11 +730,11 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
 	 for (j=*nlines;j--;){
 	   u1 = rexp(1);
 	   u2 = runif(-M_PI_2, M_PI_2);
-	   G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -1 / *smooth) *
+	   G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -2 / *smooth) *
 		    R_pow(cos(u2 - 0.5 * *smooth * (u2 - M_PI_2)) / u1, 
 			  (2 - *smooth) / *smooth));
 	
-	   freq = sqrt(rchisq(3) * M_SQRT_3 / G);
+	   freq = sqrt(2 * rchisq(3) * G);
 	   phase = M_2PI * unif_rand();
 	
 	   for (k=*nsite;k--;){
@@ -747,7 +746,7 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
        case 4:
 	 //Bessel
 	 for (j=*nlines;j--;){
-	   freq = sqrt(beta(1.5, *smooth - 0.5) * *range);
+	   freq = sqrt(beta(1.5, *smooth - 0.5));
 	   phase = M_2PI * unif_rand();
 	
 	   for (k=*nsite;k--;){
@@ -803,11 +802,11 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
 	for (j=*nlines;j--;){
 	  u1 = rexp(1);
 	  u2 = runif(-M_PI_2, M_PI_2);
-	  G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -1 / *smooth) *
+	  G = fabs(sin(0.5 * *smooth * (u2 - M_PI_2)) * R_pow(cos(u2), -2 / *smooth) *
 		   R_pow(cos(u2 - 0.5 * *smooth * (u2 - M_PI_2)) / u1, 
 			 (2 - *smooth) / *smooth));
 	  
-	  freq = sqrt(rchisq(3) * M_SQRT_3 / G);
+	  freq = sqrt(2 * rchisq(3) * G);
 	  phase = M_2PI * unif_rand();
 	  
 	  for (k=*nsite;k--;){
@@ -820,7 +819,7 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
       case 4:
 	//Bessel
 	for (j=*nlines;j--;){
-	  freq = sqrt(beta(1.5, *smooth - 0.5) * *range);
+	  freq = sqrt(beta(1.5, *smooth - 0.5));
 	  phase = M_2PI * unif_rand();
 	  
 	  for (k=*nsite;k--;){
