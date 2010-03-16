@@ -117,8 +117,8 @@ void smithdsgnmat3d(double *data, double *distVec, int *nSite, int *nObs, int *w
 ///////////////////////////////////
 //  From utils.c
 //
-void distance(double *coord, int *nDim, int *nSite,
-	      int *vec, double *dist);
+void distance(double *coord, int *nDim, int *nSite, int *vec, double *dist);
+void distance2orig(double *coord, int n, int dim, double *dist);
 double gev2frech(double *data, int nObs, int nSite, double *locs,
 		 double *scales, double *shapes, double *jac, double *frech);
 double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
@@ -169,6 +169,8 @@ double nsgeomCovariance(double *dist, int nSite, int dim, int covmod,
 			double smooth, double smooth2, double *rho);
 double brownResnick(double *dist, int n, double range, double smooth,
 		    double *rho);
+double fbm(double *coord, double *dist, int dim, int nSite, double sill, double range,
+	   double smooth, double *rho);
 
 ///////////////////////////////////
 //  From mcmc.c
@@ -253,6 +255,7 @@ void spatgevlik(double *data, double *covariables, int *nSite, int *nObs,
 //  From madogram.c
 //
 void madogram(double *data, int *nObs, int *nSite, double *mado);
+void variogram(double *data, int *nObs, int *nSite, double *vario);
 void lmadogram(double *data, int *nObs, int *nSite, double *lambda,
 	       int *nLambda, double *lmado);
 
