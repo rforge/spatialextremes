@@ -36,6 +36,21 @@ void distance(double *coord, int *nDim, int *nSite,
   }
 } 
 
+void distance2orig(double *coord, int n, int dim, double *dist){
+  //It computes the l_2 norm of points in R^d i.e. sqrt(x[1]^2 + ... + x[d]^2)
+  int i, j;
+  memset(dist, 0, n * sizeof(double));
+  
+  for (i=n;i--;){
+    for (j=dim;j--;)
+      dist[i] += coord[i + j * n] * coord[i + j * n];
+
+    dist[i] = sqrt(dist[i]);
+  }
+}
+  
+  
+
 double gev2frech(double *data, int nObs, int nSite, double *locs, 
 		 double *scales, double *shapes, double *jac,
 		 double *frech){
