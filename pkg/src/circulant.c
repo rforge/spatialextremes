@@ -86,7 +86,7 @@ void circemb(int *nsim, int *ngrid, double *steps, int *dim, int *covmod,
 
     //Check if the eigenvalues are all positive
     for (i=mbar;i--;){
-      notPosDef |= (rho[i] <= 0) || (fabs(irho[i]) > 0.001);
+      notPosDef |= (rho[i] < 0) || (fabs(irho[i]) > 0.001);
     }
 
     if (notPosDef){
