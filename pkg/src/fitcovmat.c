@@ -62,6 +62,11 @@ void fitcovariance(int *covmod, double *sill, double *range, double *smooth,
   int i;
   double *rho, res;
 
+  if (*sill > 1){
+    *ans = - *sill * *sill * MINF;
+    return;
+  }
+  
   rho = (double *)R_alloc(*nPairs, sizeof(double));
 
   switch (*covmod){
@@ -101,17 +106,22 @@ void fiticovariance(int *covmod, double *alpha, double *sill, double *range,
   int i;
   double *rho, res;
 
-  rho = (double *)R_alloc(*nPairs, sizeof(double));
-
   if (*alpha > 1){
-    *ans = -*alpha * *alpha * MINF;
+    *ans = - *alpha * *alpha * MINF;
     return;
   }
-
+  
   if (*alpha < 0){
     *ans = - (1 - *alpha) * (1 - *alpha) * MINF;
     return;
   }
+
+  if (*sill > 1){
+    *ans = - *sill * *sill * MINF;
+    return;
+  }
+
+  rho = (double *)R_alloc(*nPairs, sizeof(double));
 
   switch (*covmod){
   case 1:
@@ -150,6 +160,11 @@ void fitgcovariance(int *covmod, double *sigma2, double *sigma2Bound, double *si
   
   int i;
   double *rho, res;
+
+  if (*sill > 1){
+    *ans = - *sill * *sill * MINF;
+    return;
+  }
 
   rho = (double *)R_alloc(*nPairs, sizeof(double));
 
