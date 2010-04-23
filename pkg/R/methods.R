@@ -17,7 +17,34 @@ print.spatgev <- function(x, digits = max(3, getOption("digits") - 3), ...){
   cat("       Shape Parameters:\n")
   print.default(format(param[shape.idx], digits = digits), print.gap = 2, 
                 quote = FALSE)
+
+  loc.idx <- which(substr(names(param), 1, 12) == "tempCoeffLoc")
+  scale.idx <- which(substr(names(param), 1, 14) == "tempCoeffScale")
+  shape.idx <- which(substr(names(param), 1, 14) == "tempCoeffShape")
+
+  if ((length(loc.idx) + length(scale.idx) + length(shape.idx)) > 0){
+    cat("\nTemporal Parameters\n")
     
+    if (length(loc.idx) > 0){
+      cat("    Location Parameters:\n")
+      print.default(format(param[loc.idx], digits = digits), print.gap = 2, 
+                    quote = FALSE)
+    }
+
+    if (length(scale.idx)> 0){
+      cat("       Scale Parameters:\n")
+      print.default(format(param[scale.idx], digits = digits), print.gap = 2, 
+                    quote = FALSE)
+    }
+
+    if (length(shape.idx)>0){
+      cat("       Shape Parameters:\n")
+      
+      print.default(format(param[shape.idx], digits = digits), print.gap = 2, 
+                    quote = FALSE)
+    }
+  }
+  
   if(!is.null(x$std.err)) {
     cat("\nStandard Errors\n")
     print.default(format(x$std.err, digits = digits), print.gap = 2, 
@@ -99,6 +126,30 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
       cat("       Shape Parameters:\n")
       print.default(format(margin.param[shape.idx], digits = digits), print.gap = 2, 
                     quote = FALSE)
+      
+      loc.idx <- which(substr(names(margin.param), 1, 12) == "tempCoeffLoc")
+      scale.idx <- which(substr(names(margin.param), 1, 14) == "tempCoeffScale")
+      shape.idx <- which(substr(names(margin.param), 1, 14) == "tempCoeffShape")
+
+      if (length(loc.idx) > 0){
+        cat("Temporal Location Parameters:\n")
+        print.default(format(margin.param[loc.idx], digits = digits), print.gap = 2, 
+                      quote = FALSE)
+      }
+
+      if (length(scale.idx)> 0){
+        cat("Temporal Scale Parameters:\n")
+        print.default(format(margin.param[scale.idx], digits = digits), print.gap = 2, 
+                      quote = FALSE)
+      }
+      
+      if (length(shape.idx)>0){
+        cat("Temporal Shape Parameters:\n")
+        
+        print.default(format(margin.param[shape.idx], digits = digits), print.gap = 2, 
+                      quote = FALSE)
+      }
+      
       cat("  Dependence Parameters:\n")
       print.default(format(x$fitted.values[idx], digits = digits), print.gap = 2, 
                     quote = FALSE)
@@ -135,6 +186,30 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
       cat("       Shape Parameters:\n")
       print.default(format(margin.param[shape.idx], digits = digits), print.gap = 2, 
                     quote = FALSE)
+
+      loc.idx <- which(substr(names(margin.param), 1, 12) == "tempCoeffLoc")
+      scale.idx <- which(substr(names(margin.param), 1, 14) == "tempCoeffScale")
+      shape.idx <- which(substr(names(margin.param), 1, 14) == "tempCoeffShape")
+
+      if (length(loc.idx) > 0){
+        cat("Temporal Location Parameters:\n")
+        print.default(format(margin.param[loc.idx], digits = digits), print.gap = 2, 
+                      quote = FALSE)
+      }
+
+      if (length(scale.idx)> 0){
+        cat("Temporal Scale Parameters:\n")
+        print.default(format(margin.param[scale.idx], digits = digits), print.gap = 2, 
+                      quote = FALSE)
+      }
+      
+      if (length(shape.idx)>0){
+        cat("Temporal Shape Parameters:\n")
+        
+        print.default(format(margin.param[shape.idx], digits = digits), print.gap = 2, 
+                      quote = FALSE)
+      }
+      
       cat("  Dependence Parameters:\n")
       print.default(format(x$fitted.values[idx], digits = digits), print.gap = 2, 
                     quote = FALSE)
