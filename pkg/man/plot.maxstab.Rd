@@ -7,17 +7,17 @@ Model checking of a fitted max-stable model
 This function produces several plots to assess the goodness of fit of a
 fitted max-stable model.
 }
-\usage{plot(fitted, sites)}
+\usage{\method{plot}{maxstab}(x, ..., sites)}
 \arguments{
-  \item{fitted}{An object of class \code{maxstab}. Most often, this will
-    be the output of \code{\link{fitmaxstab}} or
-    \code{\link{lsmaxstab}}.}
+  \item{x}{An object of class \code{maxstab}. Most often, this will be
+    the output of \code{\link{fitmaxstab}} or \code{\link{lsmaxstab}}.}
+  \item{\dots}{Here for compatibility reasons but not yet implemented.}
   \item{sites}{A vector of integer of length 4 specifying the locations
     to be used for the model checking. If missing, locations will be
     choosen randomly.}
 }
 \value{
-  Several plots.
+  Several diagnostic plots.
 }
 \details{
   The diagonal plots are return level plots. The lower ones are qq-plots
@@ -29,4 +29,15 @@ fitted max-stable model.
   locations and a qq-plot of blockwise maxima where the block size is 4.
 }
 \author{Mathieu Ribatet}
+\examples{
+n.site <- 20
+n.obs <- 50
+coord <- matrix(runif(2 * n.site, 0, 10), ncol = 2)
+colnames(coord) <- c("lon", "lat")
+data <- rmaxstab(n.obs, coord, "powexp", sill = 1, range = 3, smooth =
+1)
+fitted <- fitmaxstab(log(data), coord, "powexp", y ~ 1, y ~ 1, y ~ 1,
+sill = 1)
+plot(fitted)
+}
 \keyword{hplot}
