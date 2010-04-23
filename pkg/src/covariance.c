@@ -188,8 +188,8 @@ double mahalDistFct(double *distVec, int n, double *cov11,
   if (*cov22 <= 0)
     return (1 - *cov22) * (1 - *cov22) * MINF;
   
-  if (det <= 1e-10)
-    return (1 - det + 1e-10) * (1 - det + 1e-10) * MINF;
+  if (det <= 0)
+    return (1 - det) * (1 - det) * MINF;
   
   for (i=n;i--;){
     mahal[i] = (*cov11 * distVec[n + i] * distVec[n + i] -
@@ -338,7 +338,7 @@ double brownResnick(double *dist, int n, double range, double smooth,
     return (smooth - 1) * (smooth - 1) * MINF;
 
   for (i=n;i--;)
-    rho[i] = R_pow(dist[i] * irange, halfSmooth);
+    rho[i] = M_SQRT2 * R_pow(dist[i] * irange, halfSmooth);
 
   return 0;
 }
