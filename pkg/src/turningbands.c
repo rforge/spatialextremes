@@ -518,9 +518,9 @@ void tbm(int *nobs, int *nsite, int *dim, int *covmod, int *grid,
     normConst *= M_SQRT2;
 
   else
-    normConst *= sqrt(4 * gamma(0.5 * *smooth + 1) * 
-		      gamma(0.5 * (*dim + *smooth)) /
-		      (R_pow(M_PI, *smooth) * gamma(0.5 * *dim)));
+    normConst *= sqrt(4 * gammafn(0.5 * *smooth + 1) * 
+		      gammafn(0.5 * (*dim + *smooth)) /
+		      (R_pow(M_PI, *smooth) * gammafn(0.5 * *dim)));
 
   for (i=(neffSite * *nobs);i--;)
     ans[i] *= normConst;
