@@ -493,8 +493,6 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
     int k, l, m;
     double freq, eucProd, u1, u2, G, phase;
     double cl, lj, cl1, cl2;
-    double halfSmooth = 0.5 * *smooth, ismooth = 1 / *smooth;
-    double u3;
 
     switch (*dim){
     case 2:
