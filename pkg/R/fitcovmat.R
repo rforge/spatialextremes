@@ -594,7 +594,7 @@ fitcovariance <- function(data, coord, cov.mod, marge = "emp", control = list(),
   else {
     cov.fun <- NA
     ext.coeff <- function(h)
-      2 * pnorm(0.5 * (h / param["range"])^(0.5 * param["smooth"]))
+      2 * pnorm((h / param["range"])^(0.5 * param["smooth"]) / sqrt(2))
   }
 
   fitted <- list(fitted.values = opt$par, fixed = unlist(fixed.param),
