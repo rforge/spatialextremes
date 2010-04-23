@@ -26,7 +26,7 @@ c("mado", "ext"), xlab, ylab, col = c(1, 2), angles = NULL, marge =
   \item{col}{The colors used for the points and optionnaly for the
     fitted curve.}
   \item{angles}{A numeric vector. A partition of the interval
-    \eqn{(-\pi, \pi)}{(-\pi, \pi)} to help detecting anisotropy.}
+    \eqn{(0, \pi)}{(0, \pi)} to help detecting anisotropy.}
   \item{marge}{Character string. If 'emp', the observation are first
     transformed to the unit Frechet scale by using the empirical CDF. If
     'mle' (default), maximum likelihood estimates are used.}
