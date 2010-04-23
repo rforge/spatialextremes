@@ -225,7 +225,8 @@ Standard errors are not available unless you fix it.")
 
   if (std.err.type != "none"){
     std.err <- .schlatherstderr(param, data, dist, cov.mod.num, as.double(0),
-                                as.double(0), as.double(0), fit.marge = fit.marge,
+                                as.double(0), as.double(0), as.double(0), as.double(0),
+                                as.double(0), rep(FALSE, 3), fit.marge = fit.marge,
                                 std.err.type = std.err.type, fixed.param = names(fixed.param),
                                 param.names = param.names, weights = weights)
 
@@ -306,7 +307,9 @@ Standard errors are not available unless you fix it.")
 schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form,
                           start, fit.marge = TRUE, marg.cov = NULL, ...,
                           warn = TRUE, method = "BFGS", control = list(),
-                          std.err.type = "none", corr = FALSE, weights = NULL){
+                          std.err.type = "none", corr = FALSE, weights = NULL,
+                          temp.cov = NULL, temp.form.loc = NULL, temp.form.scale = NULL,
+                          temp.form.shape = NULL){
   ##data is a matrix with each column corresponds to one location
   ##coord is a matrix giving the coordinates (1 row = 1 station)
   n.site <- ncol(data)
@@ -321,7 +324,14 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
     ##Set the weights to 0 as it won't be used anyway
     weights <- 0
 
+  use.temp.cov <- c(!is.null(temp.form.loc), !is.null(temp.form.scale), !is.null(temp.form.shape))
 
+  if (any(use.temp.cov) && (n.obs != nrow(temp.cov)))
+    stop("'data' and 'temp.cov' doesn't match")
+
+  if (any(use.temp.cov) && is.null(temp.cov))
+    stop("'temp.cov' must be supplied if at least one temporal formula is given")
+  
   if (!(cov.mod %in% c("whitmat","cauchy","powexp","bessel","caugen")))
     stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel', 'caugen'")
 
@@ -340,6 +350,15 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   loc.form <- update(loc.form, y ~ .)
   scale.form <- update(scale.form, y ~ .)
   shape.form <- update(shape.form, y ~ .)
+
+  if (use.temp.cov[1])
+    temp.form.loc <- update(temp.form.loc, y ~. + 0)
+
+  if (use.temp.cov[2])
+    temp.form.scale <- update(temp.form.scale, y ~. + 0)
+  
+  if (use.temp.cov[3])
+    temp.form.shape <- update(temp.form.shape, y ~. + 0)
 
   if (is.null(marg.cov))
     covariables <- data.frame(coord)
@@ -391,7 +410,54 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   else
     smooth2 <- 0
 
-  param <- c(param, loc.names, scale.names, shape.names)
+  ##Do the same for the temporal regression coefficients
+  if (use.temp.cov[1]){
+    temp.model.loc <- modeldef(temp.cov, temp.form.loc)
+    temp.dsgn.mat.loc <- temp.model.loc$dsgn.mat
+    temp.pen.mat.loc <- temp.model.loc$pen.mat
+    temp.penalty.loc <- temp.model.loc$penalty.tot
+    n.tempcoeff.loc <- ncol(temp.dsgn.mat.loc)
+    n.ppartemp.loc <- temp.model.loc$n.ppar
+    temp.names.loc <- paste("tempCoeffLoc", 1:n.tempcoeff.loc, sep="")
+  }
+
+  else {
+    temp.model.loc <- temp.dsgn.mat.loc <- temp.pen.mat.loc <- temp.names.loc <- NULL
+    n.tempcoeff.loc <- n.ppartemp.loc <- temp.penalty.loc <- 0
+  }
+  
+  if (use.temp.cov[2]){
+    temp.model.scale <- modeldef(temp.cov, temp.form.scale)
+    temp.dsgn.mat.scale <- temp.model.scale$dsgn.mat
+    temp.pen.mat.scale <- temp.model.scale$pen.mat
+    temp.penalty.scale <- temp.model.scale$penalty.tot
+    n.tempcoeff.scale <- ncol(temp.dsgn.mat.scale)
+    n.ppartemp.scale <- temp.model.scale$n.ppar
+    temp.names.scale <- paste("tempCoeffScale", 1:n.tempcoeff.scale, sep="")
+  }
+
+  else {
+    temp.model.scale <- temp.dsgn.mat.scale <- temp.pen.mat.scale <- temp.names.scale <- NULL
+    n.tempcoeff.scale <- n.ppartemp.scale <- temp.penalty.scale <- 0
+  }
+    
+  if (use.temp.cov[3]){
+    temp.model.shape <- modeldef(temp.cov, temp.form.shape)
+    temp.dsgn.mat.shape <- temp.model.shape$dsgn.mat
+    temp.pen.mat.shape <- temp.model.shape$pen.mat
+    temp.penalty.shape <- temp.model.shape$penalty.tot
+    n.tempcoeff.shape <- ncol(temp.dsgn.mat.shape)
+    n.ppartemp.shape <- temp.model.shape$n.ppar
+    temp.names.shape <- paste("tempCoeffShape", 1:n.tempcoeff.shape, sep="")
+  }
+
+  else {
+    temp.model.shape <- temp.dsgn.mat.shape <- temp.pen.mat.shape <- temp.names.shape <- NULL
+    n.tempcoeff.shape <- n.ppartemp.shape <- temp.penalty.shape <- 0
+  }
+
+  param <- c(param, loc.names, scale.names, shape.names, temp.names.loc, temp.names.scale,
+             temp.names.shape)
 
   ##First create a "void" function
   nplk <- function(x) x
@@ -399,11 +465,27 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   ##And define the "body" of the function as the number of parameters
   ##to estimate depends on n.site
 
-  body(nplk) <- parse(text = paste("-.C('schlatherdsgnmat', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim), as.integer(weighted), as.double(weights), as.double(loc.dsgn.mat), as.double(loc.pen.mat), as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat), as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale), as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat), as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),",
+  body(nplk) <- parse(text = paste("-.C('schlatherdsgnmat', as.integer(cov.mod.num),
+as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim),
+as.integer(weighted), as.double(weights), as.double(loc.dsgn.mat), as.double(loc.pen.mat),
+as.integer(n.loccoeff), as.integer(n.pparloc), as.double(loc.penalty), as.double(scale.dsgn.mat),
+as.double(scale.pen.mat), as.integer(n.scalecoeff), as.integer(n.pparscale),
+as.double(scale.penalty), as.double(shape.dsgn.mat), as.double(shape.pen.mat),
+as.integer(n.shapecoeff), as.integer(n.pparshape), as.double(shape.penalty),
+as.integer(use.temp.cov), as.double(temp.dsgn.mat.loc), as.double(temp.pen.mat.loc),
+as.integer(n.tempcoeff.loc), as.integer(n.ppartemp.loc), as.double(temp.penalty.loc),
+as.double(temp.dsgn.mat.scale), as.double(temp.pen.mat.scale), as.integer(n.tempcoeff.scale),
+as.integer(n.ppartemp.scale), as.double(temp.penalty.scale), as.double(temp.dsgn.mat.shape),
+as.double(temp.pen.mat.shape), as.integer(n.tempcoeff.shape), as.integer(n.ppartemp.shape),
+as.double(temp.penalty.shape),",
                         paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                         paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                         paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
-                        "as.double(sill), as.double(range), as.double(smooth), as.double(smooth2), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
+                        paste("as.double(c(", paste(temp.names.loc, collapse = ","), ")), "),
+                        paste("as.double(c(", paste(temp.names.scale, collapse = ","), ")), "),
+                        paste("as.double(c(", paste(temp.names.shape, collapse = ","), ")), "),
+                        "as.double(sill), as.double(range), as.double(smooth), as.double(smooth2),
+dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
 
   ##Define the formal arguments of the function
   form.nplk <- NULL
@@ -417,7 +499,32 @@ schlatherform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
 
     start <- .start.schlather(data, coord, covariables, cov.mod, loc.form,
                               scale.form, shape.form, method = method, ...)
-    
+
+    if (use.temp.cov[1]){
+      tempCoeff.loc <- rep(0, n.tempcoeff.loc)
+      names(tempCoeff.loc) <- temp.names.loc
+    }
+
+    else
+      tempCoeff.loc <- NULL
+
+    if (use.temp.cov[2]){
+      tempCoeff.scale <- rep(0, n.tempcoeff.scale)
+      names(tempCoeff.scale) <- temp.names.scale
+    }
+
+    else
+      tempCoeff.scale <- NULL
+
+    if (use.temp.cov[3]){
+      tempCoeff.shape <- rep(0, n.tempcoeff.shape)
+      names(tempCoeff.shape) <- temp.names.shape
+    }
+
+    else
+      tempCoeff.shape <- NULL
+
+    start <- c(start, as.list(c(tempCoeff.loc, tempCoeff.scale, tempCoeff.shape)))
     start <- start[!(param %in% names(list(...)))]
     
   }
@@ -541,12 +648,12 @@ Standard errors are not available unless you fix it.")
     weights <- NULL
   
   if (std.err.type != "none"){
-    std.err <- .schlatherstderr(param, data, dist, cov.mod.num, loc.dsgn.mat,
-                                scale.dsgn.mat, shape.dsgn.mat,
-                                fit.marge = fit.marge, std.err.type = std.err.type,
-                                fixed.param = names(fixed.param), param.names =
-                                param.names, weights = weights)
-    
+    std.err <- .schlatherstderr(param, data, dist, cov.mod.num, loc.dsgn.mat, scale.dsgn.mat,
+                                shape.dsgn.mat, temp.dsgn.mat.loc, temp.dsgn.mat.scale,
+                                temp.dsgn.mat.shape, use.temp.cov, fit.marge = fit.marge,
+                                std.err.type = std.err.type, fixed.param = names(fixed.param),
+                                param.names = param.names, weights = weights)
+
     opt$hessian <- std.err$hessian
     var.score <- std.err$var.score
     ihessian <- try(solve(opt$hessian), silent = TRUE)

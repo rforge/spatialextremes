@@ -1,7 +1,9 @@
 fitmaxstab <- function(data, coord, cov.mod, loc.form, scale.form, shape.form,
-                       marg.cov = NULL, iso = FALSE, ..., fit.marge = FALSE, warn = TRUE,
-                       method = "Nelder", start, control = list(), weights = NULL,
-                       std.err.type = "score", corr = FALSE){
+                       marg.cov = NULL, temp.cov = NULL, temp.form.loc = NULL,
+                       temp.form.scale = NULL, temp.form.shape = NULL, iso = FALSE,
+                       ..., fit.marge = FALSE, warn = TRUE, method = "Nelder", start,
+                       control = list(), weights = NULL, std.err.type = "score",
+                       corr = FALSE){
 
   if (!(std.err.type) %in% c("none", "score", "grad"))
     stop("'std.err.type' must be one of 'none', 'score' or 'grad'")
@@ -57,59 +59,69 @@ be given for *ALL* GEV parameters")
   }
   
   if (cov.mod == "gauss")
-    fitted <- switch(reg.mod, "full" = smithfull(data, coord, ..., fit.marge = fit.marge,
-                                iso = iso, warn = warn, method = method, control = control,
-                                std.err.type = std.err.type, corr = corr, start = start,
-                                weights = weights),
+    fitted <- switch(reg.mod,
+                     "full" = smithfull(data, coord, ..., fit.marge = fit.marge, iso = iso,
+                       warn = warn, method = method, control = control,
+                       std.err.type = std.err.type, corr = corr, start = start, weights = weights),
                      "spatgev" = smithform(data, coord, ..., loc.form = loc.form, scale.form = scale.form,
                        shape.form = shape.form, fit.marge = fit.marge, iso = iso, marg.cov = marg.cov,
                        warn = warn, method = method, control = control, std.err.type =
-                       std.err.type, corr = corr, start = start, weights = weights))
+                       std.err.type, corr = corr, start = start, weights = weights,
+                       temp.cov = temp.cov, temp.form.loc = temp.form.loc,
+                       temp.form.scale = temp.form.scale, temp.form.shape = temp.form.shape))
   
   else if (cov.mod == "brown")
-    fitted <- switch(reg.mod, "full" = brownresnickfull(data, coord, ..., fit.marge = fit.marge,
-                                warn = warn, method = method, control = control, std.err.type = std.err.type,
-                                corr = corr, start = start, weights = weights),
-                         "spatgev" = brownresnickform(data, coord, ..., loc.form = loc.form,
-                           scale.form = scale.form, shape.form = shape.form,
-                           fit.marge = fit.marge, marg.cov = marg.cov, warn = warn,
-                           method = method, control = control, std.err.type = std.err.type, corr = corr,
-                           start = start, weights = weights))
+    fitted <- switch(reg.mod,
+                     "full" = brownresnickfull(data, coord, ..., fit.marge = fit.marge,
+                       warn = warn, method = method, control = control, std.err.type = std.err.type,
+                       corr = corr, start = start, weights = weights),
+                     "spatgev" = brownresnickform(data, coord, ..., loc.form = loc.form,
+                       scale.form = scale.form, shape.form = shape.form,
+                       fit.marge = fit.marge, marg.cov = marg.cov, warn = warn,
+                       method = method, control = control, std.err.type = std.err.type, corr = corr,
+                       start = start, weights = weights, temp.cov = temp.cov, temp.form.loc = temp.form.loc,
+                       temp.form.scale = temp.form.scale, temp.form.shape = temp.form.shape))
   else{
 
     if (substr(cov.mod, 1, 1) == "i")
-      fitted <- switch(reg.mod, "full" = schlatherindfull(data, coord, cov.mod = substr(cov.mod, 2, 8),
-                                    ..., fit.marge = fit.marge, warn = warn,
-                                    method = method, control = control, std.err.type = std.err.type,
-                                    corr = corr, start = start, weights = weights),
-                         "spatgev" = schlatherindform(data, coord, cov.mod = substr(cov.mod, 2, 8), ...,
-                           loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
-                           fit.marge = fit.marge, marg.cov = marg.cov, warn = warn,
-                           method = method, control = control, std.err.type = std.err.type, corr = corr,
-                           start = start, weights = weights))
-
+      fitted <- switch(reg.mod,
+                       "full" = schlatherindfull(data, coord, cov.mod = substr(cov.mod, 2, 8),
+                         ..., fit.marge = fit.marge, warn = warn,
+                         method = method, control = control, std.err.type = std.err.type,
+                         corr = corr, start = start, weights = weights),
+                       "spatgev" = schlatherindform(data, coord, cov.mod = substr(cov.mod, 2, 8), ...,
+                         loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
+                         fit.marge = fit.marge, marg.cov = marg.cov, warn = warn,
+                         method = method, control = control, std.err.type = std.err.type, corr = corr,
+                         start = start, weights = weights, temp.cov = temp.cov, temp.form.loc = temp.form.loc,
+                       temp.form.scale = temp.form.scale, temp.form.shape = temp.form.shape))
+    
       else {
         if (substr(cov.mod, 1, 1) == "g")
-          fitted <- switch(reg.mod, "full" = geomgaussfull(data, coord, cov.mod = substr(cov.mod, 2, 8),
-                                      ..., fit.marge = fit.marge, warn = warn,
-                                      method = method, control = control, std.err.type = std.err.type,
-                                      corr = corr, start = start, weights = weights),
+          fitted <- switch(reg.mod,
+                           "full" = geomgaussfull(data, coord, cov.mod = substr(cov.mod, 2, 8),
+                             ..., fit.marge = fit.marge, warn = warn,
+                             method = method, control = control, std.err.type = std.err.type,
+                             corr = corr, start = start, weights = weights),
                            "spatgev" = geomgaussform(data, coord, cov.mod = substr(cov.mod, 2, 8), ...,
                              loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                              fit.marge = fit.marge, marg.cov = marg.cov, warn = warn,
                              method = method, control = control, std.err.type = std.err.type, corr = corr,
-                             start = start, weights = weights))
+                             start = start, weights = weights, temp.cov = temp.cov, temp.form.loc = temp.form.loc,
+                             temp.form.scale = temp.form.scale, temp.form.shape = temp.form.shape))
 
         else
-          fitted <- switch(reg.mod, "full" = schlatherfull(data, coord, cov.mod = cov.mod,
-                                      ..., fit.marge = fit.marge, warn = warn,
-                                      method = method, control = control, std.err.type = std.err.type,
-                                      corr = corr, start = start, weights = weights),
+          fitted <- switch(reg.mod,
+                           "full" = schlatherfull(data, coord, cov.mod = cov.mod,
+                             ..., fit.marge = fit.marge, warn = warn,
+                             method = method, control = control, std.err.type = std.err.type,
+                             corr = corr, start = start, weights = weights),
                            "spatgev" = schlatherform(data, coord, cov.mod = cov.mod, ...,
                              loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                              fit.marge = fit.marge, marg.cov = marg.cov, warn = warn,
                              method = method, control = control, std.err.type = std.err.type, corr = corr,
-                             start = start, weights = weights))
+                             start = start, weights = weights, temp.cov = temp.cov, temp.form.loc = temp.form.loc,
+                             temp.form.scale = temp.form.scale, temp.form.shape = temp.form.shape))
       }
   }
   
