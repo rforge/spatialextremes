@@ -3,15 +3,19 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
 
   if (!(cov.mod %in% c("gauss","whitmat","cauchy","powexp","bessel",
                        "iwhitmat", "icauchy", "ipowexp", "ibessel",
-                       "gwhitmat", "gcauchy", "gpowexp", "gbessel")))
-    stop("'cov.mod' must be one of 'gauss', '(i/g)whitmat', '(i/g)cauchy', '(i/g)powexp' or '(i/g)bessel'")
+                       "gwhitmat", "gcauchy", "gpowexp", "gbessel",
+                       "brown")))
+    stop("'cov.mod' must be one of 'gauss', '(i/g)whitmat', '(i/g)cauchy', '(i/g)powexp', '(i/g)bessel' or 'brown'")
 
-  if (!is.null(control$method) && !(control$method %in% c("exact", "tbm", "circ")))
-    stop("the argument 'method' for 'control' must be one of 'exact', 'tbm' and 'circ'")
+  if (!is.null(control$method) && !(control$method %in% c("direct", "tbm", "circ")))
+    stop("the argument 'method' for 'control' must be one of 'direct', 'tbm' and 'circ'")
 
   if (cov.mod == "gauss")
     model <- "Smith"
 
+  else if (cov.mod == "brown")
+    model <- "Brown-Resnick"
+  
   else if (cov.mod %in% c("whitmat","cauchy","powexp","bessel"))
     model <- "Schlather"
 
@@ -74,7 +78,7 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
     alpha <- list(...)$alpha
   }
 
-  else {
+  else if (model == "Geometric") {
     if (!all(c("sigma2", "sill", "range", "smooth") %in% names(list(...))))
       stop("You must specify 'sigma2', 'sill', 'range', 'smooth'")
     
@@ -82,6 +86,11 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
     range <- list(...)$range
     smooth <- list(...)$smooth
     sigma2 <- list(...)$sigma2
+  }
+
+  else {
+    range <- list(...)$range
+    smooth <- list(...)$smooth
   }
 
   if (dist.dim !=1){
@@ -103,14 +112,14 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
                     "powexp" = 3, "bessel" = 4)
 
   if (grid){
-    ans <- double(n * n.site^dist.dim)
+    ans <- rep(-1e10, n * n.site^dist.dim)
     reg.grid <- .isregulargrid(coord[,1], coord[,2])
     steps <- reg.grid$steps
     reg.grid <- reg.grid$reg.grid
   }
 
   else
-    ans <- double(n * n.site)
+    ans <- rep(-1e10, n * n.site)
   
   if (model == "Smith")
     ans <- switch(dist.dim,
@@ -218,8 +227,33 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
     }
   }
 
-  else
-    stop("not implemented yet")
+  else if (model == "Brown-Resnick"){
+     if (is.null(control$method)){
+       if (grid && reg.grid)
+         method <- "circ"
+      
+       else if ((length(ans) / n) > 600)
+         method <- "tbm"
+       
+       else
+         method <- "direct"
+     }
+
+     else
+       method <- control$method
+
+     if (dist.dim == 1)
+       bounds <- range(coord)
+
+     else
+       bounds <- apply(coord, 2, range)
+
+    if (method == "direct")
+      ans <- .C("rbrowndirect", as.double(coord), as.double(bounds),
+                as.integer(n), as.integer(n.site), as.integer(dist.dim),
+                as.integer(grid), as.double(range), as.double(smooth),
+                ans = ans, PACKAGE = "SpatialExtremes")$ans
+  }
 
   if (grid)
     ans <- array(ans, c(n.site, n.site, n))
