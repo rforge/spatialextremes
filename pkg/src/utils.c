@@ -49,8 +49,6 @@ void distance2orig(double *coord, int n, int dim, double *dist){
   }
 }
   
-  
-
 double gev2frech(double *data, int nObs, int nSite, double *locs, 
 		 double *scales, double *shapes, double *jac,
 		 double *frech){
@@ -88,12 +86,49 @@ double gev2frech(double *data, int nObs, int nSite, double *locs,
   return 0.0;
 }
 
-double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
-		     double *shapedsgnmat, double *loccoeff, 
-		     double *scalecoeff, double *shapecoeff,
-		     int nSite, int nloccoeff, int nscalecoeff,
-		     int nshapecoeff, double *locs, double *scales,
-		     double *shapes){
+double gev2frechTrend(double *data, int nObs, int nSite, double *locs, double *scales,
+		      double *shapes, double *trendlocs, double *trendscales,
+		      double *trendshapes,double *jac, double *frech){
+
+  /* This function transforms the GEV observations to unit Frechet
+     ones with a temporal trend and computes the log of the jacobian
+     of each transformation
+
+     When ans > 0.0, the GEV parameters are invalid. */
+  
+  int i, j;
+  
+  for (i=nSite;i--;){
+    for (j=nObs;j--;){
+      double loc = locs[i] + trendlocs[j], scale = scales[i] + trendscales[j],
+	shape = shapes[i] + trendshapes[j], iscale = 1 / scale, logScale = log(scale),
+	ishape = 1 / shape;
+    
+      if (shape == 0.0){
+	frech[i * nObs + j] = (data[i * nObs + j] - loc) * iscale;
+	jac[i * nObs + j] = frech[i * nObs + j] - logScale;
+	frech[i * nObs + j] = exp(frech[i * nObs + j]);
+      }
+    
+      else {
+	frech[i * nObs + j] = 1 + shape * (data[i * nObs + j] - loc) * iscale;
+	
+	if (frech[i * nObs + j] <= 0)
+	  return MINF;
+	
+	jac[i * nObs + j] = (ishape - 1) * log(frech[i * nObs + j]) - logScale;
+	frech[i * nObs + j] = R_pow(frech[i * nObs + j], ishape);
+      }
+    }
+  }
+ 
+  return 0.0;
+}
+
+double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat, double *shapedsgnmat,
+		     double *loccoeff, double *scalecoeff, double *shapecoeff,
+		     int nSite, int nloccoeff, int nscalecoeff, int nshapecoeff,
+		     double *locs, double *scales, double *shapes){
 
   //This function computes the GEV parameters from the design matrix
   //when ans > 0.0, the GEV parameters are invalid
@@ -122,6 +157,38 @@ double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
   }
 
   return 0.0;
+}
+
+void dsgnmat2temptrend(double *dsgnmatloc, double *dsgnmatscale, double *dsgnmatshape,
+		       double *loccoeff, double *scalecoeff, double *shapecoeff, int nSite,
+		       int nObs, int *usetempcov, int nloccoeff, int nscalecoeff,
+		       int nshapecoeff, double *trendlocs, double *trendscales,
+		       double *trendshapes){
+
+  //This function computes the temporal trend for each GEV parameters
+  //from the design matrix.
+  int i, j;
+  
+  memset(trendlocs, 0, nObs * sizeof(double));
+  memset(trendscales, 0, nObs * sizeof(double));
+  memset(trendshapes, 0, nObs * sizeof(double));
+
+  if (usetempcov[0])
+    for (i=nObs;i--;)
+      for (j=nloccoeff;j--;)
+	trendlocs[i] += loccoeff[j] * dsgnmatloc[i + nObs * j];
+
+  if (usetempcov[1])
+    for (i=nObs;i--;)
+      for (j=nscalecoeff;j--;)
+	trendscales[i] += scalecoeff[j] * dsgnmatscale[i + nObs * j];
+
+  if (usetempcov[2])
+    for (i=nObs;i--;)      
+      for (j=nshapecoeff;j--;)
+	trendshapes[i] += shapecoeff[j] * dsgnmatshape[i + nObs * j];
+
+  return;
 }
   
 void gev(double *prob, int *n, double *locs, double *scales, double *shapes,
