@@ -79,9 +79,9 @@ qqgev <- function(fitted, xlab, ylab, ...){
   }
 }
 
-plot.maxstab <- function(fitted, sites){
-  n.site <- ncol(fitted$data)
-  n.obs <- nrow(fitted$data)
+plot.maxstab <- function(x, ..., sites){
+  n.site <- ncol(x$data)
+  n.obs <- nrow(x$data)
 
   ##The graph is as follows :
   ## The diagonal are return level plots
@@ -97,57 +97,59 @@ plot.maxstab <- function(fitted, sites){
   layout(matrix(c(1,6,7,9,13,2,8,10,5,5,3,11,5,5,12,4), 4))
   par(mar = c(4,4,1,0.5))
   ## Return level plots
-  covariates <- cbind(fitted$coord[sites,], fitted$marg.cov[sites,,drop=FALSE])
-  gev.param <- predict(fitted, covariates, std.err = FALSE)[,c("loc", "scale", "shape")]
+  ##covariates <- cbind(x$coord[sites,], x$marg.cov[sites,,drop=FALSE])
+  ##gev.param <- predict(x, covariates, std.err = FALSE)[,c("loc", "scale", "shape")]
+  gev.param <- predict(x, std.err = FALSE)[sites, c("loc", "scale", "shape")]
 
   for (i in 1:4){
     boot <- matrix(NA, nrow = 1000, ncol = n.obs)
     loc <- gev.param[i,1]
     scale <- gev.param[i,2]
     shape <- gev.param[i,3]
+    probs <- 1:n.obs / (n.obs + 1)
     
     for (j in 1:1000)
       boot[j,] <- sort(rgev(n.obs, loc, scale, shape))
 
     ci <- apply(boot, 2, quantile, c(0.025, 0.975))
-    matplot(1 / (1 - ppoints(n.obs)), t(ci), pch ="-", col = 1,
+    matplot(1 / (1 - probs), t(ci), pch ="-", col = 1,
             xlab = "Return Period", ylab = "Return level", log = "x")
     fun <- function(T) qgev(1 - 1/T, loc, scale, shape)
     curve(fun, from = 1.001, to = 100, add = TRUE)
-    points(1 / (1 - ppoints(n.obs)), sort(fitted$data[,i]))
+    points(1 / (1 - probs), sort(x$data[,sites[i]]))
     
   }
 
   ##F-madogram
-  fmadogram(fitted$data, fitted$coord, which = "ext", col = "lightgrey")
-  fmadogram(fitted = fitted, which = "ext", add = TRUE, n.bins = n.site)
+  fmadogram(x$data, x$coord, which = "ext", col = "lightgrey")
+  fmadogram(fitted = x, which = "ext", add = TRUE, n.bins = n.site)
 
   ##Pairwise maxima on the Gumbel scale
-  model <- fitted$model
+  model <- x$model
   notimplemented <- FALSE
   if (model == "Smith"){
-    cov11 <- fitted$par["cov11"]
-    cov12 <- fitted$par["cov12"]
-    cov22 <- fitted$par["cov22"]
-    sim.maxstab <- rmaxstab(n.obs * 1000, fitted$coord[sites,], "gauss",
+    cov11 <- x$par["cov11"]
+    cov12 <- x$par["cov12"]
+    cov22 <- x$par["cov22"]
+    sim.maxstab <- rmaxstab(n.obs * 1000, x$coord[sites,], "gauss",
                             cov11 = cov11, cov12 = cov12, cov22 = cov22)
   }
 
   else if (model == "Schlather"){
-    sill <- fitted$par["sill"]
-    range <- fitted$par["range"]
-    smooth <- fitted$par["smooth"]
-    sim.maxstab <- rmaxstab(n.obs * 1000, fitted$coord[sites,], fitted$cov.mod,
+    sill <- x$par["sill"]
+    range <- x$par["range"]
+    smooth <- x$par["smooth"]
+    sim.maxstab <- rmaxstab(n.obs * 1000, x$coord[sites,], x$cov.mod,
                             sill = sill, range = range, smooth = smooth)
   }
   
   else if (model == "Geometric"){
-    sigma2 <- fitted$par["sigma2"]
-    sill <- fitted$par["sill"]
-    range <- fitted$par["range"]
-    smooth <- fitted$par["smooth"]
-    cov.mod <- paste("g", fitted$cov.mod, sep = "")
-    sim.maxstab <- rmaxstab(n.obs * 1000, fitted$coord[sites,], cov.mod,
+    sigma2 <- x$par["sigma2"]
+    sill <- x$par["sill"]
+    range <- x$par["range"]
+    smooth <- x$par["smooth"]
+    cov.mod <- paste("g", x$cov.mod, sep = "")
+    sim.maxstab <- rmaxstab(n.obs * 1000, x$coord[sites,], cov.mod,
                             sigma2 = sigma2, sill = sill, range = range,
                             smooth = smooth)
   }
@@ -165,7 +167,7 @@ plot.maxstab <- function(fitted, sites){
   else {
     sim.maxstab <- array(log(sim.maxstab), c(n.obs, 1000, 4))
     
-    gumb <- log(apply(fitted$data[,sites], 2, gev2frech, emp = TRUE))
+    gumb <- log(apply(x$data[,sites], 2, gev2frech, emp = TRUE))
     ##Plot of the pairwise maxima
     for (i in 1:3){
       for (j in (i+1):4){
@@ -177,7 +179,7 @@ plot.maxstab <- function(fitted, sites){
                 ylab = "Observed")
         points(dummy, pair.max)
         abline(0, 1)
-        h <- distance(fitted$coord[sites[c(i,j)],])
+        h <- distance(x$coord[sites[c(i,j)],])
         legend("bottomright", paste("h =", round(h, 2)), bty = "n")
       }
     }
@@ -197,9 +199,9 @@ plot.maxstab <- function(fitted, sites){
   }
 
   ##Plot of the locations - identifying the one selected
-  plot(fitted$coord, type = "n")
-  points(fitted$coord[-sites,])
-  points(fitted$coord[sites,], pch = c("1", "2", "3", "4"), col = "blue")
+  plot(x$coord, type = "n")
+  points(x$coord[-sites,])
+  points(x$coord[sites,], pch = c("1", "2", "3", "4"), col = "blue")
   
 }
   
