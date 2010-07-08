@@ -20,16 +20,22 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
     nlines: the number of lines used in the TBM algo
        ans: the generated random field */
 
-  int i;
-  double *lines;
+  int i, neffSite;
+  const double loguBound = log(*uBound), halfSigma2 = 0.5 * *sigma2;
+  double sigma = sqrt(*sigma2), nugget = 1 - *sill,
+    *lines = (double *)R_alloc(3 * *nlines, sizeof(double));
+
+  if (*grid)
+    neffSite = R_pow_di(*nSite, *dim);
+
+  else
+    neffSite = *nSite;
 
   //rescale the coordinates
   for (i=(*nSite * *dim);i--;){
     const double irange = 1 / *range;
     coord[i] = coord[i] * irange;
   }
-
-  lines = (double *)R_alloc(3 * *nlines, sizeof(double));
   
   if ((*covmod == 3) && (*smooth == 2))
     //This is the gaussian case
@@ -41,8 +47,6 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
   GetRNGstate();
   if (*grid){
     //coord defines a grid
-    int neffSite = R_pow_di(*nSite, *dim);
-    
     for (i=*nObs;i--;){
       int nKO = neffSite;
       double poisson = 0;
@@ -51,29 +55,22 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 	/* The stopping rule is reached when nKO = 0 i.e. when each site
 	   satisfies the condition in Eq. (8) of Schlather (2002) */
 	int j;
-	double sigma = sqrt(*sigma2), nugget = 1 - *sill, ipoisson,
-	  u, v, w, angle, norm, thresh, *gp;
-
-	gp = (double *)R_alloc(neffSite, sizeof(double));
+	double *gp = (double *)R_alloc(neffSite, sizeof(double));
 
 	/* ------- Random rotation of the lines ----------*/
-	u = unif_rand() - 0.5;
-	v = unif_rand() - 0.5;
-	w = unif_rand() - 0.5;
-	angle = runif(0, M_2PI);
+	double u = unif_rand() - 0.5, v = unif_rand() - 0.5,
+	  w = unif_rand() - 0.5, angle = runif(0, M_2PI),	
+	  norm = sqrt(u * u + v * v + w * w), inorm = 1 / norm;
 	
-	norm = sqrt(u * u + v * v + w * w);
-	
-	u /= norm;
-	v /= norm;
-	w /= norm;
+	u *= inorm;
+	v *= inorm;
+	w *= inorm;
 	
 	rotation(lines, nlines, &u, &v, &w, &angle);
 	/* -------------- end of rotation ---------------*/
 	
 	poisson += exp_rand();
-	ipoisson = 1 / poisson;
-	thresh = *uBound * ipoisson;
+	double ipoisson = -log(poisson), thresh = loguBound + ipoisson;
 	
 	/* We simulate one realisation of a gaussian random field with
 	   the required covariance function */
@@ -83,8 +80,8 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 	
 	nKO = neffSite;
 	for (j=neffSite;j--;){
-	  ans[j + i * neffSite] = fmax2(exp(sigma * gp[j] - 0.5 * *sigma2) *
-					ipoisson, ans[j + i * neffSite]);
+	  ans[j + i * neffSite] = fmax2(sigma * gp[j] - halfSigma2 + ipoisson,
+					ans[j + i * neffSite]);
 	  
 	  nKO -= (thresh <= ans[j + i * neffSite]);
 	  
@@ -95,8 +92,6 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 
   else{
     //coord doesn't define a grid
-    int neffSite = *nSite;
-    
     for (i=*nObs;i--;){
       double poisson = 0;
       int nKO = neffSite;
@@ -105,29 +100,24 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 	/* The stopping rule is reached when nKO = 0 i.e. when each site
 	   satisfies the condition in Eq. (8) of Schlather (2002) */
 	int j;
-	double sigma = sqrt(*sigma2), nugget = 1 - *sill, ipoisson, u, v,
-	  w, angle, norm, thresh, *gp;
+	double *gp;
 
 	gp = (double *)R_alloc(neffSite, sizeof(double));
 
 	/* ------- Random rotation of the lines ----------*/
-	u = unif_rand() - 0.5;
-	v = unif_rand() - 0.5;
-	w = unif_rand() - 0.5;
-	angle = runif(0, M_2PI);
-	
-	norm = sqrt(u * u + v * v + w * w);
-	
-	u /= norm;
-	v /= norm;
-	w /= norm;
+	double u = unif_rand() - 0.5, v = unif_rand() - 0.5,
+	  w = unif_rand() - 0.5, angle = runif(0, M_2PI),	
+	  norm = sqrt(u * u + v * v + w * w), inorm = 1 / norm;
+
+	u *= inorm;
+	v *= inorm;
+	w *= inorm;
 	
 	rotation(lines, nlines, &u, &v, &w, &angle);
 	/* -------------- end of rotation ---------------*/
 
 	poisson += exp_rand();
-	ipoisson = 1 / poisson;
-	thresh = *uBound * ipoisson;
+	double ipoisson = -log(poisson), thresh = loguBound + ipoisson;
 	
 	/* We simulate one realisation of a gaussian random field with
 	   the required covariance function */
@@ -137,8 +127,8 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 	
 	nKO = neffSite;
 	for (j=*nSite;j--;){
-	  ans[i + j * *nObs] = fmax2(exp(sigma * gp[j] - 0.5 * *sigma2) *
-				     ipoisson, ans[i + j * *nObs]);
+	  ans[i + j * *nObs] = fmax2(sigma * gp[j] - halfSigma2 + ipoisson,
+				     ans[i + j * *nObs]);
 	  
 	  nKO -= (thresh <= ans[i + j * *nObs]);
 	}
@@ -147,6 +137,11 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
   }
 
   PutRNGstate();
+
+  /* So fare we generate a max-stable process with standard Gumbel
+     margins. Switch to unit Frechet ones */
+  for (i=*nObs * neffSite;i--;)
+    ans[i] = exp(ans[i]);
 
   return;
 }
@@ -169,11 +164,9 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
     smooth: the smooth parameter
        ans: the generated random field */
 
-  const double sigma = sqrt(*sigma2);
-  int i, j, k, lwork, nKO, info = 0, neffSite;
-  double poisson, ipoisson, thresh, *gp, nugget = 1 - *sill,
-    *covmat, one = 1, zero = 0, *work, *xvals, tmp, *d, *u,
-    *v, sum, dummy;
+  int i, j, k, neffSite;
+  const double loguBound = log(*uBound), halfSigma2 = 0.5 * *sigma2;
+  double sigma = sqrt(*sigma2), nugget = 1 - *sill, one = 1, zero = 0;
 
   if (*grid)
     neffSite = R_pow_di(*nSite, *dim);
@@ -181,12 +174,12 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
   else
     neffSite = *nSite;
 
-  covmat = (double *)R_alloc(neffSite * neffSite, sizeof(double));
-  d = (double *)R_alloc(neffSite, sizeof(double));
-  u = (double *)R_alloc(neffSite * neffSite, sizeof(double));
-  v = (double *)R_alloc(neffSite * neffSite, sizeof(double));
-  xvals = (double *) R_alloc(neffSite * neffSite, sizeof(double));
-  gp = (double *)R_alloc(neffSite, sizeof(double));
+  double *covmat = (double *)R_alloc(neffSite * neffSite, sizeof(double)),
+    *d = (double *)R_alloc(neffSite, sizeof(double)),
+    *u = (double *)R_alloc(neffSite * neffSite, sizeof(double)),
+    *v = (double *)R_alloc(neffSite * neffSite, sizeof(double)),
+    *xvals = (double *) R_alloc(neffSite * neffSite, sizeof(double)),
+    *gp = (double *)R_alloc(neffSite, sizeof(double));
 
   buildcovmat(nSite, grid, covmod, coord, dim, &nugget, sill, range,
 	      smooth, covmat);
@@ -200,16 +193,17 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
   
   {
     int *iwork= (int *) R_alloc(8 * neffSite, sizeof(int));
-    
+    double tmp;
+
     /* ask for optimal size of work array */
-    lwork = -1;
+    int lwork = -1, info = 0;
     F77_CALL(dgesdd)("A", &neffSite, &neffSite, xvals, &neffSite, d, u,
 		     &neffSite, v, &neffSite, &tmp, &lwork, iwork, &info);
     if (info != 0)
       error("error code %d from Lapack routine '%s'", info, "dgesdd");
 
     lwork = (int) tmp;
-    work = (double *) R_alloc(lwork, sizeof(double));
+    double *work = (double *) R_alloc(lwork, sizeof(double));
 
     F77_CALL(dgesdd)("A", &neffSite, &neffSite, xvals, &neffSite, d, u,
 		     &neffSite, v, &neffSite, work, &lwork, iwork, &info);
@@ -222,7 +216,7 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
   /* Compute the square root of the covariance matrix */
   // a) First compute diag(sqrt(d)) %*% u
   for (i=0;i<neffSite;i++){
-    dummy = sqrt(d[i]);
+    double dummy = sqrt(d[i]);
     
     for (j=0;j<neffSite;j++)
       u[i + neffSite * j] *= dummy;
@@ -236,15 +230,14 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
   if (*grid){
     //coord defines a grid
     for (i=*nObs;i--;){
-      poisson = 0;
-      nKO = neffSite;
+      double poisson = 0;
+      int nKO = neffSite;
       
       while (nKO) {
 	/* The stopping rule is reached when nKO = 0 i.e. when each site
 	   satisfies the condition in Eq. (8) of Schlather (2002) */
 	poisson += exp_rand();
-	ipoisson = 1 / poisson;
-	thresh = *uBound * ipoisson;
+	double ipoisson = -log(poisson), thresh = loguBound + ipoisson;
 	
 	/* We simulate one realisation of a gaussian random field with
 	   the required covariance function */
@@ -252,7 +245,7 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
 	  d[j] = norm_rand();
 	  
 	for (j=neffSite;j--;){
-	  sum = 0;
+	  double sum = 0;
 	  for (k=neffSite;k--;)
 	    sum += d[k] * covmat[j + k * neffSite];
 	  
@@ -261,8 +254,8 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
 	
 	nKO = neffSite;
 	for (j=neffSite;j--;){
-	  ans[j + i * neffSite] = fmax2(exp(sigma * gp[j] - 0.5 * *sigma2) *
-					ipoisson, ans[j + i * neffSite]);
+	  ans[j + i * neffSite] = fmax2(sigma * gp[j] - halfSigma2 + ipoisson,
+					ans[j + i * neffSite]);
 	  
 	  nKO -= (thresh <= ans[j + i * neffSite]);
 	  
@@ -274,15 +267,14 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
   else{
     //coord doesn't define a grid
     for (i=*nObs;i--;){
-      poisson = 0;
-      nKO = *nSite;
+      double poisson = 0;
+      int nKO = *nSite;
       
       while (nKO) {
 	/* The stopping rule is reached when nKO = 0 i.e. when each site
 	   satisfies the condition in Eq. (8) of Schlather (2002) */
 	poisson += exp_rand();
-	ipoisson = 1 / poisson;
-	thresh = *uBound * ipoisson;
+	double ipoisson = -log(poisson), thresh = loguBound + ipoisson;
 	
 	/* We simulate one realisation of a gaussian random field with
 	   the required covariance function */
@@ -290,7 +282,7 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
 	  d[j] = norm_rand();
 	  
 	for (j=neffSite;j--;){
-	  sum = 0;
+	  double sum = 0;
 	  for (k=neffSite;k--;)
 	    sum += d[k] * covmat[j + k * neffSite];
 	  
@@ -299,8 +291,8 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
 	
 	nKO = *nSite;
 	for (j=*nSite;j--;){
-	  ans[i + j * *nObs] = fmax2(exp(sigma * gp[j] - 0.5 * *sigma2) *
-				     ipoisson, ans[i + j * *nObs]);
+	  ans[i + j * *nObs] = fmax2(sigma * gp[j] - halfSigma2 + ipoisson,
+				     ans[i + j * *nObs]);
 	  
 	  nKO -= (thresh <= ans[i + j * *nObs]);
 	}
@@ -309,6 +301,11 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
   }
 
   PutRNGstate();
+
+  /* So fare we generate a max-stable process with standard Gumbel
+     margins. Switch to unit Frechet ones */
+  for (i=*nObs * neffSite;i--;)
+    ans[i] = exp(ans[i]);
 
   return;
 }
@@ -329,8 +326,9 @@ void rgeomcirc(int *nObs, int *ngrid, double *steps, int *dim,
       ans: the generated random field */
 
   int i, j, k = -1, nbar = R_pow_di(*ngrid, *dim), r, m;
-  double *rho, *irho;
-  const double sigma = sqrt(*sigma2);
+  const double loguBound = log(*uBound), halfSigma2 = 0.5 * *sigma2;
+  double sigma = sqrt(*sigma2), nugget = 1 - *sill, *rho, *irho, *dist;
+
   //Below is a table of highly composite numbers
   int HCN[39] = {1, 2, 4, 6, 12, 24, 36, 48, 60, 120, 180, 240,
 		 360, 720, 840, 1260, 1680, 2520, 5040, 7560,
@@ -351,7 +349,6 @@ void rgeomcirc(int *nObs, int *ngrid, double *steps, int *dim,
   /* ---------- beginning of the embedding stage ---------- */
   int mbar = m * m, halfM = m / 2, notPosDef = 0;
   do {
-    double *dist;
     dist = (double *)R_alloc(mbar, sizeof(double));
 
     notPosDef = 0;
@@ -395,12 +392,11 @@ void rgeomcirc(int *nObs, int *ngrid, double *steps, int *dim,
     /* Note : The next lines is only valid for 2d random fields. I
        need to change if there are m_1 \neq m_2 as I suppose that m_1
        = m_2 = m */
-    int maxf, maxp, *iwork;
-    double *work;
+    int maxf, maxp;
 
     fft_factor(m, &maxf, &maxp);
-    work = (double *)R_alloc(4 * maxf, sizeof(double));
-    iwork = (int *)R_alloc(maxp, sizeof(int));
+    double *work = (double *)R_alloc(4 * maxf, sizeof(double));
+    int *iwork = (int *)R_alloc(maxp, sizeof(int));
     fft_work(rho, irho, m, m, 1, -1, work, iwork);
 
     fft_factor(m, &maxf, &maxp);
@@ -433,10 +429,10 @@ void rgeomcirc(int *nObs, int *ngrid, double *steps, int *dim,
   }
 
   int mdag = m / 2 + 1, mdagbar = mdag * mdag;
-  double *a, *ia, isqrtMbar = 1 / sqrt(mbar);
+  double isqrtMbar = 1 / sqrt(mbar);
 
-  a = (double *)R_alloc(mbar, sizeof(double));
-  ia = (double *)R_alloc(mbar, sizeof(double));
+  double *a = (double *)R_alloc(mbar, sizeof(double));
+  double *ia = (double *)R_alloc(mbar, sizeof(double));
   
   GetRNGstate();
   for (i=*nObs;i--;){
@@ -447,13 +443,10 @@ void rgeomcirc(int *nObs, int *ngrid, double *steps, int *dim,
       /* The stopping rule is reached when nKO = 0 i.e. when each site
 	 satisfies the condition in Eq. (8) of Schlather (2002) */
       int j;
-      double nugget = 1 - *sill, ipoisson, thresh, *gp;
-      
-      gp = (double *)R_alloc(nbar, sizeof(double));
+      double *gp = (double *)R_alloc(nbar, sizeof(double));
       
       poisson += exp_rand();
-      ipoisson = 1 / poisson;
-      thresh = *uBound * ipoisson;
+      double ipoisson = -log(poisson), thresh = loguBound + ipoisson;
       
       /* We simulate one realisation of a gaussian random field with
 	 the required covariance function */
@@ -461,8 +454,8 @@ void rgeomcirc(int *nObs, int *ngrid, double *steps, int *dim,
       
       nKO = nbar;
       for (j=nbar;j--;){
-	ans[j + i * nbar] = fmax2(exp(sigma * gp[j] - 0.5 * *sigma2) * 
-				  ipoisson, ans[j + i * nbar]);
+	ans[j + i * nbar] = fmax2(sigma * gp[j] - halfSigma2 + ipoisson,
+				  ans[j + i * nbar]);
 	nKO -= (thresh <= ans[j + i * nbar]);
 	
       }
@@ -470,6 +463,11 @@ void rgeomcirc(int *nObs, int *ngrid, double *steps, int *dim,
   }
   
   PutRNGstate();
+
+  /* So fare we generate a max-stable process with standard Gumbel
+     margins. Switch to unit Frechet ones */
+  for (i=*nObs * nbar;i--;)
+    ans[i] = exp(ans[i]);
   
   return;
 }
