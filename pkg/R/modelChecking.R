@@ -31,12 +31,7 @@ qqgev <- function(fitted, xlab, ylab, ...){
   data <- fitted$data
   n.site <- ncol(data)
 
-  gev.param <- matrix(NA, ncol = 3, nrow = n.site)
-  colnames(gev.param) <- c("loc", "scale", "shape")
-
-  for (i in 1:n.site)
-    gev.param[i,] <- gevmle(data[,i])
-
+  gev.param <- t(apply(data, 2, gevmle))
   pred <- predict(fitted)
 
   if (missing(xlab))
@@ -154,8 +149,12 @@ plot.maxstab <- function(x, ..., sites){
                             smooth = smooth)
   }
   
-  else
-    notimplemented <- TRUE
+  else if (model == "Brown-Resnick"){
+    range <- x$par["range"]
+    smooth <- x$par["smooth"]
+    sim.maxstab <- rmaxstab(n.obs * 1000, x$coord[sites,], "brown",
+                            range = range, smooth = smooth)
+  }
 
   if (notimplemented){
     for (i in 1:7){
