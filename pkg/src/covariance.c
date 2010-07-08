@@ -191,14 +191,11 @@ double mahalDistFct(double *distVec, int n, double *cov11,
   if (det <= 0)
     return (1 - det) * (1 - det) * MINF;
   
-  for (i=n;i--;){
-    mahal[i] = (*cov11 * distVec[n + i] * distVec[n + i] -
-		2 * *cov12 * distVec[i] * distVec[n + i] +
-		*cov22 * distVec[i] * distVec[i]) * idet;
+  for (i=n;i--;)
+    mahal[i] = sqrt((*cov11 * distVec[n + i] * distVec[n + i] -
+		     2 * *cov12 * distVec[i] * distVec[n + i] +
+		     *cov22 * distVec[i] * distVec[i]) * idet);
     
-    mahal[i] = sqrt(mahal[i]);
-  }
-  
   return 0.0;
 }
 
