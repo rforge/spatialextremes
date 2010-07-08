@@ -14,9 +14,9 @@ void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
     smooth: the smooth parameter
        ans: the generated random field */
 
-  int i, j, k, lwork, info = 0, neffSite, covmod = 6;
+  int i, j, k, neffSite, covmod = 6;
   const double irange = 1 / *range;
-  double *gp, *covmat, one = 1, zero = 0, *work, *xvals, tmp, *d, *u, *v;
+  double one = 1, zero = 0, tmp;
 
   if (*grid)
     neffSite = R_pow_di(*nSite, *dim);
@@ -24,12 +24,12 @@ void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
   else
     neffSite = *nSite;
 
-  covmat = (double *)R_alloc(neffSite * neffSite, sizeof(double));
-  d = (double *)R_alloc(neffSite, sizeof(double));
-  u = (double *)R_alloc(neffSite * neffSite, sizeof(double));
-  v = (double *)R_alloc(neffSite * neffSite, sizeof(double));
-  xvals = (double *) R_alloc(neffSite * neffSite, sizeof(double));
-  gp = (double *)R_alloc(neffSite, sizeof(double));
+  double *covmat = (double *)R_alloc(neffSite * neffSite, sizeof(double)),
+    *d = (double *)R_alloc(neffSite, sizeof(double)),
+    *u = (double *)R_alloc(neffSite * neffSite, sizeof(double)),
+    *v = (double *)R_alloc(neffSite * neffSite, sizeof(double)),
+    *xvals = (double *) R_alloc(neffSite * neffSite, sizeof(double)),
+    *gp = (double *)R_alloc(neffSite, sizeof(double));
   
   GetRNGstate();
   if (*grid){
@@ -77,14 +77,14 @@ void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
 	  int *iwork= (int *) R_alloc(8 * neffSite, sizeof(int));
 	  
 	  /* ask for optimal size of work array */
-	  lwork = -1;
+	  int lwork = -1, info = 0;
 	  F77_CALL(dgesdd)("A", &neffSite, &neffSite, xvals, &neffSite, d, u,
 			   &neffSite, v, &neffSite, &tmp, &lwork, iwork, &info);
 	  if (info != 0)
 	    error("error code %d from Lapack routine '%s'", info, "dgesdd");
 	  
 	  lwork = (int) tmp;
-	  work = (double *) R_alloc(lwork, sizeof(double));
+	  double *work = (double *) R_alloc(lwork, sizeof(double));
 	  
 	  F77_CALL(dgesdd)("A", &neffSite, &neffSite, xvals, &neffSite, d, u,
 			   &neffSite, v, &neffSite, work, &lwork, iwork, &info);
@@ -131,12 +131,11 @@ void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
     //coord doesn't define a grid
     for (i=*nObs;i--;){
       double poisson = 0;
-      int flag = 250;
+      int nKO = *nSite;
 
-      while (flag) {
-	flag--;
+      while (nKO) {
 	poisson += exp_rand();
-	double ipoisson = -log(poisson);
+	double ipoisson = -log(poisson), thresh = 7 + ipoisson;
 
 	double *shift = (double *) R_alloc(*dim, sizeof(double));
 	double *shiftedCoord = (double *) R_alloc(*dim * *nSite, sizeof(double));
@@ -171,14 +170,14 @@ void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
 	  int *iwork= (int *) R_alloc(8 * neffSite, sizeof(int));
 	  
 	  /* ask for optimal size of work array */
-	  lwork = -1;
+	  int lwork = -1, info = 0;
 	  F77_CALL(dgesdd)("A", &neffSite, &neffSite, xvals, &neffSite, d, u,
 			   &neffSite, v, &neffSite, &tmp, &lwork, iwork, &info);
 	  if (info != 0)
 	    error("error code %d from Lapack routine '%s'", info, "dgesdd");
 	  
 	  lwork = (int) tmp;
-	  work = (double *) R_alloc(lwork, sizeof(double));
+	  double *work = (double *) R_alloc(lwork, sizeof(double));
 	  
 	  F77_CALL(dgesdd)("A", &neffSite, &neffSite, xvals, &neffSite, d, u,
 			   &neffSite, v, &neffSite, work, &lwork, iwork, &info);
@@ -214,10 +213,12 @@ void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
 	  gp[j] = sum;
 	}
 	
-	for (j=*nSite;j--;)
+	nKO = *nSite;
+	for (j=*nSite;j--;){
 	  ans[i + j * *nObs] = fmax2(gp[j] - vario[j] + ipoisson,
 				     ans[i + j * *nObs]);
-
+	  nKO -= (thresh <= ans[i + j * *nObs]);	  
+	}
       }
     }
   }
