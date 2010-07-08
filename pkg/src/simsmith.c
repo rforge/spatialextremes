@@ -26,7 +26,7 @@ void rsmith1d(double *coord, double *center, double *edge, int *nObs,
 
   /* Simulation according to the Schlather methodology. The compact
      set need to be inflated first */
-  *edge += 3.46 * sqrt(*var);
+  *edge += 6.92 * sqrt(*var);
   lebesgue = *edge;
 
   GetRNGstate();
@@ -97,7 +97,7 @@ void rsmith2d(double *coord, double *center, double *edge, int *nObs,
 
   /* Simulation according to the Schlather methodology. The compact
      set need to be inflated first */
-  *edge += 3.46 * sqrt(fmax2(*cov11, *cov22));
+  *edge += 6.92 * sqrt(fmax2(*cov11, *cov22));
   lebesgue = *edge * *edge;
 
   GetRNGstate();
