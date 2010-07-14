@@ -79,8 +79,9 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 		sill, range, smooth, nlines, lines, gp);
 	
 	nKO = neffSite;
+	double ipoissonMinusHalfSigma2 = ipoisson - halfSigma2;
 	for (j=neffSite;j--;){
-	  ans[j + i * neffSite] = fmax2(sigma * gp[j] - halfSigma2 + ipoisson,
+	  ans[j + i * neffSite] = fmax2(sigma * gp[j] + ipoissonMinusHalfSigma2,
 					ans[j + i * neffSite]);
 	  
 	  nKO -= (thresh <= ans[j + i * neffSite]);
@@ -126,8 +127,9 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 		sill, range, smooth, nlines, lines, gp);
 	
 	nKO = neffSite;
+	double ipoissonMinusHalfSigma2 = ipoisson - halfSigma2;
 	for (j=*nSite;j--;){
-	  ans[i + j * *nObs] = fmax2(sigma * gp[j] - halfSigma2 + ipoisson,
+	  ans[i + j * *nObs] = fmax2(sigma * gp[j] + ipoissonMinusHalfSigma2,
 				     ans[i + j * *nObs]);
 	  
 	  nKO -= (thresh <= ans[i + j * *nObs]);
@@ -253,8 +255,9 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
 	}
 	
 	nKO = neffSite;
+	double ipoissonMinusHalfSigma2 = ipoisson - halfSigma2;
 	for (j=neffSite;j--;){
-	  ans[j + i * neffSite] = fmax2(sigma * gp[j] - halfSigma2 + ipoisson,
+	  ans[j + i * neffSite] = fmax2(sigma * gp[j] + ipoissonMinusHalfSigma2,
 					ans[j + i * neffSite]);
 	  
 	  nKO -= (thresh <= ans[j + i * neffSite]);
@@ -290,8 +293,9 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
 	}
 	
 	nKO = *nSite;
+	double ipoissonMinusHalfSigma2 = ipoisson - halfSigma2;
 	for (j=*nSite;j--;){
-	  ans[i + j * *nObs] = fmax2(sigma * gp[j] - halfSigma2 + ipoisson,
+	  ans[i + j * *nObs] = fmax2(sigma * gp[j] + ipoissonMinusHalfSigma2,
 				     ans[i + j * *nObs]);
 	  
 	  nKO -= (thresh <= ans[i + j * *nObs]);
@@ -453,8 +457,9 @@ void rgeomcirc(int *nObs, int *ngrid, double *steps, int *dim,
       circcore(rho, a, ia, m, halfM, mdag, mdagbar, *ngrid, nbar, isqrtMbar, nugget, gp);
       
       nKO = nbar;
+      double ipoissonMinusHalfSigma2 = ipoisson - halfSigma2;
       for (j=nbar;j--;){
-	ans[j + i * nbar] = fmax2(sigma * gp[j] - halfSigma2 + ipoisson,
+	ans[j + i * nbar] = fmax2(sigma * gp[j] + ipoissonMinusHalfSigma2,
 				  ans[j + i * nbar]);
 	nKO -= (thresh <= ans[j + i * nbar]);
 	
