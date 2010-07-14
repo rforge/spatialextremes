@@ -12,8 +12,8 @@ void smithstderr(double *data, double *distVec, int *nSite, int *nObs, double *l
   //This is the Smith model. It computes the hessian of the pairwise log-likelihood
   
   const int nPairs = *nSite * (*nSite - 1) / 2,
-    flag = usetempcov[0] + usetempcov[1] + usetempcov[2],
-    det = *cov11 * *cov22 - *cov12 * *cov12;
+    flag = usetempcov[0] + usetempcov[1] + usetempcov[2];
+  const double det = *cov11 * *cov22 - *cov12 * *cov12;
   int i, currentPair = -1;
   double  *mahalDist, *locs, *scales, *shapes, *jac, *frech, *trendlocs,
     *trendscales, *trendshapes;
@@ -28,10 +28,12 @@ void smithstderr(double *data, double *distVec, int *nSite, int *nObs, double *l
   trendscales = (double *)R_alloc(*nObs, sizeof(double));
   trendshapes = (double *)R_alloc(*nObs, sizeof(double));
 
+  /* We have to intialized them to 0 as we don't know if
+     dsgnmat2temptrend will be called */
   memset(trendlocs, 0, *nObs * sizeof(double));
   memset(trendscales, 0, *nObs * sizeof(double));
   memset(trendshapes, 0, *nObs * sizeof(double));
-  
+
   //Computing the Mahalanobis distance
   mahalDistFct(distVec, nPairs, cov11, cov12, cov22, mahalDist);
 
@@ -92,12 +94,13 @@ void smithstderr(double *data, double *distVec, int *nSite, int *nObs, double *l
 	  ifrech1Square * ifrech2 + (c2 - c1 * c1 *c2 - 2 * c1) * dnormc2 *
 	  imahalSquare * imahal * ifrech1 * ifrech2Square,
 	  jacCommonSigma = dAa + (dBa * C + B * dCa + dDa) / (B*C + D);
-	 
+
 	hess[k * nPairs + currentPair] = -(*cov12 * distVec[nPairs + currentPair] - *cov22 * distVec[currentPair]) *
 	  (*cov12 * distVec[nPairs + currentPair] - *cov22 * distVec[currentPair]) / 
 	  (2 * det * det * mahalDist[currentPair]) * jacCommonSigma;
+
 	hess[(*nObs + k) * nPairs + currentPair] = (*cov11 * distVec[nPairs + currentPair] - 
-						     *cov12 * distVec[currentPair]) * 
+						    *cov12 * distVec[currentPair]) * 
 	  (*cov12 * distVec[nPairs + currentPair] - *cov22 * distVec[currentPair]) /
 	  (det * det * mahalDist[currentPair]) * jacCommonSigma;
 	hess[(2 * *nObs + k) * nPairs + currentPair] = -(*cov11 * distVec[nPairs + currentPair] - 
@@ -154,6 +157,8 @@ void smithstderr3d(double *data, double *distVec, int *nSite, int *nObs, double 
   trendscales = (double *)R_alloc(*nObs, sizeof(double));
   trendshapes = (double *)R_alloc(*nObs, sizeof(double));
 
+  /* We have to intialized them to 0 as we don't know if
+     dsgnmat2temptrend will be called */
   memset(trendlocs, 0, *nObs * sizeof(double));
   memset(trendscales, 0, *nObs * sizeof(double));
   memset(trendshapes, 0, *nObs * sizeof(double));
@@ -320,6 +325,8 @@ void schlatherstderr(int *covmod, double *data, double *dist, int *nSite, int *n
   trendscales = (double *)R_alloc(*nObs, sizeof(double));
   trendshapes = (double *)R_alloc(*nObs, sizeof(double));
 
+  /* We have to intialized them to 0 as we don't know if
+     dsgnmat2temptrend will be called */
   memset(trendlocs, 0, *nObs * sizeof(double));
   memset(trendscales, 0, *nObs * sizeof(double));
   memset(trendshapes, 0, *nObs * sizeof(double));
@@ -497,6 +504,8 @@ void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite, int
   trendscales = (double *)R_alloc(*nObs, sizeof(double));
   trendshapes = (double *)R_alloc(*nObs, sizeof(double));
 
+  /* We have to intialized them to 0 as we don't know if
+     dsgnmat2temptrend will be called */
   memset(trendlocs, 0, *nObs * sizeof(double));
   memset(trendscales, 0, *nObs * sizeof(double));
   memset(trendshapes, 0, *nObs * sizeof(double));  
@@ -808,6 +817,8 @@ void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite, int *n
   trendscales = (double *)R_alloc(*nObs, sizeof(double));
   trendshapes = (double *)R_alloc(*nObs, sizeof(double));
 
+  /* We have to intialized them to 0 as we don't know if
+     dsgnmat2temptrend will be called */
   memset(trendlocs, 0, *nObs * sizeof(double));
   memset(trendscales, 0, *nObs * sizeof(double));
   memset(trendshapes, 0, *nObs * sizeof(double));
@@ -983,6 +994,8 @@ void brownresnickstderr(double *data, double *dist, int *nSite, int *nObs, doubl
   trendscales = (double *)R_alloc(*nObs, sizeof(double));
   trendshapes = (double *)R_alloc(*nObs, sizeof(double));
 
+  /* We have to intialized them to 0 as we don't know if
+     dsgnmat2temptrend will be called */
   memset(trendlocs, 0, *nObs * sizeof(double));
   memset(trendscales, 0, *nObs * sizeof(double));
   memset(trendshapes, 0, *nObs * sizeof(double));
@@ -1091,6 +1104,8 @@ void spatgevstderr(double *data, int *nSite, int *nObs, double *locdsgnmat,
   trendscales = (double *)R_alloc(*nObs, sizeof(double));
   trendshapes = (double *)R_alloc(*nObs, sizeof(double));
 
+  /* We have to intialized them to 0 as we don't know if
+     dsgnmat2temptrend will be called */
   memset(trendlocs, 0, *nObs * sizeof(double));
   memset(trendscales, 0, *nObs * sizeof(double));
   memset(trendshapes, 0, *nObs * sizeof(double));
