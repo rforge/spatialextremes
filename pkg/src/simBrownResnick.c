@@ -36,13 +36,12 @@ void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
     //coord defines a grid
     for (i=*nObs;i--;){
       double poisson = 0;
-      int flag = 250;
+      int nKO = neffSite;
 
-      while (flag) {
-	flag--;
+      while (nKO){
 	
 	poisson += exp_rand();
-	double ipoisson = -log(poisson);
+	double ipoisson = -log(poisson), thresh = 5 + ipoisson;
 
 	double *shift = (double *) R_alloc(*dim, sizeof(double));
 	double *shiftedCoord = (double *) R_alloc(*dim * *nSite, sizeof(double));
@@ -50,7 +49,7 @@ void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
 
 	// Shift the locations
 	for (j=*dim;j--;)
-	  shift[j] = runif(bounds[2 * j] - 3.46, bounds[2 * j + 1] + 3.46);
+	  shift[j] = runif(bounds[2 * j], bounds[2 * j + 1]);
 
 	for (j=*nSite;j--;)
 	  for (k=*dim;k--;)
@@ -119,9 +118,13 @@ void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
 	  gp[j] = sum;
 	}
 	
-	for (j=neffSite;j--;)
+	nKO = neffSite;
+	for (j=neffSite;j--;){
 	  ans[j + i * neffSite] = fmax2(gp[j] - vario[j] + ipoisson,
 					ans[j + i * neffSite]);
+	  
+	  nKO -= (thresh <= ans[i + j * *nObs]);
+	}
 
       }
     }
@@ -135,7 +138,7 @@ void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
 
       while (nKO) {
 	poisson += exp_rand();
-	double ipoisson = -log(poisson), thresh = 7 + ipoisson;
+	double ipoisson = -log(poisson), thresh = 5 + ipoisson;
 
 	double *shift = (double *) R_alloc(*dim, sizeof(double));
 	double *shiftedCoord = (double *) R_alloc(*dim * *nSite, sizeof(double));
@@ -143,7 +146,7 @@ void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
 
 	// Shift the locations
 	for (j=*dim;j--;)
-	  shift[j] = runif(bounds[2 * j] - 3.46, bounds[2 * j + 1] + 3.46);
+	  shift[j] = runif(bounds[2 * j], bounds[2 * j + 1]);
 
 	for (j=*nSite;j--;)
 	  for (k=*dim;k--;)
