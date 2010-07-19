@@ -1,1384 +1,1621 @@
-------------------------------------------------------------------------
-r522 | mathieu_ribatet | 2010-01-14 11:48:16 +0100 (jeu. 14 janv. 2010) | 2 lignes
+2010-07-14 13:34  mathieu_ribatet
 
-Fix a bug in the geomgaussstderr (marginal part)
+	* src/simgeometric.c: A small optimisation for simulating Geometric
+	  processes
 
-------------------------------------------------------------------------
-r521 | mathieu_ribatet | 2010-01-14 11:47:32 +0100 (jeu. 14 janv. 2010) | 2 lignes
+2010-07-14 13:32  mathieu_ribatet
 
-Slight optimizations of the C code
+	* src/standardErrors.c: Fix a stupid bug. The determinant in the
+	  Smith model was incidentally set to the const int type!
 
-------------------------------------------------------------------------
-r520 | mathieu_ribatet | 2010-01-13 23:40:16 +0100 (mer. 13 janv. 2010) | 2 lignes
+2010-07-08 10:29  mathieu_ribatet
 
-Fix a bug in the computation of standard errors for geomgauss
+	* R/modelChecking.R: Allow for the simulation of Brown--Resnick
+	  processes. *NOT TO BE
+	  CONSIDERED AS ACCURATE*
 
-------------------------------------------------------------------------
-r519 | mathieu_ribatet | 2010-01-13 23:39:19 +0100 (mer. 13 janv. 2010) | 2 lignes
+2010-07-08 10:29  mathieu_ribatet
 
-Minor typo in the documentation of map and condmap
+	* src/simBrownResnick.c: Allow for the simulation of Brown--Resnick
+	  processes. *NOT TO BE
+	  CONSIDERED AS ACCURATE*
 
-------------------------------------------------------------------------
-r518 | mathieu_ribatet | 2010-01-13 23:38:23 +0100 (mer. 13 janv. 2010) | 3 lignes
+2010-07-08 10:28  mathieu_ribatet
 
-gev2frech uses the rank instead of ppoints for the empirical
-distribution - better for the F-madogram
+	* src/direct.c: Allow for the simulation of Brown--Resnick
+	  processes. *NOT TO BE
+	  CONSIDERED AS ACCURATE*
 
-------------------------------------------------------------------------
-r517 | mathieu_ribatet | 2010-01-13 23:37:25 +0100 (mer. 13 janv. 2010) | 2 lignes
+2010-07-08 10:27  mathieu_ribatet
 
-Add data sets and function to plot a map of Switzerland
+	* src/covariance.c: Minor changes
 
-------------------------------------------------------------------------
-r516 | mathieu_ribatet | 2010-01-13 23:36:59 +0100 (mer. 13 janv. 2010) | 2 lignes
+2010-07-08 10:27  mathieu_ribatet
 
-Add data sets and function to plot a map of Switzerland
+	* src/simsmith.c: More accurate approximation for the simulation of
+	  the Smith process
 
-------------------------------------------------------------------------
-r515 | mathieu_ribatet | 2010-01-13 23:35:43 +0100 (mer. 13 janv. 2010) | 2 lignes
+2010-07-08 10:26  mathieu_ribatet
 
-Forgot to put the names gradient in the std err computations
+	* src/simgeometric.c: Optimize the simulation of geometric
+	  processes (through Gumbel margins first)
 
-------------------------------------------------------------------------
-r514 | mathieu_ribatet | 2010-01-13 23:34:52 +0100 (mer. 13 janv. 2010) | 2 lignes
+2010-07-08 10:25  mathieu_ribatet
 
-Remove the dots argument in uniroot in condmap
+	* src/pairwiselik.c: Optimize the evaluations of various pairwise
+	  likelihoods
 
-------------------------------------------------------------------------
-r513 | mathieu_ribatet | 2010-01-13 23:33:46 +0100 (mer. 13 janv. 2010) | 2 lignes
+2010-04-23 12:35  mathieu_ribatet
 
-Define new values for the Brown-Resnick processes
+	* src/turningbands.c: gamma isn't defined must use gammafn!!!
 
-------------------------------------------------------------------------
-r512 | mathieu_ribatet | 2010-01-06 16:10:44 +0100 (mer. 06 janv. 2010) | 2 lignes
+2010-04-23 12:33  mathieu_ribatet
 
-Now we use 'crossprod' which is faster when std.err.type = 'grad'
+	* src/header.h: Updating the header files
 
-------------------------------------------------------------------------
-r511 | mathieu_ribatet | 2009-12-29 18:40:01 +0100 (mar. 29 déc. 2009) | 2 lignes
+2010-04-23 12:33  mathieu_ribatet
 
-Use the standard given by R for the NEWS file
+	* src/fitcovmat.c: The covariance now allow sill to be greater than
+	  1 so we need to
+	  penalise it in fitcovmat.c
 
-------------------------------------------------------------------------
-r510 | mathieu_ribatet | 2009-12-29 18:10:05 +0100 (mar. 29 déc. 2009) | 2 lignes
+2010-04-23 12:32  mathieu_ribatet
 
-Add a NEWS file
+	* src/covariance.c: Consistent parametrization of the Brown-Resnick
+	  processes with the
+	  documentation
 
-------------------------------------------------------------------------
-r509 | mathieu_ribatet | 2009-12-29 17:51:55 +0100 (mar. 29 déc. 2009) | 2 lignes
+2010-04-23 12:32  mathieu_ribatet
 
-Update
+	* man/plot.maxstab.Rd: Small changes
 
-------------------------------------------------------------------------
-r508 | mathieu_ribatet | 2009-12-29 17:51:07 +0100 (mar. 29 déc. 2009) | 2 lignes
+2010-04-23 12:31  mathieu_ribatet
 
-Update the ChangeLog
+	* man/madogram.Rd: Angles should partition (0, pi)
 
-------------------------------------------------------------------------
-r507 | mathieu_ribatet | 2009-12-29 17:37:33 +0100 (mar. 29 déc. 2009) | 2 lignes
+2010-04-23 12:31  mathieu_ribatet
 
-Fix a typo
+	* inst/doc/layout.sty: Minor change
 
-------------------------------------------------------------------------
-r506 | mathieu_ribatet | 2009-12-29 17:21:50 +0100 (mar. 29 déc. 2009) | 2 lignes
+2010-04-23 12:31  mathieu_ribatet
 
-Remove the Figures folder - useless
+	* R/modelChecking.R: Fix a bug in plot.maxstab
 
-------------------------------------------------------------------------
-r505 | mathieu_ribatet | 2009-12-29 17:19:30 +0100 (mar. 29 déc. 2009) | 2 lignes
+2010-04-23 12:30  mathieu_ribatet
 
-The example is now excuted and nicer
+	* R/methods.R: Modifying the printing methods as temporal
+	  covariates are available
 
-------------------------------------------------------------------------
-r504 | mathieu_ribatet | 2009-12-29 17:00:41 +0100 (mar. 29 déc. 2009) | 2 lignes
+2010-04-23 12:30  mathieu_ribatet
 
-Add an invisible frech2gev function which is faster but less flexible
+	* R/madogram.R: Add pretty ylim in the extremal coefficient
+	  function
 
-------------------------------------------------------------------------
-r503 | mathieu_ribatet | 2009-12-29 16:59:03 +0100 (mar. 29 déc. 2009) | 3 lignes
+2010-04-23 12:29  mathieu_ribatet
 
-map and condmap can now deal with covariates through the 'covariates'
-argument
+	* R/fitcovmat.R: Consistent parametrization of the Brown-Resnick
+	  processes with the
+	  documentation
 
-------------------------------------------------------------------------
-r502 | mathieu_ribatet | 2009-12-29 16:57:36 +0100 (mar. 29 déc. 2009) | 2 lignes
+2010-04-23 12:29  mathieu_ribatet
 
-Some code optimizations
+	* src/simschlather.c: Cleaning simschlather
 
-------------------------------------------------------------------------
-r501 | mathieu_ribatet | 2009-12-29 16:56:42 +0100 (mar. 29 déc. 2009) | 2 lignes
+2010-04-23 12:28  mathieu_ribatet
 
-Allow the use of weights in the pairwise likelihood
+	* src/utils.c: Utils function for the temporal trends
 
-------------------------------------------------------------------------
-r500 | mathieu_ribatet | 2009-12-17 12:03:37 +0100 (jeu. 17 déc. 2009) | 2 lignes
+2010-04-23 12:28  mathieu_ribatet
 
-Improve the examples
+	* src/standardErrorsCommonPart.c: Removing duplicate code in the
+	  gradient and share it
 
-------------------------------------------------------------------------
-r499 | mathieu_ribatet | 2009-12-17 12:03:12 +0100 (jeu. 17 déc. 2009) | 2 lignes
+2010-04-23 12:27  mathieu_ribatet
 
-Improve how the x and y axis limits are computed
+	* R/simmaxstab.R, src/simBrownResnick.c: Add simulation from
+	  Brown-Resnick processes
 
-------------------------------------------------------------------------
-r498 | mathieu_ribatet | 2009-12-17 11:24:24 +0100 (jeu. 17 déc. 2009) | 2 lignes
+2010-04-23 12:26  mathieu_ribatet
 
-Add an option "std.err" to compute or/not the standard errors
+	* man/variogram.Rd: Add the empirical variogram
 
-------------------------------------------------------------------------
-r497 | mathieu_ribatet | 2009-12-17 11:23:56 +0100 (jeu. 17 déc. 2009) | 2 lignes
+2010-04-23 12:24  mathieu_ribatet
 
-Rewrite the map function to allow the use of covariates if necessary
+	* R/brownresnick.R, R/fitmaxstable.R, R/geomgauss.R, R/schlather.R,
+	  R/schlatherind.R, R/smith.R, R/spatgev.R, R/standardErrors.R,
+	  man/fitmaxstab.Rd, man/fitspatgev.Rd, src/brownResnick.c,
+	  src/geomgauss.c, src/schlather.c, src/schlatherind.c,
+	  src/smith.c, src/smith3d.c, src/spatgevlik.c,
+	  src/standardErrors.c: Allowing for temporal covariates
 
-------------------------------------------------------------------------
-r496 | mathieu_ribatet | 2009-12-16 20:54:46 +0100 (mer. 16 déc. 2009) | 2 lignes
+2010-03-16 09:21  mathieu_ribatet
 
-Add the display of the TIC for object of class spatgev
+	* src/header.h: Update the header file
 
-------------------------------------------------------------------------
-r495 | mathieu_ribatet | 2009-12-16 20:53:54 +0100 (mer. 16 déc. 2009) | 2 lignes
+2010-03-16 09:20  mathieu_ribatet
 
-Comment fitnsmaxstab - not time to implement it
+	* src/utils.c: Add a function that computes the distance from the
+	  origin. It is
+	  useful for the fractional brownian motion simulations
 
-------------------------------------------------------------------------
-r494 | mathieu_ribatet | 2009-12-16 20:53:30 +0100 (mer. 16 déc. 2009) | 2 lignes
+2010-03-16 09:20  mathieu_ribatet
 
-Remove rgl
+	* src/turningbands.c: Fix a bug in the simulation of the powered
+	  exponential correlation
+	  function through the tbm
 
-------------------------------------------------------------------------
-r493 | mathieu_ribatet | 2009-12-16 20:51:32 +0100 (mer. 16 déc. 2009) | 2 lignes
+2010-03-16 09:19  mathieu_ribatet
 
-Removing an unused declared variable
+	* src/simschlather.c: Fix a bug in the simulation of the powered
+	  exponential correlation
+	  function through the tbm
 
-------------------------------------------------------------------------
-r491 | mathieu_ribatet | 2009-12-16 12:02:53 +0100 (mer. 16 déc. 2009) | 2 lignes
+2010-03-16 09:19  mathieu_ribatet
 
-No warning message if fitspatgev failed to converge
+	* src/madogram.c: Implementation of the empirical variogram
 
-------------------------------------------------------------------------
-r490 | mathieu_ribatet | 2009-12-16 12:00:40 +0100 (mer. 16 déc. 2009) | 3 lignes
+2010-03-16 09:18  mathieu_ribatet
 
-Move nsgeomgauss.R to the development folder - no implementation
-planned
+	* src/covariance.c: Add the fractional brownian motion covariance
 
-------------------------------------------------------------------------
-r489 | mathieu_ribatet | 2009-12-16 11:27:15 +0100 (mer. 16 déc. 2009) | 2 lignes
+2010-03-16 09:18  mathieu_ribatet
 
-All the (unecessary) gradient functions were removed
+	* src/circulant.c: Minor change
 
-------------------------------------------------------------------------
-r488 | mathieu_ribatet | 2009-12-16 11:26:21 +0100 (mer. 16 déc. 2009) | 3 lignes
+2010-03-16 09:17  mathieu_ribatet
 
-The fitspatgev function has now a "corr" argument to be consistent
-with the fitmaxstab function.
+	* inst/doc/SpatialExtremesGuide.Rnw: Minor change in R pieces of
+	  code in the vignette
 
-------------------------------------------------------------------------
-r487 | mathieu_ribatet | 2009-12-16 11:25:42 +0100 (mer. 16 déc. 2009) | 2 lignes
+2010-03-16 09:16  mathieu_ribatet
 
-Improving the code
+	* R/simgaussproc.R: Add the simulation of fractional brownian
+	  motions -- only the direct
+	  and turning band method
 
-------------------------------------------------------------------------
-r486 | mathieu_ribatet | 2009-12-16 11:24:55 +0100 (mer. 16 déc. 2009) | 3 lignes
+2010-03-16 09:16  mathieu_ribatet
 
-Remove the use of the rgl package (warnings when building the package)
-and passing marge = "emp" as the default
+	* R/madogram.R: Add the empirical variogram
 
-------------------------------------------------------------------------
-r485 | mathieu_ribatet | 2009-12-16 11:24:05 +0100 (mer. 16 déc. 2009) | 2 lignes
+2010-02-11 16:44  mathieu_ribatet
 
-Improve the way how the asymptotic covariance matrices are computed
+	* src/header.h: Update the header file
 
-------------------------------------------------------------------------
-r484 | mathieu_ribatet | 2009-12-16 11:22:21 +0100 (mer. 16 déc. 2009) | 3 lignes
+2010-02-11 16:44  mathieu_ribatet
 
-What I previously called jacobian was misleading and now I used
-var.score standing for "variance of the (composite) score"
+	* src/simgeometric.c, src/simschlather.c: The circulant embedding
+	  method is now available
 
-------------------------------------------------------------------------
-r483 | mathieu_ribatet | 2009-12-16 11:20:34 +0100 (mer. 16 déc. 2009) | 3 lignes
+2010-02-11 16:43  mathieu_ribatet
 
-Removing the gradient files: now useless because of standardErrors
-files
+	* src/circulant.c: Small optimizations of the circulant embedding
+	  method
 
-------------------------------------------------------------------------
-r482 | mathieu_ribatet | 2009-12-15 23:46:05 +0100 (mar. 15 déc. 2009) | 2 lignes
+2010-02-11 16:42  mathieu_ribatet
 
-Update the ChangLog
+	* man/rgp.Rd, man/simmaxstab.Rd: The circulant embedding method is
+	  now available
 
-------------------------------------------------------------------------
-r481 | mathieu_ribatet | 2009-12-15 23:39:40 +0100 (mar. 15 déc. 2009) | 2 lignes
+2010-02-11 16:42  mathieu_ribatet
 
-Update the version number
+	* R/utils.R: Internal function to check if a grid is regular
 
-------------------------------------------------------------------------
-r480 | mathieu_ribatet | 2009-12-15 23:36:09 +0100 (mar. 15 déc. 2009) | 2 lignes
+2010-02-11 16:42  mathieu_ribatet
 
-Small editing in view of a new release
+	* R/simgaussproc.R, R/simmaxstab.R: The circulant embedding method
+	  is now available
 
-------------------------------------------------------------------------
-r479 | mathieu_ribatet | 2009-12-15 23:31:26 +0100 (mar. 15 déc. 2009) | 2 lignes
+2010-02-11 16:41  mathieu_ribatet
 
-Fix a typo
+	* R/madogram.R: Set appropriate ranges for x and y axes
 
-------------------------------------------------------------------------
-r478 | mathieu_ribatet | 2009-12-15 23:28:41 +0100 (mar. 15 déc. 2009) | 2 lignes
+2010-02-11 16:39  mathieu_ribatet
 
-Forgot that by default lmadogram uses an rgl output
+	* R/modelChecking.R, man/plot.maxstab.Rd: Add a generic plot
+	  function for class 'maxstab' that check the
+	  goodness of fit of a fitted max-stable model
 
-------------------------------------------------------------------------
-r477 | mathieu_ribatet | 2009-12-15 23:27:00 +0100 (mar. 15 déc. 2009) | 3 lignes
+2010-02-08 22:04  mathieu_ribatet
 
-Revert to a former version and reduce the grid sizes to get less heavy
-pdf output
+	* src/simgeometric.c, src/simschlather.c, src/simsmith.c: Remove an
+	  if test to speed up the code
 
-------------------------------------------------------------------------
-r476 | mathieu_ribatet | 2009-12-15 23:23:35 +0100 (mar. 15 déc. 2009) | 2 lignes
+2010-02-08 21:29  mathieu_ribatet
 
-Update ref
+	* src/covariance.c, src/geomgauss.c, src/schlather.c,
+	  src/schlatherind.c: The covariance functions are now available
+	  when sill > 1 and hence
+	  implies changes for the respective pairwise likelihoods
 
-------------------------------------------------------------------------
-r475 | mathieu_ribatet | 2009-12-15 23:22:18 +0100 (mar. 15 déc. 2009) | 2 lignes
+2010-02-08 21:27  mathieu_ribatet
 
-New way to compute the asymptotic covariance matrix - header
+	* R/simgaussproc.R: Add the circulant embedding method for GRF
 
-------------------------------------------------------------------------
-r474 | mathieu_ribatet | 2009-12-15 23:09:09 +0100 (mar. 15 déc. 2009) | 2 lignes
+2010-02-08 21:26  mathieu_ribatet
 
-Fix a bug in smith3d
+	* R/brownresnick.R, R/geomgauss.R, R/schlatherind.R: Refined tests
+	  for the standard error computations
 
-------------------------------------------------------------------------
-r473 | mathieu_ribatet | 2009-12-15 23:07:43 +0100 (mar. 15 déc. 2009) | 2 lignes
+2010-02-08 20:26  mathieu_ribatet
 
-New way to compute the asymptotic covariance matrix
+	* R/circulant.R, src/circulant.c, src/header.h: Add the circulant
+	  embedding method for GRF
 
-------------------------------------------------------------------------
-r472 | mathieu_ribatet | 2009-12-15 17:21:41 +0100 (mar. 15 déc. 2009) | 2 lignes
+2010-01-18 14:52  mathieu_ribatet
 
-Use marge = "emp" by defaults - faster
+	* src/smith3d.c: Small optimization: use of memset
 
-------------------------------------------------------------------------
-r471 | mathieu_ribatet | 2009-12-15 17:21:13 +0100 (mar. 15 déc. 2009) | 2 lignes
+2010-01-18 14:50  mathieu_ribatet
 
-Small improvements
+	* src/brownResnick.c, src/fitcovmat.c, src/geomgauss.c,
+	  src/pairwiselik.c, src/randomlines.c, src/schlather.c,
+	  src/schlatherind.c, src/simschlather.c, src/simsmith.c,
+	  src/smith.c, src/turningbands.c, src/utils.c: Small C
+	  optimization: use of memset
 
-------------------------------------------------------------------------
-r470 | mathieu_ribatet | 2009-12-15 17:20:48 +0100 (mar. 15 déc. 2009) | 2 lignes
+2010-01-18 14:47  mathieu_ribatet
 
-Changes the methods as now Brown-Resnick process are available
+	* R/simgaussproc.R: Fix a bug: simulation on a line wasn't possible
 
-------------------------------------------------------------------------
-r469 | mathieu_ribatet | 2009-12-15 17:19:40 +0100 (mar. 15 déc. 2009) | 2 lignes
+2010-01-14 18:59  mathieu_ribatet
 
-Changes the headers because of new functions
+	* src/direct.c: It was impossible to simulate GP with variance
+	  larger than one. Fixed!
 
-------------------------------------------------------------------------
-r468 | mathieu_ribatet | 2009-12-15 17:19:18 +0100 (mar. 15 déc. 2009) | 2 lignes
+2010-01-14 11:10  mathieu_ribatet
 
-Add the generalized Cauchy correlation function
+	* R/madogram.R: Now madogram and fmadogram can use marge = "model"
+	  i.e. transform to
+	  U(0,1) from the fitted trend surfaces of the max-stable model
 
-------------------------------------------------------------------------
-r467 | mathieu_ribatet | 2009-12-15 17:18:56 +0100 (mar. 15 déc. 2009) | 2 lignes
+2010-01-14 11:09  mathieu_ribatet
 
-Add the generalized Cauchy correlation function
+	* ChangeLog, DESCRIPTION, NEWS: Update ChangeLog, DESCRIPTION and
+	  NEWS files
 
-------------------------------------------------------------------------
-r466 | mathieu_ribatet | 2009-12-15 17:18:38 +0100 (mar. 15 déc. 2009) | 2 lignes
+2010-01-14 10:48  mathieu_ribatet
 
-Add the generalized Cauchy correlation function
+	* src/standardErrors.c: Fix a bug in the geomgaussstderr (marginal
+	  part)
 
-------------------------------------------------------------------------
-r465 | mathieu_ribatet | 2009-12-15 17:18:15 +0100 (mar. 15 déc. 2009) | 3 lignes
+2010-01-14 10:47  mathieu_ribatet
 
-Add the generalized Cauchy correlation function and Brown-Resnick
-processes
+	* src/madogram.c, src/utils.c, src/weightedStandardErrors.c: Slight
+	  optimizations of the C code
 
-------------------------------------------------------------------------
-r464 | mathieu_ribatet | 2009-12-15 17:17:50 +0100 (mar. 15 déc. 2009) | 3 lignes
+2010-01-13 22:40  mathieu_ribatet
 
-Add the generalized Cauchy correlation function and Brown-Resnick
-processes
+	* src/standardErrors.c: Fix a bug in the computation of standard
+	  errors for geomgauss
 
-------------------------------------------------------------------------
-r463 | mathieu_ribatet | 2009-12-15 17:17:08 +0100 (mar. 15 déc. 2009) | 4 lignes
+2010-01-13 22:39  mathieu_ribatet
 
-This is a wrapper to the fitcovmat and fitcovariance function - to be
-consistent with the fitmaxstab function. "ls" stands for least
-squares.
+	* man/condmap.Rd, man/map.Rd: Minor typo in the documentation of
+	  map and condmap
 
-------------------------------------------------------------------------
-r462 | mathieu_ribatet | 2009-12-15 17:16:31 +0100 (mar. 15 déc. 2009) | 2 lignes
+2010-01-13 22:38  mathieu_ribatet
 
-Add the Brown-Resnick processes
+	* R/utils.R: gev2frech uses the rank instead of ppoints for the
+	  empirical
+	  distribution - better for the F-madogram
 
-------------------------------------------------------------------------
-r461 | mathieu_ribatet | 2009-12-15 17:16:16 +0100 (mar. 15 déc. 2009) | 3 lignes
+2010-01-13 22:37  mathieu_ribatet
 
-Add the generalized Cauchy correlation function and Brown-Resnick
-processes
+	* data/rainfall.RData, data/swissalt.RData: Add data sets and
+	  function to plot a map of Switzerland
 
-------------------------------------------------------------------------
-r460 | mathieu_ribatet | 2009-12-15 17:15:51 +0100 (mar. 15 déc. 2009) | 2 lignes
+2010-01-13 22:36  mathieu_ribatet
 
-Use marge = "emp" by default and allow for non weighted least squares
+	* R/swiss.R, data, man/rainfall.Rd, man/swiss.Rd, man/swissalt.Rd:
+	  Add data sets and function to plot a map of Switzerland
 
-------------------------------------------------------------------------
-r459 | mathieu_ribatet | 2009-12-15 17:14:43 +0100 (mar. 15 déc. 2009) | 2 lignes
+2010-01-13 22:35  mathieu_ribatet
 
-Add the generalized Cauchy correlation function
+	* R/standardErrors.R: Forgot to put the names gradient in the std
+	  err computations
 
-------------------------------------------------------------------------
-r458 | mathieu_ribatet | 2009-12-15 17:14:27 +0100 (mar. 15 déc. 2009) | 2 lignes
+2010-01-13 22:34  mathieu_ribatet
 
-Add the composite version of the BIC
+	* R/plots.R: Remove the dots argument in uniroot in condmap
 
-------------------------------------------------------------------------
-r457 | mathieu_ribatet | 2009-12-15 17:13:53 +0100 (mar. 15 déc. 2009) | 3 lignes
+2010-01-13 22:33  mathieu_ribatet
 
-Add the generalized Cauchy correlation function and the computations
-of starting values for Brown-Resnick processes
+	* R/fitcovmat.R: Define new values for the Brown-Resnick processes
 
-------------------------------------------------------------------------
-r456 | mathieu_ribatet | 2009-12-15 17:13:13 +0100 (mar. 15 déc. 2009) | 2 lignes
+2010-01-06 15:10  mathieu_ribatet
 
-Add the composite version of the BIC and remove duplicated code
+	* R/standardErrors.R: Now we use 'crossprod' which is faster when
+	  std.err.type = 'grad'
 
-------------------------------------------------------------------------
-r455 | mathieu_ribatet | 2009-12-15 17:12:34 +0100 (mar. 15 déc. 2009) | 2 lignes
+2009-12-29 17:40  mathieu_ribatet
 
-Add the generalized Cauchy correlation function
+	* NEWS: Use the standard given by R for the NEWS file
 
-------------------------------------------------------------------------
-r454 | mathieu_ribatet | 2009-12-15 17:11:49 +0100 (mar. 15 déc. 2009) | 2 lignes
+2009-12-29 17:10  mathieu_ribatet
 
-Get standard errors for the predicted values if possible
+	* NEWS: Add a NEWS file
 
-------------------------------------------------------------------------
-r453 | mathieu_ribatet | 2009-12-15 17:10:46 +0100 (mar. 15 déc. 2009) | 2 lignes
+2009-12-29 16:51  mathieu_ribatet
 
-Now it works without any problem for one dimensional index set
+	* DESCRIPTION: Update
 
-------------------------------------------------------------------------
-r452 | mathieu_ribatet | 2009-12-15 17:09:02 +0100 (mar. 15 déc. 2009) | 2 lignes
+2009-12-29 16:51  mathieu_ribatet
 
-Add the generalized cauchy covariance function
+	* ChangeLog: Update the ChangeLog
 
-------------------------------------------------------------------------
-r451 | mathieu_ribatet | 2009-12-15 17:08:39 +0100 (mar. 15 déc. 2009) | 2 lignes
+2009-12-29 16:37  mathieu_ribatet
 
-Add the brown-resnick processes
+	* man/condmap.Rd: Fix a typo
 
-------------------------------------------------------------------------
-r450 | mathieu_ribatet | 2009-10-31 11:46:32 +0100 (sam. 31 oct. 2009) | 2 lignes
+2009-12-29 16:21  mathieu_ribatet
 
-Fix a bug when simulating the process on a grid: wrong iwork size
+	* inst/doc/Figures: Remove the Figures folder - useless
 
-------------------------------------------------------------------------
-r449 | mathieu_ribatet | 2009-10-31 11:46:11 +0100 (sam. 31 oct. 2009) | 2 lignes
+2009-12-29 16:19  mathieu_ribatet
 
-Fix a bug when simulating the process on a grid
+	* man/condmap.Rd: The example is now excuted and nicer
 
-------------------------------------------------------------------------
-r448 | mathieu_ribatet | 2009-10-31 11:44:56 +0100 (sam. 31 oct. 2009) | 2 lignes
+2009-12-29 16:00  mathieu_ribatet
 
-Fix typos in the doc
+	* R/utils.R: Add an invisible frech2gev function which is faster
+	  but less flexible
 
-------------------------------------------------------------------------
-r447 | mathieu_ribatet | 2009-10-16 10:42:42 +0200 (ven. 16 oct. 2009) | 2 lignes
+2009-12-29 15:59  mathieu_ribatet
 
-Update the version and ChangeLog
+	* R/plots.R, man/condmap.Rd, man/map.Rd: map and condmap can now
+	  deal with covariates through the 'covariates'
+	  argument
 
-------------------------------------------------------------------------
-r446 | mathieu_ribatet | 2009-10-16 10:37:02 +0200 (ven. 16 oct. 2009) | 2 lignes
+2009-12-29 15:57  mathieu_ribatet
 
-Remove the inline attribute - not portable
+	* src/standardErrors.c: Some code optimizations
 
-------------------------------------------------------------------------
-r445 | mathieu_ribatet | 2009-10-12 08:18:05 +0200 (lun. 12 oct. 2009) | 2 lignes
+2009-12-29 15:56  mathieu_ribatet
 
-Minor change
+	* R/brownresnick.R, R/fitmaxstable.R, R/geomgauss.R, R/schlather.R,
+	  R/schlatherind.R, R/smith.R, R/standardErrors.R,
+	  man/fitmaxstab.Rd, src/brownResnick.c, src/geomgauss.c,
+	  src/header.h, src/schlather.c, src/schlatherind.c, src/smith.c,
+	  src/smith3d.c, src/weightedPairwiselik.c,
+	  src/weightedStandardErrors.c: Allow the use of weights in the
+	  pairwise likelihood
 
-------------------------------------------------------------------------
-r444 | mathieu_ribatet | 2009-10-12 08:17:05 +0200 (lun. 12 oct. 2009) | 4 lignes
+2009-12-17 11:03  mathieu_ribatet
 
-Pass the R_InLine function to the lplik??? function. When the
-bivariate distribution is numerically degenerates, then it now returns
-MINf instead of the computation of the univariate llik.
+	* man/covariance.Rd, man/extcoeff.Rd, man/fmadogram.Rd,
+	  man/madogram.Rd, man/qqextcoeff.Rd, man/rgp.Rd,
+	  man/simmaxstab.Rd: Improve the examples
 
-------------------------------------------------------------------------
-r443 | mathieu_ribatet | 2009-10-12 08:14:37 +0200 (lun. 12 oct. 2009) | 2 lignes
+2009-12-17 11:03  mathieu_ribatet
 
-Minor change
+	* R/plots.R: Improve how the x and y axis limits are computed
 
-------------------------------------------------------------------------
-r442 | mathieu_ribatet | 2009-10-12 08:14:17 +0200 (lun. 12 oct. 2009) | 2 lignes
+2009-12-17 10:24  mathieu_ribatet
 
-Improvements in the variable definitions
+	* R/predict.R, man/predict.maxstab.Rd: Add an option "std.err" to
+	  compute or/not the standard errors
 
-------------------------------------------------------------------------
-r441 | mathieu_ribatet | 2009-10-12 08:12:05 +0200 (lun. 12 oct. 2009) | 3 lignes
+2009-12-17 10:23  mathieu_ribatet
 
-Minor changes to the documention because of complaints of the new Rd
-parser
+	* R/plots.R, man/map.Rd: Rewrite the map function to allow the use
+	  of covariates if necessary
 
-------------------------------------------------------------------------
-r440 | mathieu_ribatet | 2009-10-12 08:11:06 +0200 (lun. 12 oct. 2009) | 2 lignes
+2009-12-16 19:54  mathieu_ribatet
 
-Update the references
+	* R/methods.R: Add the display of the TIC for object of class
+	  spatgev
 
-------------------------------------------------------------------------
-r439 | mathieu_ribatet | 2009-08-24 14:32:22 +0200 (lun. 24 août 2009) | 2 lignes
+2009-12-16 19:53  mathieu_ribatet
 
-Some small editing
+	* R/fitmaxstable.R: Comment fitnsmaxstab - not time to implement it
 
-------------------------------------------------------------------------
-r438 | mathieu_ribatet | 2009-08-24 14:31:15 +0200 (lun. 24 août 2009) | 4 lignes
+2009-12-16 19:53  mathieu_ribatet
 
-The argument control is now added to control several tuning parameters
-for the simulation algo hence the prototype for the C functions are
-updated
+	* inst/doc/SpatialExtremesGuide.Rnw: Remove rgl
 
-------------------------------------------------------------------------
-r437 | mathieu_ribatet | 2009-08-24 14:29:28 +0200 (lun. 24 août 2009) | 2 lignes
+2009-12-16 19:51  mathieu_ribatet
 
-Add the entry for the simulation of random fields
+	* src/standardErrors.c: Removing an unused declared variable
 
-------------------------------------------------------------------------
-r436 | mathieu_ribatet | 2009-08-24 14:29:00 +0200 (lun. 24 août 2009) | 3 lignes
+2009-12-16 11:02  mathieu_ribatet
 
-The argument control is now added to control several tuning parameters
-for the simulation algo
+	* R/starting.values.R: No warning message if fitspatgev failed to
+	  converge
 
-------------------------------------------------------------------------
-r435 | mathieu_ribatet | 2009-08-24 14:25:56 +0200 (lun. 24 août 2009) | 2 lignes
+2009-12-16 11:00  mathieu_ribatet
 
-If dist is a matrix it now returns a matrix too
+	* R/nsgeomgauss.R: Move nsgeomgauss.R to the development folder -
+	  no implementation
+	  planned
 
-------------------------------------------------------------------------
-r434 | mathieu_ribatet | 2009-07-08 15:19:50 +0200 (mer. 08 juil. 2009) | 2 lignes
+2009-12-16 10:27  mathieu_ribatet
 
-Add the simulation of the geometric gaussian process
+	* src/header.h: All the (unecessary) gradient functions were
+	  removed
 
-------------------------------------------------------------------------
-r433 | mathieu_ribatet | 2009-07-08 15:19:38 +0200 (mer. 08 juil. 2009) | 2 lignes
+2009-12-16 10:26  mathieu_ribatet
 
-Fix a bug in the computation of the gradient - e.g. gwhitmat
+	* man/fitspatgev.Rd: The fitspatgev function has now a "corr"
+	  argument to be consistent
+	  with the fitmaxstab function.
 
-------------------------------------------------------------------------
-r432 | mathieu_ribatet | 2009-07-08 15:19:03 +0200 (mer. 08 juil. 2009) | 2 lignes
+2009-12-16 10:25  mathieu_ribatet
 
-Fix a problem when using nlm with the Smith model
+	* src/standardErrors.c: Improving the code
 
-------------------------------------------------------------------------
-r431 | mathieu_ribatet | 2009-07-08 15:18:40 +0200 (mer. 08 juil. 2009) | 2 lignes
+2009-12-16 10:24  mathieu_ribatet
 
-Add the simulation of the geometric gaussian process
+	* R/madogram.R, man/fmadogram.Rd, man/lmadogram.Rd,
+	  man/madogram.Rd: Remove the use of the rgl package (warnings when
+	  building the package)
+	  and passing marge = "emp" as the default
 
-------------------------------------------------------------------------
-r430 | mathieu_ribatet | 2009-07-08 15:17:29 +0200 (mer. 08 juil. 2009) | 2 lignes
+2009-12-16 10:24  mathieu_ribatet
 
-Fix a typo
+	* R/standardErrors.R: Improve the way how the asymptotic covariance
+	  matrices are computed
 
-------------------------------------------------------------------------
-r429 | mathieu_ribatet | 2009-06-30 10:28:13 +0200 (mar. 30 juin 2009) | 2 lignes
+2009-12-16 10:22  mathieu_ribatet
 
-Fix a bug in the map function - shape parameter maps were not produced
+	* R/brownresnick.R, R/geomgauss.R, R/schlather.R, R/schlatherind.R,
+	  R/selection.R, R/smith.R, R/spatgev.R: What I previously called
+	  jacobian was misleading and now I used
+	  var.score standing for "variance of the (composite) score"
 
-------------------------------------------------------------------------
-r428 | mathieu_ribatet | 2009-06-30 10:25:22 +0200 (mar. 30 juin 2009) | 2 lignes
+2009-12-16 10:20  mathieu_ribatet
 
-Fix a typo
+	* R/gradients.R, src/gradients.c: Removing the gradient files: now
+	  useless because of standardErrors
+	  files
 
-------------------------------------------------------------------------
-r427 | mathieu_ribatet | 2009-05-27 16:11:41 +0200 (mer. 27 mai 2009) | 2 lignes
+2009-12-15 22:46  mathieu_ribatet
 
-Initialize dist within this function to avoid initialization outside
+	* ChangeLog: Update the ChangLog
 
-------------------------------------------------------------------------
-r426 | mathieu_ribatet | 2009-05-27 16:11:04 +0200 (mer. 27 mai 2009) | 2 lignes
+2009-12-15 22:39  mathieu_ribatet
 
-Minor changes to avoid warnings from the compilers
+	* DESCRIPTION: Update the version number
 
-------------------------------------------------------------------------
-r425 | mathieu_ribatet | 2009-05-26 15:49:03 +0200 (mar. 26 mai 2009) | 2 lignes
+2009-12-15 22:36  mathieu_ribatet
 
-Update changelog and release version
+	* inst/doc/SpatialExtremesGuide.Rnw: Small editing in view of a new
+	  release
 
-------------------------------------------------------------------------
-r424 | mathieu_ribatet | 2009-05-26 15:48:02 +0200 (mar. 26 mai 2009) | 2 lignes
+2009-12-15 22:31  mathieu_ribatet
 
-Minor change to Makevars
+	* R/gradients.R, R/standardErrors.R: Fix a typo
 
-------------------------------------------------------------------------
-r423 | mathieu_ribatet | 2009-05-26 15:39:29 +0200 (mar. 26 mai 2009) | 2 lignes
+2009-12-15 22:28  mathieu_ribatet
 
-Cleaning C code
+	* inst/doc/SpatialExtremesGuide.Rnw: Forgot that by default
+	  lmadogram uses an rgl output
 
-------------------------------------------------------------------------
-r422 | mathieu_ribatet | 2009-05-26 15:39:21 +0200 (mar. 26 mai 2009) | 2 lignes
+2009-12-15 22:27  mathieu_ribatet
 
-Cleaning C code
+	* inst/doc/SpatialExtremesGuide.Rnw: Revert to a former version and
+	  reduce the grid sizes to get less heavy
+	  pdf output
 
-------------------------------------------------------------------------
-r421 | mathieu_ribatet | 2009-05-26 15:33:32 +0200 (mar. 26 mai 2009) | 2 lignes
+2009-12-15 22:23  mathieu_ribatet
 
-Update the vignette
+	* inst/doc/references.bib: Update ref
 
-------------------------------------------------------------------------
-r420 | mathieu_ribatet | 2009-05-18 16:44:24 +0200 (lun. 18 mai 2009) | 3 lignes
+2009-12-15 22:22  mathieu_ribatet
 
-The pairwise likelihood now uses univariate density in presence of
-"numerical" complete dependence
+	* src/header.h: New way to compute the asymptotic covariance matrix
+	  - header
 
-------------------------------------------------------------------------
-r419 | mathieu_ribatet | 2009-05-18 16:43:04 +0200 (lun. 18 mai 2009) | 2 lignes
+2009-12-15 22:09  mathieu_ribatet
 
-Changes due to the implementation of new C code and the use of Lapack
+	* src/gradients.c: Fix a bug in smith3d
 
-------------------------------------------------------------------------
-r418 | mathieu_ribatet | 2009-05-18 16:42:29 +0200 (lun. 18 mai 2009) | 2 lignes
+2009-12-15 22:07  mathieu_ribatet
 
-Minor changes - boundary cases
+	* R/brownresnick.R, R/geomgauss.R, R/schlather.R, R/schlatherind.R,
+	  R/smith.R, R/standardErrors.R, src/standardErrors.c: New way to
+	  compute the asymptotic covariance matrix
 
-------------------------------------------------------------------------
-r417 | mathieu_ribatet | 2009-05-18 16:41:35 +0200 (lun. 18 mai 2009) | 3 lignes
+2009-12-15 16:21  mathieu_ribatet
 
-The examples now use my functions instead of the ones provided by the
-RandomFields package
+	* R/fitcovmat.R: Use marge = "emp" by defaults - faster
 
-------------------------------------------------------------------------
-r416 | mathieu_ribatet | 2009-05-18 16:40:28 +0200 (lun. 18 mai 2009) | 2 lignes
+2009-12-15 16:21  mathieu_ribatet
 
-Removed unnecessary file
+	* R/gradients.R: Small improvements
 
-------------------------------------------------------------------------
-r415 | mathieu_ribatet | 2009-05-18 16:39:54 +0200 (lun. 18 mai 2009) | 3 lignes
+2009-12-15 16:20  mathieu_ribatet
 
-New code related to the simulation of stationary max-stable random
-fields
+	* R/methods.R: Changes the methods as now Brown-Resnick process are
+	  available
 
-------------------------------------------------------------------------
-r414 | mathieu_ribatet | 2009-05-18 16:38:43 +0200 (lun. 18 mai 2009) | 3 lignes
+2009-12-15 16:19  mathieu_ribatet
 
-New code related to the simulation of stationary gaussian processes by
-using the direct and the turning bands methods
+	* src/header.h: Changes the headers because of new functions
 
-------------------------------------------------------------------------
-r413 | mathieu_ribatet | 2009-05-18 16:36:26 +0200 (lun. 18 mai 2009) | 3 lignes
+2009-12-15 16:19  mathieu_ribatet
 
-Use the isotropic definition for the extremal coefficient if iso =
-TRUE
+	* src/schlather.c, src/schlatherind.c: Add the generalized Cauchy
+	  correlation function
 
-------------------------------------------------------------------------
-r412 | mathieu_ribatet | 2009-05-18 16:35:49 +0200 (lun. 18 mai 2009) | 3 lignes
+2009-12-15 16:18  mathieu_ribatet
 
-Allow for the sill to be larger than 1 as now gaussian processes are
-implemented
+	* src/nsgeomgauss.c: Add the generalized Cauchy correlation
+	  function
 
-------------------------------------------------------------------------
-r411 | mathieu_ribatet | 2009-05-18 16:35:07 +0200 (lun. 18 mai 2009) | 3 lignes
+2009-12-15 16:18  mathieu_ribatet
 
-remove the definition of parscale in optim and avoid using Nelder-Mead
-optimizer for one-dimensional problems
+	* src/geomgauss.c: Add the generalized Cauchy correlation function
 
-------------------------------------------------------------------------
-r410 | mathieu_ribatet | 2009-05-05 23:39:13 +0200 (mar. 05 mai 2009) | 2 lignes
+2009-12-15 16:18  mathieu_ribatet
 
-Extend the simulation from the Smith model
+	* src/fitcovmat.c: Add the generalized Cauchy correlation function
+	  and Brown-Resnick
+	  processes
 
-------------------------------------------------------------------------
-r409 | mathieu_ribatet | 2009-05-05 23:37:23 +0200 (mar. 05 mai 2009) | 3 lignes
+2009-12-15 16:17  mathieu_ribatet
 
-Remove the qr decomposition for the computation of the inverse of the
-hessian matrix as it seems to be less robust
+	* src/covariance.c: Add the generalized Cauchy correlation function
+	  and Brown-Resnick
+	  processes
 
-------------------------------------------------------------------------
-r408 | mathieu_ribatet | 2009-05-05 23:35:46 +0200 (mar. 05 mai 2009) | 3 lignes
+2009-12-15 16:17  mathieu_ribatet
 
-Add the iso as an argument of the output and compute the special
-version of the extremal coefficient function when iso = TRUE
+	* man/lsmaxstab.Rd: This is a wrapper to the fitcovmat and
+	  fitcovariance function - to be
+	  consistent with the fitmaxstab function. "ls" stands for least
+	  squares.
 
-------------------------------------------------------------------------
-r407 | mathieu_ribatet | 2009-04-30 17:04:57 +0200 (jeu. 30 avril 2009) | 3 lignes
+2009-12-15 16:16  mathieu_ribatet
 
-A first version of a function that generates observations from a Smith
-random field
+	* man/internals.Rd: Add the Brown-Resnick processes
 
-------------------------------------------------------------------------
-r406 | mathieu_ribatet | 2009-04-30 17:03:07 +0200 (jeu. 30 avril 2009) | 2 lignes
+2009-12-15 16:16  mathieu_ribatet
 
-Minor changes
+	* man/fitmaxstab.Rd: Add the generalized Cauchy correlation
+	  function and Brown-Resnick
+	  processes
 
-------------------------------------------------------------------------
-r405 | mathieu_ribatet | 2009-04-30 17:02:49 +0200 (jeu. 30 avril 2009) | 2 lignes
+2009-12-15 16:15  mathieu_ribatet
 
-Add the control in optim as an argument
+	* man/fitcovariance.Rd, man/fitcovmat.Rd: Use marge = "emp" by
+	  default and allow for non weighted least squares
 
-------------------------------------------------------------------------
-r404 | mathieu_ribatet | 2009-04-30 17:02:14 +0200 (jeu. 30 avril 2009) | 2 lignes
+2009-12-15 16:14  mathieu_ribatet
 
-Minor changes
+	* man/covariance.Rd: Add the generalized Cauchy correlation
+	  function
 
-------------------------------------------------------------------------
-r403 | mathieu_ribatet | 2009-04-30 17:01:50 +0200 (jeu. 30 avril 2009) | 2 lignes
+2009-12-15 16:14  mathieu_ribatet
 
-Some minor changes: control in optim, ...
+	* man/TIC.Rd: Add the composite version of the BIC
 
-------------------------------------------------------------------------
-r402 | mathieu_ribatet | 2009-04-30 17:01:18 +0200 (jeu. 30 avril 2009) | 3 lignes
+2009-12-15 16:13  mathieu_ribatet
 
-If iso = TRUE in the smith model the extremal coefficient function is
-then one-dimensional
+	* R/starting.values.R: Add the generalized Cauchy correlation
+	  function and the computations
+	  of starting values for Brown-Resnick processes
 
-------------------------------------------------------------------------
-r401 | mathieu_ribatet | 2009-04-30 17:00:19 +0200 (jeu. 30 avril 2009) | 3 lignes
+2009-12-15 16:13  mathieu_ribatet
 
-The madogram plots now accept a fitted model as an argument to compare
-pairwise estimates and model based ones
+	* R/selection.R: Add the composite version of the BIC and remove
+	  duplicated code
 
-------------------------------------------------------------------------
-r400 | mathieu_ribatet | 2009-04-30 16:58:54 +0200 (jeu. 30 avril 2009) | 2 lignes
+2009-12-15 16:12  mathieu_ribatet
 
-Implementation of the Bessel covariance function
+	* R/geomgauss.R, R/schlather.R, R/schlatherind.R: Add the
+	  generalized Cauchy correlation function
 
-------------------------------------------------------------------------
-r399 | mathieu_ribatet | 2009-04-20 11:31:24 +0200 (lun. 20 avril 2009) | 2 lignes
+2009-12-15 16:11  mathieu_ribatet
 
-Update the changelog
+	* R/predict.R: Get standard errors for the predicted values if
+	  possible
 
-------------------------------------------------------------------------
-r398 | mathieu_ribatet | 2009-04-17 17:48:09 +0200 (ven. 17 avril 2009) | 3 lignes
+2009-12-15 16:10  mathieu_ribatet
 
-Fix a bug in the computation of the gradient for smith3d. Now it's
-correct!
+	* R/extcoeff.R, R/fitmaxstable.R, R/madogram.R: Now it works
+	  without any problem for one dimensional index set
 
-------------------------------------------------------------------------
-r397 | mathieu_ribatet | 2009-04-17 17:29:18 +0200 (ven. 17 avril 2009) | 2 lignes
+2009-12-15 16:09  mathieu_ribatet
 
-Minor optimization
+	* R/covariance.R: Add the generalized cauchy covariance function
 
-------------------------------------------------------------------------
-r396 | mathieu_ribatet | 2009-04-17 17:28:56 +0200 (ven. 17 avril 2009) | 2 lignes
+2009-12-15 16:08  mathieu_ribatet
 
-Try to optimize the computation of all the covariance
+	* R/brownresnick.R, src/brownResnick.c, src/gradients.c: Add the
+	  brown-resnick processes
 
-------------------------------------------------------------------------
-r395 | mathieu_ribatet | 2009-04-10 15:37:53 +0200 (ven. 10 avril 2009) | 2 lignes
+2009-10-31 10:46  mathieu_ribatet
 
-Update the ChangeLog
+	* src/simgeometric.c, src/simschlather.c: Fix a bug when simulating
+	  the process on a grid: wrong iwork size
 
-------------------------------------------------------------------------
-r394 | mathieu_ribatet | 2009-04-10 15:35:37 +0200 (ven. 10 avril 2009) | 2 lignes
+2009-10-31 10:46  mathieu_ribatet
 
-Update the version number and the ChangeLog file
+	* src/simsmith.c: Fix a bug when simulating the process on a grid
 
-------------------------------------------------------------------------
-r393 | mathieu_ribatet | 2009-04-10 12:06:58 +0200 (ven. 10 avril 2009) | 2 lignes
+2009-10-31 10:44  mathieu_ribatet
 
-Minor changes
+	* man/covariance.Rd: Fix typos in the doc
 
-------------------------------------------------------------------------
-r392 | mathieu_ribatet | 2009-04-10 12:06:36 +0200 (ven. 10 avril 2009) | 2 lignes
+2009-10-16 08:42  mathieu_ribatet
 
-Add the computation of the gradient for the geometric gaussian model
+	* ChangeLog, DESCRIPTION: Update the version and ChangeLog
 
-------------------------------------------------------------------------
-r391 | mathieu_ribatet | 2009-04-09 16:18:07 +0200 (jeu. 09 avril 2009) | 2 lignes
+2009-10-16 08:37  mathieu_ribatet
 
-Minor optimizations
+	* src/pairwiselik.c, src/simschlather.c: Remove the inline
+	  attribute - not portable
 
-------------------------------------------------------------------------
-r390 | mathieu_ribatet | 2009-04-09 16:17:22 +0200 (jeu. 09 avril 2009) | 2 lignes
+2009-10-12 06:18  mathieu_ribatet
 
-Minor optimizations - and fix a bug in Schlather's gradient
+	* src/turningbands.c: Minor change
 
-------------------------------------------------------------------------
-r389 | mathieu_ribatet | 2009-04-09 16:16:04 +0200 (jeu. 09 avril 2009) | 2 lignes
+2009-10-12 06:17  mathieu_ribatet
 
-Minor optimizations
+	* src/pairwiselik.c: Pass the R_InLine function to the lplik???
+	  function. When the
+	  bivariate distribution is numerically degenerates, then it now
+	  returns
+	  MINf instead of the computation of the univariate llik.
 
-------------------------------------------------------------------------
-r388 | mathieu_ribatet | 2009-04-07 17:45:18 +0200 (mar. 07 avril 2009) | 2 lignes
+2009-10-12 06:14  mathieu_ribatet
 
-Some minor optimizations
+	* src/header.h: Minor change
 
-------------------------------------------------------------------------
-r387 | mathieu_ribatet | 2009-04-07 17:44:53 +0200 (mar. 07 avril 2009) | 2 lignes
+2009-10-12 06:14  mathieu_ribatet
 
-Bug : replace '|' by '||' i.e. logical operator
+	* src/covariance.c: Improvements in the variable definitions
 
-------------------------------------------------------------------------
-r386 | mathieu_ribatet | 2009-04-07 17:44:40 +0200 (mar. 07 avril 2009) | 2 lignes
+2009-10-12 06:12  mathieu_ribatet
 
-Minor change
+	* man/madogram.Rd, man/predict.maxstab.Rd, man/predict.pspline.Rd,
+	  man/predict.spatgev.Rd, man/print.maxstab.Rd,
+	  man/print.pspline.Rd, man/print.spatgev.Rd, man/simmaxstab.Rd:
+	  Minor changes to the documention because of complaints of the new
+	  Rd
+	  parser
 
-------------------------------------------------------------------------
-r385 | mathieu_ribatet | 2009-04-07 17:43:00 +0200 (mar. 07 avril 2009) | 2 lignes
+2009-10-12 06:11  mathieu_ribatet
 
-Bug : replace '|' by '||' i.e. logical operator
+	* inst/doc/references.bib: Update the references
 
-------------------------------------------------------------------------
-r384 | mathieu_ribatet | 2009-04-07 17:42:48 +0200 (mar. 07 avril 2009) | 2 lignes
+2009-08-24 12:32  mathieu_ribatet
 
-Bug : replace '|' by '||' i.e. logical operator
+	* inst/doc/SpatialExtremesGuide.Rnw: Some small editing
 
-------------------------------------------------------------------------
-r383 | mathieu_ribatet | 2009-04-07 17:42:33 +0200 (mar. 07 avril 2009) | 2 lignes
+2009-08-24 12:31  mathieu_ribatet
 
-Bug : replace '|' by '||' i.e. logical operator
+	* src/header.h, src/simgeometric.c, src/simschlather.c,
+	  src/turningbands.c: The argument control is now added to control
+	  several tuning parameters
+	  for the simulation algo hence the prototype for the C functions
+	  are
+	  updated
 
-------------------------------------------------------------------------
-r382 | mathieu_ribatet | 2009-04-07 17:42:19 +0200 (mar. 07 avril 2009) | 2 lignes
+2009-08-24 12:29  mathieu_ribatet
 
-Optimize the computation of the pairwise likelihood
+	* man/SpatialExtremes.Rd: Add the entry for the simulation of
+	  random fields
 
-------------------------------------------------------------------------
-r381 | mathieu_ribatet | 2009-04-07 17:42:00 +0200 (mar. 07 avril 2009) | 2 lignes
+2009-08-24 12:29  mathieu_ribatet
 
-Optimize the computation of the pairwise likelihood
+	* R/simgaussproc.R, R/simmaxstab.R, man/rgp.Rd, man/simmaxstab.Rd:
+	  The argument control is now added to control several tuning
+	  parameters
+	  for the simulation algo
 
-------------------------------------------------------------------------
-r380 | mathieu_ribatet | 2009-04-07 17:41:28 +0200 (mar. 07 avril 2009) | 2 lignes
+2009-08-24 12:25  mathieu_ribatet
 
-Bug : replace '|' by '||' i.e. logical operator
+	* R/covariance.R: If dist is a matrix it now returns a matrix too
 
-------------------------------------------------------------------------
-r379 | mathieu_ribatet | 2009-04-07 17:41:16 +0200 (mar. 07 avril 2009) | 2 lignes
+2009-07-08 13:19  mathieu_ribatet
 
-Optimize the computation of the gradient and fix some errors
+	* src/header.h: Add the simulation of the geometric gaussian
+	  process
 
-------------------------------------------------------------------------
-r378 | mathieu_ribatet | 2009-04-07 17:40:47 +0200 (mar. 07 avril 2009) | 2 lignes
+2009-07-08 13:19  mathieu_ribatet
 
-Bug : replace '|' by '||' i.e. logical operator
+	* src/gradients.c: Fix a bug in the computation of the gradient -
+	  e.g. gwhitmat
 
-------------------------------------------------------------------------
-r377 | mathieu_ribatet | 2009-04-07 17:40:17 +0200 (mar. 07 avril 2009) | 2 lignes
+2009-07-08 13:19  mathieu_ribatet
 
-Optmize the computation of weighted sum of squares
+	* R/starting.values.R: Fix a problem when using nlm with the Smith
+	  model
 
-------------------------------------------------------------------------
-r376 | mathieu_ribatet | 2009-04-07 17:39:45 +0200 (mar. 07 avril 2009) | 2 lignes
+2009-07-08 13:18  mathieu_ribatet
 
-Optmize the computation of pairwise covariance
+	* R/simmaxstab.R, src/simgeometric.c: Add the simulation of the
+	  geometric gaussian process
 
-------------------------------------------------------------------------
-r375 | mathieu_ribatet | 2009-04-07 17:39:00 +0200 (mar. 07 avril 2009) | 2 lignes
+2009-07-08 13:17  mathieu_ribatet
 
-Minor change
+	* R/fitcovmat.R: Fix a typo
 
-------------------------------------------------------------------------
-r374 | mathieu_ribatet | 2009-04-07 17:38:41 +0200 (mar. 07 avril 2009) | 2 lignes
+2009-06-30 08:28  mathieu_ribatet
 
-Now fitspatgev uses all the optimizers as in fitmaxstab
+	* R/plots.R: Fix a bug in the map function - shape parameter maps
+	  were not produced
 
-------------------------------------------------------------------------
-r373 | mathieu_ribatet | 2009-04-07 17:37:55 +0200 (mar. 07 avril 2009) | 2 lignes
+2009-06-30 08:25  mathieu_ribatet
 
-Add argument jacobian = TRUE for consistency with other functions
+	* man/simmaxstab.Rd: Fix a typo
 
-------------------------------------------------------------------------
-r372 | mathieu_ribatet | 2009-04-07 17:37:32 +0200 (mar. 07 avril 2009) | 2 lignes
+2009-05-27 14:11  mathieu_ribatet
 
-Change the default starting values
+	* src/utils.c: Initialize dist within this function to avoid
+	  initialization outside
 
-------------------------------------------------------------------------
-r371 | mathieu_ribatet | 2009-02-19 14:05:13 +0100 (jeu. 19 févr. 2009) | 2 lignes
+2009-05-27 14:11  mathieu_ribatet
 
-Add references (Mehdi and Simone)
+	* src/direct.c, src/randomlines.c: Minor changes to avoid warnings
+	  from the compilers
 
-------------------------------------------------------------------------
-r369 | mathieu_ribatet | 2009-02-17 14:46:36 +0100 (mar. 17 févr. 2009) | 2 lignes
+2009-05-26 13:49  mathieu_ribatet
 
-Speed up the code
+	* ChangeLog, DESCRIPTION: Update changelog and release version
 
-------------------------------------------------------------------------
-r368 | mathieu_ribatet | 2009-02-17 14:45:55 +0100 (mar. 17 févr. 2009) | 2 lignes
+2009-05-26 13:48  mathieu_ribatet
 
-Update the version number
+	* src/Makevars: Minor change to Makevars
 
-------------------------------------------------------------------------
-r367 | mathieu_ribatet | 2009-02-17 14:45:14 +0100 (mar. 17 févr. 2009) | 2 lignes
+2009-05-26 13:39  mathieu_ribatet
 
-Update the vignette
+	* src/simsmith.c: Cleaning C code
 
-------------------------------------------------------------------------
-r366 | mathieu_ribatet | 2009-02-07 22:19:36 +0100 (sam. 07 févr. 2009) | 2 lignes
+2009-05-26 13:39  mathieu_ribatet
 
-Update the ChangeLog and the DESCRIPTION file for the version 1.1-0
+	* src/direct.c, src/gradients.c, src/randomlines.c,
+	  src/simschlather.c, src/turningbands.c: Cleaning C code
 
-------------------------------------------------------------------------
-r365 | mathieu_ribatet | 2009-02-07 22:10:28 +0100 (sam. 07 févr. 2009) | 2 lignes
+2009-05-26 13:33  mathieu_ribatet
 
-Fix an error in the definition of a elliptical covariance function
+	* inst/doc/SpatialExtremesGuide.Rnw, inst/doc/layout.sty,
+	  inst/doc/references.bib: Update the vignette
 
-------------------------------------------------------------------------
-r364 | mathieu_ribatet | 2009-02-06 00:43:25 +0100 (ven. 06 févr. 2009) | 2 lignes
+2009-05-18 14:44  mathieu_ribatet
 
-Update the vignette
+	* src/pairwiselik.c, src/schlather.c, src/smith.c, src/smith3d.c:
+	  The pairwise likelihood now uses univariate density in presence
+	  of
+	  "numerical" complete dependence
 
-------------------------------------------------------------------------
-r363 | mathieu_ribatet | 2009-02-06 00:42:54 +0100 (ven. 06 févr. 2009) | 2 lignes
+2009-05-18 14:43  mathieu_ribatet
 
-Fig a bug when held fixing parameter and defining starting values
+	* src/header.h: Changes due to the implementation of new C code and
+	  the use of Lapack
 
-------------------------------------------------------------------------
-r361 | mathieu_ribatet | 2009-02-05 16:03:42 +0100 (jeu. 05 févr. 2009) | 2 lignes
+2009-05-18 14:42  mathieu_ribatet
 
-Update the vignette
+	* src/covariance.c: Minor changes - boundary cases
 
-------------------------------------------------------------------------
-r360 | mathieu_ribatet | 2009-02-05 16:03:18 +0100 (jeu. 05 févr. 2009) | 2 lignes
+2009-05-18 14:41  mathieu_ribatet
 
-Redifine the GCV score so that it has the same scale as CV
+	* man/TIC.Rd, man/anova.Rd, man/condmap.Rd, man/covariance.Rd,
+	  man/extcoeff.Rd, man/extcoeffemp.Rd, man/fitcovariance.Rd,
+	  man/fitcovmat.Rd, man/fitmaxstab.Rd, man/fitspatgev.Rd,
+	  man/fmadogram.Rd, man/lmadogram.Rd, man/logLik.maxstab.Rd,
+	  man/madogram.Rd, man/map.Rd, man/predict.maxstab.Rd,
+	  man/predict.spatgev.Rd, man/print.maxstab.Rd,
+	  man/print.spatgev.Rd, man/profile.maxstab.Rd,
+	  man/profile2d.maxstab.Rd, man/qqextcoeff.Rd, man/qqgev.Rd,
+	  man/simmaxstab.Rd: The examples now use my functions instead of
+	  the ones provided by the
+	  RandomFields package
 
-------------------------------------------------------------------------
-r356 | mathieu_ribatet | 2009-02-01 00:40:01 +0100 (dim. 01 févr. 2009) | 2 lignes
+2009-05-18 14:40  mathieu_ribatet
 
-Found a more clever way to deal with 1-dimensional coordinates
+	* src/simmaxstab.c: Removed unnecessary file
 
-------------------------------------------------------------------------
-r355 | mathieu_ribatet | 2009-02-01 00:33:35 +0100 (dim. 01 févr. 2009) | 3 lignes
+2009-05-18 14:39  mathieu_ribatet
 
-The function distance wasn't working if the coordinates where scalar,
-fixed!
+	* R/simmaxstab.R, src/simschlather.c, src/simsmith.c: New code
+	  related to the simulation of stationary max-stable random
+	  fields
 
-------------------------------------------------------------------------
-r354 | mathieu_ribatet | 2009-01-31 00:52:44 +0100 (sam. 31 janv. 2009) | 3 lignes
+2009-05-18 14:38  mathieu_ribatet
 
-Set weights that are really small (i.e. <= 1e-4) to more feasible
-values
+	* R/randomlines.R, R/simgaussproc.R, man/rgp.Rd, man/vdc.Rd,
+	  src/Makevars, src/direct.c, src/randomlines.c,
+	  src/turningbands.c: New code related to the simulation of
+	  stationary gaussian processes by
+	  using the direct and the turning bands methods
 
-------------------------------------------------------------------------
-r353 | mathieu_ribatet | 2009-01-18 18:36:21 +0100 (dim. 18 janv. 2009) | 2 lignes
+2009-05-18 14:36  mathieu_ribatet
 
-The dots arguments was inverting with the start one
+	* R/fitcovmat.R: Use the isotropic definition for the extremal
+	  coefficient if iso =
+	  TRUE
 
-------------------------------------------------------------------------
-r352 | mathieu_ribatet | 2009-01-18 18:35:48 +0100 (dim. 18 janv. 2009) | 2 lignes
+2009-05-18 14:35  mathieu_ribatet
 
-Remove draft sections from the vignette
+	* R/covariance.R: Allow for the sill to be larger than 1 as now
+	  gaussian processes are
+	  implemented
 
-------------------------------------------------------------------------
-r351 | mathieu_ribatet | 2009-01-18 18:35:17 +0100 (dim. 18 janv. 2009) | 2 lignes
+2009-05-18 14:35  mathieu_ribatet
 
-Use different function names to avoid warning messages when compiling
+	* R/geomgauss.R, R/nsgeomgauss.R, R/profile.R, R/schlather.R,
+	  R/schlatherind.R, R/smith.R, R/spatgev.R, R/starting.values.R:
+	  remove the definition of parscale in optim and avoid using
+	  Nelder-Mead
+	  optimizer for one-dimensional problems
 
-------------------------------------------------------------------------
-r350 | mathieu_ribatet | 2009-01-18 16:10:56 +0100 (dim. 18 janv. 2009) | 2 lignes
+2009-05-05 21:39  mathieu_ribatet
 
-Improve how starting values are defined
+	* R/simmaxstab.R, man/simmaxstab.Rd, src/simmaxstab.c: Extend the
+	  simulation from the Smith model
 
-------------------------------------------------------------------------
-r349 | mathieu_ribatet | 2009-01-18 16:10:22 +0100 (dim. 18 janv. 2009) | 2 lignes
+2009-05-05 21:37  mathieu_ribatet
 
-Improve how starting values are defined
+	* R/selection.R, R/smith.R, R/spatgev.R: Remove the qr
+	  decomposition for the computation of the inverse of the
+	  hessian matrix as it seems to be less robust
 
-------------------------------------------------------------------------
-r348 | mathieu_ribatet | 2009-01-18 16:09:25 +0100 (dim. 18 janv. 2009) | 2 lignes
+2009-05-05 21:35  mathieu_ribatet
 
-Improve how starting values are defined
+	* R/fitcovmat.R: Add the iso as an argument of the output and
+	  compute the special
+	  version of the extremal coefficient function when iso = TRUE
 
-------------------------------------------------------------------------
-r347 | mathieu_ribatet | 2009-01-16 18:35:44 +0100 (ven. 16 janv. 2009) | 3 lignes
+2009-04-30 15:04  mathieu_ribatet
 
-Allow the use of the independent Schlather and geometric Gaussian
-models for the least squares fitting procedure
+	* R/simmaxstab.R, man/simmaxstab.Rd, src/simmaxstab.c: A first
+	  version of a function that generates observations from a Smith
+	  random field
 
-------------------------------------------------------------------------
-r346 | mathieu_ribatet | 2009-01-15 19:31:56 +0100 (jeu. 15 janv. 2009) | 2 lignes
+2009-04-30 15:03  mathieu_ribatet
 
-Fix a bug in defining the starting values for geomgaussfull
+	* src/pairwiselik.c: Minor changes
 
-------------------------------------------------------------------------
-r345 | mathieu_ribatet | 2009-01-15 00:19:38 +0100 (jeu. 15 janv. 2009) | 2 lignes
+2009-04-30 15:02  mathieu_ribatet
 
-Minor changes
+	* man/fitcovmat.Rd: Add the control in optim as an argument
 
-------------------------------------------------------------------------
-r344 | mathieu_ribatet | 2009-01-14 14:24:22 +0100 (mer. 14 janv. 2009) | 2 lignes
+2009-04-30 15:02  mathieu_ribatet
 
-Add some proofs
+	* R/spatgev.R: Minor changes
 
-------------------------------------------------------------------------
-r343 | mathieu_ribatet | 2009-01-14 14:23:57 +0100 (mer. 14 janv. 2009) | 3 lignes
+2009-04-30 15:01  mathieu_ribatet
 
-Fix a bug. I omit to specify the covariance model when computing
-appropriate starting values for the Schlather model
+	* R/profile.R: Some minor changes: control in optim, ...
 
-------------------------------------------------------------------------
-r342 | mathieu_ribatet | 2009-01-14 14:23:06 +0100 (mer. 14 janv. 2009) | 2 lignes
+2009-04-30 15:01  mathieu_ribatet
 
-We now use the corrected lambda-madogram - thanks to D. Cooley
+	* R/plots.R, R/smith.R: If iso = TRUE in the smith model the
+	  extremal coefficient function is
+	  then one-dimensional
 
-------------------------------------------------------------------------
-r341 | mathieu_ribatet | 2009-01-12 10:06:58 +0100 (lun. 12 janv. 2009) | 2 lignes
+2009-04-30 15:00  mathieu_ribatet
 
-Extend the response surfaces section - not finished
+	* R/madogram.R, man/fmadogram.Rd, man/madogram.Rd: The madogram
+	  plots now accept a fitted model as an argument to compare
+	  pairwise estimates and model based ones
 
-------------------------------------------------------------------------
-r340 | mathieu_ribatet | 2009-01-12 10:03:00 +0100 (lun. 12 janv. 2009) | 3 lignes
+2009-04-30 14:58  mathieu_ribatet
 
-Add proof for the derivation of the Smith and geometric Gaussian
-models
+	* R/covariance.R, R/fitcovmat.R, R/geomgauss.R, R/methods.R,
+	  R/nsgeomgauss.R, R/schlather.R, R/schlatherind.R,
+	  man/covariance.Rd, man/fitcovariance.Rd, man/fitmaxstab.Rd,
+	  src/covariance.c, src/fitcovmat.c, src/geomgauss.c,
+	  src/gradients.c, src/header.h, src/nsgeomgauss.c,
+	  src/schlather.c, src/schlatherind.c: Implementation of the Bessel
+	  covariance function
 
-------------------------------------------------------------------------
-r339 | mathieu_ribatet | 2009-01-06 16:06:12 +0100 (mar. 06 janv. 2009) | 2 lignes
+2009-04-20 09:31  mathieu_ribatet
 
-Fix a wrong argument in the example
+	* ChangeLog: Update the changelog
 
-------------------------------------------------------------------------
-r338 | mathieu_ribatet | 2009-01-03 02:58:06 +0100 (sam. 03 janv. 2009) | 3 lignes
+2009-04-17 15:48  mathieu_ribatet
 
-Improve (a lot!) the package vignette. It's for from being finished
-though...
+	* src/gradients.c: Fix a bug in the computation of the gradient for
+	  smith3d. Now it's
+	  correct!
 
-------------------------------------------------------------------------
-r337 | mathieu_ribatet | 2009-01-03 02:56:57 +0100 (sam. 03 janv. 2009) | 2 lignes
+2009-04-17 15:29  mathieu_ribatet
 
-Minor changes
+	* src/pairwiselik.c: Minor optimization
 
-------------------------------------------------------------------------
-r336 | mathieu_ribatet | 2009-01-02 18:43:46 +0100 (ven. 02 janv. 2009) | 2 lignes
+2009-04-17 15:28  mathieu_ribatet
 
-Update reference list
+	* src/covariance.c: Try to optimize the computation of all the
+	  covariance
 
-------------------------------------------------------------------------
-r335 | mathieu_ribatet | 2009-01-02 18:43:23 +0100 (ven. 02 janv. 2009) | 2 lignes
+2009-04-10 13:37  mathieu_ribatet
 
-Move the qqextcoeff function to the modelChecking.R file
+	* ChangeLog: Update the ChangeLog
 
-------------------------------------------------------------------------
-r334 | mathieu_ribatet | 2009-01-02 18:42:56 +0100 (ven. 02 janv. 2009) | 2 lignes
+2009-04-10 13:35  mathieu_ribatet
 
-Minor changes
+	* ChangeLog, DESCRIPTION: Update the version number and the
+	  ChangeLog file
 
-------------------------------------------------------------------------
-r333 | mathieu_ribatet | 2009-01-02 18:42:36 +0100 (ven. 02 janv. 2009) | 3 lignes
+2009-04-10 10:06  mathieu_ribatet
 
-Now starting values for the GEV margins are defined by using the
-fitspatgev function
+	* src/covariance.c: Minor changes
 
-------------------------------------------------------------------------
-r332 | mathieu_ribatet | 2009-01-02 18:42:05 +0100 (ven. 02 janv. 2009) | 2 lignes
+2009-04-10 10:06  mathieu_ribatet
 
-Minor changes
+	* R/geomgauss.R, R/gradients.R, src/gradients.c, src/header.h: Add
+	  the computation of the gradient for the geometric gaussian model
 
-------------------------------------------------------------------------
-r331 | mathieu_ribatet | 2009-01-02 18:41:38 +0100 (ven. 02 janv. 2009) | 3 lignes
+2009-04-09 14:18  mathieu_ribatet
 
-Pass defaults values for parscale and change the initialization for
-starting values
+	* src/pairwiselik.c: Minor optimizations
 
-------------------------------------------------------------------------
-r330 | mathieu_ribatet | 2009-01-02 18:40:29 +0100 (ven. 02 janv. 2009) | 2 lignes
+2009-04-09 14:17  mathieu_ribatet
 
-Moving the madogram function to the madogram.R file
+	* src/gradients.c: Minor optimizations - and fix a bug in
+	  Schlather's gradient
 
-------------------------------------------------------------------------
-r329 | mathieu_ribatet | 2009-01-02 18:39:59 +0100 (ven. 02 janv. 2009) | 2 lignes
+2009-04-09 14:16  mathieu_ribatet
 
-If xlim is supplied the function doesn't compute appropriate x.range
+	* src/covariance.c: Minor optimizations
 
-------------------------------------------------------------------------
-r328 | mathieu_ribatet | 2009-01-02 18:38:34 +0100 (ven. 02 janv. 2009) | 2 lignes
+2009-04-07 15:45  mathieu_ribatet
 
-The header for the madogram-based approaches
+	* src/utils.c: Some minor optimizations
 
-------------------------------------------------------------------------
-r327 | mathieu_ribatet | 2009-01-02 18:38:17 +0100 (ven. 02 janv. 2009) | 3 lignes
+2009-04-07 15:44  mathieu_ribatet
 
-Optimize the code: now fitting a max-stable process by maximizing the
-pairwise-likelihood is 40% times faster
+	* src/univllik.c: Bug : replace '|' by '||' i.e. logical operator
 
-------------------------------------------------------------------------
-r326 | mathieu_ribatet | 2009-01-02 18:36:29 +0100 (ven. 02 janv. 2009) | 2 lignes
+2009-04-07 15:44  mathieu_ribatet
 
-Update the documentation files
+	* src/spatgevlik.c: Minor change
 
-------------------------------------------------------------------------
-r325 | mathieu_ribatet | 2009-01-02 18:35:33 +0100 (ven. 02 janv. 2009) | 2 lignes
+2009-04-07 15:43  mathieu_ribatet
 
-Add figures for the geometric gaussian process - 2 simulations
+	* src/smith3d.c: Bug : replace '|' by '||' i.e. logical operator
 
-------------------------------------------------------------------------
-r324 | mathieu_ribatet | 2009-01-02 18:34:42 +0100 (ven. 02 janv. 2009) | 3 lignes
+2009-04-07 15:42  mathieu_ribatet
 
-Add the madogram-based approaches, model checking and univariate EVD
-functions
+	* src/smith.c: Bug : replace '|' by '||' i.e. logical operator
 
-------------------------------------------------------------------------
-r323 | mathieu_ribatet | 2008-12-19 16:54:56 +0100 (ven. 19 déc. 2008) | 2 lignes
+2009-04-07 15:42  mathieu_ribatet
 
-Update the package Vignette
+	* src/schlatherind.c: Bug : replace '|' by '||' i.e. logical
+	  operator
 
-------------------------------------------------------------------------
-r322 | mathieu_ribatet | 2008-12-19 11:03:11 +0100 (ven. 19 déc. 2008) | 2 lignes
+2009-04-07 15:42  mathieu_ribatet
 
-Updating the main man page.
+	* src/schlather.c: Optimize the computation of the pairwise
+	  likelihood
 
-------------------------------------------------------------------------
-r321 | mathieu_ribatet | 2008-12-19 11:00:10 +0100 (ven. 19 déc. 2008) | 2 lignes
+2009-04-07 15:42  mathieu_ribatet
 
-Updating the vignette.
+	* src/pairwiselik.c: Optimize the computation of the pairwise
+	  likelihood
 
-------------------------------------------------------------------------
-r320 | mathieu_ribatet | 2008-12-18 09:35:47 +0100 (jeu. 18 déc. 2008) | 2 lignes
+2009-04-07 15:41  mathieu_ribatet
 
-Wrong link to the profile2d.maxstab function
+	* src/nsgeomgauss.c: Bug : replace '|' by '||' i.e. logical
+	  operator
 
-------------------------------------------------------------------------
-r319 | mathieu_ribatet | 2008-12-17 22:18:54 +0100 (mer. 17 déc. 2008) | 2 lignes
+2009-04-07 15:41  mathieu_ribatet
 
-Correct English and grammar thanks to Anthony
+	* src/gradients.c: Optimize the computation of the gradient and fix
+	  some errors
 
-------------------------------------------------------------------------
-r318 | mathieu_ribatet | 2008-12-17 21:22:32 +0100 (mer. 17 déc. 2008) | 3 lignes
+2009-04-07 15:40  mathieu_ribatet
 
-Test if we have 0 weights and set a really huge value for non feasible
-regions
+	* src/geomgauss.c: Bug : replace '|' by '||' i.e. logical operator
 
-------------------------------------------------------------------------
-r317 | mathieu_ribatet | 2008-12-17 21:21:45 +0100 (mer. 17 déc. 2008) | 2 lignes
+2009-04-07 15:40  mathieu_ribatet
 
-Changes due to the new way I deal with non feasible region
+	* src/fitcovmat.c: Optmize the computation of weighted sum of
+	  squares
 
-------------------------------------------------------------------------
-r316 | mathieu_ribatet | 2008-12-16 19:49:19 +0100 (mar. 16 déc. 2008) | 2 lignes
+2009-04-07 15:39  mathieu_ribatet
 
-Improve this functions
+	* src/covariance.c: Optmize the computation of pairwise covariance
 
-------------------------------------------------------------------------
-r315 | mathieu_ribatet | 2008-12-16 19:48:43 +0100 (mar. 16 déc. 2008) | 3 lignes
+2009-04-07 15:39  mathieu_ribatet
 
-The sill isn't fix for the starting values as it may cause troubles
-when fixing it for the model definition
+	* R/starting.values.R: Minor change
 
-------------------------------------------------------------------------
-r314 | mathieu_ribatet | 2008-12-16 19:47:44 +0100 (mar. 16 déc. 2008) | 2 lignes
+2009-04-07 15:38  mathieu_ribatet
 
-Minor change: adding the logLik value in the output
+	* R/spatgev.R: Now fitspatgev uses all the optimizers as in
+	  fitmaxstab
 
-------------------------------------------------------------------------
-r313 | mathieu_ribatet | 2008-12-16 19:47:05 +0100 (mar. 16 déc. 2008) | 3 lignes
+2009-04-07 15:37  mathieu_ribatet
 
-I forgot to pass the option iso = iso when computing the variance of
-the score
+	* R/gradients.R: Add argument jacobian = TRUE for consistency with
+	  other functions
 
-------------------------------------------------------------------------
-r312 | mathieu_ribatet | 2008-12-16 19:44:57 +0100 (mar. 16 déc. 2008) | 3 lignes
+2009-04-07 15:37  mathieu_ribatet
 
-Fix a bug in the computation of the gradient (only present when
-reponse surfaces are used for the GEV parameters)
+	* R/fitcovmat.R: Change the default starting values
 
-------------------------------------------------------------------------
-r311 | mathieu_ribatet | 2008-12-16 19:41:04 +0100 (mar. 16 déc. 2008) | 2 lignes
+2009-02-19 13:05  mathieu_ribatet
 
-Do not set pointwise estimate to 1 or 2 if they lie outsite of [1,2]
+	* man/fitmaxstab.Rd: Add references (Mehdi and Simone)
 
-------------------------------------------------------------------------
-r310 | mathieu_ribatet | 2008-12-16 19:40:01 +0100 (mar. 16 déc. 2008) | 3 lignes
+2009-02-17 13:46  mathieu_ribatet
 
-Final change for unfeasible regions: finally setting MINF to the
-log-likelihood for unfeasible region is the "best" way
+	* src/covariance.c: Speed up the code
 
-------------------------------------------------------------------------
-r309 | mathieu_ribatet | 2008-12-16 19:38:09 +0100 (mar. 16 déc. 2008) | 2 lignes
+2009-02-17 13:45  mathieu_ribatet
 
-Update and refine the documentation files
+	* DESCRIPTION: Update the version number
 
-------------------------------------------------------------------------
-r308 | mathieu_ribatet | 2008-12-12 17:22:15 +0100 (ven. 12 déc. 2008) | 2 lignes
+2009-02-17 13:45  mathieu_ribatet
 
-Improve the code for speed
+	* inst/doc/SpatialExtremesGuide.Rnw, inst/doc/layout.sty,
+	  inst/doc/references.bib: Update the vignette
 
-------------------------------------------------------------------------
-r307 | mathieu_ribatet | 2008-12-11 22:25:20 +0100 (jeu. 11 déc. 2008) | 2 lignes
+2009-02-07 21:19  mathieu_ribatet
 
-Using the optim as optimizer instead of nlm - more robust
+	* ChangeLog, DESCRIPTION: Update the ChangeLog and the DESCRIPTION
+	  file for the version 1.1-0
 
-------------------------------------------------------------------------
-r306 | mathieu_ribatet | 2008-12-11 16:09:52 +0100 (jeu. 11 déc. 2008) | 2 lignes
+2009-02-07 21:10  mathieu_ribatet
 
-Adjust the starting values
+	* inst/doc/SpatialExtremesGuide.Rnw: Fix an error in the definition
+	  of a elliptical covariance function
 
-------------------------------------------------------------------------
-r305 | mathieu_ribatet | 2008-12-11 16:09:14 +0100 (jeu. 11 déc. 2008) | 3 lignes
+2009-02-05 23:43  mathieu_ribatet
 
-Computes the sandwich estimate of the asymptotic covariance
-matrix. TIC and ANOVA are thus available.
+	* inst/doc/SpatialExtremesGuide.Rnw, inst/doc/layout.sty,
+	  inst/doc/references.bib: Update the vignette
 
-------------------------------------------------------------------------
-r304 | mathieu_ribatet | 2008-12-10 21:21:38 +0100 (mer. 10 déc. 2008) | 3 lignes
+2009-02-05 23:42  mathieu_ribatet
 
-Add a function to fit a "spatial" gev model e.g. GEV parameters are
-modelled through response surfaces: doc files.
+	* R/fitcovmat.R: Fig a bug when held fixing parameter and defining
+	  starting values
 
-------------------------------------------------------------------------
-r303 | mathieu_ribatet | 2008-12-10 16:56:31 +0100 (mer. 10 déc. 2008) | 3 lignes
+2009-02-05 15:03  mathieu_ribatet
 
-Fix a bug in testing if the scale and shape paremeters were badly
-defined.
+	* inst/doc/SpatialExtremesGuide.Rnw, inst/doc/references.bib:
+	  Update the vignette
 
-------------------------------------------------------------------------
-r302 | mathieu_ribatet | 2008-12-10 16:55:42 +0100 (mer. 10 déc. 2008) | 4 lignes
+2009-02-05 15:03  mathieu_ribatet
 
-Add a function to fit a "spatial" gev model e.g. GEV parameters are
-modelled through response surfaces. Related methods and predictions
-are also implemented.
+	* R/psplines.R: Redifine the GCV score so that it has the same
+	  scale as CV
 
-------------------------------------------------------------------------
-r301 | mathieu_ribatet | 2008-12-09 17:17:41 +0100 (mar. 09 déc. 2008) | 3 lignes
+2009-01-31 23:40  mathieu_ribatet
 
-Add the non-stationary geom. gauss. model with response surfaces for
-the GEV parameters
+	* R/utils.R: Found a more clever way to deal with 1-dimensional
+	  coordinates
 
-------------------------------------------------------------------------
-r300 | mathieu_ribatet | 2008-12-07 13:54:27 +0100 (dim. 07 déc. 2008) | 2 lignes
+2009-01-31 23:33  mathieu_ribatet
 
-Minor change
+	* R/utils.R: The function distance wasn't working if the
+	  coordinates where scalar,
+	  fixed!
 
-------------------------------------------------------------------------
-r299 | mathieu_ribatet | 2008-12-07 13:18:17 +0100 (dim. 07 déc. 2008) | 2 lignes
+2009-01-30 23:52  mathieu_ribatet
 
-Optimizing the C code: improve conditioning tests
+	* R/fitcovmat.R: Set weights that are really small (i.e. <= 1e-4)
+	  to more feasible
+	  values
 
-------------------------------------------------------------------------
-r298 | mathieu_ribatet | 2008-12-07 12:34:04 +0100 (dim. 07 déc. 2008) | 2 lignes
+2009-01-18 17:36  mathieu_ribatet
 
-Proof-read the man pages due to a mail in the r-devel list
+	* man/fitcovariance.Rd, man/fitcovmat.Rd, man/fitspatgev.Rd: The
+	  dots arguments was inverting with the start one
 
-------------------------------------------------------------------------
-r297 | mathieu_ribatet | 2008-12-06 16:34:56 +0100 (sam. 06 déc. 2008) | 2 lignes
+2009-01-18 17:35  mathieu_ribatet
 
-Minor changes
+	* inst/doc/SpatialExtremesGuide.Rnw: Remove draft sections from the
+	  vignette
 
-------------------------------------------------------------------------
-r296 | mathieu_ribatet | 2008-12-06 16:34:25 +0100 (sam. 06 déc. 2008) | 2 lignes
+2009-01-18 17:35  mathieu_ribatet
 
-Fix a bug in the nsgeomgauss covariance function computations
+	* R/fitcovmat.R: Use different function names to avoid warning
+	  messages when compiling
 
-------------------------------------------------------------------------
-r295 | mathieu_ribatet | 2008-12-03 10:22:57 +0100 (mer. 03 déc. 2008) | 3 lignes
+2009-01-18 15:10  mathieu_ribatet
 
-Do not use the same function name whatever the iso argument is to
-avoid a warning message while building the package
+	* R/fitcovmat.R: Improve how starting values are defined
 
-------------------------------------------------------------------------
-r294 | mathieu_ribatet | 2008-12-03 10:22:08 +0100 (mer. 03 déc. 2008) | 2 lignes
+2009-01-18 15:10  mathieu_ribatet
 
-Masking the non-stationary geom. gauss. model for the moment
+	* R/geomgauss.R, R/schlatherind.R, R/spatgev.R: Improve how
+	  starting values are defined
 
-------------------------------------------------------------------------
-r293 | mathieu_ribatet | 2008-12-03 10:21:07 +0100 (mer. 03 déc. 2008) | 2 lignes
+2009-01-18 15:09  mathieu_ribatet
 
-There was an uninitialized variable
+	* R/starting.values.R: Improve how starting values are defined
 
-------------------------------------------------------------------------
-r292 | mathieu_ribatet | 2008-12-03 09:33:30 +0100 (mer. 03 déc. 2008) | 2 lignes
+2009-01-16 17:35  mathieu_ribatet
 
-Remove unused variable
+	* R/fitcovmat.R, man/fitcovariance.Rd, src/fitcovmat.c,
+	  src/header.h: Allow the use of the independent Schlather and
+	  geometric Gaussian
+	  models for the least squares fitting procedure
 
-------------------------------------------------------------------------
-r291 | mathieu_ribatet | 2008-12-02 18:15:25 +0100 (mar. 02 déc. 2008) | 2 lignes
+2009-01-15 18:31  mathieu_ribatet
 
-Update ChangeLog and DESCRIPTION for the new release
+	* R/geomgauss.R: Fix a bug in defining the starting values for
+	  geomgaussfull
 
-------------------------------------------------------------------------
-r290 | mathieu_ribatet | 2008-12-02 18:02:52 +0100 (mar. 02 déc. 2008) | 2 lignes
+2009-01-14 23:19  mathieu_ribatet
 
-Add a function that performs a QQ-plot for the extremal coefficient
+	* R/extcoeff.R, R/madogram.R, inst/doc/SpatialExtremesGuide.Rnw:
+	  Minor changes
 
-------------------------------------------------------------------------
-r289 | mathieu_ribatet | 2008-12-02 16:58:47 +0100 (mar. 02 déc. 2008) | 2 lignes
+2009-01-14 13:24  mathieu_ribatet
 
-Change the way I deal with non-feasible regions
+	* inst/doc/SpatialExtremesGuide.Rnw: Add some proofs
 
-------------------------------------------------------------------------
-r288 | mathieu_ribatet | 2008-12-02 16:58:08 +0100 (mar. 02 déc. 2008) | 2 lignes
+2009-01-14 13:23  mathieu_ribatet
 
-Mask the non-stationary geom. gauss. model
+	* R/starting.values.R: Fix a bug. I omit to specify the covariance
+	  model when computing
+	  appropriate starting values for the Schlather model
 
-------------------------------------------------------------------------
-r287 | mathieu_ribatet | 2008-12-02 16:57:45 +0100 (mar. 02 déc. 2008) | 2 lignes
+2009-01-14 13:23  mathieu_ribatet
 
-Implementation of an isotropic smith's model
+	* R/madogram.R, src/madogram.c: We now use the corrected
+	  lambda-madogram - thanks to D. Cooley
 
-------------------------------------------------------------------------
-r286 | mathieu_ribatet | 2008-12-02 11:53:33 +0100 (mar. 02 déc. 2008) | 3 lignes
+2009-01-12 09:06  mathieu_ribatet
 
-Change the way starting values are defined - i.e. fixing the sill
-Change the way we deal with non feasible regions
+	* inst/doc/SpatialExtremesGuide.Rnw: Extend the response surfaces
+	  section - not finished
 
-------------------------------------------------------------------------
-r285 | mathieu_ribatet | 2008-11-28 13:12:45 +0100 (ven. 28 nov. 2008) | 2 lignes
+2009-01-12 09:03  mathieu_ribatet
 
-Add the geometric gaussian model - non stationary
+	* inst/doc/SpatialExtremesGuide.Rnw: Add proof for the derivation
+	  of the Smith and geometric Gaussian
+	  models
 
-------------------------------------------------------------------------
-r284 | mathieu_ribatet | 2008-11-28 13:11:56 +0100 (ven. 28 nov. 2008) | 1 ligne
+2009-01-06 15:06  mathieu_ribatet
 
+	* man/lmadogram.Rd: Fix a wrong argument in the example
 
-------------------------------------------------------------------------
-r283 | mathieu_ribatet | 2008-11-27 15:42:04 +0100 (jeu. 27 nov. 2008) | 4 lignes
+2009-01-03 01:58  mathieu_ribatet
 
-Add comments within the code.
-Tweak how I deal with the unfeasible region when the GEV parameters
-are ill-defined
+	* inst/doc/SpatialExtremesGuide.Rnw: Improve (a lot!) the package
+	  vignette. It's for from being finished
+	  though...
 
-------------------------------------------------------------------------
-r282 | mathieu_ribatet | 2008-11-19 14:58:55 +0100 (mer. 19 nov. 2008) | 2 lignes
+2009-01-03 01:56  mathieu_ribatet
 
-There was a duplicate of function .start.schlatherind
+	* R/modelChecking.R, R/starting.values.R: Minor changes
 
-------------------------------------------------------------------------
-r281 | mathieu_ribatet | 2008-11-19 12:36:55 +0100 (mer. 19 nov. 2008) | 3 lignes
+2009-01-02 17:43  mathieu_ribatet
 
-Fix a bug in geomCovariance, sigma2 was not set to the right value
-when it tends to get large
+	* inst/doc/references.bib: Update reference list
 
-------------------------------------------------------------------------
-r280 | mathieu_ribatet | 2008-11-19 12:29:28 +0100 (mer. 19 nov. 2008) | 2 lignes
+2009-01-02 17:43  mathieu_ribatet
 
-Update some comments in the code
+	* R/plots.R: Move the qqextcoeff function to the modelChecking.R
+	  file
 
-------------------------------------------------------------------------
-r279 | mathieu_ribatet | 2008-11-19 12:20:46 +0100 (mer. 19 nov. 2008) | 2 lignes
+2009-01-02 17:42  mathieu_ribatet
 
-Pass the RandomFields packages as a dependence
+	* R/selection.R: Minor changes
 
-------------------------------------------------------------------------
-r278 | mathieu_ribatet | 2008-11-19 12:16:53 +0100 (mer. 19 nov. 2008) | 2 lignes
+2009-01-02 17:42  mathieu_ribatet
 
-Add an angle argument in madogram() to help in detecting anisotropy
+	* R/starting.values.R: Now starting values for the GEV margins are
+	  defined by using the
+	  fitspatgev function
 
-------------------------------------------------------------------------
-r277 | mathieu_ribatet | 2008-11-18 16:53:24 +0100 (mar. 18 nov. 2008) | 3 lignes
+2009-01-02 17:42  mathieu_ribatet
 
-Fix a bug in schlatherinddsgnmat: the non feasible region was not
-penalized for all cases
+	* R/spatgev.R: Minor changes
 
-------------------------------------------------------------------------
-r276 | mathieu_ribatet | 2008-11-17 13:57:30 +0100 (lun. 17 nov. 2008) | 3 lignes
+2009-01-02 17:41  mathieu_ribatet
 
-Changing how to deal with smooth >= 2 for the powered exponential
-covariance model
+	* R/geomgauss.R, R/nsgeomgauss.R, R/schlather.R, R/schlatherind.R,
+	  R/smith.R: Pass defaults values for parscale and change the
+	  initialization for
+	  starting values
 
-------------------------------------------------------------------------
-r275 | mathieu_ribatet | 2008-10-31 17:45:39 +0100 (ven. 31 oct. 2008) | 3 lignes
+2009-01-02 17:40  mathieu_ribatet
 
-Change the behaviour with non-feasible regions: seems to be more
-robust now...
+	* R/extcoeff.R: Moving the madogram function to the madogram.R file
 
-------------------------------------------------------------------------
-r274 | mathieu_ribatet | 2008-10-28 14:44:28 +0100 (mar. 28 oct. 2008) | 3 lignes
+2009-01-02 17:39  mathieu_ribatet
 
-Add an upper bound (i.e. 3) for the sigma2 parameter in the geometric
-gaussian process
+	* R/covariance.R: If xlim is supplied the function doesn't compute
+	  appropriate x.range
 
-------------------------------------------------------------------------
-r273 | mathieu_ribatet | 2008-10-24 09:54:01 +0200 (ven. 24 oct. 2008) | 3 lignes
+2009-01-02 17:38  mathieu_ribatet
 
-Update the bounds for the covariance functions to avoid numerical
-issues
+	* src/header.h: The header for the madogram-based approaches
 
-------------------------------------------------------------------------
-r271 | mathieu_ribatet | 2008-10-22 18:05:31 +0200 (mer. 22 oct. 2008) | 2 lignes
+2009-01-02 17:38  mathieu_ribatet
 
-Add a link to the project web page
+	* src/covariance.c, src/pairwiselik.c, src/utils.c: Optimize the
+	  code: now fitting a max-stable process by maximizing the
+	  pairwise-likelihood is 40% times faster
 
-------------------------------------------------------------------------
-r270 | mathieu_ribatet | 2008-10-22 14:23:42 +0200 (mer. 22 oct. 2008) | 3 lignes
+2009-01-02 17:36  mathieu_ribatet
 
-Now the Gumbel distribution is considered whenever the shape parameter
-is <= 1-6
+	* man/anova.Rd, man/fitmaxstab.Rd, man/fitspatgev.Rd,
+	  man/madogram.Rd: Update the documentation files
 
-------------------------------------------------------------------------
-r269 | mathieu_ribatet | 2008-10-22 14:22:54 +0200 (mer. 22 oct. 2008) | 3 lignes
+2009-01-02 17:35  mathieu_ribatet
 
-Change the madogram function. Now it is computed for each pairwise
-distance - bins can be optionnaly passed though
+	* inst/doc/Figures/geomGauss2Sim.eps,
+	  inst/doc/Figures/geomGauss2Sim.pdf: Add figures for the geometric
+	  gaussian process - 2 simulations
 
-------------------------------------------------------------------------
-r268 | mathieu_ribatet | 2008-10-16 14:39:09 +0200 (jeu. 16 oct. 2008) | 3 lignes
+2009-01-02 17:34  mathieu_ribatet
 
-Modifying the vignette and example to reduce the time to build the
-package
+	* R/madogram.R, R/modelChecking.R, R/univdist.R, inst/doc/Figures,
+	  man/GEV.Rd, man/GPD.Rd, man/fmadogram.Rd, man/lmadogram.Rd,
+	  man/qqgev.Rd, src/madogram.c: Add the madogram-based approaches,
+	  model checking and univariate EVD
+	  functions
 
-------------------------------------------------------------------------
-r264 | mathieu_ribatet | 2008-10-13 12:28:17 +0200 (lun. 13 oct. 2008) | 3 lignes
+2008-12-19 15:54  mathieu_ribatet
 
-Cleaning the code: unused declared variables
-Fix a mistake in computing the gradient dz2shape instead of dz2scale
+	* inst/doc/SpatialExtremesGuide.Rnw: Update the package Vignette
 
-------------------------------------------------------------------------
-r262 | mathieu_ribatet | 2008-10-12 00:45:07 +0200 (dim. 12 oct. 2008) | 2 lignes
+2008-12-19 10:03  mathieu_ribatet
 
-remove one copy of prior.Rd
+	* man/SpatialExtremes.Rd: Updating the main man page.
 
-------------------------------------------------------------------------
-r261 | mathieu_ribatet | 2008-10-12 00:44:22 +0200 (dim. 12 oct. 2008) | 2 lignes
+2008-12-19 10:00  mathieu_ribatet
 
-remove one copy of posterior.Rd
+	* inst/doc/SpatialExtremesGuide.Rnw: Updating the vignette.
 
-------------------------------------------------------------------------
-r259 | mathieu_ribatet | 2008-10-09 10:53:37 +0200 (jeu. 09 oct. 2008) | 2 lignes
+2008-12-18 08:35  mathieu_ribatet
 
-moving mcmc.R to the development folder
+	* man/SpatialExtremes.Rd: Wrong link to the profile2d.maxstab
+	  function
 
-------------------------------------------------------------------------
-r254 | mathieu_ribatet | 2008-10-07 15:45:11 +0200 (mar. 07 oct. 2008) | 3 lignes
+2008-12-17 21:18  mathieu_ribatet
 
-Misplace conditional if resulting in cv = NA even when penalty = "gcv"
-or "cv"
+	* inst/doc/SpatialExtremesGuide.Rnw: Correct English and grammar
+	  thanks to Anthony
 
-------------------------------------------------------------------------
-r236 | mathieu_ribatet | 2008-10-07 00:12:55 +0200 (mar. 07 oct. 2008) | 2 lignes
+2008-12-17 20:22  mathieu_ribatet
 
-Add the conditional quantile map and refine the documentation
+	* R/fitcovmat.R, src/fitcovmat.c: Test if we have 0 weights and set
+	  a really huge value for non feasible
+	  regions
 
-------------------------------------------------------------------------
-r231 | mathieu_ribatet | 2008-10-06 22:08:17 +0200 (lun. 06 oct. 2008) | 2 lignes
+2008-12-17 20:21  mathieu_ribatet
 
-Moving the package to the /pkg folder
+	* src/schlatherind.c: Changes due to the new way I deal with non
+	  feasible region
 
-------------------------------------------------------------------------
-r230 | mathieu_ribatet | 2008-10-06 22:07:30 +0200 (lun. 06 oct. 2008) | 2 lignes
+2008-12-16 18:49  mathieu_ribatet
 
-Moving the package to the /pkg folder
+	* R/fitcovmat.R: Improve this functions
 
-------------------------------------------------------------------------
-r229 | mathieu_ribatet | 2008-10-06 22:07:15 +0200 (lun. 06 oct. 2008) | 2 lignes
+2008-12-16 18:48  mathieu_ribatet
 
-Moving the package to the /pkg folder
+	* R/starting.values.R: The sill isn't fix for the starting values
+	  as it may cause troubles
+	  when fixing it for the model definition
 
-------------------------------------------------------------------------
-r228 | mathieu_ribatet | 2008-10-06 22:07:05 +0200 (lun. 06 oct. 2008) | 2 lignes
+2008-12-16 18:47  mathieu_ribatet
 
-Moving the package to the /pkg folder
+	* R/spatgev.R: Minor change: adding the logLik value in the output
 
-------------------------------------------------------------------------
-r227 | mathieu_ribatet | 2008-10-06 22:06:57 +0200 (lun. 06 oct. 2008) | 2 lignes
+2008-12-16 18:47  mathieu_ribatet
 
-Moving the package to the /pkg folder
+	* R/smith.R: I forgot to pass the option iso = iso when computing
+	  the variance of
+	  the score
 
-------------------------------------------------------------------------
-r226 | mathieu_ribatet | 2008-10-06 22:06:45 +0200 (lun. 06 oct. 2008) | 2 lignes
+2008-12-16 18:44  mathieu_ribatet
 
-Moving the package to the /pkg folder
+	* src/gradients.c: Fix a bug in the computation of the gradient
+	  (only present when
+	  reponse surfaces are used for the GEV parameters)
 
-------------------------------------------------------------------------
-r221 | mathieu_ribatet | 2008-10-06 21:59:48 +0200 (lun. 06 oct. 2008) | 2 lignes
+2008-12-16 18:41  mathieu_ribatet
 
-Move the package to the r-forge repo
+	* src/extcoeff.c: Do not set pointwise estimate to 1 or 2 if they
+	  lie outsite of [1,2]
 
-------------------------------------------------------------------------
-r220 | mathieu_ribatet | 2008-10-06 21:59:21 +0200 (lun. 06 oct. 2008) | 2 lignes
+2008-12-16 18:40  mathieu_ribatet
 
-Move the package to the r-forge repo
+	* src/covariance.c, src/fitcovmat.c, src/geomgauss.c,
+	  src/nsgeomgauss.c, src/pairwiselik.c, src/schlather.c,
+	  src/schlatherind.c, src/smith.c, src/smith3d.c, src/utils.c:
+	  Final change for unfeasible regions: finally setting MINF to the
+	  log-likelihood for unfeasible region is the "best" way
 
-------------------------------------------------------------------------
-r219 | mathieu_ribatet | 2008-10-06 21:51:07 +0200 (lun. 06 oct. 2008) | 2 lignes
+2008-12-16 18:38  mathieu_ribatet
 
-re-creating the pkg folder
+	* man/covariance.Rd, man/extcoeff.Rd, man/fitmaxstab.Rd,
+	  man/fitspatgev.Rd, man/modeldef.Rd: Update and refine the
+	  documentation files
 
-------------------------------------------------------------------------
+2008-12-12 16:22  mathieu_ribatet
+
+	* src/univllik.c: Improve the code for speed
+
+2008-12-11 21:25  mathieu_ribatet
+
+	* R/fitcovmat.R, man/fitcovariance.Rd, man/fitcovmat.Rd: Using the
+	  optim as optimizer instead of nlm - more robust
+
+2008-12-11 15:09  mathieu_ribatet
+
+	* R/fitcovmat.R, R/starting.values.R: Adjust the starting values
+
+2008-12-11 15:09  mathieu_ribatet
+
+	* R/gradients.R, R/selection.R, R/spatgev.R, man/TIC.Rd,
+	  man/anova.Rd, man/fitspatgev.Rd, man/print.spatgev.Rd,
+	  src/gradients.c, src/header.h: Computes the sandwich estimate of
+	  the asymptotic covariance
+	  matrix. TIC and ANOVA are thus available.
+
+2008-12-10 20:21  mathieu_ribatet
+
+	* man/fitspatgev.Rd, man/predict.spatgev.Rd, man/print.spatgev.Rd:
+	  Add a function to fit a "spatial" gev model e.g. GEV parameters
+	  are
+	  modelled through response surfaces: doc files.
+
+2008-12-10 15:56  mathieu_ribatet
+
+	* src/univllik.c: Fix a bug in testing if the scale and shape
+	  paremeters were badly
+	  defined.
+
+2008-12-10 15:55  mathieu_ribatet
+
+	* R/methods.R, R/predict.R, R/spatgev.R, src/header.h,
+	  src/spatgevlik.c: Add a function to fit a "spatial" gev model
+	  e.g. GEV parameters are
+	  modelled through response surfaces. Related methods and
+	  predictions
+	  are also implemented.
+
+2008-12-09 16:17  mathieu_ribatet
+
+	* R/nsgeomgauss.R, R/starting.values.R, src/header.h,
+	  src/nsgeomgauss.c: Add the non-stationary geom. gauss. model with
+	  response surfaces for
+	  the GEV parameters
+
+2008-12-07 12:54  mathieu_ribatet
+
+	* src/covariance.c: Minor change
+
+2008-12-07 12:18  mathieu_ribatet
+
+	* src/covariance.c, src/utils.c: Optimizing the C code: improve
+	  conditioning tests
+
+2008-12-07 11:34  mathieu_ribatet
+
+	* man/SpatialExtremes.Rd, man/TIC.Rd, man/condmap.Rd,
+	  man/extcoeff.Rd, man/fitmaxstab.Rd, man/rb.Rd: Proof-read the man
+	  pages due to a mail in the r-devel list
+
+2008-12-06 15:34  mathieu_ribatet
+
+	* src/nsgeomgauss.c: Minor changes
+
+2008-12-06 15:34  mathieu_ribatet
+
+	* src/covariance.c: Fix a bug in the nsgeomgauss covariance
+	  function computations
+
+2008-12-03 09:22  mathieu_ribatet
+
+	* R/fitcovmat.R: Do not use the same function name whatever the iso
+	  argument is to
+	  avoid a warning message while building the package
+
+2008-12-03 09:22  mathieu_ribatet
+
+	* R/nsgeomgauss.R, man/internals.Rd: Masking the non-stationary
+	  geom. gauss. model for the moment
+
+2008-12-03 09:21  mathieu_ribatet
+
+	* src/covariance.c: There was an uninitialized variable
+
+2008-12-03 08:33  mathieu_ribatet
+
+	* src/utils.c: Remove unused variable
+
+2008-12-02 17:15  mathieu_ribatet
+
+	* ChangeLog, DESCRIPTION: Update ChangeLog and DESCRIPTION for the
+	  new release
+
+2008-12-02 17:02  mathieu_ribatet
+
+	* R/plots.R, man/qqextcoeff.Rd: Add a function that performs a
+	  QQ-plot for the extremal coefficient
+
+2008-12-02 15:58  mathieu_ribatet
+
+	* src/nsgeomgauss.c: Change the way I deal with non-feasible
+	  regions
+
+2008-12-02 15:58  mathieu_ribatet
+
+	* man/internals.Rd: Mask the non-stationary geom. gauss. model
+
+2008-12-02 15:57  mathieu_ribatet
+
+	* R/fitcovmat.R, R/fitmaxstable.R, R/gradients.R, R/smith.R,
+	  R/starting.values.R, man/fitcovmat.Rd, man/fitmaxstab.Rd:
+	  Implementation of an isotropic smith's model
+
+2008-12-02 10:53  mathieu_ribatet
+
+	* R/starting.values.R, src/covariance.c, src/fitcovmat.c,
+	  src/geomgauss.c, src/nsgeomgauss.c, src/pairwiselik.c,
+	  src/schlather.c, src/schlatherind.c, src/smith.c, src/smith3d.c,
+	  src/utils.c: Change the way starting values are defined - i.e.
+	  fixing the sill
+	  Change the way we deal with non feasible regions
+
+2008-11-28 12:12  mathieu_ribatet
+
+	* R/fitmaxstable.R, R/geomgauss.R, R/nsgeomgauss.R: Add the
+	  geometric gaussian model - non stationary
+
+2008-11-28 12:11  mathieu_ribatet
+
+	* src/covariance.c, src/header.h, src/nsgeomgauss.c, src/utils.c:
+
+2008-11-27 14:42  mathieu_ribatet
+
+	* src/covariance.c, src/extcoeff.c, src/fitcovmat.c,
+	  src/geomgauss.c, src/schlather.c, src/schlatherind.c,
+	  src/smith.c, src/smith3d.c, src/univllik.c, src/utils.c: Add
+	  comments within the code.
+	  Tweak how I deal with the unfeasible region when the GEV
+	  parameters
+	  are ill-defined
+
+2008-11-19 13:58  mathieu_ribatet
+
+	* R/starting.values.R: There was a duplicate of function
+	  .start.schlatherind
+
+2008-11-19 11:36  mathieu_ribatet
+
+	* src/covariance.c: Fix a bug in geomCovariance, sigma2 was not set
+	  to the right value
+	  when it tends to get large
+
+2008-11-19 11:29  mathieu_ribatet
+
+	* src/geomgauss.c: Update some comments in the code
+
+2008-11-19 11:20  mathieu_ribatet
+
+	* DESCRIPTION: Pass the RandomFields packages as a dependence
+
+2008-11-19 11:16  mathieu_ribatet
+
+	* R/extcoeff.R, man/madogram.Rd: Add an angle argument in
+	  madogram() to help in detecting anisotropy
+
+2008-11-18 15:53  mathieu_ribatet
+
+	* src/schlatherind.c: Fix a bug in schlatherinddsgnmat: the non
+	  feasible region was not
+	  penalized for all cases
+
+2008-11-17 12:57  mathieu_ribatet
+
+	* src/covariance.c: Changing how to deal with smooth >= 2 for the
+	  powered exponential
+	  covariance model
+
+2008-10-31 16:45  mathieu_ribatet
+
+	* src/covariance.c, src/fitcovmat.c, src/geomgauss.c, src/header.h,
+	  src/schlather.c, src/schlatherind.c, src/smith.c, src/smith3d.c,
+	  src/utils.c: Change the behaviour with non-feasible regions:
+	  seems to be more
+	  robust now...
+
+2008-10-28 13:44  mathieu_ribatet
+
+	* src/covariance.c: Add an upper bound (i.e. 3) for the sigma2
+	  parameter in the geometric
+	  gaussian process
+
+2008-10-24 07:54  mathieu_ribatet
+
+	* R/covariance.R, src/covariance.c: Update the bounds for the
+	  covariance functions to avoid numerical
+	  issues
+
+2008-10-22 16:05  mathieu_ribatet
+
+	* DESCRIPTION: Add a link to the project web page
+
+2008-10-22 12:23  mathieu_ribatet
+
+	* src/univllik.c, src/utils.c: Now the Gumbel distribution is
+	  considered whenever the shape parameter
+	  is <= 1-6
+
+2008-10-22 12:22  mathieu_ribatet
+
+	* R/extcoeff.R, man/madogram.Rd: Change the madogram function. Now
+	  it is computed for each pairwise
+	  distance - bins can be optionnaly passed though
+
+2008-10-16 12:39  mathieu_ribatet
+
+	* inst/doc/SpatialExtremesGuide.Rnw, man/condmap.Rd,
+	  man/covariance.Rd, man/extcoeffemp.Rd, man/fitcovariance.Rd,
+	  man/fitmaxstab.Rd, man/madogram.Rd, man/map.Rd,
+	  man/predict.maxstab.Rd, man/profile.maxstab.Rd: Modifying the
+	  vignette and example to reduce the time to build the
+	  package
+
+2008-10-13 10:28  mathieu_ribatet
+
+	* src/geomgauss.c, src/gradients.c, src/schlather.c,
+	  src/schlatherind.c, src/smith.c, src/smith3d.c: Cleaning the
+	  code: unused declared variables
+	  Fix a mistake in computing the gradient dz2shape instead of
+	  dz2scale
+
+2008-10-11 22:45  mathieu_ribatet
+
+	* man/prior.Rd: remove one copy of prior.Rd
+
+2008-10-11 22:44  mathieu_ribatet
+
+	* man/posterior.Rd: remove one copy of posterior.Rd
+
+2008-10-09 08:53  mathieu_ribatet
+
+	* R/mcmc.R: moving mcmc.R to the development folder
+
+2008-10-07 13:45  mathieu_ribatet
+
+	* R/psplines.R: Misplace conditional if resulting in cv = NA even
+	  when penalty = "gcv"
+	  or "cv"
+
+2008-10-06 22:12  mathieu_ribatet
+
+	* R/fitmaxstable.R, R/plots.R, man/SpatialExtremes.Rd,
+	  man/anova.Rd, man/condmap.Rd, man/fitmaxstab.Rd: Add the
+	  conditional quantile map and refine the documentation
+
+2008-10-06 20:08  mathieu_ribatet
+
+	* doc: Moving the package to the /pkg folder
+
+2008-10-06 20:07  mathieu_ribatet
+
+	* R: Moving the package to the /pkg folder
+
+2008-10-06 20:07  mathieu_ribatet
+
+	* doc, doc/SpatialExtremesGuide.Rnw, doc/references.bib: Moving the
+	  package to the /pkg folder
+
+2008-10-06 20:07  mathieu_ribatet
+
+	* inst: Moving the package to the /pkg folder
+
+2008-10-06 20:06  mathieu_ribatet
+
+	* man: Moving the package to the /pkg folder
+
+2008-10-06 20:06  mathieu_ribatet
+
+	* src: Moving the package to the /pkg folder
+
+2008-10-06 19:59  mathieu_ribatet
+
+	* DESCRIPTION: Move the package to the r-forge repo
+
+2008-10-06 19:59  mathieu_ribatet
+
+	* ChangeLog: Move the package to the r-forge repo
+
+2008-10-06 19:51  mathieu_ribatet
+
+	* .: re-creating the pkg folder
+
