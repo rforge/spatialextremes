@@ -618,11 +618,9 @@ legend("topright", c(expression(nu == 4), expression(nu == 2),
 <<label=Schlather2Sim,echo=FALSE>>=
 x <- y <- seq(0, 10, length = 100)
 set.seed(12)
-ms0 <- MaxStableRF(x, y, grid=TRUE, model="wh", param=c(0,1,0,1, 1), maxstable="extr")
-ms0 <- t(ms0)
+ms0 <- rmaxstab(1, cbind(x, y), "whitmat", sill = 1, range = 1, smooth = 1, grid=TRUE)[,,1]
 set.seed(12)
-ms1 <- MaxStableRF(x, y, grid=TRUE, model="stable", param=c(0,1,0,1.5, 1), maxstable="extr")
-ms1 <- t(ms1)
+ms1 <- rmaxstab(1, cbind(x, y), "powexp", sill = 1, range = 1.5, smooth = 1, grid=TRUE)[,,1]
 
 par(mfrow=c(1,2))
 image(x, y, log(ms0), col = terrain.colors(30))
