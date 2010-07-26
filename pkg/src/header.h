@@ -510,9 +510,9 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 		     int *ntemploccoeff, double *tempdsgnmatscale, int *ntempscalecoeff,
 		     double *tempdsgnmatshape, int *ntempshapecoeff, double *loccoeff,
 		     double *scalecoeff, double *shapecoeff, double *temploccoeff,
-		     double *tempscalecoeff, double *tempshapecoeff, double *sigma2,
-		     double *sill, double *range, double *smooth, double *smooth2,
-		     double *df, int *fitmarge, int *usetempcov, double *hess, double *grad);
+		     double *tempscalecoeff, double *tempshapecoeff, double *sill, double *range,
+		     double *smooth, double *smooth2, double *df, int *fitmarge, int *usetempcov,
+		     double *hess, double *grad);
 
 ///////////////////////////////////
 //  From standardErrorsCommonPart.c

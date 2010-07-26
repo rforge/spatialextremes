@@ -1073,9 +1073,9 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 		     int *ntemploccoeff, double *tempdsgnmatscale, int *ntempscalecoeff,
 		     double *tempdsgnmatshape, int *ntempshapecoeff, double *loccoeff,
 		     double *scalecoeff, double *shapecoeff, double *temploccoeff,
-		     double *tempscalecoeff, double *tempshapecoeff, double *sigma2,
-		     double *sill, double *range, double *smooth, double *smooth2,
-		     double *df, int *fitmarge, int *usetempcov, double *hess, double *grad){
+		     double *tempscalecoeff, double *tempshapecoeff, double *sill, double *range,
+		     double *smooth, double *smooth2, double *df, int *fitmarge, int *usetempcov,
+		     double *hess, double *grad){
   /* This function computes the hessian of the log-pairwise
      likelihood for the extremal t model. */
 
@@ -1083,7 +1083,7 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
     flag = usetempcov[0] + usetempcov[1] + usetempcov[2];
   int i, currentPair = -1, nCorPar = 3;
   double *locs, *scales, *shapes, *rho, *jac, *frech, *trendlocs,
-    *trendscales, *trendshapes, idf = *df + 1, dfPlus1 = *df + 1;
+    *trendscales, *trendshapes, idf = 1 / *df, dfPlus1 = *df + 1;
 
   jac = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   rho = (double *)R_alloc(nPairs, sizeof(double));
