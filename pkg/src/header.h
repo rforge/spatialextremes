@@ -34,7 +34,7 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 //
 void schlatherindfull(int *covmod, double *data, double *dist, int *nSite,
 		      int *nObs, int *dim, int *weighted, double *weights,
-		      double *locs, double *scales, double *shapes, 
+		      double *locs, double *scales, double *shapes,
 		      double *alpha, double *sill, double *range, double *smooth,
 		      double *smooth2, int *fitmarge,double *dns);
 void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs, int *dim,
@@ -134,6 +134,7 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs, int *wei
 		  double *shapecoeff, double *tempcoeffloc, double *tempcoeffscale,
 		  double *tempcoeffshape, double *cov11, double *cov12, double *cov22,
 		  double *dns);
+
 ///////////////////////////////////
 //  From smith3d.c
 //
@@ -158,17 +159,40 @@ void smithdsgnmat(double *data, double *distVec, int *nSite, int *nObs, int *wei
 		  double *dns);
 
 ///////////////////////////////////
+//  From extremalt.c
+//
+void extremaltfull(int *covmod, double *data, double *dist, int *nSite, int *nObs,
+		   int *dim, int *weighted, double *weights, double *locs, double *scales,
+		   double *shapes, double *sill, double *range, double *smooth, double *smooth2,
+		   double *df, int *fitmarge, double *dns);
+void extremaltdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *nObs, int *dim,
+		      int *weighted, double *weights, double *locdsgnmat, double *locpenmat,
+		      int *nloccoeff, int *npparloc, double *locpenalty, double *scaledsgnmat,
+		      double *scalepenmat, int *nscalecoeff, int *npparscale,
+		      double *scalepenalty, double *shapedsgnmat, double *shapepenmat,
+		      int *nshapecoeff, int *npparshape, double *shapepenalty, int *usetempcov,
+		      double *tempdsgnmatloc, double *temppenmatloc, int *ntempcoeffloc,
+		      int *nppartempcoeffloc, double *temppenaltyloc, double *tempdsgnmatscale,
+		      double *temppenmatscale, int *ntempcoeffscale, int *nppartempcoeffscale,
+		      double *temppenaltyscale, double *tempdsgnmatshape, double *temppenmatshape,
+		      int *ntempcoeffshape, int *nppartempcoeffshape, double *temppenaltyshape,
+		      double *loccoeff, double *scalecoeff, double *shapecoeff,
+		      double *tempcoeffloc, double *tempcoeffscale, double *tempcoeffshape,
+		      double *sill, double *range, double *smooth, double *smooth2, double *df,
+		      double *dns);
+
+///////////////////////////////////
 //  From utils.c
 //
 void distance(double *coord, int *nDim, int *nSite, int *vec, double *dist);
-void distance2orig(double *coord, int n, int dim, double *dist);
+void distance2orig(double *coord, int n, int dim, double *dist, int grid);
 double gev2frech(double *data, int nObs, int nSite, double *locs,
 		 double *scales, double *shapes, double *jac, double *frech);
 double gev2frechTrend(double *data, int nObs, int nSite, double *locs, double *scales,
 		      double *shapes, double *trendlocs, double *trendscales,
 		      double *trendshapes,double *jac, double *frech);
 double dsgnmat2Param(double *locdsgnmat, double *scaledsgnmat,
-		     double *shapedsgnmat, double *loccoeff, 
+		     double *shapedsgnmat, double *loccoeff,
 		     double *scalecoeff, double *shapecoeff,
 		     int nSite, int nloccoeff, int nscalecoeff,
 		     int nshapecoeff, double *locs, double *scales,
@@ -185,9 +209,9 @@ void dsgnmat2temptrend(double *dsgnmatloc, double *dsgnmatscale, double *dsgnmat
 		       int nObs, int *usetempcov, int nloccoeff, int nscalecoeff,
 		       int nshapecoeff, double *trendlocs, double *trendscales,
 		       double *trendshapes);
-void dsgnmat2Alpha(double *alphadsgnmat, double *alphacoeff, 
+void dsgnmat2Alpha(double *alphadsgnmat, double *alphacoeff,
 		   int nSite, int nalphacoeff, double *alphas);
-void dsgnmat2Sigma2(double *sigma2dsgnmat, double *sigma2coeff, 
+void dsgnmat2Sigma2(double *sigma2dsgnmat, double *sigma2coeff,
 		    int nSite, int nsigma2coeff, double *sigma2);
 void gev(double *prob, int *n, double *locs, double *scales, double *shapes,
 	 double *quant);
@@ -216,7 +240,7 @@ double bessel(double *dist, int n, int dim, double sill,
 double mahalDistFct(double *distVec, int n, double *cov11,
 		    double *cov12, double *cov22, double *mahal);
 double mahalDistFct3d(double *distVec, int n, double *cov11,
-		      double *cov12, double *cov13, double *cov22, 
+		      double *cov12, double *cov13, double *cov22,
 		      double *cov23, double *cov33, double *mahal);
 double geomCovariance(double *dist, int n, int dim, int covmod,
 		      double sigma2, double sigma2Bound, double sill,
@@ -245,6 +269,8 @@ double lplikschlather(double *data, double *rho, double *jac,
 		      int nObs, int nSite);
 double lplikschlatherind(double *data, double alpha, double *rho,
 			 double *jac, int nObs, int nSite);
+double lplikextremalt(double *data, double *rho, double df, double *jac,
+		      int nObs, int nSite);
 
 ///////////////////////////////////
 //  From weightedPairwiselik.c
@@ -255,6 +281,8 @@ double wlpliksmith(double *data, double *mahalDist, double *jac,
 		   int nObs, int nSite, double *weights);
 double wlplikschlatherind(double *data, double alpha, double *rho,
 			  double *jac, int nObs, int nSite, double *weights);
+double wlplikextremalt(double *data, double *rho, double df, double *jac,
+		       int nObs, int nSite, double *weights);
 
 ///////////////////////////////////
 //  From penalizations.c
@@ -286,6 +314,9 @@ void fitcovmat3d(double *cov11, double *cov12, double *cov13,
 void fitcovariance(int *covmod, double *sill, double *range, double *smooth,
 		   double *smooth2, int *nPairs, int *dim, double *distVec,
 		   double *extcoeff, double *weights, double *ans);
+void fittcovariance(int *covmod, double *sill, double *range, double *smooth,
+		    double *smooth2, double *DoF, int *nPairs, int *dim, double *dist,
+		    double *extcoeff, double *weights, double *ans);
 void fiticovariance(int *covmod, double *alpha, double *sill, double *range,
 		    double *smooth, double *smooth2, int *nPairs, int *dim,
 		    double *dist, double *extcoeff, double *weights, double *ans);
@@ -352,7 +383,7 @@ void rotation(double *coord, int *n, double *u, double *v, double *w,
 ///////////////////////////////////
 //  From turningbands.c
 //
-void tbm(int *nobs, int *nsite, int *dim, int *covmod, int *grid, 
+void tbm(int *nobs, int *nsite, int *dim, int *covmod, int *grid,
 	 double *coord, double *nugget, double *sill, double *range,
 	 double *smooth, int *nlines, double *ans);
 
@@ -432,7 +463,7 @@ void schlatherstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 		     double *locdsgnmat, int *nloccoeff, double *scaledsgnmat, int *nscalecoeff,
 		     double *shapedsgnmat, int *nshapecoeff, double *tempdsgnmatloc,
 		     int *ntemploccoeff, double *tempdsgnmatscale, int *ntempscalecoeff,
-		     double *tempdsgnmatshape, int *ntempshapecoeff, double *loccoeff, 
+		     double *tempdsgnmatshape, int *ntempshapecoeff, double *loccoeff,
 		     double *scalecoeff, double *shapecoeff, double *temploccoeff,
 		     double *tempscalecoeff, double *tempshapecoeff, double *sill, double *range,
 		     double *smooth, double *smooth2, int *fitmarge, int *usetempcov, double *hess,
@@ -441,7 +472,7 @@ void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite, int
 			double *locdsgnmat, int *nloccoeff, double *scaledsgnmat,
 			int *nscalecoeff, double *shapedsgnmat,	int *nshapecoeff,
 			double *tempdsgnmatloc, int *ntemploccoeff, double *tempdsgnmatscale,
-			int *ntempscalecoeff, double *tempdsgnmatshape, int *ntempshapecoeff, 
+			int *ntempscalecoeff, double *tempdsgnmatshape, int *ntempshapecoeff,
 			double *loccoeff, double *scalecoeff, double *shapecoeff,
 			double *temploccoeff, double *tempscalecoeff, double *tempshapecoeff,
 			double *alpha, double *sill, double *range, double *smooth,
@@ -473,6 +504,15 @@ void spatgevstderr(double *data, int *nSite, int *nObs, double *locdsgnmat,
 		   double *scalecoeff, double *shapecoeff, double *temploccoeff,
 		   double *tempscalecoeff, double *tempshapecoeff, int *usetempcov,
 		   double *hess, double *grad);
+void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *nObs,
+		     double *locdsgnmat, int *nloccoeff, double *scaledsgnmat, int *nscalecoeff,
+		     double *shapedsgnmat, int *nshapecoeff, double *tempdsgnmatloc,
+		     int *ntemploccoeff, double *tempdsgnmatscale, int *ntempscalecoeff,
+		     double *tempdsgnmatshape, int *ntempshapecoeff, double *loccoeff,
+		     double *scalecoeff, double *shapecoeff, double *temploccoeff,
+		     double *tempscalecoeff, double *tempshapecoeff, double *sigma2,
+		     double *sill, double *range, double *smooth, double *smooth2,
+		     double *df, int *fitmarge, int *usetempcov, double *hess, double *grad);
 
 ///////////////////////////////////
 //  From standardErrorsCommonPart.c

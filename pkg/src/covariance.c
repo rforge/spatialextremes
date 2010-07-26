@@ -6,7 +6,7 @@ double whittleMatern(double *dist, int n, double sill, double range,
   //This function computes the whittle-matern covariance function
   //between each pair of locations.
   //When ans != 0.0, the whittle-matern parameters are ill-defined.
-  
+
   int i;
   const double cst = sill * R_pow(2, 1 - smooth) / gammafn(smooth),
     irange = 1 / range;
@@ -25,7 +25,7 @@ double whittleMatern(double *dist, int n, double sill, double range,
 
   if (sill <= 0)
     return (1 - sill) * (1 - sill) * MINF;
-  
+
   for (i=n;i--;){
     double cst2 = dist[i] * irange;
 
@@ -48,11 +48,11 @@ double cauchy(double *dist, int n, double sill, double range,
 
   int i;
   const double irange2 = 1 / (range * range);
-  
+
   //Some preliminary steps: Valid points?
   if (smooth < 0)
     return (1 - smooth) * (1 - smooth) * MINF;
-  
+
   else if (smooth > 100)
     return (smooth - 99) * (smooth - 99) * MINF;
 
@@ -61,10 +61,10 @@ double cauchy(double *dist, int n, double sill, double range,
 
   if (sill <= 0.0)
     return (1 - sill) * (1 - sill) * MINF;
-  
+
   for (i=n;i--;)
     rho[i] = sill * R_pow(1 + dist[i] * dist[i] * irange2, -smooth);
-    
+
   return 0.0;
 }
 
@@ -77,7 +77,7 @@ double caugen(double *dist, int n, double sill, double range,
 
   int i;
   const double irange = 1 / range, ratioSmooth = -smooth / smooth2;
-  
+
   //Some preliminary steps: Valid points?
   if (smooth < 0)
     return (1 - smooth) * (1 - smooth) * MINF;
@@ -87,17 +87,17 @@ double caugen(double *dist, int n, double sill, double range,
 
   if ((smooth2 > 2) || (smooth2 <= 0))
     return (1 - smooth2) * (1 - smooth2) * MINF;
-  
+
   if (range <= 0)
     return (1 - range) * (1 - range)* MINF;
 
   if (sill <= 0)
     return (1 - sill) * (1 - sill) * MINF;
-  
+
   for (i=n;i--;)
     rho[i] = sill * R_pow(1 + R_pow(dist[i] * irange, smooth2),
 			  ratioSmooth);
-    
+
   return 0.0;
 }
 
@@ -110,7 +110,7 @@ double powerExp(double *dist, int n, double sill, double range,
 
   int i;
   const double irange = 1 / range;
-    
+
   //Some preliminary steps: Valid points?
   if ((smooth < 0) || (smooth > 2))
     return (1 - smooth) * (1 - smooth) * MINF;
@@ -120,10 +120,10 @@ double powerExp(double *dist, int n, double sill, double range,
 
   if (sill <= 0)
     return (1 - sill) * (1 - sill) * MINF;
-  
+
   for (i=n;i--;)
     rho[i] = sill * exp(-R_pow(dist[i] * irange, smooth));
-    
+
   return 0.0;
 }
 
@@ -168,14 +168,14 @@ double bessel(double *dist, int n, int dim, double sill,
 
   return 0.0;
 }
-  
+
 double mahalDistFct(double *distVec, int n, double *cov11,
 		    double *cov12, double *cov22, double *mahal){
   //This function computes the mahalanobis distance between each pair
   //of locations. Currently this function is only valid in 2D
   //When ans != 0.0, the covariance matrix and/or the mahalanobis
   //distance is ill-defined.
-  
+
   int i;
   const double det = *cov11 * *cov22 - *cov12 * *cov12,
     idet = 1 / det;
@@ -187,26 +187,26 @@ double mahalDistFct(double *distVec, int n, double *cov11,
 
   if (*cov22 <= 0)
     return (1 - *cov22) * (1 - *cov22) * MINF;
-  
+
   if (det <= 0)
     return (1 - det) * (1 - det) * MINF;
-  
+
   for (i=n;i--;)
     mahal[i] = sqrt((*cov11 * distVec[n + i] * distVec[n + i] -
 		     2 * *cov12 * distVec[i] * distVec[n + i] +
 		     *cov22 * distVec[i] * distVec[i]) * idet);
-    
+
   return 0.0;
 }
 
 double mahalDistFct3d(double *distVec, int n, double *cov11,
-		      double *cov12, double *cov13, double *cov22, 
+		      double *cov12, double *cov13, double *cov22,
 		      double *cov23, double *cov33, double *mahal){
   //This function computes the mahalanobis distance between each pair
   //of locations. Currently this function is only valid in 3D
   //When ans != 0.0, the covariance matrix and/or the mahalanobis
   //distance is ill-defined.
-  
+
   int i;
   const double det = *cov11 * *cov22 * *cov33 - *cov12 * *cov12 * *cov33 -
     *cov11 * *cov23 * *cov23 + 2 * *cov12 * *cov13 * *cov23 -
@@ -224,7 +224,7 @@ double mahalDistFct3d(double *distVec, int n, double *cov11,
 
   if (detMin <= 0)
     return (1 - detMin) * (1 - detMin) * MINF;
-  
+
   for (i=n;i--;){
 
     mahal[i] = ((*cov22 * *cov33 - *cov23 * *cov23) * distVec[i] * distVec[i] +
@@ -237,7 +237,7 @@ double mahalDistFct3d(double *distVec, int n, double *cov11,
 
     mahal[i] = sqrt(mahal[i]);
   }
-  
+
   return 0.0;
 }
 
@@ -279,16 +279,16 @@ double geomCovariance(double *dist, int n, int dim, int covmod,
   if (ans != 0.0)
     return ans;
 
-  for (i=n;i--;)    
+  for (i=n;i--;)
     rho[i] = sqrt(twiceSigma2 * (1 - rho[i]));
-  
+
   return ans;
 }
 
 double nsgeomCovariance(double *dist, int nSite, int dim, int covmod,
 			double *sigma2, double sill, double range,
 			double smooth, double smooth2, double *rho){
-  
+
   int i, j, currentPair = 0;
   const int nPairs = nSite * (nSite - 1) / 2;
   double ans = 0.0;
@@ -305,7 +305,7 @@ double nsgeomCovariance(double *dist, int nSite, int dim, int covmod,
     break;
   case 4:
     ans = bessel(dist, nPairs, dim, sill, range, smooth, rho);
-    break; 
+    break;
   case 5:
     ans = caugen(dist, nPairs, sill, range, smooth, smooth2, rho);
   }
@@ -315,7 +315,7 @@ double nsgeomCovariance(double *dist, int nSite, int dim, int covmod,
 
   for (i=0;i<(nSite-1);i++){
     for (j=i+1;j<nSite;j++){
-      rho[currentPair] = sqrt(sigma2[i] - 2 * sqrt(sigma2[i] * sigma2[j]) * 
+      rho[currentPair] = sqrt(sigma2[i] - 2 * sqrt(sigma2[i] * sigma2[j]) *
 			      rho[currentPair] + sigma2[j]);
       currentPair++;
     }
@@ -323,7 +323,7 @@ double nsgeomCovariance(double *dist, int nSite, int dim, int covmod,
 
   return ans;
 }
-      
+
 
 double brownResnick(double *dist, int n, double range, double smooth,
 		    double *rho){
@@ -346,7 +346,7 @@ double fbm(double *coord, double *dist, int dim, int nSite, double sill, double 
   /* This function computes the covariance function related to a
   fractional Brownian motion.  When ans != 0.0, the parameters are
   ill-defined. */
-  
+
   int i, j, currentPair = -1;
   const double irange = 1 / range;
   double *distOrig;
@@ -366,7 +366,7 @@ double fbm(double *coord, double *dist, int dim, int nSite, double sill, double 
   if (sill <= 0)
     return (1 - sill) * (1 - sill) * MINF;
 
-  distance2orig(coord, nSite, dim, distOrig);
+  distance2orig(coord, nSite, dim, distOrig, 0);
 
   /* Rmk: 0.5 Var[Z(x)] = \gamma(||x||) as Z(o) = 0, where \gamma is
      the semi-variogram */
@@ -376,7 +376,7 @@ double fbm(double *coord, double *dist, int dim, int nSite, double sill, double 
   for (i=0;i<(nSite-1);i++){
     for (j=i+1;j<nSite;j++){
       currentPair++;
-      rho[currentPair] = sill * (distOrig[i] + distOrig[j] -  
+      rho[currentPair] = sill * (distOrig[i] + distOrig[j] -
 				 R_pow(dist[currentPair] * irange, smooth));
     }
   }
