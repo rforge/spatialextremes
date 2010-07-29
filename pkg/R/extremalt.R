@@ -234,7 +234,7 @@ Standard errors are not available unless you fix it.")
                                     std.err.type = std.err.type, fixed.param = names(fixed.param),
                                     param.names = param.names, weights = weights)
 
-        print(rbind(opt$grad, -std.err$grad))
+        print(rbind(numerical = opt$grad, analytical = -std.err$grad))
         opt$hessian <- std.err$hessian
         var.score <- std.err$var.score
         ihessian <- try(solve(opt$hessian), silent = TRUE)
@@ -655,12 +655,13 @@ Standard errors are not available unless you fix it.")
         weights <- NULL
 
     if (std.err.type != "none"){
-        std.err <- .schlatherstderr(param, data, dist, cov.mod.num, loc.dsgn.mat, scale.dsgn.mat,
+        std.err <- .extremaltstderr(param, data, dist, cov.mod.num, loc.dsgn.mat, scale.dsgn.mat,
                                     shape.dsgn.mat, temp.dsgn.mat.loc, temp.dsgn.mat.scale,
                                     temp.dsgn.mat.shape, use.temp.cov, fit.marge = fit.marge,
                                     std.err.type = std.err.type, fixed.param = names(fixed.param),
                                     param.names = param.names, weights = weights)
 
+        print(rbind(numerical = opt$grad, analytical = -std.err$grad))
         opt$hessian <- std.err$hessian
         var.score <- std.err$var.score
         ihessian <- try(solve(opt$hessian), silent = TRUE)

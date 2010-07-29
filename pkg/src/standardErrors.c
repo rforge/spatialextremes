@@ -1082,18 +1082,17 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
   const int nPairs = *nSite * (*nSite - 1) / 2,
     flag = usetempcov[0] + usetempcov[1] + usetempcov[2];
   int i, currentPair = -1, nCorPar = 3;
-  double *locs, *scales, *shapes, *rho, *jac, *frech, *trendlocs,
-    *trendscales, *trendshapes, idf = 1 / *df, dfPlus1 = *df + 1;
+  const double idf = 1 / *df, dfPlus1 = *df + 1;
 
-  jac = (double *)R_alloc(*nObs * *nSite, sizeof(double));
-  rho = (double *)R_alloc(nPairs, sizeof(double));
-  locs = (double *)R_alloc(*nSite, sizeof(double));
-  scales = (double *)R_alloc(*nSite, sizeof(double));
-  shapes = (double *)R_alloc(*nSite, sizeof(double));
-  frech = (double *)R_alloc(*nObs * *nSite, sizeof(double));
-  trendlocs = (double *)R_alloc(*nObs, sizeof(double));
-  trendscales = (double *)R_alloc(*nObs, sizeof(double));
-  trendshapes = (double *)R_alloc(*nObs, sizeof(double));
+  double *jac = (double *)R_alloc(*nObs * *nSite, sizeof(double)),
+    *rho = (double *)R_alloc(nPairs, sizeof(double)),
+    *locs = (double *)R_alloc(*nSite, sizeof(double)),
+    *scales = (double *)R_alloc(*nSite, sizeof(double)),
+    *shapes = (double *)R_alloc(*nSite, sizeof(double)),
+    *frech = (double *)R_alloc(*nObs * *nSite, sizeof(double)),
+    *trendlocs = (double *)R_alloc(*nObs, sizeof(double)),
+    *trendscales = (double *)R_alloc(*nObs, sizeof(double)),
+    *trendshapes = (double *)R_alloc(*nObs, sizeof(double));
 
   /* We have to intialized them to 0 as we don't know if
      dsgnmat2temptrend will be called */
@@ -1155,55 +1154,72 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 
       int k;
       double a = sqrt(dfPlus1 / (1 - rho[currentPair] * rho[currentPair])),
+	//partial derivatives of a w.r.t. rho and df
 	da_rho = a * rho[currentPair] / (1 - rho[currentPair] * rho[currentPair]),
-	da_df = 0.5 / (a * (1 - rho[currentPair] * rho[currentPair]));
+	da_df = 0.5 * a / dfPlus1;
 
       for (k=*nObs;k--;){
-	//We start by computing the gradient for the correlation function parameters
-	double idata1 = 1 / data[k + i * *nObs], idata2 = 1 / data[k + j * *nObs],
-	  data2_1 = R_pow(data[k + j * *nObs] * idata1, idf), data1_2 = 1 / data2_1,
-	  c1 = (data2_1 - rho[currentPair]) * a, c2 = (data1_2 - rho[currentPair]) * a,
-	  dtc1 = dt(c1, dfPlus1, 0), dtc2 = dt(c2, dfPlus1, 0),
-	  ptc1 = pt(c1, dfPlus1, 1, 0), ptc2 = pt(c2, dfPlus1, 1, 0),
-	  dertc1 = -(1 + 1 / dfPlus1) * c1 / (1  + c1 * c1 / dfPlus1) * dtc1,
-	  dertc2 = -(1 + 1 / dfPlus1) * c2 / (1  + c2 * c2 / dfPlus1) * dtc2,
-	  der2tc1 = -dertc1 / c1 - dertc1 / dtc1 * dertc1 + 2 * dtc1 * c1 /
-	  (dfPlus1 * (1 + c1 * c1) / dfPlus1),
-	  der2tc2 = -dertc2 / c2 - dertc2 / dtc2 * dertc2 + 2 * dtc2 * c2 /
-	  (dfPlus1 * (1 + c2 * c2) / dfPlus1),
-	  dc1_rho = (rho[currentPair] * data2_1 - 1) * a /
-	  (1 - rho[currentPair] * rho[currentPair]),
-	  dc2_rho = (rho[currentPair] * data1_2 - 1) * a /
-	  (1 - rho[currentPair] * rho[currentPair]),
-	  //A = pt(c1) * idata1 + pt(c2) * idata2,
-	  dA_rho = idata1 * dc1_rho * dtc1 + idata2 * dc2_rho * dtc2,
-	  B = ptc1 * idata1 * idata1 + dtc1 * idata1 * idata1 * idf * data2_1 * a -
-	  dtc2 * idata1 * idata2 * idf * data1_2 * a,
-	  dB_rho = idata1 * idata1 * dc1_rho * dtc1 +
-	  idata1 * idata1 * idf * dc1_rho * dertc1 * data2_1 * a +
-	  dtc1 * idata1 * idata1 * idf * data2_1 * da_rho -
-	  idata1 * idata2 * idf * dc2_rho * dertc2 * data1_2 * a -
-	  idata1 * idata2 * idf * dtc2 * data1_2 * da_rho,
-	  C = ptc2 * idata2 * idata2 + dtc2 * idata1 * idata1 * idf * data1_2 * a -
-	  dtc1 * idata1 * idata2 * idf * data2_1 * a,
-	  dC_rho = idata2 * idata2 * dc2_rho * dtc2 +
-	  idata1 * idata1 * idf * dc2_rho * dertc2 * data1_2 * a +
-	  idata1 * idata1 * idf * dtc2 * data1_2 * da_rho -
-	  idata1 * idata2 * idf * dc1_rho * dertc1 * data2_1 * a -
-	  idata1 * idata2 * idf * dtc1 * data2_1 * da_rho,
-	  D = idata1 * idata1 *idata2 * data2_1 * idf * idf * dfPlus1 * a * dtc1 +
-	  idata1 * idata2 * idata2 * data1_2 * idf * idf * dfPlus1 * a * dtc2 +
-	  idata1 * idata1 * idata2 * data2_1 * data2_1 * idf * idf * a * a * dertc1 +
-	  idata1 * idata2 * idf * idf * data1_2 * data1_2 * idata2 * a * a * dertc2,
-	  dD_rho = idata1 * idata1 *idata2 * data2_1 * idf * idf * dfPlus1 * da_rho * dtc1 +
-	  idata1 * idata1 *idata2 * data2_1 * idf * idf * dfPlus1 * a * dc1_rho * dertc1 +
-	  idata1 * idata2 * idata2 * data1_2 * idf * idf * dfPlus1 * da_rho * dtc2 +
-	  idata1 * idata2 * idata2 * data1_2 * idf * idf * dfPlus1 * a * dc2_rho * dertc2 +
-	  idata1 * idata1 * idata2 * data2_1 * data2_1 * idf * idf * 2 * da_rho * a * dertc1 +
-	  idata1 * idata1 * idata2 * data2_1 * data2_1 * idf * idf * a * a * dc1_rho * der2tc1 +
-	  idata1 * idata2 * idf * idf * data1_2 * data1_2 * idata2 * 2 * da_rho * a * dertc2 +
-	  idata1 * idata2 * idf * idf * data1_2 * data1_2 * idata2 * a * a * dc2_rho * der2tc2,
-	  jacCommonRho = dA_rho + (dB_rho * C + B * dC_rho + dD_rho) / (B * C + D);
+	/*-------------------------------------------------------------------------
+	  We start by computing the gradient for the correlation
+	  function parameters
+	  --------------------------------------------------------------------------*/
+
+	double //some useful quantities
+	  ifrech1 = 1 / frech[k + i * *nObs],
+	  ifrech2 = 1 / frech[k + j * *nObs],
+	  frech2_1 = R_pow(frech[k + j * *nObs] * ifrech1, idf),
+	  frech1_2 = 1 / frech2_1,
+	  c1 = (frech2_1 - rho[currentPair]) * a,
+	  c2 = (frech1_2 - rho[currentPair]) * a,
+	  //The t density and distribution evaluated at c1 and c2
+	  tc1 = dt(c1, dfPlus1, 0),
+	  tc2 = dt(c2, dfPlus1, 0),
+	  Tc1 = pt(c1, dfPlus1, 1, 0),
+	  Tc2 = pt(c2, dfPlus1, 1, 0),
+	  //the next following four variables are the first and second
+	  //derivative of the t density evaluated at c1 and c2
+	  dertc1 = -(1 + 1 / dfPlus1) * c1 / (1  + c1 * c1 / dfPlus1) * tc1,
+	  dertc2 = -(1 + 1 / dfPlus1) * c2 / (1  + c2 * c2 / dfPlus1) * tc2,
+	  der2tc1 = dertc1 * dertc1 / tc1 + dertc1 / c1 + 2 * dertc1 * dertc1 /
+	  (tc1 * (dfPlus1 + 1)),
+	  der2tc2 = dertc2 * dertc2 / tc2 + dertc2 / c2 + 2 * dertc2 * dertc2 /
+	  (tc2 * (dfPlus1 + 1)),
+	  //partial derivatives of c1, c2 w.r.t. rho
+	  dc1_rho = -a + c1 / a * da_rho,
+	  dc2_rho = -a + c2 / a * da_rho,
+	  //A = -Tc1 * ifrech1 - Tc2 * ifrech2,
+	  dA_rho = -ifrech1 * dc1_rho * tc1 - ifrech2 * dc2_rho * tc2,
+	  B = ifrech1 * ifrech1 * Tc1 + ifrech1 * ifrech1 * idf * frech2_1 * tc1 * a -
+	  ifrech1 * ifrech2 * idf * frech1_2 * tc2 * a,
+	  dB_rho = ifrech1 * ifrech1 * dc1_rho * tc1 +
+	  ifrech1 * ifrech1 * idf * frech2_1 * dc1_rho * dertc1 * a +
+	  ifrech1 * ifrech1 * idf * frech2_1 * tc1 * da_rho -
+	  ifrech1 * ifrech2 * idf * frech1_2 * dc2_rho * dertc2 * a -
+	  ifrech1 * ifrech2 * idf * frech1_2 * tc2 * da_rho,
+	  C = ifrech2 * ifrech2 * Tc2 + ifrech2 * ifrech2 * idf * frech1_2 * tc2 * a -
+	  ifrech1 * ifrech2 * idf * frech2_1 * tc1 * a,
+	  dC_rho = ifrech2 * ifrech2 * dc2_rho * tc2 +
+	  ifrech2 * ifrech2 * idf * frech1_2 * dc2_rho * dertc2 * a +
+	  ifrech2 * ifrech2 * idf * frech1_2 * tc2 * da_rho -
+	  ifrech1 * ifrech2 * idf * frech2_1 * dc1_rho * dertc1 * a -
+	  ifrech1 * ifrech2 * idf * frech2_1 * tc1 * da_rho,
+	  D = ifrech1 * ifrech1 * ifrech2 * idf * idf * frech2_1 * dfPlus1 * a * tc1 +
+	  ifrech1 * ifrech2 * ifrech2 * idf * idf * frech1_2 * dfPlus1 * a * tc2 +
+	  ifrech1 * ifrech1 * ifrech2 * idf * idf * frech2_1 * frech2_1 * a * a * dertc1 +
+	  ifrech1 * ifrech2 * ifrech2 * idf * idf * frech1_2 * frech1_2 * a * a * dertc2,
+	  dD_rho = ifrech1 * ifrech1 * ifrech2 * idf * idf * frech2_1 * dfPlus1 * da_rho * tc1 +
+	  ifrech1 * ifrech1 * ifrech2 * idf * idf * frech2_1 * dfPlus1 * a * dc1_rho * dertc1 +
+	  ifrech1 * ifrech2 * ifrech2 * idf * idf * frech1_2 * dfPlus1 * da_rho * tc2 +
+	  ifrech1 * ifrech2 * ifrech2 * idf * idf * frech1_2 * dfPlus1 * a * dc2_rho * dertc2 +
+	  ifrech1 * ifrech1 * ifrech2 * idf * idf * frech2_1 * frech2_1 * 2 * da_rho * a * dertc1 +
+	  ifrech1 * ifrech1 * ifrech2 * idf * idf * frech2_1 * frech2_1 * a * a * dc1_rho * der2tc1 +
+	  ifrech1 * ifrech2 * ifrech2 * idf * idf * frech1_2 * frech1_2 * 2 * da_rho * a * dertc2 +
+	  ifrech1 * ifrech2 * ifrech2 * idf * idf * frech1_2 * frech1_2 * a * a * dc2_rho * der2tc2,
+	  iBCplusD = 1 / (B * C + D),
+	  jacCommonRho = dA_rho + (dB_rho * C + B * dC_rho + dD_rho) * iBCplusD;
+
+	hess[k * nPairs + currentPair] = rho[currentPair] / *sill * jacCommonRho;
+	grad[k] += hess[k * nPairs + currentPair];
 
 	switch (*covmod){
 	  case 1:
@@ -1260,43 +1276,88 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	  break;
 	}
 
-	//And then compute the gradient for the degree of freedom
-	double dc1_df = -data2_1 * log(data2_1) * idf * a + 0.5 * c1 / dfPlus1,
-	  dc2_df = -data1_2 * log(data1_2) * idf * a + 0.5 * c2 / dfPlus1,
-	  //A = pt(c1) * idata1 + pt(c2) * idata2,
-	  dA_df = idata1 * dc1_df * dtc1 + idata2 * dc2_df * dtc2,
-	  dB_df = idata1 * idata1 * dc1_df * dtc1 +
-	  idata1 * idata1 * idf * dc1_df * dertc1 * data2_1 * a +
-	  dtc1 * idata1 * idata1 * idf * data2_1 * da_df -
-	  idata1 * idata2 * idf * dc2_df * dertc2 * data1_2 * a -
-	  idata1 * idata2 * idf * dtc2 * data1_2 * da_df,
-	  dC_df = idata2 * idata2 * dc2_df * dtc2 +
-	  idata1 * idata1 * idf * dc2_df * dertc2 * data1_2 * a +
-	  idata1 * idata1 * idf * dtc2 * data1_2 * da_df -
-	  idata1 * idata2 * idf * dc1_df * dertc1 * data2_1 * a -
-	  idata1 * idata2 * idf * dtc1 * data2_1 * da_df,
-	  dD_df = idata1 * idata1 *idata2 * data2_1 * idf * idf * dfPlus1 * da_df * dtc1 +
-	  idata1 * idata1 *idata2 * data2_1 * idf * idf * dfPlus1 * a * dc1_df * dertc1 +
-	  idata1 * idata2 * idata2 * data1_2 * idf * idf * dfPlus1 * da_df * dtc2 +
-	  idata1 * idata2 * idata2 * data1_2 * idf * idf * dfPlus1 * a * dc2_df * dertc2 +
-	  idata1 * idata1 * idata2 * data2_1 * data2_1 * idf * idf * 2 * da_df * a * dertc1 +
-	  idata1 * idata1 * idata2 * data2_1 * data2_1 * idf * idf * a * a * dc1_df * der2tc1 +
-	  idata1 * idata2 * idf * idf * data1_2 * data1_2 * idata2 * 2 * da_df * a * dertc2 +
-	  idata1 * idata2 * idf * idf * data1_2 * data1_2 * idata2 * a * a * dc2_df * der2tc2;
+	grad[*nObs + k] += hess[(*nObs + k) * nPairs + currentPair];
+	grad[2 * *nObs + k] += hess[(2 * *nObs + k) * nPairs + currentPair];
+
+
+
+	/*-------------------------------------------------------------------------
+	  And now compute the gradient for the degree of freedom
+	  --------------------------------------------------------------------------*/
+
+	double //the derivatives of frech1_2 and frech2_1 w.r.t. df
+	  //frech2_1 = R_pow(frech[k + j * *nObs] * ifrech1, idf),
+	  //frech1_2 = R_pow(frech[k + i * *nObs] * ifrech2, idf),
+	  dfrech12_df = -frech1_2 * log(frech1_2) * idf,
+	  dfrech21_df = -frech2_1 * log(frech2_1) * idf,
+	  //the derivative of idf * idf * dfPlus1
+	  didfidfdfPlus1 = - (*df + 2) * idf * idf * idf,
+	  //the derivatives of c1 and c2 w.r.t. df
+	  //c1 = (frech2_1 - rho[currentPair]) * a,
+	  //c2 = (frech1_2 - rho[currentPair]) * a,
+	  dc1_df = dfrech21_df * a + (frech2_1 - rho[currentPair]) * da_df,
+	  dc2_df = dfrech12_df * a + (frech1_2 - rho[currentPair]) * da_df,
+	  //A = -Tc1 * ifrech1 - Tc2 * ifrech2,
+	  dA_df = -ifrech1 * dc1_df * tc1 - ifrech2 * dc2_df * tc2,
+	  //B = ifrech1 * ifrech1 * Tc1 + ifrech1 * ifrech1 * idf * frech2_1 * tc1 * a -
+	  //ifrech1 * ifrech2 * idf * frech1_2 * tc2 * a,
+	  dB_df = ifrech1 * ifrech1 * dc1_df * tc1 -
+	  ifrech1 * ifrech1 * idf * idf * frech2_1 * tc1 * a +
+	  ifrech1 * ifrech1 * idf * dfrech21_df * tc1 * a +
+	  ifrech1 * ifrech1 * idf * frech2_1 * dc1_df * dertc1 * a +
+	  ifrech1 * ifrech1 * idf * frech2_1 * tc1 * da_df +
+	  ifrech1 * ifrech2 * idf * idf * frech1_2 * tc2 * a -
+	  ifrech1 * ifrech2 * idf * dfrech12_df * tc2 * a -
+	  ifrech1 * ifrech2 * idf * frech1_2 * dc2_df * dertc2 * a -
+	  ifrech1 * ifrech2 * idf * frech1_2 * tc2 * da_df,
+	  //C = ifrech2 * ifrech2 * Tc2 + ifrech2 * ifrech2 * idf * frech1_2 * tc2 * a -
+	  //ifrech1 * ifrech2 * idf * frech2_1 * tc1 * a,
+	  dC_df = ifrech2 * ifrech2 * dc2_df * tc2 -
+	  ifrech2 * ifrech2 * idf * idf * frech1_2 * tc2 * a +
+	  ifrech2 * ifrech2 * idf * dfrech12_df * tc2 * a +
+	  ifrech2 * ifrech2 * idf * frech1_2 * dc2_df * dertc2 * a +
+	  ifrech2 * ifrech2 * idf * frech1_2 * tc2 * da_df +
+	  ifrech1 * ifrech2 * idf * idf * frech2_1 * tc1 * a -
+	  ifrech1 * ifrech2 * idf * dfrech21_df * tc1 * a -
+	  ifrech1 * ifrech2 * idf * frech2_1 * dc1_df * dertc1 * a -
+	  ifrech1 * ifrech2 * idf * frech2_1 * tc1 * da_df,
+	  //D = ifrech1 * ifrech1 * ifrech2 * frech2_1 * idf * idf * dfPlus1 * a * tc1 +
+	  //ifrech1 * ifrech2 * ifrech2 * frech1_2 * idf * idf * dfPlus1 * a * tc2 +
+	  //ifrech1 * ifrech1 * ifrech2 * frech2_1 * frech2_1 * idf * idf * a * a * dertc1 +
+	  //ifrech1 * ifrech2 * ifrech2 * frech1_2 * frech1_2 * idf * idf * a * a * dertc2,
+	  dD_df = ifrech1 * ifrech1 * ifrech2 * dfrech21_df * idf * idf * dfPlus1 * a * tc1 +
+	  ifrech1 * ifrech1 * ifrech2 * frech2_1 * didfidfdfPlus1 * a * tc1 +
+	  ifrech1 * ifrech1 * ifrech2 * frech2_1 * idf * idf * dfPlus1 * da_df * tc1 +
+	  ifrech1 * ifrech1 * ifrech2 * frech2_1 * idf * idf * dfPlus1 * a * dc1_df * dertc1 +
+	  ifrech1 * ifrech2 * ifrech2 * dfrech12_df * idf * idf * dfPlus1 * a * tc2 +
+	  ifrech1 * ifrech2 * ifrech2 * frech1_2 * didfidfdfPlus1 * a * tc2 +
+	  ifrech1 * ifrech2 * ifrech2 * frech1_2 * idf * idf * dfPlus1 * da_df * tc2 +
+	  ifrech1 * ifrech2 * ifrech2 * frech1_2 * idf * idf * dfPlus1 * a * dc2_df * dertc2 +
+	  ifrech1 * ifrech1 * ifrech2 * 2 * dfrech21_df * frech2_1 * idf * idf * a * a * dertc1 -
+	  ifrech1 * ifrech1 * ifrech2 * frech2_1 * frech2_1 * 2 * idf * idf * idf * a * a * dertc1 +
+	  ifrech1 * ifrech1 * ifrech2 * frech2_1 * frech2_1 * idf * idf * 2 * da_df * a * dertc1 +
+	  ifrech1 * ifrech1 * ifrech2 * frech2_1 * frech2_1 * idf * idf * a * a * dc1_df * der2tc1 +
+	  ifrech1 * ifrech2 * ifrech2 * 2 * dfrech12_df * frech1_2 * idf * idf * a * a * dertc2 -
+	  ifrech1 * ifrech2 * ifrech2 * frech1_2 * frech1_2 * 2 * idf * idf * idf * a * a * dertc2 +
+	  ifrech1 * ifrech2 * ifrech2 * frech1_2 * frech1_2 * idf * idf * 2 * da_df * a * dertc2 +
+	  ifrech1 * ifrech2 * ifrech2 * frech1_2 * frech1_2 * idf * idf * a * a * dc2_df * der2tc2;
 
 	  hess[(nCorPar * *nObs + k) * nPairs + currentPair] =
-	    dA_df + (dB_df * C + B * dC_df + dD_df) / (B * C + D);
+	    dA_df + (dB_df * C + B * dC_df + dD_df) * iBCplusD;
 	  grad[nCorPar * *nObs + k] += hess[(nCorPar * *nObs + k) * nPairs + currentPair];
 
       }
     }
   }
 
-  /*if (*fitmarge)
-    marginalPartSmith(&nCorPar, nObs, nSite, data, frech, mahalDist, locs, scales, shapes,
-		      trendlocs, trendscales, trendshapes, nloccoeff, nscalecoeff, nshapecoeff,
-		      ntemploccoeff, ntempscalecoeff, ntempshapecoeff, locdsgnmat, scaledsgnmat,
-		      shapedsgnmat, tempdsgnmatloc, tempdsgnmatscale, tempdsgnmatshape, hess, grad); */
+  if (*fitmarge){
+    nCorPar++;
+    marginalPartExtremalt(&nCorPar, nObs, nSite, data, frech, df, rho, locs, scales, shapes,
+			  trendlocs, trendscales, trendshapes, nloccoeff, nscalecoeff,
+			  nshapecoeff, ntemploccoeff, ntempscalecoeff, ntempshapecoeff,
+			  locdsgnmat, scaledsgnmat, shapedsgnmat, tempdsgnmatloc,
+			  tempdsgnmatscale, tempdsgnmatshape, hess, grad);
+  }
 
   return;
 }

@@ -164,6 +164,9 @@ double bessel(double *dist, int n, int dim, double sill,
       // approximation of the besselJ function for large x
       rho[i] = cst * R_pow(cst2, -smooth) * M_SQRT_2dPI *
 	cos(cst2 - smooth * M_PI_2 - M_PI_4);
+
+    if (!R_FINITE(rho[i]))
+      return MINF;
   }
 
   return 0.0;

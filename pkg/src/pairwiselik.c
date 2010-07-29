@@ -23,7 +23,7 @@ double lplikschlather(double *data, double *rho, double *jac,
 	   Rmq: a = .99999996 is the limiting numerical precision for
 	   which a^2 = 1 */
 
-	return (1.99999996 - rho[currentPair]) * (1.99999996 - rho[currentPair]) * MINF;
+	return (0.00000005 + rho[currentPair]) * (0.00000005 + rho[currentPair]) * MINF;
 
       for (k=nObs;k--;){
 	data1Square = data[k + i * nObs] * data[k + i * nObs];
@@ -168,7 +168,7 @@ double lplikschlatherind(double *data, double alpha, double *rho,
 	       Rmq: a = .99999996 is the limiting numerical precision for
 	       which a^2 = 1 */
 
-	    return (1.99999996 - rho[currentPair]) * (1.99999996 - rho[currentPair]) * MINF;
+	    return (0.00000005 + rho[currentPair]) * (0.00000005 + rho[currentPair]) * MINF;
 
 	for (k=nObs;k--;){
 	  data1Square = data[k + i * nObs] * data[k + i * nObs];
@@ -224,6 +224,12 @@ double lplikextremalt(double *data, double *rho, double df, double *jac,
     for (j=i+1;j<nSite;j++){
       currentPair++;
 
+      if (rho[currentPair] > .99999996)
+	/* Rmq: a = .99999996 is the limiting numerical precision for
+	   which a^2 = 1 */
+
+	return (0.00000005 + rho[currentPair]) * (0.00000005 + rho[currentPair]) * MINF;
+
       a = sqrt(dfPlus1 / (1 - rho[currentPair] * rho[currentPair]));
 
       for (k=nObs;k--;){
@@ -236,6 +242,11 @@ double lplikextremalt(double *data, double *rho, double df, double *jac,
 	c2 = (data1_2 - rho[currentPair]) * a;
 	dtc1 = dt(c1, dfPlus1, 0);
 	dtc2 = dt(c2, dfPlus1, 0);
+
+	if ((dtc1 == 0) || (dtc2 == 0))
+	  //The bivariate distribution degenerates
+	  return MINF;
+
 	ptc1 = pt(c1, dfPlus1, 1, 0);
 	ptc2 = pt(c2, dfPlus1, 1, 0);
 
@@ -266,7 +277,7 @@ double lplikextremalt(double *data, double *rho, double df, double *jac,
 	   a);
 
 	dvecMixed = dlFvecMixed + dvecM1 * dvecM2;
-	//printf("dvecMixed = %f\n", dvecMixed);
+
 	//Now the final step, multiplying by Fvec and the gradient
 	dns += log(dvecMixed) + lFvec + jac[k + i * nObs] + jac[k + j * nObs];
       }

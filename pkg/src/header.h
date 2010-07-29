@@ -541,7 +541,14 @@ void marginalPartiSchlat(int *start, int *nObs, int *nSite, double *data, double
 			 double *scaledsgnmat, double *shapedsgnmat, double *tempdsgnmatloc,
 			 double *tempdsgnmatscale, double *tempdsgnmatshape, double *hess,
 			 double *grad);
-
+void marginalPartExtremalt(int *start, int *nObs, int *nSite, double *data, double *frech,
+			   double *df, double *rho, double *locs, double *scales, double *shapes,
+			   double *trendlocs, double *trendscales, double *trendshapes,
+			   int *nloccoeff, int *nscalecoeff, int *nshapecoeff, int *ntemploccoeff,
+			   int *ntempscalecoeff, int *ntempshapecoeff, double *locdsgnmat,
+			   double *scaledsgnmat, double *shapedsgnmat, double *tempdsgnmatloc,
+			   double *tempdsgnmatscale, double *tempdsgnmatshape, double *hess,
+			   double *grad);
 ///////////////////////////////////
 //  From weightedStandardErrors.c
 //

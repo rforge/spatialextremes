@@ -115,6 +115,11 @@ void fittcovariance(int *covmod, double *sill, double *range, double *smooth,
     return;
   }
 
+  /*else if (*DoF > 15){
+    *ans = - (*DoF - 14) * (*DoF - 14) * MINF;
+    return;
+    }*/
+
   *DoF = *DoF + 1;
 
   rho = (double *)R_alloc(*nPairs, sizeof(double));

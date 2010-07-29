@@ -11,11 +11,11 @@ void extremaltfull(int *covmod, double *data, double *dist, int *nSite, int *nOb
 
   const int nPairs = *nSite * (*nSite - 1) / 2;
   int i;
-    
+
   double *jac = (double *)R_alloc(*nSite * *nObs, sizeof(double)),
     *rho = (double *)R_alloc(nPairs, sizeof(double)),
     *frech = (double *)R_alloc(*nSite * *nObs, sizeof(double));
-  
+
   //Some preliminary steps: Valid points?
   if (*fitmarge){
     for (i=0;i<*nSite;i++){
@@ -31,11 +31,16 @@ void extremaltfull(int *covmod, double *data, double *dist, int *nSite, int *nOb
     return;
   }
 
+  /*else if (*df >= 15){
+    *dns = (*df - 14) * (*df - 14) * MINF;
+    return;
+    }*/
+
   if (*sill > 1){
     *dns = *sill * *sill * MINF;
     return;
   }
-  
+
   //Stage 1: Compute the covariance at each location
   switch (*covmod){
   case 1:
@@ -71,17 +76,17 @@ void extremaltfull(int *covmod, double *data, double *dist, int *nSite, int *nOb
     else
       *dns = lplikextremalt(frech, rho, *df, jac, *nObs, *nSite);
   }
-  
+
   else {
     memset(jac, 0, *nSite * *nObs * sizeof(double));
-    
+
     if (*weighted)
       *dns = wlplikextremalt(data, rho, *df, jac, *nObs, *nSite, weights);
 
     else
       *dns = lplikextremalt(data, rho, *df, jac, *nObs, *nSite);
   }
-  
+
   return;
 }
 
@@ -102,22 +107,27 @@ void extremaltdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 		      double *dns){
   //This is the extremal t model. It's named xxxdsgnmat as either linear
   //models or p-splines are used for the gev parameters.
-  
+
   const int nPairs = *nSite * (*nSite - 1) / 2,
     flag = usetempcov[0] + usetempcov[1] + usetempcov[3];
   double *trendlocs, *trendscales, *trendshapes;
-  
+
   double *jac = (double *)R_alloc(*nSite * *nObs, sizeof(double)),
     *rho = (double *)R_alloc(nPairs, sizeof(double)),
     *locs = (double *)R_alloc(*nSite, sizeof(double)),
     *scales = (double *)R_alloc(*nSite, sizeof(double)),
     *shapes = (double *)R_alloc(*nSite, sizeof(double)),
     *frech = (double *)R_alloc(*nSite * *nObs, sizeof(double));
-  
+
   if (*df <= 0){
     *dns = (1 - *df) * (1 - *df) * MINF;
     return;
   }
+
+  /*else if (*df >= 15){
+    *dns = (*df - 14) * (*df - 14) * MINF;
+    return;
+    }*/
 
   if (*sill > 1){
     *dns = *sill * *sill * MINF;
@@ -181,7 +191,7 @@ void extremaltdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
 
   if (*dns != 0.0)
     return;
-  
+
   if (*weighted)
     *dns = wlplikextremalt(frech, rho, *df, jac, *nObs, *nSite, weights);
 
@@ -192,15 +202,15 @@ void extremaltdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   // 1- For the location parameter
   if (*locpenalty > 0)
     *dns -= penalization(locpenmat, loccoeff, *locpenalty, *nloccoeff, *npparloc);
-  
+
   // 2- For the scale parameter
-  if (*scalepenalty > 0)    
+  if (*scalepenalty > 0)
     *dns -= penalization(scalepenmat, scalecoeff, *scalepenalty, *nscalecoeff, *npparscale);
-  
+
   // 3- For the shape parameter
   if (*shapepenalty > 0)
     *dns -= penalization(shapepenmat, shapecoeff, *shapepenalty, *nshapecoeff, *npparshape);
-  
+
   // 4- Doing the same thing for the temporal component
   if (*temppenaltyloc > 0)
     *dns -= penalization(temppenmatloc, tempcoeffloc, *temppenaltyloc, *ntempcoeffloc,
