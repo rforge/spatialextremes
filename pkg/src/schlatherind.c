@@ -222,6 +222,9 @@ void schlatherinddsgnmat(int *covmod, double *data, double *dist, int *nSite, in
     *dns -= penalization(temppenmatshape, tempcoeffshape, *temppenaltyshape, *ntempcoeffshape,
 			 *nppartempcoeffshape);
 
+  if (!R_FINITE(*dns))
+    *dns = MINF;
+
   return;
   
 }
