@@ -314,6 +314,7 @@ void schlatherstderr(int *covmod, double *data, double *dist, int *nSite, int *n
     flag = usetempcov[0] + usetempcov[1] + usetempcov[2];
   int i, currentPair = -1, nCorPar = 3;
   double *rho, *locs, *scales, *shapes, *trendlocs, *trendscales, *trendshapes, *jac, *frech;
+  const double eps = 0.001;
 
   jac = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   rho = (double *)R_alloc(nPairs, sizeof(double));
@@ -412,9 +413,14 @@ void schlatherstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	     bessel_k(dist[currentPair] / *range, *smooth + 1, 1) /
 	     (bessel_k(dist[currentPair] / *range, *smooth, 1) * *range * *range)) *
 	    jacCommonRho;
-	  //The Whittle-Matern covariance function is not
-	  //differentiable w.r.t. to the smooth parameter
-	  hess[(2 * *nObs + k) * nPairs + currentPair] = R_NaReal;
+	   /* There's no closed form for the partial derivative of the
+	     BesselK function w.r.t. smooth. We use finite differences
+	     for this... */
+	  hess[(2 * *nObs + k) * nPairs + currentPair] = rho[currentPair] *
+	    (-M_LN2 - digamma(*smooth) + log(dist[currentPair] / *range) - 
+	     (1 - bessel_k(dist[currentPair] / *range, *smooth + eps, 1) /
+	      bessel_k(dist[currentPair] / *range, *smooth, 1)) / eps) *
+	    jacCommonRho;
 	  break;
 	case 2:
 	  //i.e. cauchy
@@ -493,6 +499,7 @@ void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite, int
     flag = usetempcov[0] + usetempcov[1] + usetempcov[2];
   int i, currentPair = -1, nCorPar = 4;
   double *rho, *locs, *scales, *shapes, *trendlocs, *trendscales, *trendshapes, *jac, *frech;
+  const double eps = 0.001;
 
   jac = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   rho = (double *)R_alloc(nPairs, sizeof(double));
@@ -567,8 +574,8 @@ void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite, int
       for (k=*nObs;k--;){
 	double frech1Square = frech[k + i * *nObs] * frech[k + i * *nObs],
 	  frech2Square = frech[k + j * *nObs] * frech[k + j * *nObs],
-	c1 = sqrt(frech1Square + frech2Square - 2 * frech[k + i * *nObs] *
-		  frech[k + j * *nObs] * rho[currentPair]),
+	  c1 = sqrt(frech1Square + frech2Square - 2 * frech[k + i * *nObs] *
+		    frech[k + j * *nObs] * rho[currentPair]),
 	  B = (1 - *alpha) * (1 - rho[currentPair] * rho[currentPair]) / (2 * c1 * c1 * c1),
 	  C = (*alpha - 1) * (rho[currentPair] * frech[k + i * *nObs] - c1 -
 			      frech[k + j * *nObs]) / (2 * c1 * frech[k + i * *nObs] *
@@ -607,11 +614,16 @@ void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite, int
 	  hess[(2 * *nObs + k) * nPairs + currentPair] = rho[currentPair] *
 	    (-2 * *smooth / *range + dist[currentPair] *
 	     bessel_k(dist[currentPair] / *range, *smooth + 1, 1) /
-	     bessel_k(dist[currentPair] / *range, *smooth, 1) / (*range * *range)) *
+	     bessel_k(dist[currentPair] / *range, *smooth, 1) * *range * *range) *
 	    jacCommonRho;
-	  //The Whittle-Matern covariance function is not
-	  //differentiable w.r.t. to the smooth parameter
-	  hess[(3 * *nObs + k) * nPairs + currentPair] = R_NaReal;
+	   /* There's no closed form for the partial derivative of the
+	     BesselK function w.r.t. smooth. We use finite differences
+	     for this... */
+	  hess[(3 * *nObs + k) * nPairs + currentPair] = rho[currentPair] *
+	    (-M_LN2 - digamma(*smooth) + log(dist[currentPair] / *range) - 
+	     (1 - bessel_k(dist[currentPair] / *range, *smooth + eps, 1) /
+	      bessel_k(dist[currentPair] / *range, *smooth, 1)) / eps) *
+	    jacCommonRho;
 	  break;
 	case 2:
 	  //i.e. cauchy
@@ -691,6 +703,7 @@ void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite, int *n
   int i, currentPair = -1, nCorPar = 4;
   double *mahalDist, *locs, *scales, *shapes, *jac, *frech, *trendlocs,
     *trendscales, *trendshapes;
+  const double eps = 0.001;
 
   jac = (double *)R_alloc(*nObs * *nSite, sizeof(double));
   mahalDist = (double *)R_alloc(nPairs, sizeof(double));
@@ -787,9 +800,14 @@ void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	     bessel_k(dist[currentPair] / *range, *smooth + 1, 1) /
 	     (bessel_k(dist[currentPair] / *range, *smooth, 1) * *range * *range)) *
 	    jacCommon;
-	  //The Whittle-Matern covariance function is not
-	  //differentiable w.r.t. to the smooth parameter
-	  hess[(3 * *nObs + k) * nPairs + currentPair] = R_NaReal;
+	   /* There's no closed form for the partial derivative of the
+	     BesselK function w.r.t. smooth. We use finite differences
+	     for this... */
+	  hess[(3 * *nObs + k) * nPairs + currentPair] = *sigma2 * rho / mahalDist[currentPair] *
+	    (M_LN2 + digamma(*smooth) - log(dist[currentPair] / *range) + 
+	     (1 - bessel_k(dist[currentPair] / *range, *smooth + eps, 1) /
+	      bessel_k(dist[currentPair] / *range, *smooth, 1)) / eps) *
+	    jacCommon;
 	  break;
 	case 2:
 	  //i.e. cauchy
@@ -1082,7 +1100,8 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
   const int nPairs = *nSite * (*nSite - 1) / 2,
     flag = usetempcov[0] + usetempcov[1] + usetempcov[2];
   int i, currentPair = -1, nCorPar = 3;
-  const double idf = 1 / *df, dfPlus1 = *df + 1;
+  const double idf = 1 / *df, dfPlus1 = *df + 1, eps = 0.001,
+    didfidfdfPlus1_df = - (*df + 2) * idf * idf * idf;
 
   double *jac = (double *)R_alloc(*nObs * *nSite, sizeof(double)),
     *rho = (double *)R_alloc(nPairs, sizeof(double)),
@@ -1157,6 +1176,7 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	//partial derivatives of a w.r.t. rho and df
 	da_rho = a * rho[currentPair] / (1 - rho[currentPair] * rho[currentPair]),
 	da_df = 0.5 * a / dfPlus1;
+	
 
       for (k=*nObs;k--;){
 	/*-------------------------------------------------------------------------
@@ -1178,8 +1198,8 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	  Tc2 = pt(c2, dfPlus1, 1, 0),
 	  //the next following four variables are the first and second
 	  //derivative of the t density evaluated at c1 and c2
-	  dertc1 = -(1 + 1 / dfPlus1) * c1 / (1  + c1 * c1 / dfPlus1) * tc1,
-	  dertc2 = -(1 + 1 / dfPlus1) * c2 / (1  + c2 * c2 / dfPlus1) * tc2,
+	  dertc1 = -(dfPlus1 + 1) * c1 / (dfPlus1 + c1 * c1) * tc1,
+	  dertc2 = -(dfPlus1 + 1) * c2 / (dfPlus1 + c2 * c2) * tc2,
 	  der2tc1 = dertc1 * dertc1 / tc1 + dertc1 / c1 + 2 * dertc1 * dertc1 /
 	  (tc1 * (dfPlus1 + 1)),
 	  der2tc2 = dertc2 * dertc2 / tc2 + dertc2 / c2 + 2 * dertc2 * dertc2 /
@@ -1222,16 +1242,21 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	grad[k] += hess[k * nPairs + currentPair];
 
 	switch (*covmod){
-	  case 1:
+	case 1:
 	  //i.e. Whittle-Matern
 	  hess[(*nObs + k) * nPairs + currentPair] = rho[currentPair] *
 	    (-2 * *smooth / *range + dist[currentPair] *
 	     bessel_k(dist[currentPair] / *range, *smooth + 1, 1) /
 	     (bessel_k(dist[currentPair] / *range, *smooth, 1) * *range * *range)) *
 	    jacCommonRho;
-	  //The Whittle-Matern covariance function is not
-	  //differentiable w.r.t. to the smooth parameter
-	  hess[(2 * *nObs + k) * nPairs + currentPair] = R_NaReal;
+	  /* There's no closed form for the partial derivative of the
+	     BesselK function w.r.t. smooth. We use finite differences
+	     for this... */
+	  hess[(2 * *nObs + k) * nPairs + currentPair] = rho[currentPair] *
+	    (-M_LN2 - digamma(*smooth) + log(dist[currentPair] / *range) - 
+	     (1 - bessel_k(dist[currentPair] / *range, *smooth + eps, 1) /
+	      bessel_k(dist[currentPair] / *range, *smooth, 1)) / eps) *
+	    jacCommonRho;
 	  break;
 	case 2:
 	  //i.e. cauchy
@@ -1284,68 +1309,99 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	/*-------------------------------------------------------------------------
 	  And now compute the gradient for the degree of freedom
 	  --------------------------------------------------------------------------*/
+	double //some useful quantities
+	  //partial derivatives of frech2_1, frech1_2 w.r.t. df
+	  dfrech21_df = - frech2_1 * log(frech2_1) * idf,
+	  dfrech12_df = - frech1_2 * log(frech1_2) * idf,
+	  //partial derivatives of c1, c2 w.r.t. df
+	  dc1_df = a * dfrech21_df + (frech2_1 - rho[currentPair]) * da_df,
+	  dc2_df = a * dfrech12_df + (frech1_2 - rho[currentPair]) * da_df,
+	  /* Here we have to be aware as c1 is a function of df and
+	  the t distribution/density depend also on df !!! Hence the
+	  generic derivation is of the form :
 
-	double //the derivatives of frech1_2 and frech2_1 w.r.t. df
-	  //frech2_1 = R_pow(frech[k + j * *nObs] * ifrech1, idf),
-	  //frech1_2 = R_pow(frech[k + i * *nObs] * ifrech2, idf),
-	  dfrech12_df = -frech1_2 * log(frech1_2) * idf,
-	  dfrech21_df = -frech2_1 * log(frech2_1) * idf,
-	  //the derivative of idf * idf * dfPlus1
-	  didfidfdfPlus1 = - (*df + 2) * idf * idf * idf,
-	  //the derivatives of c1 and c2 w.r.t. df
-	  //c1 = (frech2_1 - rho[currentPair]) * a,
-	  //c2 = (frech1_2 - rho[currentPair]) * a,
-	  dc1_df = dfrech21_df * a + (frech2_1 - rho[currentPair]) * da_df,
-	  dc2_df = dfrech12_df * a + (frech1_2 - rho[currentPair]) * da_df,
+	  \frac{\partial f(c1,df)}{\partial df} = D_1(f)(c1,df)
+	  \frac{\partial c1}{\partial df} + D_2(f)(c1,df),
+
+	  where D_i(f) denotes the derivative w.r.t. to the $i$-th
+	  variable of the function $f$. */
+	  
+	  /* No closed form exists for D_2[T](c1,df) so we use finite
+	     differences for this... */
+	  dTc1_df = dc1_df * tc1 + (pt(c1, dfPlus1 + eps, 1, 0) - Tc1) / eps,
+	  dTc2_df = dc2_df * tc2 + (pt(c2, dfPlus1 + eps, 1, 0) - Tc2) / eps,
+	  /* Below is the derivative of the t density w.r.t. df and
+	     evaluated at c1 and c2 i.e. c1/c2 aren't differentiated
+	     w.r.t. df!!! */
+	  D_2_tc1 = (digamma(0.5 * (dfPlus1 + 1)) - 1 / dfPlus1 -
+		     digamma(0.5 * dfPlus1) - log1p(c1 * c1 / dfPlus1) +
+		     (dfPlus1 + 1) * c1 * c1 / (dfPlus1 * (dfPlus1 + c1 * c1))) *
+	  0.5 * tc1,
+	  D_2_tc2 = (digamma(0.5 * (dfPlus1 + 1)) - 1 / dfPlus1 -
+		     digamma(0.5 * dfPlus1) - log1p(c2 * c2 / dfPlus1) +
+		     (dfPlus1 + 1) * c2 * c2 / (dfPlus1 * (dfPlus1 + c2 * c2))) *
+	  0.5 * tc2,
+	  /* Below are the total derivative of tc1 w.r.t. df i.e. both
+	     c1 and the t density are derived w.r.t. df */
+	  dtc1_df = dc1_df * dertc1 + D_2_tc1,
+	  dtc2_df = dc2_df * dertc2 + D_2_tc2,
+	  /* Below are the total derivative of dertc1 and dertc2
+	     w.r.t. df */
+	  ddertc1_df = dertc1 / (dfPlus1 + 1) + dertc1 / tc1 * dtc1_df + dertc1 / c1 * dc1_df -
+	  dertc1 / (dfPlus1 + c1 * c1) * (1 + 2 * dc1_df * c1),
+	  ddertc2_df = dertc2 / (dfPlus1 + 1) + dertc2 / tc2 * dtc2_df + dertc2 / c2 * dc2_df -
+	  dertc2 / (dfPlus1 + c2 * c2) * (1 + 2 * dc2_df * c2),
 	  //A = -Tc1 * ifrech1 - Tc2 * ifrech2,
-	  dA_df = -ifrech1 * dc1_df * tc1 - ifrech2 * dc2_df * tc2,
+	  dA_df = -ifrech1 * dTc1_df - ifrech2 * dTc2_df,
 	  //B = ifrech1 * ifrech1 * Tc1 + ifrech1 * ifrech1 * idf * frech2_1 * tc1 * a -
 	  //ifrech1 * ifrech2 * idf * frech1_2 * tc2 * a,
-	  dB_df = ifrech1 * ifrech1 * dc1_df * tc1 -
+	  dB_df = ifrech1 * ifrech1 * dTc1_df -
 	  ifrech1 * ifrech1 * idf * idf * frech2_1 * tc1 * a +
 	  ifrech1 * ifrech1 * idf * dfrech21_df * tc1 * a +
-	  ifrech1 * ifrech1 * idf * frech2_1 * dc1_df * dertc1 * a +
+	  ifrech1 * ifrech1 * idf * frech2_1 * dtc1_df * a +
 	  ifrech1 * ifrech1 * idf * frech2_1 * tc1 * da_df +
 	  ifrech1 * ifrech2 * idf * idf * frech1_2 * tc2 * a -
 	  ifrech1 * ifrech2 * idf * dfrech12_df * tc2 * a -
-	  ifrech1 * ifrech2 * idf * frech1_2 * dc2_df * dertc2 * a -
-	  ifrech1 * ifrech2 * idf * frech1_2 * tc2 * da_df,
+	  ifrech1 * ifrech2 * idf * frech1_2 * dtc2_df * a -
+	  ifrech1 * ifrech2 * idf * frech1_2 * tc2 * da_df,	  
 	  //C = ifrech2 * ifrech2 * Tc2 + ifrech2 * ifrech2 * idf * frech1_2 * tc2 * a -
 	  //ifrech1 * ifrech2 * idf * frech2_1 * tc1 * a,
-	  dC_df = ifrech2 * ifrech2 * dc2_df * tc2 -
+	  dC_df = ifrech2 * ifrech2 * dTc2_df -
 	  ifrech2 * ifrech2 * idf * idf * frech1_2 * tc2 * a +
 	  ifrech2 * ifrech2 * idf * dfrech12_df * tc2 * a +
-	  ifrech2 * ifrech2 * idf * frech1_2 * dc2_df * dertc2 * a +
+	  ifrech2 * ifrech2 * idf * frech1_2 * dtc2_df * a +
 	  ifrech2 * ifrech2 * idf * frech1_2 * tc2 * da_df +
 	  ifrech1 * ifrech2 * idf * idf * frech2_1 * tc1 * a -
 	  ifrech1 * ifrech2 * idf * dfrech21_df * tc1 * a -
-	  ifrech1 * ifrech2 * idf * frech2_1 * dc1_df * dertc1 * a -
+	  ifrech1 * ifrech2 * idf * frech2_1 * dtc1_df * a -
 	  ifrech1 * ifrech2 * idf * frech2_1 * tc1 * da_df,
-	  //D = ifrech1 * ifrech1 * ifrech2 * frech2_1 * idf * idf * dfPlus1 * a * tc1 +
-	  //ifrech1 * ifrech2 * ifrech2 * frech1_2 * idf * idf * dfPlus1 * a * tc2 +
-	  //ifrech1 * ifrech1 * ifrech2 * frech2_1 * frech2_1 * idf * idf * a * a * dertc1 +
-	  //ifrech1 * ifrech2 * ifrech2 * frech1_2 * frech1_2 * idf * idf * a * a * dertc2,
-	  dD_df = ifrech1 * ifrech1 * ifrech2 * dfrech21_df * idf * idf * dfPlus1 * a * tc1 +
-	  ifrech1 * ifrech1 * ifrech2 * frech2_1 * didfidfdfPlus1 * a * tc1 +
-	  ifrech1 * ifrech1 * ifrech2 * frech2_1 * idf * idf * dfPlus1 * da_df * tc1 +
-	  ifrech1 * ifrech1 * ifrech2 * frech2_1 * idf * idf * dfPlus1 * a * dc1_df * dertc1 +
-	  ifrech1 * ifrech2 * ifrech2 * dfrech12_df * idf * idf * dfPlus1 * a * tc2 +
-	  ifrech1 * ifrech2 * ifrech2 * frech1_2 * didfidfdfPlus1 * a * tc2 +
-	  ifrech1 * ifrech2 * ifrech2 * frech1_2 * idf * idf * dfPlus1 * da_df * tc2 +
-	  ifrech1 * ifrech2 * ifrech2 * frech1_2 * idf * idf * dfPlus1 * a * dc2_df * dertc2 +
-	  ifrech1 * ifrech1 * ifrech2 * 2 * dfrech21_df * frech2_1 * idf * idf * a * a * dertc1 -
-	  ifrech1 * ifrech1 * ifrech2 * frech2_1 * frech2_1 * 2 * idf * idf * idf * a * a * dertc1 +
-	  ifrech1 * ifrech1 * ifrech2 * frech2_1 * frech2_1 * idf * idf * 2 * da_df * a * dertc1 +
-	  ifrech1 * ifrech1 * ifrech2 * frech2_1 * frech2_1 * idf * idf * a * a * dc1_df * der2tc1 +
-	  ifrech1 * ifrech2 * ifrech2 * 2 * dfrech12_df * frech1_2 * idf * idf * a * a * dertc2 -
-	  ifrech1 * ifrech2 * ifrech2 * frech1_2 * frech1_2 * 2 * idf * idf * idf * a * a * dertc2 +
-	  ifrech1 * ifrech2 * ifrech2 * frech1_2 * frech1_2 * idf * idf * 2 * da_df * a * dertc2 +
-	  ifrech1 * ifrech2 * ifrech2 * frech1_2 * frech1_2 * idf * idf * a * a * dc2_df * der2tc2;
+	  //D = ifrech1 * ifrech1 * ifrech2 * idf * idf * dfPlus1 * frech2_1 * a * tc1 +
+	  //ifrech1 * ifrech2 * ifrech2 * idf * idf * dfPlus1 * frech1_2 * a * tc2 +
+	  //ifrech1 * ifrech1 * ifrech2 * idf * idf * frech2_1 * frech2_1 * a * a * dertc1 +
+	  //ifrech1 * ifrech2 * ifrech2 * idf * idf * frech1_2 * frech1_2 * a * a * dertc2,
+	  dD_df = ifrech1 * ifrech1 * ifrech2 * didfidfdfPlus1_df * frech2_1 * a * tc1 +
+	  ifrech1 * ifrech1 * ifrech2 * idf * idf * dfPlus1 * dfrech21_df * a * tc1 +
+	  ifrech1 * ifrech1 * ifrech2 * idf * idf * dfPlus1 * frech2_1 * da_df * tc1 +
+	  ifrech1 * ifrech1 * ifrech2 * idf * idf * dfPlus1 * frech2_1 * a * dtc1_df +
+	  ifrech1 * ifrech2 * ifrech2 * didfidfdfPlus1_df * frech1_2 * a * tc2 +
+	  ifrech1 * ifrech2 * ifrech2 * idf * idf * dfPlus1 * dfrech12_df * a * tc2 +
+	  ifrech1 * ifrech2 * ifrech2 * idf * idf * dfPlus1 * frech1_2 * da_df * tc2 +
+	  ifrech1 * ifrech2 * ifrech2 * idf * idf * dfPlus1 * frech1_2 * a * dtc2_df -
+	  2 * ifrech1 * ifrech1 * ifrech2 * idf * idf * idf * frech2_1 * frech2_1 * a * a *
+	  dertc1 +
+	  ifrech1 * ifrech1 * ifrech2 * idf * idf * 2 * dfrech21_df * frech2_1 * a * a * dertc1 +
+	  ifrech1 * ifrech1 * ifrech2 * idf * idf * frech2_1 * frech2_1 * 2 * da_df * a * dertc1 +
+	  ifrech1 * ifrech1 * ifrech2 * idf * idf * frech2_1 * frech2_1 * a * a * ddertc1_df -
+	  2 * ifrech1 * ifrech2 * ifrech2 * idf * idf * idf * frech1_2 * frech1_2 * a * a *
+	  dertc2 +
+	  ifrech1 * ifrech2 * ifrech2 * idf * idf * 2 * dfrech12_df * frech1_2 * a * a * dertc2 +
+	  ifrech1 * ifrech2 * ifrech2 * idf * idf * frech1_2 * frech1_2 * 2 * da_df * a * dertc2 +
+	  ifrech1 * ifrech2 * ifrech2 * idf * idf * frech1_2 * frech1_2 * a * a * ddertc2_df;
 
-	  hess[(nCorPar * *nObs + k) * nPairs + currentPair] =
-	    dA_df + (dB_df * C + B * dC_df + dD_df) * iBCplusD;
-	  grad[nCorPar * *nObs + k] += hess[(nCorPar * *nObs + k) * nPairs + currentPair];
-
+	hess[(nCorPar * *nObs + k) * nPairs + currentPair] = dA_df +
+	  (dB_df * C + B * dC_df + dD_df) * iBCplusD;
+	grad[nCorPar * *nObs + k] += hess[(nCorPar * *nObs + k) * nPairs + currentPair];
+	
       }
     }
   }
