@@ -22,14 +22,14 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
 
   else
     method2 <- method
-  
+
   distVec <- distance(coord, vec = TRUE)
   weighted <- !is.null(weights)
 
   if (!weighted)
     ##Set the weights to 0 as they won't be used anyway
     weights <- 0
-  
+
   if (iso)
     param <- "cov"
 
@@ -50,7 +50,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
 
   else
     loc.names <- scale.names <- shape.names <- rep(1, n.site)
-  
+
   ##First create a "void" function
   nplk <- function(x) x
 
@@ -63,7 +63,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
                             paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                             paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
                             "as.double(cov), as.double(0.0), as.double(cov), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
-      
+
     else
       body(nplk) <- parse(text = paste("-.C('smithfull', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs), as.integer(weighted), as.double(weights),",
                             paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
@@ -79,7 +79,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
                              paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
                              paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
                              "as.double(cov), as.double(0.0), as.double(0.0), as.double(cov), as.double(0.0), as.double(cov), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
-     
+
      else
        body(nplk) <- parse(text = paste("-.C('smithfull3d', as.double(data), as.double(distVec), as.integer(n.site), as.integer(n.obs), as.integer(weighted), as.double(weights),",
                              paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
@@ -87,9 +87,9 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
                              paste("as.double(c(", paste(shape.names, collapse = ","), ")), "),
                              "as.double(cov11), as.double(cov12), as.double(cov13), as.double(cov22), as.double(cov23), as.double(cov33), fit.marge, dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
    }
-  
+
   fixed.param <- list(...)[names(list(...)) %in% param]
-  
+
   ##Define the formal arguments of the function
   form.nplk <- NULL
   for (i in 1:length(param))
@@ -119,7 +119,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
       args <- c(list(data = data, coord = coord, marge = "emp", iso = iso, method = method2), fixed.param)
       cov.start <- do.call("fitcovmat", args)$param
     }
-      
+
     else
       cov.start <- fitcovmat(data, coord, marge = "emp", iso = iso, method = method2)$param
 
@@ -127,25 +127,25 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
       cov.start <- cov.start[1]
       names(cov.start) <- "cov"
     }
-    
+
     start <- c(as.list(cov.start), start)
     start <- start[!(param %in% names(list(...)))]
   }
-    
-  
-  if (!is.list(start)) 
+
+
+  if (!is.list(start))
     stop("'start' must be a named list")
-  
-  if (!length(start)) 
+
+  if (!length(start))
     stop("there are no parameters left to maximize over")
-  
+
   nm <- names(start)
   l <- length(nm)
   f <- formals(nplk)
   names(f) <- param
   m <- match(nm, param)
-  
-  if(any(is.na(m))) 
+
+  if(any(is.na(m)))
     stop("'start' specifies unknown arguments")
 
   formals(nplk) <- c(f[m], f[-m])
@@ -154,14 +154,14 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
   if(l > 1)
     body(nllh) <- parse(text = paste("nplk(", paste("p[",1:l,
                             "]", collapse = ", "), ", ...)"))
-  
+
   if(any(!(param %in% c(nm,names(fixed.param)))))
     stop("unspecified parameters")
-  
+
   start.arg <- c(list(p = unlist(start)), fixed.param)
 
   init.lik <- do.call("nllh", start.arg)
-  if (warn && (init.lik >= 1.0e15)) 
+  if (warn && (init.lik >= 1.0e15))
     warning("negative log-likelihood is infinite at starting values")
 
   if (method == "nlminb"){
@@ -170,7 +170,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
     opt$counts <- opt$evaluations
     opt$value <- opt$objective
     names(opt$par) <- nm
-    
+
     if ((opt$convergence != 0) || (opt$value >= 1.0e15)) {
       if (warn)
         warning("optimization may not have succeeded")
@@ -179,7 +179,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
     if (opt$convergence == 0)
       opt$convergence <- "successful"
   }
-  
+
   if (method == "nlm"){
     start <- as.numeric(start)
     opt <- nlm(nllh, start, ...)
@@ -191,7 +191,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
 
     if (opt$code <= 2)
       opt$convergence <- "sucessful"
-    
+
     if (opt$code == 3)
       opt$convergence <- "local minimum or 'steptol' is too small"
 
@@ -209,7 +209,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
       if (warn)
         warning("optimization may not have succeeded")
 
-      if (opt$convergence == 1) 
+      if (opt$convergence == 1)
         opt$convergence <- "iteration limit reached"
     }
 
@@ -219,10 +219,10 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
   if (opt$value == init.lik){
     if (warn)
       warning("optimization stayed at the starting values.")
-    
+
     opt$convergence <- "Stayed at start. val."
   }
-  
+
   param.names <- param
   param <- c(opt$par, unlist(fixed.param))
   param <- param[param.names]
@@ -244,7 +244,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
   ##Reset the weights to their original values
   if ((length(weights) == 1) && (weights == 0))
     weights <- NULL
-  
+
   if (std.err.type != "none"){
     std.err <- .smithstderr(param, data, distVec, as.double(0), as.double(0),
                             as.double(0), as.double(0), as.double(0), as.double(0),
@@ -259,44 +259,44 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
     if(!is.matrix(ihessian) || any(is.na(var.score))){
       if (warn)
         warning("observed information matrix is singular; passing std.err.type to ''none''")
-      
+
       std.err.type <- "none"
     }
 
     else {
       var.cov <- ihessian %*% var.score %*% ihessian
       std.err <- diag(var.cov)
-      
+
       std.idx <- which(std.err <= 0)
       if(length(std.idx) > 0){
         if (warn)
           warning("Some (observed) standard errors are negative;\n passing them to NA")
-        
+
         std.err[std.idx] <- NA
       }
-      
-      
+
+
       std.err <- sqrt(std.err)
-      
+
       if(corr) {
         .mat <- diag(1/std.err, nrow = length(std.err))
         corr.mat <- structure(.mat %*% var.cov %*% .mat, dimnames = list(nm,nm))
         diag(corr.mat) <- rep(1, length(std.err))
       }
-      
+
       else
         corr.mat <- NULL
-      
+
       colnames(var.cov) <- colnames(ihessian) <- rownames(var.cov) <-
         rownames(ihessian) <- names(std.err) <- nm
     }
   }
-  
+
   if (std.err.type == "none"){
     std.err <- std.err.type <- corr.mat <- NULL
     var.cov <- ihessian <- var.score <- NULL
   }
-  
+
   if (dist.dim == 2)
     Sigma <- matrix(c(param["cov11"], param["cov12"], param["cov12"],
                       param["cov22"]), 2, 2)
@@ -306,7 +306,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
                       param["cov12"], param["cov22"], param["cov23"],
                       param["cov13"], param["cov23"], param["cov33"]),
                     3, 3)
-  
+
   iSigma <- solve(Sigma)
 
   if (iso)
@@ -316,7 +316,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
   else
     ext.coeff <- function(h)
       2 * pnorm(sqrt(h %*% iSigma %*% h) / 2)
-  
+
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
                  var.cov = var.cov, fixed = unlist(fixed.param), param = param,
                  deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
@@ -325,7 +325,7 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
                  fit.marge = fit.marge, ext.coeff = ext.coeff, cov.mod = "Gaussian",
                  lik.fun = nllh, coord = coord, ihessian = ihessian, var.score = var.score,
                  marg.cov = NULL, nllh = nllh, iso = iso)
-  
+
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
 }
@@ -360,7 +360,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form, start, fit.
 
   if (any(use.temp.cov) && is.null(temp.cov))
     stop("'temp.cov' must be supplied if at least one temporal formula is given")
-  
+
   ##With our notation, formula must be of the form y ~ xxxx
   loc.form <- update(loc.form, y ~ .)
   scale.form <- update(scale.form, y ~ .)
@@ -371,7 +371,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form, start, fit.
 
   if (use.temp.cov[2])
     temp.form.scale <- update(temp.form.scale, y ~. + 0)
-  
+
   if (use.temp.cov[3])
     temp.form.shape <- update(temp.form.shape, y ~. + 0)
 
@@ -380,7 +380,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form, start, fit.
 
   else
     covariables <- data.frame(coord, marg.cov)
-  
+
   loc.model <- modeldef(covariables, loc.form)
   scale.model <- modeldef(covariables, scale.form)
   shape.model <- modeldef(covariables, shape.form)
@@ -432,7 +432,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form, start, fit.
     temp.model.loc <- temp.dsgn.mat.loc <- temp.pen.mat.loc <- temp.names.loc <- NULL
     n.tempcoeff.loc <- n.ppartemp.loc <- temp.penalty.loc <- 0
   }
-  
+
   if (use.temp.cov[2]){
     temp.model.scale <- modeldef(temp.cov, temp.form.scale)
     temp.dsgn.mat.scale <- temp.model.scale$dsgn.mat
@@ -447,7 +447,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form, start, fit.
     temp.model.scale <- temp.dsgn.mat.scale <- temp.pen.mat.scale <- temp.names.scale <- NULL
     n.tempcoeff.scale <- n.ppartemp.scale <- temp.penalty.scale <- 0
   }
-    
+
   if (use.temp.cov[3]){
     temp.model.shape <- modeldef(temp.cov, temp.form.shape)
     temp.dsgn.mat.shape <- temp.model.shape$dsgn.mat
@@ -465,10 +465,10 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form, start, fit.
 
   param <- c(loc.names, scale.names, shape.names, temp.names.loc, temp.names.scale,
              temp.names.shape)
-  
+
   if (dist.dim == 2){
     if (iso)
-      param <- c("cov", param) 
+      param <- c("cov", param)
 
     else
       param <- c("cov11", "cov12", "cov22", param)
@@ -481,7 +481,7 @@ smithform <- function(data, coord, loc.form, scale.form, shape.form, start, fit.
     else
       param <- c("cov11", "cov12", "cov13", "cov22", "cov23", "cov33", param)
   }
-  
+
   ##First create a "void" function
   nplk <- function(x) x
 
@@ -580,7 +580,7 @@ as.integer(n.tempcoeff.shape), as.integer(n.ppartemp.shape), as.double(temp.pena
 as.double(cov22), as.double(cov23), as.double(cov33), dns = double(1),
 PACKAGE = 'SpatialExtremes')$dns"))
   }
-  
+
   ##Define the formal arguments of the function
   form.nplk <- NULL
   for (i in 1:length(param))
@@ -621,22 +621,22 @@ PACKAGE = 'SpatialExtremes')$dns"))
 
     start <- c(start, as.list(c(tempCoeff.loc, tempCoeff.scale, tempCoeff.shape)))
     start <- start[!(param %in% names(list(...)))]
-  
+
   }
 
-  if (!is.list(start)) 
+  if (!is.list(start))
     stop("'start' must be a named list")
-  
-  if (!length(start)) 
+
+  if (!length(start))
     stop("there are no parameters left to maximize over")
-  
+
   nm <- names(start)
   l <- length(nm)
   f <- formals(nplk)
   names(f) <- param
   m <- match(nm, param)
-  
-  if(any(is.na(m))) 
+
+  if(any(is.na(m)))
     stop("'start' specifies unknown arguments")
 
   formals(nplk) <- c(f[m], f[-m])
@@ -644,16 +644,16 @@ PACKAGE = 'SpatialExtremes')$dns"))
 
   if(l > 1)
     body(nllh) <- parse(text = paste("nplk(", paste("p[", 1:l, "]", collapse = ", "), ", ...)"))
-  
+
   fixed.param <- list(...)[names(list(...)) %in% param]
-  
+
   if(any(!(param %in% c(nm,names(fixed.param)))))
     stop("unspecified parameters")
-  
+
   start.arg <- c(list(p = unlist(start)), fixed.param)
 
   init.lik <- do.call("nllh", start.arg)
-  if (warn && (init.lik >= 1.0e15)) 
+  if (warn && (init.lik >= 1.0e15))
     warning("negative log-likelihood is infinite at starting values")
 
   if (method == "nlminb"){
@@ -671,7 +671,7 @@ PACKAGE = 'SpatialExtremes')$dns"))
     if (opt$convergence == 0)
       opt$convergence <- "successful"
   }
-  
+
   if (method == "nlm"){
     start <- as.numeric(start)
     opt <- nlm(nllh, start, ...)
@@ -683,7 +683,7 @@ PACKAGE = 'SpatialExtremes')$dns"))
 
     if (opt$code <= 2)
       opt$convergence <- "sucessful"
-    
+
     if (opt$code == 3)
       opt$convergence <- "local minimum or 'steptol' is too small"
 
@@ -695,14 +695,14 @@ PACKAGE = 'SpatialExtremes')$dns"))
   }
 
   if(!(method %in% c("nlm", "nlminb"))) {
-    
+
     opt <- optim(start, nllh, ..., method = method, control = control)
-    
+
     if ((opt$convergence != 0) || (opt$value >= 1.0e15)) {
       if (warn)
         warning("optimization may not have succeeded")
-      
-      if (opt$convergence != 0) 
+
+      if (opt$convergence != 0)
         opt$convergence <- "iteration limit reached"
     }
 
@@ -712,7 +712,7 @@ PACKAGE = 'SpatialExtremes')$dns"))
   if (opt$value == init.lik){
     if (warn)
       warning("optimization stayed at the starting values.")
-    
+
     opt$convergence <- "Stayed at start. val."
   }
 
@@ -737,7 +737,7 @@ PACKAGE = 'SpatialExtremes')$dns"))
   ##Reset the weights to their original values
   if ((length(weights) == 1) && (weights == 0))
     weights <- NULL
-  
+
   if (std.err.type != "none"){
     std.err <- .smithstderr(param, data, distVec, loc.dsgn.mat, scale.dsgn.mat, shape.dsgn.mat,
                             temp.dsgn.mat.loc, temp.dsgn.mat.scale, temp.dsgn.mat.shape, use.temp.cov,
@@ -747,39 +747,39 @@ PACKAGE = 'SpatialExtremes')$dns"))
     opt$hessian <- std.err$hessian
     var.score <- std.err$var.score
     ihessian <- try(solve(opt$hessian), silent = TRUE)
-    
+
     if(!is.matrix(ihessian) || any(is.na(var.score))){
       if (warn)
         warning("observed information matrix is singular; passing std.err.type to ''none''")
-      
+
       std.err.type <- "none"
       return
     }
 
-    else{     
+    else{
       var.cov <- ihessian %*% var.score %*% ihessian
       std.err <- diag(var.cov)
-      
+
       std.idx <- which(std.err <= 0)
       if(length(std.idx) > 0){
         if (warn)
           warning("Some (observed) standard errors are negative;\n passing them to NA")
-        
+
         std.err[std.idx] <- NA
       }
-      
-      
+
+
       std.err <- sqrt(std.err)
-      
+
       if(corr) {
         .mat <- diag(1/std.err, nrow = length(std.err))
         corr.mat <- structure(.mat %*% var.cov %*% .mat, dimnames = list(nm,nm))
         diag(corr.mat) <- rep(1, length(std.err))
       }
-      
+
       else
         corr.mat <- NULL
-      
+
       colnames(var.cov) <- rownames(var.cov) <- colnames(ihessian) <-
         rownames(ihessian) <- names(std.err) <- nm
     }
@@ -799,7 +799,7 @@ PACKAGE = 'SpatialExtremes')$dns"))
                       param["cov12"], param["cov22"], param["cov23"],
                       param["cov13"], param["cov23"], param["cov33"]),
                     3, 3)
-  
+
   iSigma <- solve(Sigma)
 
   if (iso)
@@ -808,7 +808,7 @@ PACKAGE = 'SpatialExtremes')$dns"))
   else
     ext.coeff <- function(h)
       2 * pnorm(sqrt(h %*% iSigma %*% h) / 2)
-  
+
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
                  var.cov = var.cov, fixed = unlist(fixed.param), param = param,
                  deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
@@ -819,7 +819,7 @@ PACKAGE = 'SpatialExtremes')$dns"))
                  lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
                  shape.type = shape.type, ihessian = ihessian, var.score = var.score,
                  marg.cov = marg.cov, nllh = nllh, iso = iso)
-  
+
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
 }

@@ -24,7 +24,7 @@ geomgaussfull <- function(data, coord, start, cov.mod = "whitmat", ...,
   if (!weighted)
     ##Set the weights to 0 as they won't be used anyway
     weights <- 0
-  
+
   if (!(cov.mod %in% c("whitmat","cauchy","powexp", "bessel", "caugen")))
     stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel', 'caugen'")
 
@@ -33,7 +33,7 @@ geomgaussfull <- function(data, coord, start, cov.mod = "whitmat", ...,
 
   else
     sigma2Bound <- control$sigma2Bound
-  
+
   if (cov.mod == "whitmat")
     cov.mod.num <- 1
   if (cov.mod == "cauchy")
@@ -69,7 +69,7 @@ geomgaussfull <- function(data, coord, start, cov.mod = "whitmat", ...,
 
   ##And define the "body" of the function as the number of parameters
   ##to estimate depends on n.site
-  
+
   body(nplk) <- parse(text = paste("-.C('geomgaussfull', as.integer(cov.mod.num), as.double(data), as.double(dist), as.integer(n.site), as.integer(n.obs), as.integer(dist.dim), as.integer(weighted), as.double(weights),",
                         paste("as.double(c(", paste(loc.names, collapse = ","), ")), "),
                         paste("as.double(c(", paste(scale.names, collapse = ","), ")), "),
@@ -78,22 +78,14 @@ geomgaussfull <- function(data, coord, start, cov.mod = "whitmat", ...,
 
   fixed.param <- list(...)[names(list(...)) %in% param]
 
-  if ((cov.mod == "whitmat") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
-    if (warn)
-      warning("The Whittle-Matern covariance function is not differentiable w.r.t. the ''smooth'' parameter
-Standard errors are not available unless you fix it.")
-    
-    std.err.type <- "none"
-  }
-
   if ((cov.mod == "bessel") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
     if (warn)
       warning("The Bessel covariance function is not differentiable w.r.t. the ''smooth'' parameter
 Standard errors are not available unless you fix it.")
-    
+
     std.err.type <- "none"
   }
-  
+
   ##Define the formal arguments of the function
   form.nplk <- NULL
   for (i in 1:length(param))
@@ -101,28 +93,28 @@ Standard errors are not available unless you fix it.")
 
   names(form.nplk) <- param
   formals(nplk) <- form.nplk
-  
+
   if (missing(start)) {
 
     start <- list()
     if (fit.marge){
       locs <- scales <- rep(NA, n.site)
       shapes <- rep(0, n.site)
-      
+
       for (i in 1:n.site){
         marg.param <- gevmle(data[,i])
         locs[i] <- marg.param["loc"]
         scales[i] <- marg.param["scale"]
         shapes[i] <- marg.param["shape"]
       }
-      
+
       start <- as.list(unlist(list(loc = locs, scale = scales, shape = shapes)))
     }
 
     if (length(fixed.param) > 0){
       args <- c(list(data = data, coord = coord, cov.mod = paste("g", cov.mod, sep=""),
                      marge = "emp"), fixed.param)
-      
+
       cov.start <- do.call("fitcovariance", args)$param
     }
 
@@ -133,12 +125,12 @@ Standard errors are not available unless you fix it.")
     start <- c(as.list(cov.start), start)
     start <- start[!(param %in% names(list(...)))]
   }
-  
 
-  if (!is.list(start)) 
+
+  if (!is.list(start))
     stop("'start' must be a named list")
 
-  if (!length(start)) 
+  if (!length(start))
     stop("there are no parameters left to maximize over")
 
   nm <- names(start)
@@ -146,8 +138,8 @@ Standard errors are not available unless you fix it.")
   f <- formals(nplk)
   names(f) <- param
   m <- match(nm, param)
-  
-  if(any(is.na(m))) 
+
+  if(any(is.na(m)))
     stop("'start' specifies unknown arguments")
 
   formals(nplk) <- c(f[m], f[-m])
@@ -156,14 +148,14 @@ Standard errors are not available unless you fix it.")
   if(l > 1)
     body(nllh) <- parse(text = paste("nplk(", paste("p[",1:l,
                             "]", collapse = ", "), ", ...)"))
-  
+
   if(any(!(param %in% c(nm,names(fixed.param)))))
     stop("unspecified parameters")
-  
+
   start.arg <- c(list(p = unlist(start)), fixed.param)
 
   init.lik <- do.call("nllh", start.arg)
-  if (warn && (init.lik >= 1.0e15)) 
+  if (warn && (init.lik >= 1.0e15))
     warning("negative log-likelihood is infinite at starting values")
 
   if (method == "nlminb"){
@@ -172,7 +164,7 @@ Standard errors are not available unless you fix it.")
     opt$counts <- opt$evaluations
     opt$value <- opt$objective
     names(opt$par) <- nm
-    
+
     if ((opt$convergence != 0) || (opt$value >= 1.0e15)) {
       if (warn)
         warning("optimization may not have succeeded")
@@ -181,7 +173,7 @@ Standard errors are not available unless you fix it.")
     if (opt$convergence == 0)
       opt$convergence <- "successful"
   }
-  
+
   if (method == "nlm"){
     start <- as.numeric(start)
     opt <- nlm(nllh, start, ...)
@@ -193,7 +185,7 @@ Standard errors are not available unless you fix it.")
 
     if (opt$code <= 2)
       opt$convergence <- "sucessful"
-    
+
     if (opt$code == 3)
       opt$convergence <- "local minimum or 'steptol' is too small"
 
@@ -206,13 +198,13 @@ Standard errors are not available unless you fix it.")
 
   if (!(method %in% c("nlm", "nlminb"))){
     opt <- optim(start, nllh, ..., method = method, control = control)
-  
+
     if ((opt$convergence != 0) || (opt$value >= 1.0e15)) {
-      
+
       if (warn)
         warning("optimization may not have succeeded")
-      
-      if (opt$convergence == 1) 
+
+      if (opt$convergence == 1)
         opt$convergence <- "iteration limit reached"
     }
 
@@ -222,7 +214,7 @@ Standard errors are not available unless you fix it.")
   if (opt$value == init.lik){
     if (warn)
       warning("optimization stayed at the starting values.")
-    
+
     opt$convergence <- "Stayed at start. val."
   }
 
@@ -233,42 +225,34 @@ Standard errors are not available unless you fix it.")
   ##Reset the weights to their original values
   if ((length(weights) == 1) && (weights == 0))
     weights <- NULL
-  
-  if ((cov.mod == "whitmat") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
-    if (warn)
-      warning("The Whittle-Matern covariance function is not differentiable w.r.t. the ''smooth'' parameter
-Standard errors are not available unless you fix it.")
-    
-    std.err.type <- "none"
-  }
 
   if ((cov.mod == "bessel") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
     if (warn)
       warning("The Bessel covariance function is not differentiable w.r.t. the ''smooth'' parameter
 Standard errors are not available unless you fix it.")
-    
+
     std.err.type <- "none"
   }
-  
+
   if (std.err.type != "none"){
     std.err <- .geomgaussstderr(param, data, dist, cov.mod.num, as.double(0),
                                 as.double(0), as.double(0), as.double(0), as.double(0),
                                 as.double(0), rep(FALSE, 3), fit.marge = fit.marge,
                                 std.err.type = std.err.type, fixed.param = names(fixed.param),
                                 param.names = param.names, weights = weights)
-                                   
+
     opt$hessian <- std.err$hessian
     var.score <- std.err$var.score
     ihessian <- try(solve(opt$hessian), silent = TRUE)
-    
+
     if(!is.matrix(ihessian) || any(is.na(var.score))){
       if (warn)
         warning("observed information matrix is singular; passing std.err.type to ''none''")
-      
+
       std.err.type <- "none"
     }
 
-    else{    
+    else{
       var.cov <- ihessian %*% var.score %*% ihessian
       std.err <- diag(var.cov)
 
@@ -276,22 +260,22 @@ Standard errors are not available unless you fix it.")
       if(length(std.idx) > 0){
         if (warn)
           warning("Some (observed) standard errors are negative;\n passing them to NA")
-        
+
         std.err[std.idx] <- NA
       }
-      
+
       std.err <- sqrt(std.err)
-      
+
       if(corr) {
         .mat <- diag(1/std.err, nrow = length(std.err))
         corr.mat <- structure(.mat %*% var.cov %*% .mat, dimnames = list(nm,nm))
         diag(corr.mat) <- rep(1, length(std.err))
       }
-      
+
       else
         corr.mat <- NULL
-      
-      colnames(var.cov) <- rownames(var.cov) <- colnames(ihessian) <- 
+
+      colnames(var.cov) <- rownames(var.cov) <- colnames(ihessian) <-
         rownames(ihessian) <- names(std.err) <- nm
     }
   }
@@ -309,7 +293,7 @@ Standard errors are not available unless you fix it.")
   else
     cov.fun <-  covariance(sill = param["sill"], range = param["range"],
                            smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
-  
+
   ext.coeff <- function(h)
     2 * pnorm(sqrt(0.5 * param["sigma2"] * (1 - cov.fun(h))))
 
@@ -321,7 +305,7 @@ Standard errors are not available unless you fix it.")
                  cov.mod = cov.mod, fit.marge = fit.marge, ext.coeff = ext.coeff,
                  hessian = opt$hessian, lik.fun = nllh, coord = coord, ihessian = ihessian,
                  var.score = var.score, marg.cov = NULL, nllh = nllh)
-  
+
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
 }
@@ -357,7 +341,7 @@ geomgaussform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
 
   if (any(use.temp.cov) && is.null(temp.cov))
     stop("'temp.cov' must be supplied if at least one temporal formula is given")
-  
+
   if (!(cov.mod %in% c("whitmat","cauchy","powexp", "bessel", "caugen")))
     stop("''cov.mod'' must be one of 'whitmat', 'cauchy', 'powexp', 'bessel', 'caugen'")
 
@@ -388,7 +372,7 @@ geomgaussform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
 
   if (use.temp.cov[2])
     temp.form.scale <- update(temp.form.scale, y ~. + 0)
-  
+
   if (use.temp.cov[3])
     temp.form.shape <- update(temp.form.shape, y ~. + 0)
 
@@ -397,7 +381,7 @@ geomgaussform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
 
   else
     covariables <- data.frame(coord, marg.cov)
-  
+
   loc.model <- modeldef(covariables, loc.form)
   scale.model <- modeldef(covariables, scale.form)
   shape.model <- modeldef(covariables, shape.form)
@@ -429,7 +413,7 @@ geomgaussform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   n.pparloc <- loc.model$n.ppar
   n.pparscale <- scale.model$n.ppar
   n.pparshape <- shape.model$n.ppar
-  
+
   loc.names <- paste("locCoeff", 1:n.loccoeff, sep="")
   scale.names <- paste("scaleCoeff", 1:n.scalecoeff, sep="")
   shape.names <- paste("shapeCoeff", 1:n.shapecoeff, sep="")
@@ -449,7 +433,7 @@ geomgaussform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
     temp.model.loc <- temp.dsgn.mat.loc <- temp.pen.mat.loc <- temp.names.loc <- NULL
     n.tempcoeff.loc <- n.ppartemp.loc <- temp.penalty.loc <- 0
   }
-  
+
   if (use.temp.cov[2]){
     temp.model.scale <- modeldef(temp.cov, temp.form.scale)
     temp.dsgn.mat.scale <- temp.model.scale$dsgn.mat
@@ -464,7 +448,7 @@ geomgaussform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
     temp.model.scale <- temp.dsgn.mat.scale <- temp.pen.mat.scale <- temp.names.scale <- NULL
     n.tempcoeff.scale <- n.ppartemp.scale <- temp.penalty.scale <- 0
   }
-    
+
   if (use.temp.cov[3]){
     temp.model.shape <- modeldef(temp.cov, temp.form.shape)
     temp.dsgn.mat.shape <- temp.model.shape$dsgn.mat
@@ -488,7 +472,7 @@ geomgaussform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
   else
     ##Fix it to 0 as it won't be used anyway
     smooth2 <- 0
-  
+
   param <- c(param, loc.names, scale.names, shape.names, temp.names.loc, temp.names.scale,
              temp.names.shape)
 
@@ -559,22 +543,22 @@ as.double(temp.penalty.shape),",
 
     start <- c(start, as.list(c(tempCoeff.loc, tempCoeff.scale, tempCoeff.shape)))
     start <- start[!(param %in% names(list(...)))]
-  
+
   }
 
-  if (!is.list(start)) 
+  if (!is.list(start))
     stop("'start' must be a named list")
-  
-  if (!length(start)) 
+
+  if (!length(start))
     stop("there are no parameters left to maximize over")
-  
+
   nm <- names(start)
   l <- length(nm)
   f <- formals(nplk)
   names(f) <- param
   m <- match(nm, param)
-  
-  if(any(is.na(m))) 
+
+  if(any(is.na(m)))
     stop("'start' specifies unknown arguments")
 
   formals(nplk) <- c(f[m], f[-m])
@@ -583,32 +567,24 @@ as.double(temp.penalty.shape),",
   if(l > 1)
     body(nllh) <- parse(text = paste("nplk(", paste("p[",1:l,
                             "]", collapse = ", "), ", ...)"))
-  
-  fixed.param <- list(...)[names(list(...)) %in% param]
 
-  if ((cov.mod == "whitmat") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
-    if (warn)
-      warning("The Whittle-Matern covariance function is not differentiable w.r.t. the ''smooth'' parameter
-Standard errors are not available unless you fix it.")
-    
-    std.err.type <- "none"
-  }
+  fixed.param <- list(...)[names(list(...)) %in% param]
 
   if ((cov.mod == "bessel") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
     if (warn)
       warning("The Bessel covariance function is not differentiable w.r.t. the ''smooth'' parameter
 Standard errors are not available unless you fix it.")
-    
+
     std.err.type <- "none"
   }
 
   if(any(!(param %in% c(nm,names(fixed.param)))))
     stop("unspecified parameters")
-  
+
   start.arg <- c(list(p = unlist(start)), fixed.param)
 
   init.lik <- do.call("nllh", start.arg)
-  if (warn && (init.lik >= 1.0e15)) 
+  if (warn && (init.lik >= 1.0e15))
     warning("negative log-likelihood is infinite at starting values")
 
   if (method == "nlminb"){
@@ -617,7 +593,7 @@ Standard errors are not available unless you fix it.")
     opt$counts <- opt$evaluations
     opt$value <- opt$objective
     names(opt$par) <- nm
-    
+
     if ((opt$convergence != 0) || (opt$value >= 1.0e15)) {
       if (warn)
         warning("optimization may not have succeeded")
@@ -626,7 +602,7 @@ Standard errors are not available unless you fix it.")
     if (opt$convergence == 0)
       opt$convergence <- "successful"
   }
-  
+
   if (method == "nlm"){
     start <- as.numeric(start)
     opt <- nlm(nllh, start, ...)
@@ -638,7 +614,7 @@ Standard errors are not available unless you fix it.")
 
     if (opt$code <= 2)
       opt$convergence <- "sucessful"
-    
+
     if (opt$code == 3)
       opt$convergence <- "local minimum or 'steptol' is too small"
 
@@ -652,12 +628,12 @@ Standard errors are not available unless you fix it.")
 
   if (!(method %in% c("nlm", "nlminb"))){
     opt <- optim(start, nllh, ..., method = method, control = control)
-    
+
     if ((opt$convergence != 0) || (opt$value >= 1.0e15)){
       if (warn)
         warning("optimization may not have succeeded")
-      
-      if (opt$convergence != 0) 
+
+      if (opt$convergence != 0)
         opt$convergence <- "iteration limit reached"
     }
 
@@ -667,7 +643,7 @@ Standard errors are not available unless you fix it.")
   if (opt$value == init.lik){
     if (warn)
       warning("optimization stayed at the starting values.")
-    
+
     opt$convergence <- "Stayed at start. val."
   }
 
@@ -678,23 +654,15 @@ Standard errors are not available unless you fix it.")
   ##Reset the weights to their original values
   if ((length(weights) == 1) && (weights == 0))
     weights <- NULL
-  
-  if ((cov.mod == "whitmat") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
-    if (warn)
-      warning("The Whittle-Matern covariance function is not differentiable w.r.t. the ''smooth'' parameter
-Standard errors are not available unless you fix it.")
-    
-    std.err.type <- "none"
-  }
 
   if ((cov.mod == "bessel") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
     if (warn)
       warning("The Bessel covariance function is not differentiable w.r.t. the ''smooth'' parameter
 Standard errors are not available unless you fix it.")
-    
+
     std.err.type <- "none"
   }
-  
+
   if (std.err.type != "none"){
     std.err <- .geomgaussstderr(param, data, dist, cov.mod.num, loc.dsgn.mat, scale.dsgn.mat,
                                 shape.dsgn.mat, temp.dsgn.mat.loc, temp.dsgn.mat.scale,
@@ -705,40 +673,40 @@ Standard errors are not available unless you fix it.")
     opt$hessian <- std.err$hessian
     var.score <- std.err$var.score
     ihessian <- try(solve(opt$hessian), silent = TRUE)
-    
+
     if(!is.matrix(ihessian) || any(is.na(var.score))){
       if (warn)
         warning("observed information matrix is singular; passing std.err.type to ''none''")
-      
+
       std.err.type <- "none"
     }
 
-    else{     
+    else{
       var.cov <- ihessian %*% var.score %*% ihessian
-      
+
       std.err <- diag(var.cov)
-      
+
       std.idx <- which(std.err <= 0)
       if(length(std.idx) > 0){
         if (warn)
           warning("Some (observed) standard errors are negative;\n passing them to NA")
-        
+
         std.err[std.idx] <- NA
       }
-      
-      
+
+
       std.err <- sqrt(std.err)
-      
+
       if(corr) {
         .mat <- diag(1/std.err, nrow = length(std.err))
         corr.mat <- structure(.mat %*% var.cov %*% .mat, dimnames = list(nm,nm))
         diag(corr.mat) <- rep(1, length(std.err))
       }
-      
+
       else
         corr.mat <- NULL
-      
-      colnames(var.cov) <- rownames(var.cov) <- colnames(ihessian) <- 
+
+      colnames(var.cov) <- rownames(var.cov) <- colnames(ihessian) <-
         rownames(ihessian) <- names(std.err) <- nm
     }
   }
@@ -756,10 +724,10 @@ Standard errors are not available unless you fix it.")
   else
     cov.fun <- covariance(sill = param["sill"], range = param["range"],
                           smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
-  
+
   ext.coeff <- function(h)
     2 * pnorm(sqrt(0.5 * param["sigma2"] * (1 - cov.fun(h))))
-  
+
   fitted <- list(fitted.values = opt$par, std.err = std.err, std.err.type = std.err.type,
                  var.cov = var.cov, fixed = unlist(fixed.param), param = param,
                  deviance = 2*opt$value, corr = corr.mat, convergence = opt$convergence,
@@ -770,7 +738,7 @@ Standard errors are not available unless you fix it.")
                  lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
                  shape.type = shape.type, ihessian = ihessian, var.score = var.score,
                  marg.cov = marg.cov, nllh = nllh)
-  
+
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
 }

@@ -72,14 +72,6 @@ extremaltfull <- function(data, coord, start, cov.mod = "whitmat", ...,
 
     fixed.param <- list(...)[names(list(...)) %in% param]
 
-    if ((cov.mod == "whitmat") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
-        if (warn)
-            warning("The Whittle-Matern covariance function is not differentiable w.r.t. the ''smooth'' parameter
-Standard errors are not available unless you fix it.")
-
-        std.err.type <- "none"
-    }
-
     if ((cov.mod == "bessel") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
         if (warn)
             warning("The Bessel covariance function is not differentiable w.r.t. the ''smooth'' parameter
@@ -234,7 +226,6 @@ Standard errors are not available unless you fix it.")
                                     std.err.type = std.err.type, fixed.param = names(fixed.param),
                                     param.names = param.names, weights = weights)
 
-        print(rbind(numerical = opt$grad, analytical = -std.err$grad))
         opt$hessian <- std.err$hessian
         var.score <- std.err$var.score
         ihessian <- try(solve(opt$hessian), silent = TRUE)
@@ -560,14 +551,6 @@ as.double(DoF), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
 
     fixed.param <- list(...)[names(list(...)) %in% param]
 
-    if ((cov.mod == "whitmat") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
-        if (warn)
-            warning("The Whittle-Matern covariance function is not differentiable w.r.t. the ''smooth'' parameter
-Standard errors are not available unless you fix it.")
-
-        std.err.type <- "none"
-    }
-
     if ((cov.mod == "bessel") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
         if (warn)
             warning("The Bessel covariance function is not differentiable w.r.t. the ''smooth'' parameter
@@ -661,7 +644,6 @@ Standard errors are not available unless you fix it.")
                                     std.err.type = std.err.type, fixed.param = names(fixed.param),
                                     param.names = param.names, weights = weights)
 
-        print(rbind(numerical = opt$grad, analytical = -std.err$grad))
         opt$hessian <- std.err$hessian
         var.score <- std.err$var.score
         ihessian <- try(solve(opt$hessian), silent = TRUE)
