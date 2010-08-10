@@ -436,7 +436,7 @@ void schlatherstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	  //i.e. powered exponential
 	  hess[(*nObs + k) * nPairs + currentPair] = rho[currentPair] * *smooth / *range *
 	    R_pow(dist[currentPair] / *range, *smooth) * jacCommonRho;
-	  hess[(2 * *nObs + k) * nPairs + currentPair] -= rho[currentPair] *
+	  hess[(2 * *nObs + k) * nPairs + currentPair] = -rho[currentPair] *
 	    R_pow(dist[currentPair] / *range, *smooth) * log(dist[currentPair] / *range) *
 	    jacCommonRho;
 	  break;
@@ -446,7 +446,14 @@ void schlatherstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	    R_pow(2 * *range / dist[currentPair], *smooth) *
 	    dist[currentPair] / (*range * *range) * gammafn(*smooth + 1) *
 	    bessel_j(dist[currentPair] / *range, *smooth + 1) * jacCommonRho;
-	  hess[(2 * *nObs + k) * nPairs + currentPair] = R_NaReal;
+	  /* There's no closed form for the partial derivative of the
+	     BesselJ function w.r.t. smooth. We use finite differences
+	     for this... */
+	  hess[(2 * *nObs + k) * nPairs + currentPair] = rho[currentPair] *
+	    (log(2 * *range / dist[currentPair]) + digamma(*smooth + 1) +
+	     (bessel_j(dist[currentPair] / *range, *smooth + eps) /
+	      bessel_j(dist[currentPair] / *range, *smooth) - 1) / eps) *
+	    jacCommonRho;
 	  break;
 	case 5:
 	  //i.e. Generalized Cauchy
@@ -649,7 +656,14 @@ void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite, int
 	    R_pow(2 * *range / dist[currentPair], *smooth) *
 	    dist[currentPair] / (*range * *range) * gammafn(*smooth + 1) *
 	    bessel_j(dist[currentPair] / *range, *smooth + 1) * jacCommonRho;
-	  hess[(3 * *nObs + k) * nPairs + currentPair] = R_NaReal;
+	   /* There's no closed form for the partial derivative of the
+	     BesselJ function w.r.t. smooth. We use finite differences
+	     for this... */
+	  hess[(3 * *nObs + k) * nPairs + currentPair] = rho[currentPair] *
+	    (log(2 * *range / dist[currentPair]) + digamma(*smooth + 1) +
+	     (bessel_j(dist[currentPair] / *range, *smooth + eps) /
+	      bessel_j(dist[currentPair] / *range, *smooth) - 1) / eps) *
+	    jacCommonRho;
 	  break;
 	case 5:
 	  //i.e. Generalized Cauchy
@@ -833,7 +847,14 @@ void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	    R_pow(2 * *range / dist[currentPair], *smooth) * gammafn(*smooth + 1) *
 	    dist[currentPair] / (*range * *range * mahalDist[currentPair]) *
 	    bessel_j(dist[currentPair] / *range, *smooth + 1) * jacCommon;
-	  hess[(3 * *nObs + k) * nPairs + currentPair] = R_NaReal;
+	  /* There's no closed form for the partial derivative of the
+	     BesselJ function w.r.t. smooth. We use finite differences
+	     for this... */
+	  hess[(3 * *nObs + k) * nPairs + currentPair] = -*sigma2 * rho *
+	    (log(2 * *range / dist[currentPair]) + digamma(*smooth + 1) +
+	     (bessel_j(dist[currentPair] / *range, *smooth + eps) /
+	      bessel_j(dist[currentPair] / *range, *smooth) - 1) / eps) /
+	    mahalDist[currentPair] * jacCommon;
 	  break;
 	case 5:
 	  //i.e. Generalized Cauchy
@@ -1282,7 +1303,14 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	    R_pow(2 * *range / dist[currentPair], *smooth) *
 	    dist[currentPair] / (*range * *range) * gammafn(*smooth + 1) *
 	    bessel_j(dist[currentPair] / *range, *smooth + 1) * jacCommonRho;
-	  hess[(2 * *nObs + k) * nPairs + currentPair] = R_NaReal;
+	  /* There's no closed form for the partial derivative of the
+	     BesselJ function w.r.t. smooth. We use finite differences
+	     for this... */
+	  hess[(2 * *nObs + k) * nPairs + currentPair] = rho[currentPair] *
+	    (log(2 * *range / dist[currentPair]) + digamma(*smooth + 1) +
+	     (bessel_j(dist[currentPair] / *range, *smooth + eps) /
+	      bessel_j(dist[currentPair] / *range, *smooth) - 1) / eps) *
+	    jacCommonRho;
 	  break;
 	case 5:
 	  //i.e. Generalized Cauchy

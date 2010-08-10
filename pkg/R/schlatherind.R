@@ -71,14 +71,6 @@ schlatherindfull <- function(data, coord, start, cov.mod = "whitmat", ...,
 
   fixed.param <- list(...)[names(list(...)) %in% param]
 
-  if ((cov.mod == "bessel") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
-    if (warn)
-      warning("The Bessel covariance function is not differentiable w.r.t. the ''smooth'' parameter
-Standard errors are not available unless you fix it.")
-    
-    std.err.type <- "none"
-  }
-  
   ##Define the formal arguments of the function
   form.nplk <- NULL
   for (i in 1:length(param))
@@ -548,14 +540,6 @@ as.double(temp.penalty.shape),",
   
   fixed.param <- list(...)[names(list(...)) %in% param]
 
-  if ((cov.mod == "bessel") && !("smooth" %in% names(fixed.param)) && (std.err.type != "none")){
-    if (warn)
-      warning("The Bessel covariance function is not differentiable w.r.t. the ''smooth'' parameter
-Standard errors are not available unless you fix it.")
-    
-    std.err.type <- "none"
-  }
-  
   if(any(!(param %in% c(nm,names(fixed.param)))))
     stop("unspecified parameters")
   
