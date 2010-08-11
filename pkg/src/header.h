@@ -428,6 +428,20 @@ void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
 		  double *ans);
 
 ///////////////////////////////////
+//  From simextremalt.c
+//
+void rextremalttbm(double *coord, int *nObs, int *nSite, int *dim,
+		   int *covmod, int *grid, double *sill, double *range,
+		   double *smooth, double *DoF, int *blockSize, int *nlines,
+		   double *ans);
+void rextremaltdirect(double *coord, int *nObs, int *nSite, int *dim,
+		      int *covmod, int *grid, double *sill, double *range,
+		      double *smooth, double *DoF, int *blockSize, double *ans);
+void rextremaltcirc(int *nObs, int *ngrid, double *steps, int *dim,
+		    int *covmod, double *sill, double *range,
+		    double *smooth, double *DoF, int *blockSize, double *ans);
+
+///////////////////////////////////
 //  From gpdproc.c
 //
 void gpdprocfull(double *data, double *distVec, int *nSite,
