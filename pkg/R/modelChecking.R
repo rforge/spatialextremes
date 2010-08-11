@@ -89,8 +89,11 @@ plot.maxstab <- function(x, ..., sites){
   else if (length(sites) != 4)
     stop("'sites' must have length 4")
 
+  op <- par(no.readonly = TRUE)
   layout(matrix(c(1,6,7,9,13,2,8,10,5,5,3,11,5,5,12,4), 4))
   par(mar = c(4,4,1,0.5))
+  on.exit(par(op))
+  
   ## Return level plots
   ##covariates <- cbind(x$coord[sites,], x$marg.cov[sites,,drop=FALSE])
   ##gev.param <- predict(x, covariates, std.err = FALSE)[,c("loc", "scale", "shape")]
