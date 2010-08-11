@@ -64,11 +64,11 @@ coord <- cbind(x, y)
 data <- rmaxstab(1, coord, "gauss", cov11 = 9/8, cov12 = 0, cov22 = 9/8,
   grid = TRUE)
 ##We change to unit Gumbel margins for visibility
-filled.contour(x, y, log(data[,,1]), color.palette = terrain.colors)
+filled.contour(x, y, log(data), color.palette = terrain.colors)
 
 ## 2. Schlather's model
 data <- rmaxstab(1, coord, cov.mod = "powexp", sill = 1, range = 3,
 smooth = 1, grid = TRUE)
-filled.contour(x, y, log(data[,,1]), color.palette = terrain.colors)
+filled.contour(x, y, log(data), color.palette = terrain.colors)
 }
 \keyword{distribution}

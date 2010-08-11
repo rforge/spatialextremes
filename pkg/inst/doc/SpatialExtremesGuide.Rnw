@@ -354,8 +354,8 @@ data1 <- rmaxstab(1, cbind(x,x), "gauss", cov11 = 9/8, cov12 = 1, cov22 = 9/8,
                   grid = TRUE)
 
 par(mfrow=c(1,2))
-image(x, x, log(data0[,,1]), col = terrain.colors(40))
-image(x, x, log(data1[,,1]), col = terrain.colors(40))
+image(x, x, log(data0), col = terrain.colors(40))
+image(x, x, log(data1), col = terrain.colors(40))
 @
 
 \begin{figure}
@@ -618,9 +618,9 @@ legend("topright", c(expression(nu == 4), expression(nu == 2),
 <<label=Schlather2Sim,echo=FALSE>>=
 x <- y <- seq(0, 10, length = 100)
 set.seed(12)
-ms0 <- rmaxstab(1, cbind(x, y), "whitmat", sill = 1, range = 1, smooth = 1, grid=TRUE)[,,1]
+ms0 <- rmaxstab(1, cbind(x, y), "whitmat", sill = 1, range = 1, smooth = 1, grid=TRUE)
 set.seed(12)
-ms1 <- rmaxstab(1, cbind(x, y), "powexp", sill = 1, range = 1.5, smooth = 1, grid=TRUE)[,,1]
+ms1 <- rmaxstab(1, cbind(x, y), "powexp", sill = 1, range = 1.5, smooth = 1, grid=TRUE)
 
 par(mfrow=c(1,2))
 image(x, y, log(ms0), col = terrain.colors(30))
@@ -975,9 +975,9 @@ data3 <- rgp(1, coord, cov.mod = "whitmat", sill = 1, range = 1, smooth = 1,
              grid = TRUE, control = list(nlines = 625))
 
 par(mfrow=c(1,3))
-image(x, y, data1[,,1], col = terrain.colors(30))
-image(x, y, data2[,,1], col = terrain.colors(30))
-image(x, y, data3[,,1], col = terrain.colors(30))
+image(x, y, data1, col = terrain.colors(30))
+image(x, y, data2, col = terrain.colors(30))
+image(x, y, data3, col = terrain.colors(30))
 @
 
 \begin{figure}
@@ -1132,8 +1132,8 @@ M1 <- rmaxstab(1, coord, "gauss", cov11 = 9/8, cov12 = 3/4, cov22 = 9/8,
                grid = TRUE)
 
 par(mfrow = c(1,2))
-image(x, y, log(M0[,,1]), col = terrain.colors(30))
-image(x, y, log(M1[,,1]), col = terrain.colors(30))
+image(x, y, log(M0), col = terrain.colors(30))
+image(x, y, log(M1), col = terrain.colors(30))
 @
 
 \begin{figure}

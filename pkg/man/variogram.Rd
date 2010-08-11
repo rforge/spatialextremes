@@ -7,7 +7,8 @@
 This function computes the empirical variogram.
 }
 \usage{
-variogram(data, coord, n.bins, xlab, ylab, angles = NULL, add = FALSE, ...)
+variogram(data, coord, n.bins, xlab, ylab, angles = NULL, add = FALSE,
+xlim = c(0, max(dist)), ...)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -22,6 +23,8 @@ variogram(data, coord, n.bins, xlab, ylab, angles = NULL, add = FALSE, ...)
     \eqn{(0, \pi)}{(0, \pi)} to help detecting anisotropy.}
   \item{add}{Logical. If \code{TRUE}, the plot is added to the current
     figure; otherwhise (default) a new plot is computed.}
+  \item{xlim}{A numeric vector of length 2 specifying the x coordinate
+    range.} 
   \item{\dots}{Additional options to be passed to the \code{\link{plot}}
     function.}
 }

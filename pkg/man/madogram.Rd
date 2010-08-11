@@ -5,7 +5,7 @@
 \usage{
 madogram(data, coord, fitted, n.bins, gev.param = c(0, 1, 0), which =
 c("mado", "ext"), xlab, ylab, col = c(1, 2), angles = NULL, marge =
-"emp", add = FALSE, ...)
+"emp", add = FALSE, xlim = c(0, max(dist)), ...)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -32,6 +32,8 @@ c("mado", "ext"), xlab, ylab, col = c(1, 2), angles = NULL, marge =
     'mle' (default), maximum likelihood estimates are used.}
   \item{add}{Logical. If \code{TRUE}, the plot is added to the current
     figure; otherwhise (default) a new plot is computed.}
+  \item{xlim}{A numeric vector of length 2 specifying the x coordinate
+    range.} 
   \item{\dots}{Additional options to be passed to the \code{\link{plot}}
     function.} 
 }
