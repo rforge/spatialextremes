@@ -7,7 +7,7 @@ void smithstderr(double *data, double *distVec, int *nSite, int *nObs, double *l
 		 int *ntempshapecoeff, double *loccoeff, double *scalecoeff, double *shapecoeff,
 		 double *temploccoeff, double *tempscalecoeff, double *tempshapecoeff,
 		 double *cov11, double *cov12, double *cov22, int *fitmarge, int *usetempcov,
-		 double *hess, double *grad){
+		 double *weights, double *hess, double *grad){
 
   //This is the Smith model. It computes the hessian of the pairwise log-likelihood
 
@@ -71,46 +71,48 @@ void smithstderr(double *data, double *distVec, int *nSite, int *nObs, double *l
       int k;
       double imahal = 1 / mahalDist[currentPair], imahalSquare = imahal * imahal;
 
-      for (k=*nObs;k--;){
-    	double ifrech1 = 1 / frech[k + i * *nObs], ifrech2 = 1 / frech[k + j * *nObs],
-	  ifrech1Square = ifrech1 * ifrech1, ifrech2Square = ifrech2 * ifrech2,
-	  c1 = log(frech[k + j * *nObs] * ifrech1) * imahal + 0.5 * mahalDist[currentPair],
-	  c2 = mahalDist[currentPair] - c1,
-	  dnormc1 = dnorm(c1, 0., 1., 0), pnormc1 = pnorm(c1, 0., 1., 1, 0),
-	  dnormc2 = dnorm(c2, 0., 1., 0), pnormc2 = pnorm(c2, 0., 1., 1, 0),
-	  //A = - pnormc1 * ifrech1 - pnormc2 * ifrech2;
-	  B = - dnormc1 * imahal * ifrech1 * ifrech2 + pnormc2 * ifrech2Square +
-	  dnormc2 * imahal * ifrech2Square,
-	  C = - dnormc2 * imahal * ifrech1 * ifrech2 + pnormc1 * ifrech1Square +
-	  dnormc1 * imahal * ifrech1Square,
-	  D = c2 * dnormc1 * ifrech2 * imahalSquare * ifrech1Square +
-	  c1 * dnormc2 * ifrech1 * imahalSquare * ifrech2Square,
-	  dAa = - c2 * dnormc1 * ifrech1 * imahal - c1 * dnormc2 * imahal * ifrech2,
-	  dBa = (c1 * c1 - 1) * dnormc2 * imahalSquare * ifrech2Square +
-	  (1 + c1 * c2 ) * dnormc1 * ifrech1 * ifrech2 * imahalSquare,
-	  dCa = (c2 * c2 - 1) * dnormc1 * imahalSquare * ifrech1Square +
-	  (1 + c1 * c2) * dnormc2 * ifrech1 * ifrech2 * imahalSquare,
-	  dDa = (c1 - c1 * c2 * c2 - 2 * c2) * dnormc1 * imahalSquare * imahal *
-	  ifrech1Square * ifrech2 + (c2 - c1 * c1 *c2 - 2 * c1) * dnormc2 *
-	  imahalSquare * imahal * ifrech1 * ifrech2Square,
-	  jacCommonSigma = dAa + (dBa * C + B * dCa + dDa) / (B*C + D);
-
-	hess[k * nPairs + currentPair] = -(*cov12 * distVec[nPairs + currentPair] - *cov22 * distVec[currentPair]) *
-	  (*cov12 * distVec[nPairs + currentPair] - *cov22 * distVec[currentPair]) /
-	  (2 * det * det * mahalDist[currentPair]) * jacCommonSigma;
-
-	hess[(*nObs + k) * nPairs + currentPair] = (*cov11 * distVec[nPairs + currentPair] -
-						    *cov12 * distVec[currentPair]) *
-	  (*cov12 * distVec[nPairs + currentPair] - *cov22 * distVec[currentPair]) /
-	  (det * det * mahalDist[currentPair]) * jacCommonSigma;
-	hess[(2 * *nObs + k) * nPairs + currentPair] = -(*cov11 * distVec[nPairs + currentPair] -
-							 *cov12 * distVec[currentPair]) *
-	  (*cov11 * distVec[nPairs + currentPair] -  *cov12 * distVec[currentPair]) /
-	  (2 * det * det * mahalDist[currentPair]) * jacCommonSigma;
-
-	grad[k] += hess[k * nPairs + currentPair];
-	grad[*nObs + k] += hess[(*nObs + k) * nPairs + currentPair];
-	grad[2 * *nObs + k] += hess[(2 * *nObs + k) * nPairs + currentPair];
+      if (weights[currentPair] != 0){
+	for (k=*nObs;k--;){
+	  double ifrech1 = 1 / frech[k + i * *nObs], ifrech2 = 1 / frech[k + j * *nObs],
+	    ifrech1Square = ifrech1 * ifrech1, ifrech2Square = ifrech2 * ifrech2,
+	    c1 = log(frech[k + j * *nObs] * ifrech1) * imahal + 0.5 * mahalDist[currentPair],
+	    c2 = mahalDist[currentPair] - c1,
+	    dnormc1 = dnorm(c1, 0., 1., 0), pnormc1 = pnorm(c1, 0., 1., 1, 0),
+	    dnormc2 = dnorm(c2, 0., 1., 0), pnormc2 = pnorm(c2, 0., 1., 1, 0),
+	    //A = - pnormc1 * ifrech1 - pnormc2 * ifrech2;
+	    B = - dnormc1 * imahal * ifrech1 * ifrech2 + pnormc2 * ifrech2Square +
+	    dnormc2 * imahal * ifrech2Square,
+	    C = - dnormc2 * imahal * ifrech1 * ifrech2 + pnormc1 * ifrech1Square +
+	    dnormc1 * imahal * ifrech1Square,
+	    D = c2 * dnormc1 * ifrech2 * imahalSquare * ifrech1Square +
+	    c1 * dnormc2 * ifrech1 * imahalSquare * ifrech2Square,
+	    dAa = - c2 * dnormc1 * ifrech1 * imahal - c1 * dnormc2 * imahal * ifrech2,
+	    dBa = (c1 * c1 - 1) * dnormc2 * imahalSquare * ifrech2Square +
+	    (1 + c1 * c2 ) * dnormc1 * ifrech1 * ifrech2 * imahalSquare,
+	    dCa = (c2 * c2 - 1) * dnormc1 * imahalSquare * ifrech1Square +
+	    (1 + c1 * c2) * dnormc2 * ifrech1 * ifrech2 * imahalSquare,
+	    dDa = (c1 - c1 * c2 * c2 - 2 * c2) * dnormc1 * imahalSquare * imahal *
+	    ifrech1Square * ifrech2 + (c2 - c1 * c1 *c2 - 2 * c1) * dnormc2 *
+	    imahalSquare * imahal * ifrech1 * ifrech2Square,
+	    jacCommonSigma = weights[currentPair] * (dAa + (dBa * C + B * dCa + dDa) / (B*C + D));
+	  
+	  hess[k * nPairs + currentPair] = -(*cov12 * distVec[nPairs + currentPair] - *cov22 * distVec[currentPair]) *
+	    (*cov12 * distVec[nPairs + currentPair] - *cov22 * distVec[currentPair]) /
+	    (2 * det * det * mahalDist[currentPair]) * jacCommonSigma;
+	  
+	  hess[(*nObs + k) * nPairs + currentPair] = (*cov11 * distVec[nPairs + currentPair] -
+						      *cov12 * distVec[currentPair]) *
+	    (*cov12 * distVec[nPairs + currentPair] - *cov22 * distVec[currentPair]) /
+	    (det * det * mahalDist[currentPair]) * jacCommonSigma;
+	  hess[(2 * *nObs + k) * nPairs + currentPair] = -(*cov11 * distVec[nPairs + currentPair] -
+							   *cov12 * distVec[currentPair]) *
+	    (*cov11 * distVec[nPairs + currentPair] -  *cov12 * distVec[currentPair]) /
+	    (2 * det * det * mahalDist[currentPair]) * jacCommonSigma;
+	  
+	  grad[k] += hess[k * nPairs + currentPair];
+	  grad[*nObs + k] += hess[(*nObs + k) * nPairs + currentPair];
+	  grad[2 * *nObs + k] += hess[(2 * *nObs + k) * nPairs + currentPair];
+	}
       }
     }
   }
@@ -120,7 +122,8 @@ void smithstderr(double *data, double *distVec, int *nSite, int *nObs, double *l
     marginalPartSmith(&start, nObs, nSite, data, frech, mahalDist, locs, scales, shapes,
 		      trendlocs, trendscales, trendshapes, nloccoeff, nscalecoeff, nshapecoeff,
 		      ntemploccoeff, ntempscalecoeff, ntempshapecoeff, locdsgnmat, scaledsgnmat,
-		      shapedsgnmat, tempdsgnmatloc, tempdsgnmatscale, tempdsgnmatshape, hess, grad);
+		      shapedsgnmat, tempdsgnmatloc, tempdsgnmatscale, tempdsgnmatshape, weights,
+		      hess, grad);
   }
 
   return;
@@ -133,7 +136,7 @@ void smithstderr3d(double *data, double *distVec, int *nSite, int *nObs, double 
 		   int *ntempshapecoeff, double *loccoeff, double *scalecoeff, double *shapecoeff,
 		   double *temploccoeff, double *tempscalecoeff, double *tempshapecoeff, double *cov11,
 		   double *cov12, double *cov13, double *cov22, double *cov23, double *cov33, int *fitmarge,
-		   int *usetempcov, double *hess, double *grad){
+		   int *usetempcov, double *weights, double *hess, double *grad){
 
   //This is the Smith model. It computes the hessian of the pairwise log-likelihood
 
@@ -200,6 +203,7 @@ void smithstderr3d(double *data, double *distVec, int *nSite, int *nObs, double 
       int k;
       double imahal = 1 / mahalDist[currentPair], imahalSquare = imahal * imahal;
 
+      if (weights[currentPair] != 0){
       for (k=*nObs;k--;){
 	double ifrech1 = 1 / frech[k + i * *nObs], ifrech2 = 1 / frech[k + j * *nObs],
 	  ifrech1Square = ifrech1 * ifrech1, ifrech2Square = ifrech2 * ifrech2,
@@ -222,7 +226,7 @@ void smithstderr3d(double *data, double *distVec, int *nSite, int *nObs, double 
 	  dDa = (c1 - c1 * c2 * c2 - 2 * c2) * dnormc1 * imahal * imahalSquare *
 	  ifrech1Square * ifrech2 + (c2 - c1 * c1 *c2 - 2 * c1) * dnormc2 *
 	  imahalSquare * imahal * ifrech1 * ifrech2Square,
-	jacCommonSigma = dAa + (dBa * C + B * dCa + dDa) / (B*C + D);
+	  jacCommonSigma = weights[currentPair] * (dAa + (dBa * C + B * dCa + dDa) / (B*C + D));
 
 	hess[k * nPairs + currentPair] = -((*cov22 * *cov33 - *cov23 * *cov23) * distVec[currentPair] +
 		    (*cov13 * *cov23 - *cov12 * *cov33) * distVec[nPairs + currentPair] +
@@ -284,13 +288,14 @@ void smithstderr3d(double *data, double *distVec, int *nSite, int *nObs, double 
       }
     }
   }
+  }
 
   if (*fitmarge){
     int start = 6;
     marginalPartSmith(&start, nObs, nSite, data, frech, mahalDist, locs, scales, shapes,
 		      trendlocs, trendscales, trendshapes, nloccoeff, nscalecoeff, nshapecoeff,
 		      ntemploccoeff, ntempscalecoeff, ntempshapecoeff, locdsgnmat, scaledsgnmat,
-		      shapedsgnmat, tempdsgnmatloc, tempdsgnmatscale, tempdsgnmatshape, hess, grad);
+		      shapedsgnmat, tempdsgnmatloc, tempdsgnmatscale, tempdsgnmatshape, weights, hess, grad);
   }
 
   return;
@@ -304,8 +309,8 @@ void schlatherstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 		     double *tempdsgnmatshape, int *ntempshapecoeff, double *loccoeff,
 		     double *scalecoeff, double *shapecoeff, double *temploccoeff,
 		     double *tempscalecoeff, double *tempshapecoeff, double *sill, double *range,
-		     double *smooth, double *smooth2, int *fitmarge, int *usetempcov, double *hess,
-		     double *grad){
+		     double *smooth, double *smooth2, int *fitmarge, int *usetempcov, double *weights,
+		     double *hess, double *grad){
 
   /* This is the Schlather model. It computes the hessian of the
      pairwise log-likelihood */
@@ -387,6 +392,7 @@ void schlatherstderr(int *covmod, double *data, double *dist, int *nSite, int *n
       currentPair++;
 
       int k;
+      if (weights[currentPair] != 0){
       for (k=*nObs;k--;){
 	double c1 = sqrt(frech[k + i * *nObs] * frech[k + i * *nObs] + frech[k + j * *nObs] * frech[k + j * *nObs] -
 			 2 * frech[k + i * *nObs] * frech[k + j * *nObs] * rho[currentPair]),
@@ -400,7 +406,7 @@ void schlatherstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	  frech[k + i * *nObs] * frech[k + j * *nObs] / (2 * c1 * c1 * c1 * c1 * c1),
 	  dCrho = (-frech[k + i * *nObs] + frech[k + j * *nObs] * rho[currentPair]) / (2 * c1 * c1 * c1),
 	  dDrho = (-frech[k + j * *nObs] + frech[k + i * *nObs] * rho[currentPair]) / (2 * c1 * c1 * c1),
-	  jacCommonRho = dArho + (dBrho + dCrho * D + C * dDrho) / (B + C * D);
+	  jacCommonRho = weights[currentPair] * (dArho + (dBrho + dCrho * D + C * dDrho) / (B + C * D));
 
 	hess[k * nPairs + currentPair] = rho[currentPair] / *sill * jacCommonRho;
 	grad[k] += hess[k * nPairs + currentPair];
@@ -477,12 +483,13 @@ void schlatherstderr(int *covmod, double *data, double *dist, int *nSite, int *n
       }
     }
   }
+  }
 
   if (*fitmarge)
     marginalPartSchlat(&nCorPar, nObs, nSite, data, frech, rho, locs, scales, shapes, trendlocs,
 		       trendscales, trendshapes, nloccoeff, nscalecoeff, nshapecoeff,
 		       ntemploccoeff, ntempscalecoeff, ntempshapecoeff, locdsgnmat, scaledsgnmat,
-		       shapedsgnmat, tempdsgnmatloc, tempdsgnmatscale, tempdsgnmatshape, hess,
+		       shapedsgnmat, tempdsgnmatloc, tempdsgnmatscale, tempdsgnmatshape, weights, hess,
 		       grad);
 
   return;
@@ -496,7 +503,7 @@ void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite, int
 			double *loccoeff, double *scalecoeff, double *shapecoeff,
 			double *temploccoeff, double *tempscalecoeff, double *tempshapecoeff,
 			double *alpha, double *sill, double *range, double *smooth,
-			double *smooth2, int *fitmarge, int *usetempcov, double *hess,
+			double *smooth2, int *fitmarge, int *usetempcov, double *weights, double *hess,
 			double *grad){
 
   /* This is the independent Schlather model. It computes the hessian
@@ -578,6 +585,8 @@ void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite, int
 
       currentPair++;
       int k;
+
+      if (weights[currentPair] != 0){
       for (k=*nObs;k--;){
 	double frech1Square = frech[k + i * *nObs] * frech[k + i * *nObs],
 	  frech2Square = frech[k + j * *nObs] * frech[k + j * *nObs],
@@ -607,9 +616,10 @@ void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite, int
 	  (2 * c1 * frech[k + j * *nObs] * frech[k + j * *nObs]),
 	  dDrho = (*alpha - 1) * (frech[k + j * *nObs] - frech[k + i * *nObs] *
 				  rho[currentPair]) / (2 * c1 * c1 * c1),
-	  jacCommonRho = dArho + (dBrho + dCrho * D + dDrho * C) / (B + C * D);
+	  jacCommonRho = weights[currentPair] * (dArho + (dBrho + dCrho * D + dDrho * C) / (B + C * D));
 
-	hess[k * nPairs + currentPair] = dAalpha + (dBalpha + dCalpha * D + dDalpha * C) / (B + C * D);
+	hess[k * nPairs + currentPair] = weights[currentPair] * 
+	  (dAalpha + (dBalpha + dCalpha * D + dDalpha * C) / (B + C * D));
 	hess[(*nObs + k) * nPairs + currentPair] = rho[currentPair] / *sill * jacCommonRho;
 
 	grad[k] += hess[k * nPairs + currentPair];
@@ -686,12 +696,13 @@ void schlatherindstderr(int *covmod, double *data, double *dist, int *nSite, int
       }
     }
   }
+  }
 
   if (*fitmarge)
     marginalPartiSchlat(&nCorPar, nObs, nSite, data, frech, alpha, rho, locs, scales, shapes,
 			trendlocs, trendscales, trendshapes, nloccoeff, nscalecoeff, nshapecoeff,
 			ntemploccoeff, ntempscalecoeff, ntempshapecoeff, locdsgnmat, scaledsgnmat,
-			shapedsgnmat, tempdsgnmatloc, tempdsgnmatscale, tempdsgnmatshape, hess,
+			shapedsgnmat, tempdsgnmatloc, tempdsgnmatscale, tempdsgnmatshape, weights, hess,
 			grad);
 
   return;
@@ -705,7 +716,7 @@ void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 		     double *scalecoeff, double *shapecoeff, double *temploccoeff,
 		     double *tempscalecoeff, double *tempshapecoeff, double *sigma2,
 		     double *sill, double *range, double *smooth, double *smooth2,
-		     int *fitmarge, int *usetempcov, double *hess, double *grad){
+		     int *fitmarge, int *usetempcov, double *weights, double *hess, double *grad){
   /* This function computes the hessian of the log-pairwise
      likelihood for the geometric gaussian model.
 
@@ -775,6 +786,7 @@ void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite, int *n
       double imahal = 1 / mahalDist[currentPair], imahalSquare = imahal * imahal,
 	rho = 1 - mahalDist[currentPair] * mahalDist[currentPair] / (2 * *sigma2);
 
+      if (weights[currentPair] != 0){
       for (k=*nObs;k--;){
 	double ifrech1 = 1 / frech[k + i * *nObs], ifrech2 = 1 / frech[k + j * *nObs],
 	  ifrech1Square = ifrech1 * ifrech1, ifrech2Square = ifrech2 * ifrech2,
@@ -797,7 +809,7 @@ void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	  dDa = (c1 - c1 * c2 * c2 - 2 * c2) * dnormc1 * imahalSquare * imahal *
 	  ifrech1Square * ifrech2 + (c2 - c1 * c1 *c2 - 2 * c1) * dnormc2 *
 	  imahalSquare * imahal * ifrech1 * ifrech2Square,
-	  jacCommon = dAa + (dBa * C + B * dCa + dDa) / (B*C + D);
+	  jacCommon = weights[currentPair] * (dAa + (dBa * C + B * dCa + dDa) / (B*C + D));
 
 	hess[k * nPairs + currentPair] = mahalDist[currentPair] / (2 * *sigma2) * jacCommon;
 	hess[(*nObs + k) * nPairs + currentPair] = -*sigma2 * rho / (mahalDist[currentPair] * *sill) *
@@ -877,12 +889,14 @@ void geomgaussstderr(int *covmod, double *data, double *dist, int *nSite, int *n
       }
     }
   }
+  }
 
   if (*fitmarge)
     marginalPartSmith(&nCorPar, nObs, nSite, data, frech, mahalDist, locs, scales, shapes,
 		      trendlocs, trendscales, trendshapes, nloccoeff, nscalecoeff, nshapecoeff,
 		      ntemploccoeff, ntempscalecoeff, ntempshapecoeff, locdsgnmat, scaledsgnmat,
-		      shapedsgnmat, tempdsgnmatloc, tempdsgnmatscale, tempdsgnmatshape, hess, grad);
+		      shapedsgnmat, tempdsgnmatloc, tempdsgnmatscale, tempdsgnmatshape, weights,
+		      hess, grad);
 
   return;
 }
@@ -894,7 +908,7 @@ void brownresnickstderr(double *data, double *dist, int *nSite, int *nObs, doubl
 			double *tempdsgnmatshape, int *ntempshapecoeff, double *loccoeff,
 			double *scalecoeff, double *shapecoeff, double *temploccoeff,
 			double *tempscalecoeff, double *tempshapecoeff, double *range,
-			double *smooth, int *fitmarge, int *usetempcov, double *hess,
+			double *smooth, int *fitmarge, int *usetempcov, double *weights, double *hess,
 			double *grad){
   /* This function computes the hessian of the log-pairwise
      likelihood for the Brown-Resnick model.
@@ -962,6 +976,7 @@ void brownresnickstderr(double *data, double *dist, int *nSite, int *nObs, doubl
       int k;
       double imahal = 1 / mahalDist[currentPair], imahalSquare = imahal * imahal;
 
+      if (weights[currentPair] != 0){
       for (k=*nObs;k--;){
 	double ifrech1 = 1 / frech[k + i * *nObs], ifrech2 = 1 / frech[k + j * *nObs],
 	  ifrech1Square = ifrech1 * ifrech1, ifrech2Square = ifrech2 * ifrech2,
@@ -984,7 +999,7 @@ void brownresnickstderr(double *data, double *dist, int *nSite, int *nObs, doubl
 	  dDa = (c1 - c1 * c2 * c2 - 2 * c2) * dnormc1 * imahalSquare * imahal *
 	  ifrech1Square * ifrech2 + (c2 - c1 * c1 *c2 - 2 * c1) * dnormc2 *
 	  imahalSquare * imahal * ifrech1 * ifrech2Square,
-	  jacCommon = dAa + (dBa * C + B * dCa + dDa) / (B*C + D);
+	  jacCommon = weights[currentPair] * (dAa + (dBa * C + B * dCa + dDa) / (B*C + D));
 
 	hess[k * nPairs + currentPair] = -0.5 * *smooth * mahalDist[currentPair] / *range * jacCommon;
 	hess[(*nObs + k) * nPairs + currentPair] = 0.5 * log(dist[currentPair] / *range) *
@@ -996,13 +1011,15 @@ void brownresnickstderr(double *data, double *dist, int *nSite, int *nObs, doubl
       }
     }
   }
+  }
 
   if (*fitmarge){
     int start = 2;
     marginalPartSmith(&start, nObs, nSite, data, frech, mahalDist, locs, scales, shapes,
 		      trendlocs, trendscales, trendshapes, nloccoeff, nscalecoeff, nshapecoeff,
 		      ntemploccoeff, ntempscalecoeff, ntempshapecoeff, locdsgnmat, scaledsgnmat,
-		      shapedsgnmat, tempdsgnmatloc, tempdsgnmatscale, tempdsgnmatshape, hess, grad);
+		      shapedsgnmat, tempdsgnmatloc, tempdsgnmatscale, tempdsgnmatshape, weights,
+		      hess, grad);
   }
 
   return;
@@ -1114,7 +1131,7 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 		     double *scalecoeff, double *shapecoeff, double *temploccoeff,
 		     double *tempscalecoeff, double *tempshapecoeff, double *sill, double *range,
 		     double *smooth, double *smooth2, double *df, int *fitmarge, int *usetempcov,
-		     double *hess, double *grad){
+		     double *weights, double *hess, double *grad){
   /* This function computes the hessian of the log-pairwise
      likelihood for the extremal t model. */
 
@@ -1198,7 +1215,7 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	da_rho = a * rho[currentPair] / (1 - rho[currentPair] * rho[currentPair]),
 	da_df = 0.5 * a / dfPlus1;
 	
-
+      if (weights[currentPair] != 0){
       for (k=*nObs;k--;){
 	/*-------------------------------------------------------------------------
 	  We start by computing the gradient for the correlation
@@ -1257,7 +1274,7 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	  ifrech1 * ifrech2 * ifrech2 * idf * idf * frech1_2 * frech1_2 * 2 * da_rho * a * dertc2 +
 	  ifrech1 * ifrech2 * ifrech2 * idf * idf * frech1_2 * frech1_2 * a * a * dc2_rho * der2tc2,
 	  iBCplusD = 1 / (B * C + D),
-	  jacCommonRho = dA_rho + (dB_rho * C + B * dC_rho + dD_rho) * iBCplusD;
+	  jacCommonRho = weights[currentPair] * (dA_rho + (dB_rho * C + B * dC_rho + dD_rho) * iBCplusD);
 
 	hess[k * nPairs + currentPair] = rho[currentPair] / *sill * jacCommonRho;
 	grad[k] += hess[k * nPairs + currentPair];
@@ -1426,12 +1443,13 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	  ifrech1 * ifrech2 * ifrech2 * idf * idf * frech1_2 * frech1_2 * 2 * da_df * a * dertc2 +
 	  ifrech1 * ifrech2 * ifrech2 * idf * idf * frech1_2 * frech1_2 * a * a * ddertc2_df;
 
-	hess[(nCorPar * *nObs + k) * nPairs + currentPair] = dA_df +
-	  (dB_df * C + B * dC_df + dD_df) * iBCplusD;
+	hess[(nCorPar * *nObs + k) * nPairs + currentPair] = weights[currentPair] *
+	  (dA_df + (dB_df * C + B * dC_df + dD_df) * iBCplusD);
 	grad[nCorPar * *nObs + k] += hess[(nCorPar * *nObs + k) * nPairs + currentPair];
 	
       }
     }
+  }
   }
 
   if (*fitmarge){
@@ -1440,7 +1458,7 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 			  trendlocs, trendscales, trendshapes, nloccoeff, nscalecoeff,
 			  nshapecoeff, ntemploccoeff, ntempscalecoeff, ntempshapecoeff,
 			  locdsgnmat, scaledsgnmat, shapedsgnmat, tempdsgnmatloc,
-			  tempdsgnmatscale, tempdsgnmatshape, hess, grad);
+			  tempdsgnmatscale, tempdsgnmatshape, weights, hess, grad);
   }
 
   return;

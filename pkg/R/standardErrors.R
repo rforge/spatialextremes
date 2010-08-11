@@ -12,6 +12,9 @@
   dist.dim <- ncol(distVec)
   n.param <- length(param.names)
 
+  if (is.null(weights))
+    weights <- rep(1, n.pairs)
+  
   if (iso){
     if (dist.dim == 2)
       n.param <- n.param + 2
@@ -63,59 +66,36 @@
       n.tempscalecoeff <- n.tempshapecoeff <- 0
   }
 
-  if (is.null(weights)){
-    if (dist.dim == 2)
-      std.err <- .C("smithstderr", as.double(data), as.double(distVec), as.integer(n.site),
-                    as.integer(n.obs), as.double(loc.dsgn.mat), as.integer(n.loccoeff),
-                    as.double(scale.dsgn.mat), as.integer(n.scalecoeff), as.double(shape.dsgn.mat),
-                    as.integer(n.shapecoeff), as.double(temp.dsgn.mat.loc), as.integer(n.temploccoeff),
-                    as.double(temp.dsgn.mat.scale), as.integer(n.tempscalecoeff),
-                    as.double(temp.dsgn.mat.shape), as.integer(n.tempshapecoeff),
-                    as.double(loc.param), as.double(scale.param), as.double(shape.param),
-                    as.double(temp.loc.param), as.double(temp.scale.param), as.double(temp.shape.param),
-                    as.double(cov11), as.double(cov12), as.double(cov22), as.integer(fit.marge),
-                    as.integer(use.temp.cov), hess = double(n.obs * n.param * n.pairs),
-                    grad = double(n.obs * n.param), PACKAGE = "SpatialExtremes")
-
-    else
-      std.err <- .C("smithstderr3d", as.double(data), as.double(distVec), as.integer(n.site),
-                    as.integer(n.obs), as.double(loc.dsgn.mat), as.integer(n.loccoeff),
-                    as.double(scale.dsgn.mat), as.integer(n.scalecoeff), as.double(shape.dsgn.mat),
-                    as.integer(n.shapecoeff), as.double(temp.dsgn.mat.loc), as.integer(n.temploccoeff),
-                    as.double(temp.dsgn.mat.scale), as.integer(n.tempscalecoeff), as.double(temp.dsgn.mat.shape),
-                    as.integer(n.tempshapecoeff), as.double(loc.param), as.double(scale.param),
-                    as.double(shape.param), as.double(temp.loc.param), as.double(temp.scale.param),
-                    as.double(temp.shape.param), as.double(cov11), as.double(cov12), as.double(cov13),
-                    as.double(cov22), as.double(cov23), as.double(cov33), fit.marge, as.integer(use.temp.cov),
-                    hess = double(n.obs * n.param * n.pairs), grad = double(n.obs * n.param),
-                    PACKAGE = "SpatialExtremes")
-  }
-
-  else{
-   if (dist.dim == 2)
-      std.err <- .C("wsmithstderr", as.double(data), as.double(distVec), as.integer(n.site),
-                    as.integer(n.obs), as.double(loc.dsgn.mat), as.integer(n.loccoeff),
-                    as.double(scale.dsgn.mat), as.integer(n.scalecoeff), as.double(shape.dsgn.mat),
-                    as.integer(n.shapecoeff), as.double(loc.param), as.double(scale.param),
-                    as.double(shape.param), as.double(cov11), as.double(cov12),
-                    as.double(cov22), fit.marge, as.double(weights),
-                    hess = double(n.obs * n.param * n.pairs),
-                    grad = double(n.obs * n.param), PACKAGE = "SpatialExtremes")
-
-    else
-      std.err <- .C("wsmithgrad3d", as.double(data), as.double(distVec), as.integer(n.site),
-                    as.integer(n.obs), as.double(loc.dsgn.mat), as.integer(n.loccoeff),
-                    as.double(scale.dsgn.mat), as.integer(n.scalecoeff), as.double(shape.dsgn.mat),
-                    as.integer(n.shapecoeff), as.double(loc.param), as.double(scale.param),
-                    as.double(shape.param), as.double(cov11), as.double(cov12), as.double(cov13),
-                    as.double(cov22), as.double(cov23), as.double(cov33), fit.marge,
-                    as.double(weights), hess = double(n.obs * n.param * n.pairs),
-                    grad = double(n.obs * n.param), PACKAGE = "SpatialExtremes")
-  }
+  if (dist.dim == 2)
+    std.err <- .C("smithstderr", as.double(data), as.double(distVec), as.integer(n.site),
+                  as.integer(n.obs), as.double(loc.dsgn.mat), as.integer(n.loccoeff),
+                  as.double(scale.dsgn.mat), as.integer(n.scalecoeff), as.double(shape.dsgn.mat),
+                  as.integer(n.shapecoeff), as.double(temp.dsgn.mat.loc), as.integer(n.temploccoeff),
+                  as.double(temp.dsgn.mat.scale), as.integer(n.tempscalecoeff),
+                  as.double(temp.dsgn.mat.shape), as.integer(n.tempshapecoeff),
+                  as.double(loc.param), as.double(scale.param), as.double(shape.param),
+                  as.double(temp.loc.param), as.double(temp.scale.param), as.double(temp.shape.param),
+                  as.double(cov11), as.double(cov12), as.double(cov22), as.integer(fit.marge),
+                  as.integer(use.temp.cov), as.double(weights), hess = double(n.obs * n.param * n.pairs),
+                  grad = double(n.obs * n.param), PACKAGE = "SpatialExtremes")
+  
+  else
+    std.err <- .C("smithstderr3d", as.double(data), as.double(distVec), as.integer(n.site),
+                  as.integer(n.obs), as.double(loc.dsgn.mat), as.integer(n.loccoeff),
+                  as.double(scale.dsgn.mat), as.integer(n.scalecoeff), as.double(shape.dsgn.mat),
+                  as.integer(n.shapecoeff), as.double(temp.dsgn.mat.loc), as.integer(n.temploccoeff),
+                  as.double(temp.dsgn.mat.scale), as.integer(n.tempscalecoeff), as.double(temp.dsgn.mat.shape),
+                  as.integer(n.tempshapecoeff), as.double(loc.param), as.double(scale.param),
+                  as.double(shape.param), as.double(temp.loc.param), as.double(temp.scale.param),
+                  as.double(temp.shape.param), as.double(cov11), as.double(cov12), as.double(cov13),
+                  as.double(cov22), as.double(cov23), as.double(cov33), fit.marge, as.integer(use.temp.cov),
+                  as.double(weights), hess = double(n.obs * n.param * n.pairs), grad = double(n.obs * n.param),
+                  PACKAGE = "SpatialExtremes")
 
   grad <- matrix(std.err$grad, nrow = n.obs, ncol = n.param)
   hess <- matrix(std.err$hess, nrow = n.obs * n.pairs, ncol = n.param)
-
+  colnames(grad) <- colnames(hess) <- param.names
+  
   if (iso){
     if (dist.dim == 2){
       grad[,1] <- rowSums(grad[,c(1,3)])
@@ -155,6 +135,7 @@
   }
 
   gradient <- as.double(colSums(grad))
+  names(gradient) <- colnames(hessian)
 
   return(list(var.score = var.score, hessian = hessian, gradient = gradient))
 }
@@ -172,6 +153,9 @@
   n.pairs <- n.site * (n.site - 1) / 2
   n.param <- length(param.names)
 
+  if (is.null(weights))
+    weights <- rep(1, n.pairs)
+  
   sill <- par["sill"]
   range <- par["range"]
   smooth <- par["smooth"]
@@ -217,36 +201,23 @@
       n.tempscalecoeff <- n.tempshapecoeff <- 0
   }
 
-  if (is.null(weights))
-    std.err <- .C("schlatherstderr", as.integer(cov.mod), as.double(data), as.double(dist),
-                  as.integer(n.site), as.integer(n.obs), as.double(loc.dsgn.mat),
-                  as.integer(n.loccoeff), as.double(scale.dsgn.mat), as.integer(n.scalecoeff),
-                  as.double(shape.dsgn.mat), as.integer(n.shapecoeff), as.double(temp.dsgn.mat.loc),
-                  as.integer(n.temploccoeff), as.double(temp.dsgn.mat.scale),
-                  as.integer(n.tempscalecoeff), as.double(temp.dsgn.mat.shape),
-                  as.integer(n.tempshapecoeff), as.double(loc.param), as.double(scale.param),
-                  as.double(shape.param), as.double(temp.loc.param), as.double(temp.scale.param),
-                  as.double(temp.shape.param), as.double(sill), as.double(range),
-                  as.double(smooth), as.double(smooth2), as.integer(fit.marge),
-                  as.integer(use.temp.cov), hess = double(n.obs * n.param * n.pairs),
-                  grad = double(n.obs * n.param), PACKAGE = "SpatialExtremes")
-
-  else
-    std.err <- .C("wschlatherstderr", as.integer(cov.mod), as.double(data),
-                  as.double(dist), as.integer(n.site),
-                  as.integer(n.obs), as.double(loc.dsgn.mat),
-                  as.integer(n.loccoeff), as.double(scale.dsgn.mat),
-                  as.integer(n.scalecoeff), as.double(shape.dsgn.mat),
-                  as.integer(n.shapecoeff), as.double(loc.param),
-                  as.double(scale.param), as.double(shape.param),
-                  as.double(sill), as.double(range), as.double(smooth),
-                  as.double(smooth2), fit.marge, as.double(weights),
-                  hess = double(n.obs * n.param * n.pairs),
-                  grad = double(n.obs * n.param), PACKAGE = "SpatialExtremes")
+  std.err <- .C("schlatherstderr", as.integer(cov.mod), as.double(data), as.double(dist),
+                as.integer(n.site), as.integer(n.obs), as.double(loc.dsgn.mat),
+                as.integer(n.loccoeff), as.double(scale.dsgn.mat), as.integer(n.scalecoeff),
+                as.double(shape.dsgn.mat), as.integer(n.shapecoeff), as.double(temp.dsgn.mat.loc),
+                as.integer(n.temploccoeff), as.double(temp.dsgn.mat.scale),
+                as.integer(n.tempscalecoeff), as.double(temp.dsgn.mat.shape),
+                as.integer(n.tempshapecoeff), as.double(loc.param), as.double(scale.param),
+                as.double(shape.param), as.double(temp.loc.param), as.double(temp.scale.param),
+                as.double(temp.shape.param), as.double(sill), as.double(range),
+                as.double(smooth), as.double(smooth2), as.integer(fit.marge),
+                as.integer(use.temp.cov), as.double(weights), hess = double(n.obs * n.param * n.pairs),
+                grad = double(n.obs * n.param), PACKAGE = "SpatialExtremes")
 
   grad <- matrix(std.err$grad, nrow = n.obs, ncol = n.param)
   hess <- matrix(std.err$hess, nrow = n.obs * n.pairs, ncol = n.param)
-
+  colnames(grad) <- colnames(hess) <- param.names
+  
   n.fixed <- length(fixed.param)
   if (n.fixed > 0){
     idx <- which(param.names %in% fixed.param)
@@ -268,6 +239,7 @@
   }
 
   gradient <- as.double(colSums(grad))
+  names(gradient) <- colnames(hessian)
 
   return(list(var.score = var.score, hessian = hessian, gradient = gradient))
 }
@@ -286,6 +258,9 @@
   n.pairs <- n.site * (n.site - 1) / 2
   n.param <- length(param.names)
 
+  if (is.null(weights))
+    weights <- rep(1, n.pairs)
+  
   alpha <- par["alpha"]
   sill <- par["sill"]
   range <- par["range"]
@@ -331,36 +306,24 @@
       n.tempscalecoeff <- n.tempshapecoeff <- 0
   }
 
-  if (is.null(weights))
-    std.err <- .C("schlatherindstderr", as.integer(cov.mod), as.double(data), as.double(dist),
-                  as.integer(n.site), as.integer(n.obs), as.double(loc.dsgn.mat),
-                  as.integer(n.loccoeff), as.double(scale.dsgn.mat), as.integer(n.scalecoeff),
-                  as.double(shape.dsgn.mat), as.integer(n.shapecoeff),
-                  as.double(temp.dsgn.mat.loc), as.integer(n.temploccoeff),
-                  as.double(temp.dsgn.mat.scale), as.integer(n.tempscalecoeff),
-                  as.double(temp.dsgn.mat.shape), as.integer(n.tempshapecoeff),
-                  as.double(loc.param), as.double(scale.param), as.double(shape.param),
-                  as.double(temp.loc.param), as.double(temp.scale.param),
-                  as.double(temp.shape.param), as.double(alpha), as.double(sill),
-                  as.double(range), as.double(smooth), as.double(smooth2), as.integer(fit.marge),
-                  as.integer(use.temp.cov), hess = double(n.obs * n.param * n.pairs),
-                  grad = double(n.obs * n.param), PACKAGE = "SpatialExtremes")
-
-  else
-    std.err <- .C("wschlatherindstderr", as.integer(cov.mod), as.double(data),
-                  as.double(dist), as.integer(n.site), as.integer(n.obs),
-                  as.double(loc.dsgn.mat), as.integer(n.loccoeff),
-                  as.double(scale.dsgn.mat), as.integer(n.scalecoeff),
-                  as.double(shape.dsgn.mat), as.integer(n.shapecoeff),
-                  as.double(loc.param), as.double(scale.param),
-                  as.double(shape.param), as.double(alpha), as.double(sill),
-                  as.double(range), as.double(smooth), as.double(smooth2), fit.marge,
-                  as.double(weights), hess = double(n.obs * n.param * n.pairs),
-                  grad = double(n.obs * n.param), PACKAGE = "SpatialExtremes")
+  std.err <- .C("schlatherindstderr", as.integer(cov.mod), as.double(data), as.double(dist),
+                as.integer(n.site), as.integer(n.obs), as.double(loc.dsgn.mat),
+                as.integer(n.loccoeff), as.double(scale.dsgn.mat), as.integer(n.scalecoeff),
+                as.double(shape.dsgn.mat), as.integer(n.shapecoeff),
+                as.double(temp.dsgn.mat.loc), as.integer(n.temploccoeff),
+                as.double(temp.dsgn.mat.scale), as.integer(n.tempscalecoeff),
+                as.double(temp.dsgn.mat.shape), as.integer(n.tempshapecoeff),
+                as.double(loc.param), as.double(scale.param), as.double(shape.param),
+                as.double(temp.loc.param), as.double(temp.scale.param),
+                as.double(temp.shape.param), as.double(alpha), as.double(sill),
+                as.double(range), as.double(smooth), as.double(smooth2), as.integer(fit.marge),
+                as.integer(use.temp.cov), as.double(weights), hess = double(n.obs * n.param * n.pairs),
+                grad = double(n.obs * n.param), PACKAGE = "SpatialExtremes")
 
   grad <- matrix(std.err$grad, nrow = n.obs, ncol = n.param)
   hess <- matrix(std.err$hess, nrow = n.obs * n.pairs, ncol = n.param)
-
+  colnames(grad) <- colnames(hess) <- param.names
+  
   n.fixed <- length(fixed.param)
   if (n.fixed > 0){
     idx <- which(param.names %in% fixed.param)
@@ -382,6 +345,7 @@
   }
 
   gradient <- as.double(colSums(grad))
+  names(gradient) <- colnames(hessian)
 
   return(list(var.score = var.score, hessian = hessian, gradient = gradient))
 }
@@ -400,6 +364,9 @@
   n.pairs <- n.site * (n.site - 1) / 2
   n.param <- length(param.names)
 
+  if (is.null(weights))
+    weights <- rep(1, n.pairs)
+  
   sigma2 <- par["sigma2"]
   sill <- par["sill"]
   range <- par["range"]
@@ -446,38 +413,24 @@
       n.tempscalecoeff <- n.tempshapecoeff <- 0
   }
 
-  if (is.null(weights))
-    std.err <- .C("geomgaussstderr", as.integer(cov.mod), as.double(data), as.double(dist),
-                  as.integer(n.site), as.integer(n.obs), as.double(loc.dsgn.mat),
-                  as.integer(n.loccoeff), as.double(scale.dsgn.mat), as.integer(n.scalecoeff),
-                  as.double(shape.dsgn.mat), as.integer(n.shapecoeff),
-                  as.double(temp.dsgn.mat.loc), as.integer(n.temploccoeff),
-                  as.double(temp.dsgn.mat.scale), as.integer(n.tempscalecoeff),
-                  as.double(temp.dsgn.mat.shape), as.integer(n.tempshapecoeff),
-                  as.double(loc.param), as.double(scale.param), as.double(shape.param),
-                  as.double(temp.loc.param), as.double(temp.scale.param),
-                  as.double(temp.shape.param), as.double(sigma2), as.double(sill),
-                  as.double(range), as.double(smooth), as.double(smooth2), as.integer(fit.marge),
-                  as.integer(use.temp.cov), hess = double(n.obs * n.param * n.pairs),
-                  grad = double(n.obs * n.param), PACKAGE = "SpatialExtremes")
-
-  else
-    std.err <- .C("wgeomgaussstderr", as.integer(cov.mod), as.double(data),
-                  as.double(dist), as.integer(n.site),
-                  as.integer(n.obs), as.double(loc.dsgn.mat),
-                  as.integer(n.loccoeff), as.double(scale.dsgn.mat),
-                  as.integer(n.scalecoeff), as.double(shape.dsgn.mat),
-                  as.integer(n.shapecoeff), as.double(loc.param),
-                  as.double(scale.param), as.double(shape.param),
-                  as.double(sigma2), as.double(sill), as.double(range),
-                  as.double(smooth), as.double(smooth2), fit.marge,
-                  as.double(weights), hess = double(n.obs * n.param * n.pairs),
-                  grad = double(n.obs * n.param),
-                  PACKAGE = "SpatialExtremes")
-
+  std.err <- .C("geomgaussstderr", as.integer(cov.mod), as.double(data), as.double(dist),
+                as.integer(n.site), as.integer(n.obs), as.double(loc.dsgn.mat),
+                as.integer(n.loccoeff), as.double(scale.dsgn.mat), as.integer(n.scalecoeff),
+                as.double(shape.dsgn.mat), as.integer(n.shapecoeff),
+                as.double(temp.dsgn.mat.loc), as.integer(n.temploccoeff),
+                as.double(temp.dsgn.mat.scale), as.integer(n.tempscalecoeff),
+                as.double(temp.dsgn.mat.shape), as.integer(n.tempshapecoeff),
+                as.double(loc.param), as.double(scale.param), as.double(shape.param),
+                as.double(temp.loc.param), as.double(temp.scale.param),
+                as.double(temp.shape.param), as.double(sigma2), as.double(sill),
+                as.double(range), as.double(smooth), as.double(smooth2), as.integer(fit.marge),
+                as.integer(use.temp.cov), as.double(weights), hess = double(n.obs * n.param * n.pairs),
+                grad = double(n.obs * n.param), PACKAGE = "SpatialExtremes")
+  
   grad <- matrix(std.err$grad, nrow = n.obs, ncol = n.param)
   hess <- matrix(std.err$hess, nrow = n.obs * n.pairs, ncol = n.param)
-
+  colnames(grad) <- colnames(hess) <- param.names
+  
   n.fixed <- length(fixed.param)
   if (n.fixed > 0){
     idx <- which(param.names %in% fixed.param)
@@ -499,6 +452,7 @@
   }
 
   gradient <- as.double(colSums(grad))
+  names(gradient) <- colnames(hessian)
 
   return(list(var.score = var.score, hessian = hessian, gradient = gradient))
 }
@@ -517,6 +471,9 @@
   n.pairs <- n.site * (n.site - 1) / 2
   n.param <- length(param.names)
 
+  if (is.null(weights))
+    weights <- rep(1, n.pairs)
+  
   range <- par["range"]
   smooth <- par["smooth"]
 
@@ -553,32 +510,23 @@
       n.tempscalecoeff <- n.tempshapecoeff <- 0
   }
 
-  if (is.null(weights))
-    std.err <- .C("brownresnickstderr", as.double(data), as.double(dist), as.integer(n.site),
-                  as.integer(n.obs), as.double(loc.dsgn.mat), as.integer(n.loccoeff),
-                  as.double(scale.dsgn.mat), as.integer(n.scalecoeff), as.double(shape.dsgn.mat),
-                  as.integer(n.shapecoeff), as.double(temp.dsgn.mat.loc),
-                  as.integer(n.temploccoeff), as.double(temp.dsgn.mat.scale),
-                  as.integer(n.tempscalecoeff), as.double(temp.dsgn.mat.shape),
-                  as.integer(n.tempshapecoeff), as.double(loc.param), as.double(scale.param),
-                  as.double(shape.param), as.double(temp.loc.param), as.double(temp.scale.param),
-                  as.double(temp.shape.param), as.double(range), as.double(smooth),
-                  as.integer(fit.marge), as.integer(use.temp.cov),
-                  hess = double(n.obs * n.param * n.pairs), grad = double(n.obs * n.param),
-                  PACKAGE = "SpatialExtremes")
-
-  else
-    std.err <- .C("wbrownresnickstderr", as.double(data), as.double(dist), as.integer(n.site),
-                  as.integer(n.obs), as.double(loc.dsgn.mat), as.integer(n.loccoeff),
-                  as.double(scale.dsgn.mat), as.integer(n.scalecoeff), as.double(shape.dsgn.mat),
-                  as.integer(n.shapecoeff), as.double(loc.param), as.double(scale.param),
-                  as.double(shape.param), as.double(range), as.double(smooth), fit.marge,
-                  as.double(weights), hess = double(n.obs * n.param * n.pairs),
-                  grad = double(n.obs * n.param), PACKAGE = "SpatialExtremes")
-
+  std.err <- .C("brownresnickstderr", as.double(data), as.double(dist), as.integer(n.site),
+                as.integer(n.obs), as.double(loc.dsgn.mat), as.integer(n.loccoeff),
+                as.double(scale.dsgn.mat), as.integer(n.scalecoeff), as.double(shape.dsgn.mat),
+                as.integer(n.shapecoeff), as.double(temp.dsgn.mat.loc),
+                as.integer(n.temploccoeff), as.double(temp.dsgn.mat.scale),
+                as.integer(n.tempscalecoeff), as.double(temp.dsgn.mat.shape),
+                as.integer(n.tempshapecoeff), as.double(loc.param), as.double(scale.param),
+                as.double(shape.param), as.double(temp.loc.param), as.double(temp.scale.param),
+                as.double(temp.shape.param), as.double(range), as.double(smooth),
+                as.integer(fit.marge), as.integer(use.temp.cov), as.double(weights),
+                hess = double(n.obs * n.param * n.pairs), grad = double(n.obs * n.param),
+                PACKAGE = "SpatialExtremes")
+  
   grad <- matrix(std.err$grad, nrow = n.obs, ncol = n.param)
   hess <- matrix(std.err$hess, nrow = n.obs * n.pairs, ncol = n.param)
-
+  colnames(grad) <- colnames(hess) <- param.names
+  
   n.fixed <- length(fixed.param)
   if (n.fixed > 0){
     idx <- which(param.names %in% fixed.param)
@@ -600,7 +548,8 @@
   }
 
   gradient <- as.double(colSums(grad))
-
+  names(gradient) <- colnames(hessian)
+  
   return(list(var.score = var.score, hessian = hessian, gradient = gradient))
 }
 
@@ -651,7 +600,8 @@
 
   grad <- matrix(std.err$grad, nrow = n.obs, ncol = n.param)
   hess <- matrix(std.err$hess, nrow = n.obs * n.site, ncol = n.param)
-
+  colnames(grad) <- colnames(hess) <- param.names
+  
   n.fixed <- length(fixed.param)
   if (n.fixed > 0){
     idx <- which(param.names %in% fixed.param)
@@ -673,6 +623,7 @@
   }
 
   gradient <- as.double(colSums(grad))
+  names(gradient) <- colnames(hessian)
 
   return(list(var.score = var.score, hessian = hessian, gradient = gradient))
 }
@@ -690,6 +641,9 @@
   n.pairs <- n.site * (n.site - 1) / 2
   n.param <- length(param.names)
 
+  if (is.null(weights))
+    weights <- rep(1, n.pairs)
+  
   sill <- par["sill"]
   range <- par["range"]
   smooth <- par["smooth"]
@@ -736,35 +690,22 @@
       n.tempscalecoeff <- n.tempshapecoeff <- 0
   }
 
-  if (is.null(weights))
-    std.err <- .C("extremaltstderr", as.integer(cov.mod), as.double(data), as.double(dist),
-                  as.integer(n.site), as.integer(n.obs), as.double(loc.dsgn.mat),
-                  as.integer(n.loccoeff), as.double(scale.dsgn.mat), as.integer(n.scalecoeff),
-                  as.double(shape.dsgn.mat), as.integer(n.shapecoeff), as.double(temp.dsgn.mat.loc),
-                  as.integer(n.temploccoeff), as.double(temp.dsgn.mat.scale),
-                  as.integer(n.tempscalecoeff), as.double(temp.dsgn.mat.shape),
-                  as.integer(n.tempshapecoeff), as.double(loc.param), as.double(scale.param),
-                  as.double(shape.param), as.double(temp.loc.param), as.double(temp.scale.param),
-                  as.double(temp.shape.param), as.double(sill), as.double(range),
-                  as.double(smooth), as.double(smooth2), as.double(DoF), as.integer(fit.marge),
-                  as.integer(use.temp.cov), hess = double(n.obs * n.param * n.pairs),
-                  grad = double(n.obs * n.param), PACKAGE = "SpatialExtremes")
-
-  else
-    std.err <- .C("wschlatherstderr", as.integer(cov.mod), as.double(data),
-                  as.double(dist), as.integer(n.site),
-                  as.integer(n.obs), as.double(loc.dsgn.mat),
-                  as.integer(n.loccoeff), as.double(scale.dsgn.mat),
-                  as.integer(n.scalecoeff), as.double(shape.dsgn.mat),
-                  as.integer(n.shapecoeff), as.double(loc.param),
-                  as.double(scale.param), as.double(shape.param),
-                  as.double(sill), as.double(range), as.double(smooth),
-                  as.double(smooth2), fit.marge, as.double(weights),
-                  hess = double(n.obs * n.param * n.pairs),
-                  grad = double(n.obs * n.param), PACKAGE = "SpatialExtremes")
+  std.err <- .C("extremaltstderr", as.integer(cov.mod), as.double(data), as.double(dist),
+                as.integer(n.site), as.integer(n.obs), as.double(loc.dsgn.mat),
+                as.integer(n.loccoeff), as.double(scale.dsgn.mat), as.integer(n.scalecoeff),
+                as.double(shape.dsgn.mat), as.integer(n.shapecoeff), as.double(temp.dsgn.mat.loc),
+                as.integer(n.temploccoeff), as.double(temp.dsgn.mat.scale),
+                as.integer(n.tempscalecoeff), as.double(temp.dsgn.mat.shape),
+                as.integer(n.tempshapecoeff), as.double(loc.param), as.double(scale.param),
+                as.double(shape.param), as.double(temp.loc.param), as.double(temp.scale.param),
+                as.double(temp.shape.param), as.double(sill), as.double(range),
+                as.double(smooth), as.double(smooth2), as.double(DoF), as.integer(fit.marge),
+                as.integer(use.temp.cov), as.double(weights), hess = double(n.obs * n.param * n.pairs),
+                grad = double(n.obs * n.param), PACKAGE = "SpatialExtremes")
 
   grad <- matrix(std.err$grad, nrow = n.obs, ncol = n.param)
   hess <- matrix(std.err$hess, nrow = n.obs * n.pairs, ncol = n.param)
+  colnames(grad) <- colnames(hess) <- param.names
 
   n.fixed <- length(fixed.param)
   if (n.fixed > 0){
@@ -787,6 +728,7 @@
   }
 
   gradient <- as.double(colSums(grad))
-
+  names(gradient) <- colnames(hessian)
+  
   return(list(var.score = var.score, hessian = hessian, gradient = gradient))
 }
