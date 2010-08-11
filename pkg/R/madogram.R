@@ -1,6 +1,6 @@
 madogram <- function(data, coord, fitted, n.bins, gev.param = c(0, 1, 0),
                      which = c("mado", "ext"), xlab, ylab, col = c(1, 2),
-                     angles = NULL, marge = "emp", add = FALSE, ...){
+                     angles = NULL, marge = "emp", add = FALSE, xlim = c(0, max(dist)), ...){
   
   if (missing(fitted) && missing(data) && missing(coord))
     stop("You must either specify a fitted model OR 'data' and 'coord'")
@@ -127,7 +127,7 @@ madogram <- function(data, coord, fitted, n.bins, gev.param = c(0, 1, 0),
              gev.param[2] * gamma(1 - gev.param[3]) *
                (ext.coeff.fit(h)^gev.param[3] - 1) / gev.param[3]
            
-         curve(mado.fit, from = 0, to = max(dist), add = TRUE, col = col[2], ...)
+         curve(mado.fit, from = xlim[1], to = xlim[2], add = TRUE, col = col[2], ...)
        }
     }
     
@@ -135,14 +135,13 @@ madogram <- function(data, coord, fitted, n.bins, gev.param = c(0, 1, 0),
       points(dist, ext.coeff, col = col[1], ...)
       
       if (fit.curves)
-        curve(ext.coeff.fit, from = 0, to = max(dist), add = TRUE, col = col[2], ...)
+        curve(ext.coeff.fit, from = xlim[1], to = xlim[2], add = TRUE, col = col[2], ...)
     }
   }
     
   else{
     if (any(which == "mado")){
-      plot(dist, mado, xlab = xlab, ylab = ylab[1], col = col[1],
-           xlim = c(0, max(dist)), ...)
+      plot(dist, mado, xlab = xlab, ylab = ylab[1], col = col[1], xlim = xlim, ...)
 
       if (!missing(fitted)){
         if (gev.param[3] == 0)
@@ -154,16 +153,16 @@ madogram <- function(data, coord, fitted, n.bins, gev.param = c(0, 1, 0),
             gev.param[2] * gamma(1 - gev.param[3]) *
               (ext.coeff.fit(h)^gev.param[3] - 1) / gev.param[3]
         
-        curve(mado.fit, from = 0, to = max(dist), add = TRUE, col = col[2], ...)
+        curve(mado.fit, from = xlim[1], to = xlim[2], add = TRUE, col = col[2], ...)
       }
     }
     
     if (any(which == "ext")){
       plot(dist, ext.coeff, xlab = xlab, ylab = ylab[2], col = col[1],
-           xlim = c(0, max(dist)), ylim = c(1, max(2, ext.coeff)), ...)
+           xlim = xlim, ylim = c(1, max(2, ext.coeff)), ...)
       
       if (fit.curves)
-        curve(ext.coeff.fit, from = 0, to = max(dist), add = TRUE, col = col[2], ...)
+        curve(ext.coeff.fit, from = xlim[1], to = xlim[2], add = TRUE, col = col[2], ...)
     }
   }
 
@@ -172,7 +171,7 @@ madogram <- function(data, coord, fitted, n.bins, gev.param = c(0, 1, 0),
 
 fmadogram <- function(data, coord, fitted, n.bins, which = c("mado", "ext"),
                       xlab, ylab, col = c(1, 2), angles = NULL, marge = "emp",
-                      add = FALSE, ...){
+                      add = FALSE, xlim = c(0, max(dist)), ...){
 
   if (missing(fitted) && missing(data) && missing(coord))
     stop("You must either specify a fitted model OR 'data' and 'coord'")
@@ -287,7 +286,7 @@ fmadogram <- function(data, coord, fitted, n.bins, which = c("mado", "ext"),
         fmado.fit <- function(h)
           (ext.coeff.fit(h) - 1) / (ext.coeff.fit(h) + 1) / 2
         
-        curve(fmado.fit, from = 0, to = max(dist), add = TRUE, col = col[2], ...)
+        curve(fmado.fit, from = xlim[1], to = xlim[2], add = TRUE, col = col[2], ...)
       }
     }
     
@@ -295,29 +294,28 @@ fmadogram <- function(data, coord, fitted, n.bins, which = c("mado", "ext"),
       points(dist, ext.coeff, col = col[1], ...)
 
       if(fit.curves)
-        curve(ext.coeff.fit, from = 0, to = max(dist), add = TRUE, col = col[2], ...)
+        curve(ext.coeff.fit, from = xlim[1], to = xlim[2], add = TRUE, col = col[2], ...)
     }
   }
 
   else{
     if (any(which == "mado")){
-      plot(dist, fmado, xlab = xlab, ylab = ylab[1], col = col[1],
-           xlim = c(0, max(dist)), ...)
+      plot(dist, fmado, xlab = xlab, ylab = ylab[1], col = col[1], xlim = xlim, ...)
 
       if (fit.curves){
         fmado.fit <- function(h)
           (ext.coeff.fit(h) - 1) / (ext.coeff.fit(h) + 1) / 2
         
-        curve(fmado.fit, from = 0, to = max(dist), add = TRUE, col = col[2], ...)
+        curve(fmado.fit, from = xlim[1], to = xlim[2], add = TRUE, col = col[2], ...)
       }
     }
     
     if (any(which == "ext")){
       plot(dist, ext.coeff, xlab = xlab, ylab = ylab[2], col = col[1],
-           xlim = c(0, max(dist)), ylim = c(1, max(2, ext.coeff)), ...)
+           xlim = xlim, ylim = c(1, max(2, ext.coeff)), ...)
 
       if (fit.curves)
-        curve(ext.coeff.fit, from = 0, to = max(dist), add = TRUE, col = col[2], ...)
+        curve(ext.coeff.fit, from = xlim[1], to = xlim[2], add = TRUE, col = col[2], ...)
     }
   }
 
@@ -420,7 +418,7 @@ lmadogram <- function(data, coord, n.bins, xlab, ylab, zlab, n.lambda = 11,
 }
 
 variogram <- function(data, coord, n.bins, xlab, ylab, angles = NULL,
-                      add = FALSE, ...){
+                      add = FALSE, xlim = c(0, max(dist)), ...){
   
   if (is.null(dim(coord))){
     if (length(coord) != ncol(data))
@@ -481,7 +479,7 @@ variogram <- function(data, coord, n.bins, xlab, ylab, angles = NULL,
     points(dist, vario, ...)
 
   else
-    plot(dist, vario, xlab = xlab, ylab = ylab, xlim = c(0, max(dist)), ...)
+    plot(dist, vario, xlab = xlab, ylab = ylab, xlim = xlim, ...)
 
   invisible(cbind(dist = dist, variogram = vario))
 }
