@@ -104,3 +104,7 @@ frech2gev <- function(x, loc, scale, shape){
 
   return(list(reg.grid = reg.grid, steps = steps))
 }
+
+.useloglink <- function(formula)
+  return(substr(formula[2], 1, 3) == "log")
+
