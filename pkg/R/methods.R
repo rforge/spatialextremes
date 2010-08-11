@@ -68,14 +68,14 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
 
   cat("        Estimator:", x$est, "\n")
   cat("            Model:", x$model, "\n")
+  cat("         Weighted:", x$weighted, "\n")
   if (x$est == 'MPLE'){
     cat("   Pair. Deviance:", x$deviance, "\n")
     cat("              TIC:", TIC(x), "\n")
   }
-  if (x$est == "Least Squares"){
-    cat("         Weighted:", x$weighted, "\n")
+  if (x$est == "Least Squares")    
     cat("  Objective Value:", x$opt.value, "\n")
-  }
+
   if ((x$model == "Schlather") || (x$model == "Geometric") || (x$model == "Brown-Resnick") ||
       (x$model == "Extremal-t")){
 

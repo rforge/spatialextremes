@@ -281,7 +281,7 @@ schlatherindfull <- function(data, coord, start, cov.mod = "whitmat", ...,
                  logLik = -opt$value, opt.value = opt$value, model = "Schlather",
                  cov.mod = cov.mod, fit.marge = fit.marge, ext.coeff = ext.coeff,
                  hessian = opt$hessian, lik.fun = nllh, coord = coord, ihessian = ihessian,
-                 var.score = var.score, marg.cov = NULL, nllh = nllh)
+                 var.score = var.score, marg.cov = NULL, nllh = nllh, weighted = weighted)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
@@ -693,7 +693,7 @@ as.double(temp.penalty.shape),",
                  loc.form = loc.form, scale.form = scale.form, shape.form = shape.form,
                  lik.fun = nllh, loc.type = loc.type, scale.type = scale.type,
                  shape.type = shape.type, ihessian = ihessian, var.score = var.score,
-                 marg.cov = marg.cov, nllh = nllh)
+                 marg.cov = marg.cov, nllh = nllh, weighted = weighted)
   
   class(fitted) <- c(fitted$model, "maxstab")
   return(fitted)
