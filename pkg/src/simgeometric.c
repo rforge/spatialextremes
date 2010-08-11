@@ -20,16 +20,20 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
     nlines: the number of lines used in the TBM algo
        ans: the generated random field */
 
-  int i, neffSite;
+  int i, neffSite, lagi = 1, lagj = 1;
   const double loguBound = log(*uBound), halfSigma2 = 0.5 * *sigma2;
   double sigma = sqrt(*sigma2), nugget = 1 - *sill,
     *lines = (double *)R_alloc(3 * *nlines, sizeof(double));
 
-  if (*grid)
+  if (*grid){
     neffSite = R_pow_di(*nSite, *dim);
+    lagi = neffSite;
+  }
 
-  else
+  else{
     neffSite = *nSite;
+    lagj = *nObs;
+  }
 
   //rescale the coordinates
   for (i=(*nSite * *dim);i--;){
@@ -45,95 +49,49 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
   vandercorput(nlines, lines);
   
   GetRNGstate();
-  if (*grid){
-    //coord defines a grid
-    for (i=*nObs;i--;){
-      int nKO = neffSite;
-      double poisson = 0;
-
-      while (nKO) {
-	/* The stopping rule is reached when nKO = 0 i.e. when each site
-	   satisfies the condition in Eq. (8) of Schlather (2002) */
-	int j;
-	double *gp = (double *)R_alloc(neffSite, sizeof(double));
-
-	/* ------- Random rotation of the lines ----------*/
-	double u = unif_rand() - 0.5, v = unif_rand() - 0.5,
-	  w = unif_rand() - 0.5, angle = runif(0, M_2PI),	
-	  norm = sqrt(u * u + v * v + w * w), inorm = 1 / norm;
-	
-	u *= inorm;
-	v *= inorm;
-	w *= inorm;
-	
-	rotation(lines, nlines, &u, &v, &w, &angle);
-	/* -------------- end of rotation ---------------*/
-	
-	poisson += exp_rand();
-	double ipoisson = -log(poisson), thresh = loguBound + ipoisson;
-	
-	/* We simulate one realisation of a gaussian random field with
-	   the required covariance function */
-	memset(gp, 0, neffSite * sizeof(double));
-	tbmcore(nSite, &neffSite, dim, covmod, grid, coord, &nugget,
-		sill, range, smooth, nlines, lines, gp);
-	
-	nKO = neffSite;
-	double ipoissonMinusHalfSigma2 = ipoisson - halfSigma2;
-	for (j=neffSite;j--;){
-	  ans[j + i * neffSite] = fmax2(sigma * gp[j] + ipoissonMinusHalfSigma2,
-					ans[j + i * neffSite]);
-	  
-	  nKO -= (thresh <= ans[j + i * neffSite]);
-	  
-	}
-      }
-    }
-  }
-
-  else{
-    //coord doesn't define a grid
-    for (i=*nObs;i--;){
-      double poisson = 0;
-      int nKO = neffSite;
+ 
+  for (i=*nObs;i--;){
+    int nKO = neffSite;
+    double poisson = 0;
+    
+    while (nKO) {
+      /* The stopping rule is reached when nKO = 0 i.e. when each site
+	 satisfies the condition in Eq. (8) of Schlather (2002) */
+      int j;
+      double *gp = (double *)R_alloc(neffSite, sizeof(double));
       
-      while (nKO) {
-	/* The stopping rule is reached when nKO = 0 i.e. when each site
-	   satisfies the condition in Eq. (8) of Schlather (2002) */
-	int j;
-	double *gp;
-
-	gp = (double *)R_alloc(neffSite, sizeof(double));
-
-	/* ------- Random rotation of the lines ----------*/
-	double u = unif_rand() - 0.5, v = unif_rand() - 0.5,
-	  w = unif_rand() - 0.5, angle = runif(0, M_2PI),	
-	  norm = sqrt(u * u + v * v + w * w), inorm = 1 / norm;
-
-	u *= inorm;
-	v *= inorm;
-	w *= inorm;
+      /* ------- Random rotation of the lines ----------*/
+      double u = unif_rand() - 0.5,
+	v = unif_rand() - 0.5,
+	w = unif_rand() - 0.5,
+	angle = runif(0, M_2PI),	
+	inorm = 1 / sqrt(u * u + v * v + w * w);
+      
+      u *= inorm;
+      v *= inorm;
+      w *= inorm;
+      
+      rotation(lines, nlines, &u, &v, &w, &angle);
+      /* -------------- end of rotation ---------------*/
+      
+      poisson += exp_rand();
+      double ipoisson = -log(poisson),
+	thresh = loguBound + ipoisson;
+      
+      /* We simulate one realisation of a gaussian random field with
+	 the required covariance function */
+      memset(gp, 0, neffSite * sizeof(double));
+      tbmcore(nSite, &neffSite, dim, covmod, grid, coord, &nugget,
+	      sill, range, smooth, nlines, lines, gp);
+      
+      nKO = neffSite;
+      double ipoissonMinusHalfSigma2 = ipoisson - halfSigma2;
+      for (j=neffSite;j--;){
+	ans[j * lagj + i * lagi] = fmax2(sigma * gp[j] + ipoissonMinusHalfSigma2,
+					 ans[j * lagj + i * lagi]);
 	
-	rotation(lines, nlines, &u, &v, &w, &angle);
-	/* -------------- end of rotation ---------------*/
-
-	poisson += exp_rand();
-	double ipoisson = -log(poisson), thresh = loguBound + ipoisson;
+	nKO -= (thresh <= ans[j * lagj + i * lagi]);
 	
-	/* We simulate one realisation of a gaussian random field with
-	   the required covariance function */
-	memset(gp, 0, neffSite * sizeof(double));
-	tbmcore(nSite, &neffSite, dim, covmod, grid, coord, &nugget,
-		sill, range, smooth, nlines, lines, gp);
-	
-	nKO = neffSite;
-	double ipoissonMinusHalfSigma2 = ipoisson - halfSigma2;
-	for (j=*nSite;j--;){
-	  ans[i + j * *nObs] = fmax2(sigma * gp[j] + ipoissonMinusHalfSigma2,
-				     ans[i + j * *nObs]);
-	  
-	  nKO -= (thresh <= ans[i + j * *nObs]);
-	}
       }
     }
   }
@@ -166,15 +124,19 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
     smooth: the smooth parameter
        ans: the generated random field */
 
-  int i, j, k, neffSite;
+  int i, j, k, neffSite, lagi = 1, lagj = 1;
   const double loguBound = log(*uBound), halfSigma2 = 0.5 * *sigma2;
   double sigma = sqrt(*sigma2), nugget = 1 - *sill, one = 1, zero = 0;
 
-  if (*grid)
+  if (*grid){
     neffSite = R_pow_di(*nSite, *dim);
+    lagi = neffSite;
+  }
 
-  else
+  else{
     neffSite = *nSite;
+    lagj = *nObs;
+  }
 
   double *covmat = (double *)R_alloc(neffSite * neffSite, sizeof(double)),
     *d = (double *)R_alloc(neffSite, sizeof(double)),
@@ -229,81 +191,42 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
 		  v, &neffSite, u, &neffSite, &zero, covmat, &neffSite);
   
   GetRNGstate();
-  if (*grid){
-    //coord defines a grid
-    for (i=*nObs;i--;){
-      double poisson = 0;
-      int nKO = neffSite;
+  
+  for (i=*nObs;i--;){
+    double poisson = 0;
+    int nKO = neffSite;
+    
+    while (nKO) {
+      /* The stopping rule is reached when nKO = 0 i.e. when each site
+	 satisfies the condition in Eq. (8) of Schlather (2002) */
+      poisson += exp_rand();
+      double ipoisson = -log(poisson), thresh = loguBound + ipoisson;
+	
+      /* We simulate one realisation of a gaussian random field with
+	 the required covariance function */
+      for (j=neffSite;j--;)
+	d[j] = norm_rand();
       
-      while (nKO) {
-	/* The stopping rule is reached when nKO = 0 i.e. when each site
-	   satisfies the condition in Eq. (8) of Schlather (2002) */
-	poisson += exp_rand();
-	double ipoisson = -log(poisson), thresh = loguBound + ipoisson;
+      for (j=neffSite;j--;){
+	double sum = 0;
+	for (k=neffSite;k--;)
+	  sum += d[k] * covmat[j + k * neffSite];
 	
-	/* We simulate one realisation of a gaussian random field with
-	   the required covariance function */
-	for (j=neffSite;j--;)
-	  d[j] = norm_rand();
-	  
-	for (j=neffSite;j--;){
-	  double sum = 0;
-	  for (k=neffSite;k--;)
-	    sum += d[k] * covmat[j + k * neffSite];
-	  
-	  gp[j] = sum;
-	}
+	gp[j] = sum;
+      }
+      
+      nKO = neffSite;
+      double ipoissonMinusHalfSigma2 = ipoisson - halfSigma2;
+      for (j=neffSite;j--;){
+	ans[j * lagj + i * lagi] = fmax2(sigma * gp[j] + ipoissonMinusHalfSigma2,
+				      ans[j * lagj + i * lagi]);
 	
-	nKO = neffSite;
-	double ipoissonMinusHalfSigma2 = ipoisson - halfSigma2;
-	for (j=neffSite;j--;){
-	  ans[j + i * neffSite] = fmax2(sigma * gp[j] + ipoissonMinusHalfSigma2,
-					ans[j + i * neffSite]);
+	nKO -= (thresh <= ans[j * lagj + i * lagi]);
 	  
-	  nKO -= (thresh <= ans[j + i * neffSite]);
-	  
-	}
       }
     }
   }
-
-  else{
-    //coord doesn't define a grid
-    for (i=*nObs;i--;){
-      double poisson = 0;
-      int nKO = *nSite;
-      
-      while (nKO) {
-	/* The stopping rule is reached when nKO = 0 i.e. when each site
-	   satisfies the condition in Eq. (8) of Schlather (2002) */
-	poisson += exp_rand();
-	double ipoisson = -log(poisson), thresh = loguBound + ipoisson;
-	
-	/* We simulate one realisation of a gaussian random field with
-	   the required covariance function */
-	for (j=neffSite;j--;)
-	  d[j] = norm_rand();
-	  
-	for (j=neffSite;j--;){
-	  double sum = 0;
-	  for (k=neffSite;k--;)
-	    sum += d[k] * covmat[j + k * neffSite];
-	  
-	  gp[j] = sum;
-	}
-	
-	nKO = *nSite;
-	double ipoissonMinusHalfSigma2 = ipoisson - halfSigma2;
-	for (j=*nSite;j--;){
-	  ans[i + j * *nObs] = fmax2(sigma * gp[j] + ipoissonMinusHalfSigma2,
-				     ans[i + j * *nObs]);
-	  
-	  nKO -= (thresh <= ans[i + j * *nObs]);
-	}
-      }
-    }
-  }
-
+  
   PutRNGstate();
 
   /* So fare we generate a max-stable process with standard Gumbel

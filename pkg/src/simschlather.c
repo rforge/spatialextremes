@@ -19,16 +19,18 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
     nlines: the number of lines used for the TBM algo
        ans: the generated random field */
 
-  int i, neffSite;
-  double *lines;
-
+  /* lagi, lagj are integers useful to fill in the output depending on
+     if locations are on a grid or not */
+  int i, neffSite, lagi = 1, lagj = 1;
+  double nugget = 1 - *sill;
+  
   //rescale the coordinates
   for (i=(*nSite * *dim);i--;){
     const double irange = 1 / *range;
     coord[i] = coord[i] * irange;
   }
 
-  lines = (double *)R_alloc(3 * *nlines, sizeof(double));
+  double *lines = (double *)R_alloc(3 * *nlines, sizeof(double));
   
   if ((*covmod == 3) && (*smooth == 2))
     //This is the gaussian case
@@ -37,119 +39,67 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
   //Generate lines
   vandercorput(nlines, lines);
 
-  if (*grid)
-    neffSite = R_pow_di(*nSite, *dim);
-
-  else
-    neffSite = *nSite;
-
-  GetRNGstate();
   if (*grid){
-    //coord defines a grid
-    for (i=*nObs;i--;){
-      int nKO = neffSite;
-      double poisson = 0;
-
-      while (nKO) {
-	/* The stopping rule is reached when nKO = 0 i.e. when each site
-	   satisfies the condition in Eq. (8) of Schlather (2002) */
-	int j;
-	double nugget = 1 - *sill, ipoisson, u, v, w,
-	  angle, inorm, thresh, *gp;
-	
-	gp = (double *)R_alloc(neffSite, sizeof(double));
-  
-	/* ------- Random rotation of the lines ----------*/
-	u = unif_rand() - 0.5;
-	v = unif_rand() - 0.5;
-	w = unif_rand() - 0.5;
-	angle = runif(0, M_2PI);
-	
-	inorm = 1 / sqrt(u * u + v * v + w * w);
-	
-	u *= inorm;
-	v *= inorm;
-	w *= inorm;
-	
-	rotation(lines, nlines, &u, &v, &w, &angle);
-	/* -------------- end of rotation ---------------*/
-	
-	poisson += exp_rand();
-	ipoisson = 1 / poisson;
-	thresh = *uBound * ipoisson;
-	
-	/* We simulate one realisation of a gaussian random field with
-	   the required covariance function */
-	memset(gp, 0, neffSite * sizeof(double));
-	tbmcore(nSite, &neffSite, dim, covmod, grid, coord, &nugget,
-		sill, range, smooth, nlines, lines, gp);
-	
-	nKO = neffSite;
-	for (j=neffSite;j--;){
-	  ans[j + i * neffSite] = fmax2(gp[j] * ipoisson, ans[j + i * neffSite]);
-	  nKO -= (thresh <= ans[j + i * neffSite]);
-	  
-	}
-      }
-    }
+    neffSite = R_pow_di(*nSite, *dim);
+    lagi = neffSite;
   }
 
   else{
-    //coord doesn't define a grid
-    for (i=*nObs;i--;){
-      double poisson = 0;
-      int nKO = neffSite;
-      
-      while (nKO) {
-	/* The stopping rule is reached when nKO = 0 i.e. when each site
-	   satisfies the condition in Eq. (8) of Schlather (2002) */
-	int j;
-	double nugget = 1 - *sill, ipoisson, u, v, w,
-	  angle, inorm, thresh, *gp;	
-	
-	gp = (double *)R_alloc(neffSite, sizeof(double));
-  
-	/* ------- Random rotation of the lines ----------*/
-	u = unif_rand() - 0.5;
-	v = unif_rand() - 0.5;
-	w = unif_rand() - 0.5;
-	angle = runif(0, M_2PI);
-	
-	inorm = 1 / sqrt(u * u + v * v + w * w);
-	
-	u *= inorm;
-	v *= inorm;
-	w *= inorm;
-	
-	rotation(lines, nlines, &u, &v, &w, &angle);
-	/* -------------- end of rotation ---------------*/
+    neffSite = *nSite;
+    lagj = *nObs;
+  }
 
-	poisson += exp_rand();
-	ipoisson = 1 / poisson;
+  GetRNGstate();
+
+  for (i=*nObs;i--;){
+    int nKO = neffSite;
+    double poisson = 0;
+    
+    while (nKO) {
+      /* The stopping rule is reached when nKO = 0 i.e. when each site
+	 satisfies the condition in Eq. (8) of Schlather (2002) */
+      int j;
+      double *gp = (double *)R_alloc(neffSite, sizeof(double));
+      
+      /* ------- Random rotation of the lines ----------*/
+      double u = unif_rand() - 0.5,
+	v = unif_rand() - 0.5,
+	w = unif_rand() - 0.5,
+	angle = runif(0, M_2PI),	
+	inorm = 1 / sqrt(u * u + v * v + w * w);
+      
+      u *= inorm;
+      v *= inorm;
+      w *= inorm;
+      
+      rotation(lines, nlines, &u, &v, &w, &angle);
+      /* -------------- end of rotation ---------------*/
+      
+      poisson += exp_rand();
+      double ipoisson = 1 / poisson,
 	thresh = *uBound * ipoisson;
+      
+      /* We simulate one realisation of a gaussian random field with
+	 the required covariance function */
+      memset(gp, 0, neffSite * sizeof(double));
+      tbmcore(nSite, &neffSite, dim, covmod, grid, coord, &nugget,
+	      sill, range, smooth, nlines, lines, gp);
+      
+      nKO = neffSite;
+      for (j=neffSite;j--;){
+	ans[j * lagj + i * lagi] = fmax2(gp[j] * ipoisson, ans[j * lagj + i * lagi]);
+	nKO -= (thresh <= ans[j * lagj + i * lagi]);
 	
-	/* We simulate one realisation of a gaussian random field with
-	   the required covariance function */
-	memset(gp, 0, neffSite * sizeof(double));
-	tbmcore(nSite, &neffSite, dim, covmod, grid, coord, &nugget,
-		sill, range, smooth, nlines, lines, gp);
-	
-	nKO = neffSite;
-	for (j=*nSite;j--;){
-	  ans[i + j * *nObs] = fmax2(gp[j] * ipoisson, ans[i + j * *nObs]);
-	  nKO -= (thresh <= ans[i + j * *nObs]);
-	}
       }
     }
   }
-
+  
   PutRNGstate();
 
   //Lastly we multiply by 1 / E[max(0, Y)]
-  for (i=(neffSite * *nObs);i--;){
-    const double imean = M_SQRT2 * M_SQRT_PI;
+  const double imean = M_SQRT2 * M_SQRT_PI;
+  for (i=(neffSite * *nObs);i--;)    
     ans[i] *= imean;
-  }
 
   return;
 }
@@ -170,23 +120,26 @@ void rschlatherdirect(double *coord, int *nObs, int *nSite, int *dim,
     smooth: the smooth parameter
        ans: the generated random field */
 
-  int i, j, k, lwork, nKO, info = 0, neffSite;
-  double poisson, ipoisson, thresh, *gp, nugget = 1 - *sill,
-    *covmat, one = 1, zero = 0, *work, *xvals, tmp, *d, *u,
-    *v, sum, dummy;
+  int i, j, k, lwork, nKO, info = 0, neffSite, lagi = 1, lagj = 1;
+  double poisson, ipoisson, thresh, nugget = 1 - *sill,
+    one = 1, zero = 0, *work, tmp, sum, dummy;
 
-  if (*grid)
+  if (*grid){
     neffSite = R_pow_di(*nSite, *dim);
+    lagi = neffSite;
+  }
 
-  else
+  else{
     neffSite = *nSite;
+    lagj = *nObs;
+  }
 
-  covmat = (double *)R_alloc(neffSite * neffSite, sizeof(double));
-  d = (double *)R_alloc(neffSite, sizeof(double));
-  u = (double *)R_alloc(neffSite * neffSite, sizeof(double));
-  v = (double *)R_alloc(neffSite * neffSite, sizeof(double));
-  xvals = (double *) R_alloc(neffSite * neffSite, sizeof(double));
-  gp = (double *)R_alloc(neffSite, sizeof(double));
+  double *covmat = (double *)R_alloc(neffSite * neffSite, sizeof(double)),
+    *d = (double *)R_alloc(neffSite, sizeof(double)),
+    *u = (double *)R_alloc(neffSite * neffSite, sizeof(double)),
+    *v = (double *)R_alloc(neffSite * neffSite, sizeof(double)),
+    *xvals = (double *) R_alloc(neffSite * neffSite, sizeof(double)),
+    *gp = (double *)R_alloc(neffSite, sizeof(double));
 
   buildcovmat(nSite, grid, covmod, coord, dim, &nugget, sill, range,
 	      smooth, covmat);
@@ -233,82 +186,44 @@ void rschlatherdirect(double *coord, int *nObs, int *nSite, int *dim,
 		  v, &neffSite, u, &neffSite, &zero, covmat, &neffSite);
   
   GetRNGstate();
-  if (*grid){
-    //coord defines a grid
-    for (i=*nObs;i--;){
-      poisson = 0;
-      nKO = neffSite;
+ 
+  for (i=*nObs;i--;){
+    poisson = 0;
+    nKO = neffSite;
+    
+    while (nKO) {
+      /* The stopping rule is reached when nKO = 0 i.e. when each site
+	 satisfies the condition in Eq. (8) of Schlather (2002) */
+      poisson += exp_rand();
+      ipoisson = 1 / poisson;
+      thresh = *uBound * ipoisson;
       
-      while (nKO) {
-	/* The stopping rule is reached when nKO = 0 i.e. when each site
-	   satisfies the condition in Eq. (8) of Schlather (2002) */
-	poisson += exp_rand();
-	ipoisson = 1 / poisson;
-	thresh = *uBound * ipoisson;
+      /* We simulate one realisation of a gaussian random field with
+	 the required covariance function */
+      for (j=neffSite;j--;)
+	d[j] = norm_rand();
+      
+      for (j=neffSite;j--;){
+	sum = 0;
+	for (k=neffSite;k--;)
+	  sum += d[k] * covmat[j + k * neffSite];
 	
-	/* We simulate one realisation of a gaussian random field with
-	   the required covariance function */
-	for (j=neffSite;j--;)
-	  d[j] = norm_rand();
-	  
-	for (j=neffSite;j--;){
-	  sum = 0;
-	  for (k=neffSite;k--;)
-	    sum += d[k] * covmat[j + k * neffSite];
-	  
-	  gp[j] = sum;
-	}
-	
-	nKO = neffSite;
-	for (j=neffSite;j--;){
-	  ans[j + i * neffSite] = fmax2(gp[j] * ipoisson, ans[j + i * neffSite]);
-	  nKO -= (thresh <= ans[j + i * neffSite]);
-	}
+	gp[j] = sum;
       }
-    }
-  }
-
-  else{
-    //coord doesn't define a grid
-    for (i=*nObs;i--;){
-      poisson = 0;
-      nKO = *nSite;
       
-      while (nKO) {
-	/* The stopping rule is reached when nKO = 0 i.e. when each site
-	   satisfies the condition in Eq. (8) of Schlather (2002) */
-	poisson += exp_rand();
-	ipoisson = 1 / poisson;
-	thresh = *uBound * ipoisson;
-	
-	/* We simulate one realisation of a gaussian random field with
-	   the required covariance function */
-	for (j=neffSite;j--;)
-	  d[j] = norm_rand();
-	  
-	for (j=neffSite;j--;){
-	  sum = 0;
-	  for (k=neffSite;k--;)
-	    sum += d[k] * covmat[j + k * neffSite];
-	  
-	  gp[j] = sum;
-	}
-	
-	nKO = *nSite;
-	for (j=*nSite;j--;){
-	  ans[i + j * *nObs] = fmax2(gp[j] * ipoisson, ans[i + j * *nObs]);
-	  nKO -= (thresh <= ans[i + j * *nObs]);
-	}
+      nKO = neffSite;
+      for (j=neffSite;j--;){
+	ans[j * lagj + i * lagi] = fmax2(gp[j] * ipoisson, ans[j * lagj + i * lagi]);
+	nKO -= (thresh <= ans[j * lagj + i * lagi]);
       }
     }
   }
 
   PutRNGstate();
   //Lastly we multiply by 1 / E[max(0, Y)]
-  for (i=(neffSite * *nObs);i--;){
-    const double imean = M_SQRT2 * M_SQRT_PI;
+  const double imean = M_SQRT2 * M_SQRT_PI;
+  for (i=(neffSite * *nObs);i--;)    
     ans[i] *= imean;
-  }
   
   return;
 }
@@ -470,10 +385,9 @@ void rschlathercirc(int *nObs, int *ngrid, double *steps, int *dim,
   PutRNGstate();
   
   //Lastly we multiply by 1 / E[max(0, Y)]
-  for (i=(nbar * *nObs);i--;){
-    const double imean = M_SQRT2 * M_SQRT_PI;
+  const double imean = M_SQRT2 * M_SQRT_PI;
+  for (i=(nbar * *nObs);i--;)    
     ans[i] *= imean;
-  }
   
   return;
 }
@@ -843,10 +757,9 @@ void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
     }
   }  
 
-  for (j=*neffSite;j--;){
-    const double normConst = sqrt(2 * *sill / *nlines);
+  const double normConst = sqrt(2 * *sill / *nlines);
+  for (j=*neffSite;j--;)    
     ans[j] *= normConst;
-  }
 
   if (*nugget != 0){
     const double sdnugget = sqrt(*nugget);
