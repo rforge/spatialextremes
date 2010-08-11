@@ -115,13 +115,6 @@ void fittcovariance(int *covmod, double *sill, double *range, double *smooth,
     return;
   }
 
-  /*else if (*DoF > 15){
-    *ans = - (*DoF - 14) * (*DoF - 14) * MINF;
-    return;
-    }*/
-
-  *DoF = *DoF + 1;
-
   rho = (double *)R_alloc(*nPairs, sizeof(double));
 
   switch (*covmod){
@@ -146,7 +139,7 @@ void fittcovariance(int *covmod, double *sill, double *range, double *smooth,
     return;
 
   for (i=*nPairs;i--;){
-    res = 2 * pt(sqrt((1 - rho[i]) * *DoF / (1 + rho[i])), *DoF, 1, 0) - extcoeff[i];
+    res = 2 * pt(sqrt((1 - rho[i]) * (*DoF + 1) / (1 + rho[i])), *DoF + 1, 1, 0) - extcoeff[i];
     *ans += res * res / (weights[i] * weights[i]);
   }
 
