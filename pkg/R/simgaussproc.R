@@ -100,11 +100,11 @@ rgp <- function(n, coord, cov.mod = "powexp", mean = 0, nugget = 0,
            PACKAGE = "SpatialExtremes")$ans
   
   if (grid){
-    if (dist.dim == 2)
-      gp <- array(gp, c(n.site, n.site, n))
-
+    if ((n == 1) && (dist.dim == 2))
+      gp <- matrix(gp, n.site, n.site)
+    
     else
-      gp <- array(gp, c(n.site, n.site, n.site, n))
+      gp <- array(gp, c(rep(n.site, dist.dim), n))
   }
 
   else
@@ -130,8 +130,13 @@ rgp <- function(n, coord, cov.mod = "powexp", mean = 0, nugget = 0,
            as.double(sill), as.double(range), as.double(smooth),
            as.integer(nlines), ans = ans, PACKAGE = "SpatialExtremes")$ans
 
-  if (grid)
-    gp <- array(gp, c(rep(n.site, dim), n))
+  if (grid){
+    if ((n == 1) && (dim == 2))
+      gp <- matrix(gp, n.site, n.site)
+    
+    else
+      gp <- array(gp, c(rep(n.site, dim), n))
+  }
 
   else
     gp <- matrix(gp, nrow = n, ncol = n.site)
@@ -146,5 +151,9 @@ rgp <- function(n, coord, cov.mod = "powexp", mean = 0, nugget = 0,
            as.double(sill), as.double(range), as.double(smooth),
            ans = double(n * n.grid^2), PACKAGE = "SpatialExtremes")$ans
 
-  return(array(gp, c(n.grid, n.grid, n)))
+  if (n == 1)
+    return(matrix(gp, n.grid, n.grid))
+
+  else
+    return(array(gp, c(n.grid, n.grid, n)))
 }
