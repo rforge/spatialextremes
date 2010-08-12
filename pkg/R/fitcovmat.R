@@ -6,7 +6,7 @@ lsmaxstab <- function(data, coord, cov.mod = "gauss", marge = "emp", control = l
                   weighted = weighted)
 
     else
-        fitcovariance(data, coord, cov.mod, marge = marge, control = list(),
+        fitcovariance(data, coord, cov.mod, marge = marge, control = control,
                       ..., weighted = weighted)
 }
 
@@ -410,13 +410,13 @@ fitcovariance <- function(data, coord, cov.mod, marge = "emp", control = list(),
     if (missing(start)){
 
         if (cov.mod == "whitmat"){
-            range.start <- 0.75 * max(dist) / 5
-            smooth.start <- 2
+            range.start <- max(dist) / 2.33
+            smooth.start <- 0.5
         }
 
         if (cov.mod == "cauchy"){
-            range.start <- 0.75 * max(dist) / 1.9
-            smooth.start <- 2
+            range.start <- max(dist) / 10
+            smooth.start <- 0.35
         }
 
         if (cov.mod == "bessel"){
@@ -430,13 +430,13 @@ fitcovariance <- function(data, coord, cov.mod, marge = "emp", control = list(),
         }
 
         if (cov.mod == "powexp"){
-            range.start <- 0.75 * max(dist) / 3
+            range.start <- max(dist) / 2.33
             smooth.start <- 1
         }
 
         if (cov.mod == "brown"){
-            range.start <- 0.05 * max(dist)
-            smooth.start <- 1
+            range.start <- max(dist) / 2.73
+            smooth.start <- 0.75
         }
 
         if (cov.mod == "brown")
@@ -454,8 +454,15 @@ fitcovariance <- function(data, coord, cov.mod, marge = "emp", control = list(),
         if (model == "Geometric")
             start <- c(list(sigma2 = 9), start)
 
-        if (model == "Extremal-t")
-            start <- c(start, list(DoF = 1))
+        if (model == "Extremal-t"){
+          start <- list(sill = 0.9, range = 2 * max(dist), smooth = 1, DoF = 4.5)
+          
+          if (cov.mod == "caugen")
+            start <- list(sill = 0.9, range = 2 * max(dist), smooth = 1, smooth2 = 1, DoF = 4.5)
+
+          if (cov.mod == "cauchy")
+            start <- list(sill = 0.9, range = 0.07 * max(dist), smooth = 0.1, DoF = 4.5)
+        }
 
         start <- start[!(param %in% names(list(...)))]
     }
