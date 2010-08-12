@@ -108,3 +108,12 @@ frech2gev <- function(x, loc, scale, shape){
 .useloglink <- function(formula)
   return(substr(formula[2], 1, 3) == "log")
 
+.getTrendSurfCoeffNames <- function(formula){
+  formula.terms <- terms(formula)
+  names <- attributes(formula.terms)$term.labels
+
+  if (attributes(formula.terms)$intercept)
+    names <- c("Intercept", names)
+
+  return(names)
+}
