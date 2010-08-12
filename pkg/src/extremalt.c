@@ -108,8 +108,8 @@ void extremaltdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   //This is the extremal t model. It's named xxxdsgnmat as either linear
   //models or p-splines are used for the gev parameters.
 
-  const int nPairs = *nSite * (*nSite - 1) / 2,
-    flag = usetempcov[0] + usetempcov[1] + usetempcov[3];
+  const int nPairs = *nSite * (*nSite - 1) / 2;
+  int flag = usetempcov[0] + usetempcov[1] + usetempcov[2];
   double *trendlocs, *trendscales, *trendshapes;
 
   double *jac = (double *)R_alloc(*nSite * *nObs, sizeof(double)),

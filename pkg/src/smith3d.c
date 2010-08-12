@@ -80,8 +80,8 @@ void smithdsgnmat3d(double *data, double *distVec, int *nSite, int *nObs, int *w
   //This is the Smith's model - 3d case. It's named xxxdsgnmat as
   //either linear models or p-splines are used for the gev parameters.
   
-  const int nPairs = *nSite * (*nSite - 1) / 2,
-    flag = usetempcov[0] + usetempcov[1] + usetempcov[3];
+  const int nPairs = *nSite * (*nSite - 1) / 2;
+  int flag = usetempcov[0] + usetempcov[1] + usetempcov[2];
   double *jac, *mahalDist, *locs, *scales, *shapes, *frech, *trendlocs, *trendscales,
     *trendshapes;
   

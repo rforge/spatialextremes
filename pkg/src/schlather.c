@@ -100,8 +100,8 @@ void schlatherdsgnmat(int *covmod, double *data, double *dist, int *nSite, int *
   //This is the Schlather's model.
   //The GEV parameters are defined using a polynomial response surface
   
-  const int nPairs = *nSite * (*nSite - 1) / 2,
-    flag = usetempcov[0] + usetempcov[1] + usetempcov[3];
+  const int nPairs = *nSite * (*nSite - 1) / 2;
+  int flag = usetempcov[0] + usetempcov[1] + usetempcov[2];
   double *jac, *rho, *locs, *scales, *shapes, *frech, *trendlocs, *trendscales, *trendshapes;
     
   jac = (double *)R_alloc(*nObs * *nSite, sizeof(double));
