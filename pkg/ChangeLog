@@ -1,3 +1,187 @@
+2010-08-12 14:59  mathieu_ribatet
+
+	* man/SpatialExtremes-package.Rd, man/SpatialExtremes.Rd: Rename
+	  SpatialExtremes.Rd to SpatialExtremes-package.Rd for new R usage
+
+2010-08-12 14:58  mathieu_ribatet
+
+	* man/SpatialExtremes.Rd, man/rainfall.Rd, man/swiss.Rd,
+	  man/swissalt.Rd: Some data sets were not documented.
+
+2010-08-12 14:57  mathieu_ribatet
+
+	* R/fitcovmat.R: Refining the starting values
+
+2010-08-12 09:04  mathieu_ribatet
+
+	* man/fitmaxstab.Rd: Update bibliography for fitmaxstab and explain
+	  how to use the
+	  geometric Gaussian and extremal t models.
+
+2010-08-12 08:02  mathieu_ribatet
+
+	* R/utils.R: Add an internal function to get the regression
+	  coefficients (trend surfaces) from the R formula.
+
+2010-08-12 08:00  mathieu_ribatet
+
+	* src/brownResnick.c, src/extremalt.c, src/geomgauss.c,
+	  src/schlather.c, src/schlatherind.c, src/smith.c, src/smith3d.c:
+	  Fix a bug in checking if temporal covariates were used:
+	  usetempcov[3] was called while usetempcov has length 3. No
+	  comment!
+
+2010-08-11 13:06  mathieu_ribatet
+
+	* src/weightedPairwiselik.c: Optimize the computation of the
+	  weighted pairwise likelihood
+
+2010-08-11 13:05  mathieu_ribatet
+
+	* R/utils.R: Add a small utility function to check wether a
+	  log-link function is
+	  used for the trend surfaces
+
+2010-08-11 13:05  mathieu_ribatet
+
+	* R/brownresnick.R, R/extremalt.R, R/geomgauss.R, R/methods.R,
+	  R/schlather.R, R/schlatherind.R, R/smith.R: The summary of class
+	  maxstab now depicts if weighted composite likelihood were used.
+
+2010-08-11 11:54  mathieu_ribatet
+
+	* R/modelChecking.R: Reset default setting for par before quitting
+	  plot.maxstab
+
+2010-08-11 10:09  mathieu_ribatet
+
+	* src/weightedStandardErrors.c: Combined the computation of the
+	  standard errors for the weighted and
+	  unweighted cases
+
+2010-08-11 10:09  mathieu_ribatet
+
+	* R/standardErrors.R, src/header.h, src/standardErrors.c,
+	  src/standardErrorsCommonPart.c: Combined the computation of the
+	  standard errors for the weighted and
+	  unweighted cases
+
+2010-08-11 09:00  mathieu_ribatet
+
+	* src/simBrownResnick.c, src/simgeometric.c, src/simschlather.c:
+	  Removed unnecessary duplicated code (grid is either TRUE or
+	  FALSE)
+
+2010-08-11 09:00  mathieu_ribatet
+
+	* src/header.h, src/simextremalt.c: Add the simulation of the
+	  extremal t model
+
+2010-08-11 08:59  mathieu_ribatet
+
+	* src/fitcovmat.c: Minor change
+
+2010-08-11 08:59  mathieu_ribatet
+
+	* man/internals.Rd: Add the simulation of the extremal t model
+
+2010-08-11 08:59  mathieu_ribatet
+
+	* inst/doc/SpatialExtremesGuide.Rnw, man/fmadogram.Rd,
+	  man/madogram.Rd, man/rgp.Rd, man/simmaxstab.Rd, man/variogram.Rd:
+	  Changes due to the modification in the madograms like functions
+	  and
+	  in rgp and rmaxstab
+
+2010-08-11 08:58  mathieu_ribatet
+
+	* R/simgaussproc.R, R/simmaxstab.R: If grid is TRUE and only one
+	  realization is generated we don't return
+	  an array but a matrix --- easing the call to image
+
+2010-08-11 08:57  mathieu_ribatet
+
+	* R/madogram.R: The xlim argument can now be passed to the madogram
+	  like functions
+
+2010-08-10 08:21  mathieu_ribatet
+
+	* src: Ignoring the TAGS file
+
+2010-08-10 08:21  mathieu_ribatet
+
+	* inst/doc: Ignoring the auto folder
+
+2010-08-10 08:20  mathieu_ribatet
+
+	* R/extremalt.R, R/geomgauss.R, R/schlather.R, R/schlatherind.R,
+	  src/standardErrors.c: Std. err. for the Bessel family w.r.t. the
+	  smooth parameter are now available --- through finite
+	  differences.
+
+2010-08-09 22:07  mathieu_ribatet
+
+	* man/rainfall.Rd: The unit was wrong for the rainfall data set.
+
+2010-08-09 22:01  mathieu_ribatet
+
+	* src/schlatherind.c: Avoid some numerical problems for the
+	  pairwise likelihood and the
+	  independent Schlather process. Need to be refined though.
+
+2010-08-09 22:00  mathieu_ribatet
+
+	* R/extremalt.R, R/geomgauss.R, R/schlather.R, R/schlatherind.R,
+	  R/smith.R: Standard errors are now available when using the
+	  Whittle-Matern family.
+
+2010-08-09 15:01  mathieu_ribatet
+
+	* src/standardErrors.c: We now use finite differencies for the
+	  Whittle-Matern corr. family to get std. err. for the "smooth"
+	  parameter. Std. err. for the extremal t model are now correct.
+
+2010-07-29 13:05  mathieu_ribatet
+
+	* R/extremalt.R, R/methods.R, src/covariance.c, src/extremalt.c,
+	  src/fitcovmat.c, src/header.h, src/pairwiselik.c,
+	  src/standardErrors.c, src/standardErrorsCommonPart.c: The
+	  extremal t process is now implemented. However there's still a
+	  problem with the analytical gradient w.r.t. the DoF parameter.
+
+2010-07-26 13:11  mathieu_ribatet
+
+	* src/header.h, src/standardErrors.c: First implementation of the
+	  extremal t process. Still buggy!
+
+2010-07-26 13:04  mathieu_ribatet
+
+	* R/extremalt.R, R/fitcovmat.R, R/fitmaxstable.R,
+	  R/standardErrors.R, R/starting.values.R, src/covariance.c,
+	  src/extremalt.c, src/fitcovmat.c, src/header.h,
+	  src/pairwiselik.c, src/simBrownResnick.c, src/standardErrors.c,
+	  src/utils.c, src/weightedPairwiselik.c: First implementation of
+	  the extremal t process. Still buggy!
+
+2010-07-20 10:12  mathieu_ribatet
+
+	* inst/doc/SpatialExtremesGuide.Rnw: Remove the dependence on the
+	  RandomFields package
+
+2010-07-19 14:41  mathieu_ribatet
+
+	* ChangeLog, DESCRIPTION, NEWS: Version 1.6-0 of the package
+
+2010-07-19 14:41  mathieu_ribatet
+
+	* src/simBrownResnick.c: Chagne the stopping rule for B.-R.
+	  simulation. Not perfect though!
+
+2010-07-19 14:40  mathieu_ribatet
+
+	* inst/doc/SpatialExtremesGuide.Rnw: The RandomField package is not
+	  required anymore
+
 2010-07-14 13:34  mathieu_ribatet
 
 	* src/simgeometric.c: A small optimisation for simulating Geometric

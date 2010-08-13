@@ -2,6 +2,9 @@
 
 SIGNIFICANT USER-VISIBLE CHANGES
 
+    o The extremal t model is now available --- including
+    simulation. Simulations on a grid might be really long though.
+
     o Model checking for fitted max-stable processes is easier as a
     method for plotting object of class "maxstab" is implemented.
 
@@ -21,6 +24,8 @@ NEW FEATURES
     o The circulant embedding method is now implemented.
 
 BUG FIXES
+
+    o Fix a bug when using temporal covariates.
 
     o Fix a bug in simulating Gaussian random fields having a powered
     exponential covariance function through the turning bands method.
