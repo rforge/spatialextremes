@@ -48,15 +48,16 @@ void rextremalttbm(double *coord, int *nObs, int *nSite, int *dim,
     lagj = *nObs;
   }
 
+  double *gp = (double *)R_alloc(neffSite, sizeof(double));
+
   GetRNGstate();
   
   for (i=*nObs;i--;){
     int l;
     for (l=*blockSize;l--;){
       int j;	
-      double *gp = (double *)R_alloc(neffSite, sizeof(double)),
-	scaleStudent = sqrt(*DoF / rchisq(*DoF));
-      
+      double scaleStudent = sqrt(*DoF / rchisq(*DoF));
+
       /* ------- Random rotation of the lines ----------*/
       double u = unif_rand() - 0.5,
 	v = unif_rand() - 0.5,
@@ -329,19 +330,19 @@ blockSize: see rextremalttbm
   }
 
   int mdag = m / 2 + 1, mdagbar = mdag * mdag;
-  double *a, *ia, isqrtMbar = 1 / sqrt(mbar);
+  double isqrtMbar = 1 / sqrt(mbar);
 
-  a = (double *)R_alloc(mbar, sizeof(double));
-  ia = (double *)R_alloc(mbar, sizeof(double));
-  
+  double *a = (double *)R_alloc(mbar, sizeof(double)),
+    *ia = (double *)R_alloc(mbar, sizeof(double)),
+    *gp = (double *)R_alloc(nbar, sizeof(double));
+
   GetRNGstate();
   for (i=*nObs;i--;){
     int l;
     
     for (l=*blockSize;l--;) {
       int j;
-      double scaleStudent = sqrt(*DoF / rchisq(*DoF)),            
-	*gp = (double *)R_alloc(nbar, sizeof(double));
+      double scaleStudent = sqrt(*DoF / rchisq(*DoF));
       
       /* We simulate one realisation of a gaussian random field with
 	 the required covariance function */
