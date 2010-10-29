@@ -152,11 +152,10 @@ burn.in = 0)
   Markov chain, it is recommended to use the library \pkg{coda}.
 }
 \examples{
-  \dontrun{
 ## Generate realizations from the model
 n.site <- 30
 n.obs <- 50
-coord <- cbind(lon = runif(n.site, -50, 50), lat = runif(n.site, -50 , 50))
+coord <- cbind(lon = runif(n.site, -10, 10), lat = runif(n.site, -10 , 10))
 
 gp.loc <- rgp(1, coord, "powexp", sill = 4, range = 20, smooth = 1)
 gp.scale <- rgp(1, coord, "powexp", sill = 0.4, range = 5, smooth = 1)
@@ -185,40 +184,15 @@ hyper$betaIcov <- list(loc = solve(diag(c(400, 100))),
 
 ## We will use an exponential covariance function so the jump sizes for
 ## the shape parameter of the covariance function are null.
-prop <- list(gev = c(2.5, 1.5, 0.3), ranges = c(40, 20, 20), smooths = c(0,0,0))
+prop <- list(gev = c(2.5, 1.5, 0.2), ranges = c(0.7, 0.75, 0.9), smooths = c(0,0,0))
 start <- list(sills = c(4, .36, 0.009), ranges = c(24, 17, 16), smooths
-              = c(1, 1, 1),  beta = list(loc = c(26, 0), scale = c(10, 0),
+              = c(1, 1, 1),  beta = list(loc = c(26, 0.5), scale = c(10, 0.2),
                                shape = c(0.15)))
 
 mc <- latent(data, coord, loc.form = loc.form, scale.form = scale.form,
              shape.form = shape.form, hyper = hyper, prop = prop, start = start,
-             n = 10000, burn.in = 2000, thin = 10)
-
-op <- par(mar = c(4, 5, 0, 0))
-layout(matrix(c(1,2,9,3,4,0,5,6,10,7,8,11), 3))
-par.names <- c(expression(beta[0]), expression(beta[1]), expression(alpha),
-               expression(lambda))
-
-true.par <- matrix(c(26, 0.5, 4, 24, 10, 0.2, 0.4, 5, 0.15, NA, 0.01, 10),
-                   3, byrow = TRUE)
-colnames(true.par) <- c("beta0", "beta1", "alpha", "lambda")
-rownames(true.par) <- c("loc", "scale", "shape")
-
-for (i in 1:4){
-  plot(mc$chain.loc[,i], type = "l", xlab = "Iteration", ylab = par.names[i])
-  abline(h = true.par[1,i], col = 2)
-  plot(mc$chain.scale[,i], type = "l", xlab = "Iteration", ylab = par.names[i])
-  abline(h = true.par[2,i], col = 2)
-}
-
-plot(mc$chain.shape[,1], type = "l", xlab = "Iteration", ylab = par.names[1])
-abline(h = true.par[3,1], col = 2)
-plot(mc$chain.shape[,2], type = "l", xlab = "Iteration", ylab = par.names[3])
-abline(h = true.par[3,3], col = 2)
-plot(mc$chain.shape[,3], type = "l", xlab = "Iteration", ylab = par.names[4])
-abline(h = true.par[3,4], col = 2)
-par(op)
-}
+             n = 500)
+mc
 }
 
 \value{A list}

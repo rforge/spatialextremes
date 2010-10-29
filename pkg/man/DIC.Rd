@@ -26,7 +26,7 @@ DIC(object, ..., fun = "mean")
   parameters of the models and \eqn{\pi(y \mid \theta)}{p(y | theta)} is
   the likelihood function. Thus the expected deviance, a measure of how
   well the model fits the data, is given by
-  \deqn{\overline{D} = {\rmE}_{\theta}[D(\theta)],}{Dbar =
+  \deqn{\overline{D} = {\rm E}_{\theta}[D(\theta)],}{Dbar =
     E_theta[D(\theta)],}
   while the effective number of parameters is
   \deqn{p_D = \overline{D} - D(theta^*),}{p_D = Dbar - D(theta^*),}
@@ -56,7 +56,7 @@ DIC(object, ..., fun = "mean")
 ## Generate realizations from the model
 n.site <- 15
 n.obs <- 35
-coord <- cbind(lon = runif(n.site, -50, 50), lat = runif(n.site, -50 , 50))
+coord <- cbind(lon = runif(n.site, -10, 10), lat = runif(n.site, -10 , 10))
 
 gp.loc <- rgp(1, coord, "powexp", sill = 4, range = 20, smooth = 1)
 gp.scale <- rgp(1, coord, "powexp", sill = 0.4, range = 5, smooth = 1)
@@ -92,7 +92,7 @@ start <- list(sills = c(4, .36, 0.009), ranges = c(24, 17, 16), smooths
 
 mc <- latent(data, coord, loc.form = loc.form, scale.form = scale.form,
              shape.form = shape.form, hyper = hyper, prop = prop, start = start,
-             n = 1000)
+             n = 500)
 DIC(mc)
 }
 \keyword{models}

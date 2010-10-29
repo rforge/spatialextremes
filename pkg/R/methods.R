@@ -278,7 +278,7 @@ TIC <- function(object, ..., k = 2){
 }
 
 print.latent <- function(x, digits = max(3, getOption("digits") - 3), ...,
-                         level = 0.95, fun = "mean"){
+                         level = 0.95){
 
   if ((level > 1) || (level < 0))
     stop("'level' must lie in [0, 1]")
@@ -288,9 +288,8 @@ print.latent <- function(x, digits = max(3, getOption("digits") - 3), ...,
   cat("Effective length:", nrow(x$chain.loc), "\n")
   cat("         Burn-in:", x$burn.in, "\n")
   cat("        Thinning:", x$thin, "\n")
-  dummy <- DIC(x, fun = fun)
-  cat("   Effective NoP:", format(dummy["eNoP"], digits = digits), "\n")
-  cat("             DIC:", dummy["DIC"], "\n\n")
+  cat("   Effective NoP:", x$eNoP, "\n")
+  cat("             DIC:", x$DIC, "\n\n")
   
   
   cat("  Regression Parameters:\n")

@@ -155,6 +155,10 @@ latent <- function(data, coord, cov.mod = "powexp", loc.form, scale.form,
                hyper = hyper, cov.mod = cov.mod, burn.in = burn.in, thin = thin,
                data = data)
   class(mcmc) <- "latent"
+  dummy <- DIC(mcmc)
+  mcmc <- c(mcmc, list(eNoP = dummy["eNoP"], DIC = dummy["DIC"],
+                       Dbar = dummy["Dbar"]))
+  class(mcmc) <- "latent"
   return(mcmc)
 }
 

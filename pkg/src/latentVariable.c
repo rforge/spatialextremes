@@ -383,8 +383,10 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       if (propRanges[idxMarge] == 0)
 	continue;
 
-      double rangeProp = ranges[idxMarge] + propRanges[idxMarge] *
-	(unif_rand() - 0.5);
+      //double rangeProp = ranges[idxMarge] + propRanges[idxMarge] *
+      //(unif_rand() - 0.5);
+      double rangeProp = rlnorm(log(ranges[idxMarge]), propRanges[idxMarge]),
+	logpropRatio = log(rangeProp / ranges[idxMarge]);
 
       switch(covmod[idxMarge]){
       case 1:
@@ -470,7 +472,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       top *= -0.5;
       bottom *= -0.5;
 
-      if (unif_rand() < exp(top - bottom + logpriorRatio)){
+      if (unif_rand() < exp(top - bottom + logpriorRatio + logpropRatio)){
 	ranges[idxMarge] = rangeProp;
 	logDet[idxMarge] = logDetProp;
 	memcpy(icovMat + idxMarge * nSite2, icovMatProp, nSite2 *
@@ -491,8 +493,10 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       if (propSmooths[idxMarge] == 0)
 	continue;
 
-      double smoothProp = smooths[idxMarge] + propSmooths[idxMarge] *
-    	(unif_rand() - 0.5);
+      //double smoothProp = smooths[idxMarge] + propSmooths[idxMarge] *
+      //(unif_rand() - 0.5);
+      double smoothProp = rlnorm(log(smooths[idxMarge]), propSmooths[idxMarge]),
+	logpropRatio = log(smoothProp / smooths[idxMarge]);
     
       switch(covmod[idxMarge]){
       case 1:
@@ -578,7 +582,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       top *= -0.5;
       bottom *= -0.5;
     
-      if (unif_rand() < exp(top - bottom + logpriorRatio)){
+      if (unif_rand() < exp(top - bottom + logpriorRatio + logpropRatio)){
     	smooths[idxMarge] = smoothProp;
     	logDet[idxMarge] = logDetProp;
     	memcpy(icovMat + idxMarge * nSite2, icovMatProp, nSite2 *
