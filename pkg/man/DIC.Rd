@@ -29,7 +29,7 @@ DIC(object, ..., fun = "mean")
   \deqn{\overline{D} = {\rm E}_{\theta}[D(\theta)],}{Dbar =
     E_theta[D(\theta)],}
   while the effective number of parameters is
-  \deqn{p_D = \overline{D} - D(theta^*),}{p_D = Dbar - D(theta^*),}
+  \deqn{p_D = \overline{D} - D(\theta^*),}{p_D = Dbar - D(theta^*),}
   where \eqn{\theta^*}{theta^*} is point estimate of the posterior
   distribution, e.g., the posterior mean. Finally the DIC is given by
   \deqn{{\rm DIC} = p_D + \overline{D}.}{DIC = p_D + Dbar.}

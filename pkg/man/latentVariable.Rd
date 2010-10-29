@@ -17,21 +17,15 @@ burn.in = 0)
     one location.}
   \item{coord}{A matrix that gives the coordinates of each
     location. Each row corresponds to one location.}
-  \item{cov.mod}{A character string corresponding the the covariance
-    model in the max-stable representation. Must be one of "gauss" for
-    the Smith's model; "whitmat", "cauchy", "powexp", "bessel" or
-    "caugen" for the Whittle-Matern, the Cauchy, the Powered Exponential, the
-    Bessel and the Generalized Cauchy correlation families with the
-    Schlather's model; "brown" for Brown-Resnick processes. The
-    geometric Gaussian and Extremal-t models with a Whittle-Matern
-    correlation function can be fitted by passing respectively
-    "gwhitmat" or "twhitmat". Other correlation function families are
-    considered in a similar way.} 
+  \item{cov.mod}{A character string corresponding to the covariance
+    model for the Gaussian latent processes. Must be one of "gauss" for
+    the Smith's model; "whitmat", "cauchy", "powexp" or "bessel" or
+    for the Whittle-Matern, the Cauchy, the Powered Exponential and the
+    Bessel correlation families.} 
   \item{loc.form, scale.form, shape.form}{R formulas defining the
-    spatial linear model for the GEV parameters. May be missing. See
-    section Details.}
+    spatial linear model for the mean of the latent processes.}
   \item{marg.cov}{Matrix with named columns giving additional covariates
-    for the GEV parameters. If \code{NULL}, no extra covariates are
+    for the latent processes means. If \code{NULL}, no extra covariates are
     used.}
   \item{hyper}{A named list specifying the hyper-parameters --- see Details.}
   \item{prop}{A named list specifying the jump sizes when a
@@ -40,9 +34,9 @@ burn.in = 0)
   \item{n}{The effective length of the simulated Markov chain i.e., once
     the burnin period has been discarded and after thinning.}
   \item{thin}{An integer specifying the thinning length. The default is
-    1 i.e., no thinning.}
+    1, i.e., no thinning.}
   \item{burn.in}{An integer specifying the burnin period. The default is
-    0 i.e., no burnin.}
+    0, i.e., no burnin.}
 }
 \details{
   This function generates a Markov chain from the following model. For
@@ -109,19 +103,26 @@ burn.in = 0)
   As no conjugate prior exists for the GEV parameters and the range and
   shape parameters of the covariance functions, Metropolis--Hastings
   steps are needed. The proposals \eqn{\theta_{prop}}{theta_[prop]} are
-  drawn from a random walk i.e., \eqn{\theta_{prop} = \theta_{cur} + s
-  (U - 0.5)}{theta_[prop] = theta_[cur] + s (U - 0.5)} where
-  \eqn{\theta_{cur}}{theta_[cur]} is the current state of the parameter,
-  \eqn{s}{s} is the jump size and \eqn{U \sim U(0,1)}{U ~ U(0,1)}. These
-  proposals are driven by \code{prop} which is a list with three named
-  components 
+  drawn from a proposal density \eqn{q(\cdot \mid \theta_{cur},
+  s)}{q(. | theta_[cur], s)} where \eqn{\theta_{cur}}{theta_[cur]} is
+  the current state of the parameter and \eqn{s}{s} is a parameter of
+  the proposal density to be defined. These proposals are driven by
+  \code{prop} which is a list with three named components 
   \describe{
     \item{gev}{A vector of length 3 specifying the jump sizes for the
-    location, scale and shape GEV parameters;}
+    location, scale and shape GEV parameters ---
+  \eqn{\theta_{prop} = \theta_{cur} + s (U - 0.5)}{theta_[prop] =
+  theta_[cur] + s (U - 0.5)}, \eqn{U \sim U(0,1)}{U ~ U(0,1)};}
     \item{ranges}{A vector of length 3 specifying the jump sizes for the
-      range parameters of the covariance functions;}
+      range parameters of the covariance functions --- \eqn{q(\cdot |
+  \theta_{cur}, s)}{q(. | theta_[cur], s)} is the log-normal density
+  with mean \eqn{\theta_{cur}}{theta_[cur]} and standard deviation
+  \eqn{s}{s} both on the log-scale;}
     \item{smooths}{A vector of length 3 specifying the jump sizes for
-      the shape parameters of the covariance functions.}
+      the shape parameters of the covariance functions --- \eqn{q(\cdot |
+  \theta_{cur}, s)}{q(. | theta_[cur], s)} is the log-normal density
+  with mean \eqn{\theta_{cur}}{theta_[cur]} and standard deviation
+  \eqn{s}{s} both on the log-scale.}
   }
 
   If one want to held fixed a parameter this can be done by setting a null
