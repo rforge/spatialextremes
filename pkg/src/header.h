@@ -586,3 +586,11 @@ void DIC(int *n, int *nSite, int *nObs, double *data, double *chainLoc,
 	 double *chainScale, double *chainShape, double *postLoc,
 	 double *postScale, double *postShape, double *dic, double *effNpar,
 	 double *dbar);
+
+///////////////////////////////////
+//  From kriging.c
+//
+void skriging(int *nSite, int *nSiteKrig, int *covmod, int *dim,
+	      double *icovMat, double *coord, double *coordKrig, double *obs,
+	      double *sill, double *range, double *smooth, double *smooth2,
+	      double *weights);
