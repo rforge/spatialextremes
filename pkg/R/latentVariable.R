@@ -153,7 +153,8 @@ latent <- function(data, coord, cov.mod = "powexp", loc.form, scale.form,
                scale.dsgn.mat = scale.dsgn.mat, shape.dsgn.mat = shape.dsgn.mat,
                acc.rates = rbind(acc.rates = acc.rates, ext.rates = ext.rates),
                hyper = hyper, cov.mod = cov.mod, burn.in = burn.in, thin = thin,
-               data = data)
+               data = data, coord = coord, marg.cov = marg.cov, loc.form = loc.form,
+               scale.form = scale.form, shape.form = shape.form)
   class(mcmc) <- "latent"
   dummy <- DIC(mcmc)
   mcmc <- c(mcmc, list(eNoP = dummy["eNoP"], DIC = dummy["DIC"],
