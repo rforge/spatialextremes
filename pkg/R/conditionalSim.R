@@ -11,6 +11,12 @@ condrgp <- function(n, coord, data.coord, data, cov.mod = "powexp",
   if (!is.null(dim(coord)) & (any(ncol(coord) != ncol(data.coord))))
     stop("'coord' and 'data.coord' don't match")
 
+  if (!is.null(dim(data)))
+    if (nrow(data) != 1)
+      stop("You can supply only one set of conditional observations")
+
+  data <- as.numeric(data)
+
   new.coord <- coord
 
   if (grid){
@@ -42,25 +48,19 @@ condrgp <- function(n, coord, data.coord, data, cov.mod = "powexp",
   weights <- kriging(data, data.coord, coord, cov.mod = cov.mod, sill = sill,
                      range = range, smooth = smooth, grid = grid,
                      only.weights = TRUE)$weights
-  if (grid) {
+
+  if (grid)
     ans <- array(NA, c(n.loc, n.loc, n))
 
-    for (i in 1:n){
-      res <- data - uncond[i, 1:n.cond]
-      krig <- matrix(res %*% weights, n.loc)
-      ans[,,i] <- uncond[i,-(1:n.cond)] + krig
-    }
-  }
-
-  else {
+  else
     ans <- matrix(NA, n, n.loc)
-    
-    for (i in 1:n){
-      res <- data - uncond[i,1:n.cond]
-      krig <- res %*% weights      
-      ans[i,] <- uncond[i,-(1:n.cond)] + krig
-    }
-  }
+  
+  res <- data - t(uncond[,1:n.cond])
+
+  if (!grid)
+    res <- t(res)
+  
+  ans[] <- uncond[,-(1:n.cond)] + res %*% weights
 
   if (grid & (n == 1))
     ans <- matrix(ans, n.loc)
