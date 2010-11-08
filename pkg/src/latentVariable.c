@@ -14,7 +14,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
   int iter = 0, iterThin = 0, idxSite, idxSite2, idxMarge, idxBeta, info = 0,
     oneInt = 1, zeroInt = 0, nSite2 = *nSite * *nSite,
     nPairs = *nSite * (*nSite + 1) / 2,
-    *cumBeta = (int *) R_alloc(3, sizeof(int)),
+    *cumBeta = (int *) R_alloc(4, sizeof(int)),
     *cumBeta2 = (int *) R_alloc(3, sizeof(int)),
     *nBeta2 = (int *) R_alloc(3, sizeof(int)),
     lagLoc = nBeta[0] + 3 + *nSite, lagScale = nBeta[1] + 3 + *nSite,
@@ -23,6 +23,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
   cumBeta[0] = 0;
   cumBeta[1] = nBeta[0];
   cumBeta[2] = nBeta[0] + nBeta[1];
+  cumBeta[3] = cumBeta[2] + nBeta[2];
   cumBeta2[0] = 0;
   cumBeta2[1] = nBeta[0] * nBeta[0];
   cumBeta2[2] = nBeta[0] * nBeta[0] + nBeta[1] * nBeta[1];
@@ -113,6 +114,14 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 	  dsgnMat[idxBeta * *nSite + idxSite + cumBeta[idxMarge] * *nSite] *
 	  beta[cumBeta[idxMarge] + idxBeta];
 
+  // c. Some constant related to the conjugate distributions
+  double *conjMeanCst = (double *)R_alloc(cumBeta[3], sizeof(double));
+  memset(conjMeanCst, 0, cumBeta[3] * sizeof(double));
+  for (idxMarge=0;idxMarge<3;idxMarge++)
+    F77_CALL(dsymv)("U", nBeta + idxMarge, &one, hyperBetaIcov +
+		    cumBeta2[idxMarge], nBeta + idxMarge, hyperBetaMean +
+		    cumBeta[idxMarge], &oneInt, &zero, conjMeanCst, &oneInt);
+
 
   /*----------------------------------------------------*/
   //                                                    \\
@@ -183,8 +192,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       }
     }
   	    
-    // OK till here
-
+    
     /*----------------------------------------------------*/
     //                                                    \\
     //        Updating the regression parameters          \\
@@ -201,8 +209,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       double *dummy = malloc(*nSite * nBeta[idxMarge] * sizeof(double)),
 	*conjCovMat = malloc(nBeta2[idxMarge] * sizeof(double)),
 	*conjCovMatChol = malloc(nBeta2[idxMarge] * sizeof(double));
-      //*iconjCovMatChol = malloc(nBeta2[idxMarge] * sizeof(double));
-      
+            
       memcpy(conjCovMat, hyperBetaIcov + cumBeta2[idxMarge],
 	     nBeta2[idxMarge] * sizeof(double));
       memcpy(dummy, dsgnMat + *nSite * cumBeta[idxMarge],
@@ -225,14 +232,6 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       memcpy(conjCovMatChol, conjCovMat, nBeta2[idxMarge] * sizeof(double));
       F77_CALL(dpotrf)("U", nBeta + idxMarge, conjCovMatChol, nBeta + idxMarge,
 		       &info);
-      // Compute the Cholesky decomposition of its inverse
-      /*memcpy(iconjCovMatChol, conjCovMat, nBeta2[idxMarge] * sizeof(double));
-      F77_CALL(dpotrf)("U", nBeta + idxMarge, iconjCovMatChol, nBeta + idxMarge,
-		       &info);
-      F77_CALL(dpotri)("U", nBeta + idxMarge, iconjCovMatChol, nBeta + idxMarge,
-		       &info);
-      F77_CALL(dpotrf)("U", nBeta + idxMarge, iconjCovMatChol, nBeta + idxMarge,
-      &info);*/
       
       // Compute dummy2 = covMatChol^(-T) %*% (locs or scales or shapes)
       double *dummy2 = malloc(*nSite * sizeof(double));
@@ -241,13 +240,10 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 		      idxMarge * nSite2, nSite, dummy2, nSite);
       
       // conjMean is the mean for the conjugate distribution i.e. MVN
-      // Compute conjMean = hyperBetaIcov %*% hyperBetaMean
-      // This part can be computed once for all! Need to be updated!!!!
+      // Set conjMean = conjMeanCst := hyperBetaIcov %*% hyperBetaMean
       double *conjMean = malloc(nBeta[idxMarge] * sizeof(double));
-      memset(conjMean, 0, nBeta[idxMarge] * sizeof(double));
-      F77_CALL(dsymv)("U", nBeta + idxMarge, &one, hyperBetaIcov +
-		      cumBeta2[idxMarge], nBeta + idxMarge, hyperBetaMean +
-		      cumBeta[idxMarge], &oneInt, &zero, conjMean, &oneInt);
+      memcpy(conjMean, conjMeanCst + cumBeta[idxMarge],
+	     nBeta[idxMarge] * sizeof(double));
       
       // Compute conjMean = conjMean + dummy^T %*% dummy2 (dummy2 is a vector)
       F77_CALL(dgemv)("T", nSite, nBeta + idxMarge, &one, dummy, nSite, dummy2,
@@ -265,8 +261,6 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       for (idxBeta=0;idxBeta<nBeta[idxMarge];idxBeta++)
 	stdNormal[idxBeta] = norm_rand();
       
-      /*F77_CALL(dtrmv)("U", "T", "N", nBeta + idxMarge, iconjCovMatChol,
-	nBeta + idxMarge, stdNormal, &oneInt);*/
       /* Rmk: Recall that conjCovMat is the precision matrix and *NOT*
 	 the covariance matrix. Instead of using the Cholesky
 	 decomposition of the conjugate covariance matrix (that we
@@ -301,7 +295,6 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       free(dummy);
       free(conjCovMat);
       free(conjCovMatChol);
-      //free(iconjCovMatChol);
       free(dummy2);
       free(conjMean);
       free(stdNormal);
@@ -323,9 +316,11 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 		      idxMarge * nSite2, nSite, resTop, nSite);
 
       double shape = 0.5 * *nSite + hyperSill[2 * idxMarge];
-      double scale = hyperSill[1 + 2 * idxMarge];
+      double scale = 0;
       for (idxSite=0;idxSite<*nSite;idxSite++)
-	scale += 0.5 * sills[idxMarge] * resTop[idxSite] * resTop[idxSite];
+	scale += resTop[idxSite] * resTop[idxSite];
+
+      scale = hyperSill[1 + 2 * idxMarge] + 0.5 * sills[idxMarge] * scale;
 
       /* Rmk: If Y ~ Gamma(shape = shape, rate = 1 / scale) then X :=
 	 1 / Y \sim IGamma(shape = shape, scale = scale) */
