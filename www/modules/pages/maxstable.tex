@@ -1,0 +1,83 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\begin{document}
+Max-stable processes are the extension of the multivariate extreme
+value theory to the infinite dimensional setting. More precisely
+consider a stochastic process $\{Y(x)\}$, $x \in \mathbb{R}^d$, having
+continuous sample paths. Then the limiting process
+\begin{equation}
+  \label{eq:limitProcess}
+  \left\{ \max_{i=1, \ldots, n}
+    \frac{Y_i(x) -b_n(x)}{a_n(x)} \right\}_{x \in \mathbb{R}^d}
+  \longrightarrow \{Z(x)\}_{x \in \mathbb{R}^d}, \qquad n \to \infty
+\end{equation}
+where $Y_i$ are independent replications of $Y$, $a_n(x)> 0$ and
+$b_n(x) \in \mathbb{R}$ are sequences of continuous functions and the
+limiting process $Z$ is assumed to be non degenerate. de Haan [1994]
+shows that the class of the limiting processes $Z(x)$ corresponds to
+that of max-stable processes and hence emphasizes on their use to
+model spatial extremes.
+
+Interestingly there are two different ways of charactaresing
+max-stable processes: these are known as the spectral
+characterisations. An especially useful special case of the
+characterisation of de Haan [1984], is
+\begin{equation}
+  \label{eq:deHaanCarac}
+  Z(x) = \max_{i\geq 1} \xi_i f(x - U_i)
+\end{equation}
+where $\{(\xi_i, U_i)\}_{i \geq 1}$ are the points of a Poisson point
+process on $(0, \infty] \times \mathbb{R}^d$ with intensity measure
+$\mbox{d$\Lambda$}(\xi,u) = \xi^{-2} \mbox{d$\xi$} \mbox{du}$, $f$ is
+a probability density function on $\mathbb{R}^d$. The process $Z$
+defined above is a max-stable process with unit Frechet
+margins. Taking $f$ as the multivariate Normal density with zero mean
+and covariance matrix $\Sigma$ gives the Smith model [Smith, 1990] for
+which the bivariate distribution function is
+\begin{equation}
+  \label{eq:smithCDF}
+  \Pr[Z(x_1) \leq z_1, Z(x_2)
+  \leq z_2] = \exp\left\{- \frac{1}{z_1} \Phi\left(\frac{a}{2} +
+      \frac{1}{a} \log \frac{z_1}{z_2} \right) - \frac{1}{z_2}
+    \Phi\left(\frac{a}{2} + \frac{1}{a} \log \frac{z_2}{z_1} \right)
+  \right\},
+\end{equation}
+where $\Phi$ is the standard normal distribution function and $a^2 =
+(x_1 - x_2)^T \Sigma^{-1} (x_1 - x_2)$, $x_1, x_2 \in \mathbb{R}^d$.
+
+Another very useful spectral characterisation for unit Frechet
+max-stable processes is [Schlather, 2002]
+\begin{equation}
+  \label{eq:schlatherCarac}
+  Z(x) = \max_{i \geq 1} \xi_i Y_i(x),
+\end{equation}
+where $\{\xi_i\}_{i \geq 1}$ are the points of a Poisson point process
+on $(0, \infty]$ with intensity measure $\mbox{d$\Lambda$}(\xi) =
+\xi^{-2} \mbox{d$\xi$}$ and $Y_i$ are independent replications of a
+positive stochastic process having continuous sample paths $Y$ such
+that $\mathbb{E}[Y(x)] = 1$ for all $x \in \mathbb{R}^d"$.
+
+Currently there are several useful models based on Schlather's
+characterisation. The first model, the Schlather's model, is to use
+$Y(x) = \sqrt{2 \pi} \max \{0, \varepsilon(x)\}$, where $\varepsilon$
+is a standard Gaussian process. This leads to the bivariate
+distribution function
+\begin{equation}
+  \label{eq:schlatherCDF}
+  \Pr[Z(x_1) \leq z_1, Z(x_2) \leq z_2] = \exp\left[-\frac{1}{2}
+    \left(\frac{1}{z_1} + \frac{1}{z_2} \right) \left(1 + \sqrt{1 -
+        \frac{2 \{1 + \rho(h) \} z_1 z_2}{(z_1 +z_2)^2}} \right)
+  \right],
+\end{equation}
+Another possibility is to take $Y(x) = \exp\{ \sigma \varepsilon(x) -
+\sigma^2 / 2\}$, where $\sigma > 0$. This is known as the Geometric
+gaussian model for which the bivariate distribution is similar to the
+Smith model with $a^2 = 2 \sigma^2 \{1 - \rho(h)\}$. A last
+possibility, which is a generalisation of the geometric Gaussian
+model, is to take $Y(x) = \exp\{\varepsilon(x) - \gamma(x)\}$, where
+$\varepsilon$ is a zero mean Gaussian process having stationary
+increments and (semi)variogram $\gamma$ such that $\varepsilon(o) = 0$
+almost surely. Its bivariate distribution function is again similar to
+the Smith model with $a^2 = 2 \gamma(x_1 - x_2)$.
+\end{document}
