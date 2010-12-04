@@ -1,8 +1,0 @@
-Call:<br/>
-rbpspline(y = y, x = x, knots = knots, degree = 3)<br/>
-<br/>
-  Rank: 200 	(G)CV Score: 0.43 <br/>
-Degree: 3 	 Penalty:  0.221 <br/>
-<br/>
-     Degree of freedom: 9.856 <br/>
-Res. Degree of freedom: 187.49 

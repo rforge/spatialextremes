@@ -1,9 +1,0 @@
-Eigenvalue(s):<br/>
-183.4<br/>
-<br/>
-Analysis of Variance Table<br/>
-   MDf Deviance Df  Chisq Pr(> sum lambda Chisq)    <br/>
-M2   1    66982                                     <br/>
-M1   2    64155  1 2826.6              8.642e-05 ***<br/>
----<br/>
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
