@@ -10,8 +10,13 @@
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <title>SpatialExtremes: An R package for modelling spatial
     extremes</title>
-    <meta name="keywords" content="" />
-    <meta name="description" content="" />
+    <meta name="keywords" content="spatial extremes, extreme value
+    theory, max-stable processes, composite likelihood, latent
+    variable, copula, R package, Bayesian hierarchical models,
+    geostatistics, extremes" />
+    <meta name="description" content="The SpatialExtremes package aims
+    to provide tools  to model spatial extremes." />
+    <meta name="Author" content="Mathieu Ribatet" />
     <link href="/styles.css" rel="stylesheet" type="text/css" />
     <script type="text/javascript">
       var _gaq = _gaq || [];
