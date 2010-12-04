@@ -7,5 +7,7 @@
   class="but">Copula approaches</a></h1>
   <h1><a href="index.php?module=pages&amp;action=miscellaneous"
   class="but">Miscellaneous</a></h1>
+  <h1><a href="index.php?module=pages&amp;action=references"
+  class="but">References</a></h1>
 </div>
 
