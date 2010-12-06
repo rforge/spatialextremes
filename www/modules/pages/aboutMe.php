@@ -24,6 +24,7 @@
     <p>If you have any suggestions, comments or want to report a bug
     please do not hesitate to contact me.
     </p>
+    <br />
     <div style="text-align: center">
     <img src="images/email.png">
     </div>
