@@ -7,22 +7,22 @@
     interest is to model spatial extremes. Indeed the copula framework
     can be misleading since the spatial dependence of extremes might
     be falsely taken into account. The extreme value theory suggests
-    that one should use max-stable copula and this corresponds to
-    take a max-stable process. However I decided to implement copulas
-    mainly for educational purposes.
+    that one should use max-stable copula and this corresponds
+    actually to consider the finite dimensional distributions of a
+    max-stable process. However I decided to implement copulas mainly
+    for educational purposes.
     <h1>What are copulas?</h1>
     <div class="text">
-      We introduce copulas by considering the most use copula: the
+      We introduce copulas by considering the most used copula: the
       Gaussian copula. Recall that we are interesting in modeling
       spatial extremes and in particular univariate arguments suggest
-      that block maxima should be well describe by a GEV
+      that block maxima should be well described by a GEV
       distribution. If we
       denote <img src="http://latex.codecogs.com/gif.latex?F_x"> the
       distribution
       of <img src="http://latex.codecogs.com/gif.latex?Y(x)"> for
       all <img src="http://latex.codecogs.com/gif.latex?x \in
-      \mathbb{R}^d"> one would write
-      <br /><br />
+      \mathbb{R}^d"> one would write <br /><br />
       <div style="text-align: center">
 	<img src="http://latex.codecogs.com/gif.latex?
 		  \Pr[Y(x_1) \leq y_1, \leq, Y(x_k) \leq y_k] =
@@ -48,8 +48,8 @@
       is asymptotically independent which implies that the extremes
       will occur independently from one location to another one ---
       which is not what we really want for spatial extreme don't we?
-      The Student copula however is asymptotically dependent.
-
+      The Student copula however is asymptotically dependent but tends
+      to underestimate the spatial dependence of extreme events.
     </div>
     <h1>Function "fitcopula": Fit copulas</h1>
     <div class="text">

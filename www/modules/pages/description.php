@@ -11,11 +11,12 @@
       temperature is important in environmental statistics; for
       example, understanding extreme areal rainfall is crucial in
       flood protection. Nor the univariate neither the multivariate
-      extreme value theory will be useful in such situation as most of
-      the environmental processes are spatial in extent. This software
-      provides recent the statistical models for spatial extremes. The
-      main types of statistical models thus far implemented are based
-      on latent variables, on copulas and on max-stable processes.
+      extreme value theory will be useful in such situations as most
+      of the environmental processes are spatial in extent. This
+      software provides recent statistical models for spatial
+      extremes. The main types of statistical models thus far
+      implemented are based on latent variables, on copulas and on
+      max-stable processes.
     </div>
 
     <h1>How do I install it?</h1>
@@ -33,7 +34,8 @@
     <div class="text">
       Any volunteers are very welcomed. If you want to contribute or
       if you have requests or questions, please do not hesitate to
-      contact me.
+      <a href="index.php?module=pages&amp;action=aboutMe">contact
+      me</a>.
     </div>
 
     <h1>Legalese</h1>

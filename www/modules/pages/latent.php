@@ -47,10 +47,12 @@
       <div style="text-align: center">
 	<img src="http://latex.codecogs.com/gif.latex?Y_i(x_j) \mid
 		  \{\mu(x_j); \sigma(x_j), \xi(x_) \} \sim \mbox{GEV}\{\mu(x_j),
-		  \sigma(x_j), \xi(x_j)\}, \quad i = 1, \ldots, n, \quad j = 1,
-		  \ldots, k,">
+		  \sigma(x_j), \xi(x_j)\},">
       </div>
-      independently for each location.
+      independently for each location and
+      where <img src="http://latex.codecogs.com/gif.latex?i = 1,
+      \ldots, n"> and <img src="http://latex.codecogs.com/gif.latex?j
+      = 1, \ldots, k">.
     </div>
     <h1>Function "latent": Draw a Markov chain from the posterior
       distribution</h1>
