@@ -31,13 +31,14 @@ body{
 #foot_bg {
     position: relative;
     min-height: 100%;
+    width: 100%;
     background: url(images/footer_bg.png) bottom repeat-x;
 }
 
 #main {
     position: relative;
     min-height: 100%;
-    width: 100%;/*983px;*/
+    width: 983px;
     margin: 0px 0px;
     padding-bottom: 50px;
 }
@@ -145,7 +146,8 @@ body{
 .box_top {
     height: 9px;
     background: url(images/box_top.png) left top no-repeat;
-    width: 314px;}
+    width: 314px;
+}
 
 .text{
     padding: 10px 0px 10px 0px;
@@ -285,8 +287,6 @@ span {
     position: absolute;
     bottom: 0px;
     height: 55px;
-    width: 983px;
-    min-width: 983px;
     font-size: 12px;
     color: #ffffff;
 }
@@ -325,4 +325,49 @@ span {
 {
     color: #4E6E33;
     font-weight: bold;
+}
+
+.reference {
+    text-align: left;
+    padding: 3px 15px 0px 39px;
+    background: url(images/fish_left.gif) 6px 7px no-repeat;
+}
+
+
+/* For book flipping */
+div#turner {
+    float:left;
+    padding-top:11px;
+    width:600px;
+    height:834px;
+    position:relative;
+    background: transparent url(/images/books/frame.jpg) 0px 6px  no-repeat; /* this graphic gives us the book edges and the shadows around the edges */
+}
+
+#leftpage, #rightpage {
+float:left;
+position:relative;
+background-image:url(modules/docs/test.png);
+overflow:hidden;
+width:590px;
+height:214px;
+left:5px; 
+cursor:pointer
+}
+#leftpage{
+background-position:0 0;
+}
+#rightpage{
+background-position: 214px 0 
+}
+div#flip {
+background: transparent url(images/3d.png) top center;
+height:400px;
+width:600px;
+position:absolute;
+top:0;
+left:90px;
+z-index:99;
+margin-bottom:0;
+padding-bottom:0
 }

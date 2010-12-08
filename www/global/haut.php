@@ -18,6 +18,11 @@
     to provide tools  to model spatial extremes." />
     <meta name="Author" content="Mathieu Ribatet" />
     <link href="/styles.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="imageflow.css" type="text/css" />
+    <link rel="stylesheet" href="highslide.css" type="text/css" />
+    <script src="js/jquery-1.4.2.min.js" type="text/javascript"></script>
+    <script src="js/imageflow.js" type="text/javascript"></script>
+    <script src="js/highslide.js" type="text/javascript"></script>
     <script type="text/javascript">
       var _gaq = _gaq || [];
       _gaq.push(['_setAccount', 'UA-19518950-1']);

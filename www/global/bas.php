@@ -7,4 +7,6 @@
 <div id="footer">
   <!-- footer ends -->
 </div>
+</div>
+</body>
 </html>
