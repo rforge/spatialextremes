@@ -61,7 +61,7 @@ function ImageFlow ()
 		reflections:        true,           /* Toggle reflections */
 		reflectionGET:      '',             /* Pass variables via the GET method to the reflect_.php script */
 		reflectionP:        0.33,            /* Height of the reflection in percent of the source image */
-		reflectionPNG:      true,          /* Toggle reflect2.php or reflect3.php */
+		reflectionPNG:      false,          /* Toggle reflect2.php or reflect3.php */
 		reflectPath:        'global/',             /* Path to the reflect_.php script */
 		scrollbarP:         0.66,            /* Width of the scrollbar in percent */
 		slider:             false,           /* Toggle slider */
