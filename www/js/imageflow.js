@@ -1467,6 +1467,7 @@ domReady(function()
 {
     var Highslide = new ImageFlow();
 Highslide.init({ ImageFlowID: 'gallery', 
+	    reflectionGET: '&bgc=ffffff',
                         onClick: function() { return hs.expand(this,
                                     { src: this.getAttribute('longdesc'), 
                                        outlineType: 'rounded-white', 
