@@ -11,11 +11,16 @@
   </div>
   <div id="buttons">
     <a href="index.php" class="but"  title="">Home</a>
-    <a href="index.php?module=pages&amp;action=learnmore" class="but"
-       title="">Learn More</a>
-    <a href="index.php?module=pages&amp;action=gallery"  class="but"
+    <a href="index.php?module=pages&amp;action=learnmore"
+       <?php if ($nav_en_cours == 'learnmore') {echo 'id="current"';}
+	     else {echo 'class="but"';} ?> title="">Learn More</a>
+    <a href="index.php?module=pages&amp;action=gallery"
+       <?php if ($nav_en_cours == 'gallery') {echo 'id="current"';}
+	     else {echo 'class="but"';} ?>
        title="">Gallery</a>
-    <a href="index.php?module=pages&amp;action=aboutMe"  class="but"
+    <a href="index.php?module=pages&amp;action=aboutMe"
+       <?php if ($nav_en_cours == 'aboutMe') {echo 'id="current"';}
+	     else {echo 'class="but"';} ?>
     title="">Contact</a>
   </div>
 </div>

@@ -8,13 +8,15 @@
     <ul>
       <li> Function "rgp" simulates stationary Gaussian random fields
       or fractional Brownian motions;</li>
+      <li> Function "conrgp" performs conditional simulations of a
+      stationary Gaussian process;</li>
       <li> Functions "madogram", "fmadogram" and "lmadogram" computes
       the madogram, the F-madogram and
       <img src="http://latex.codecogs.com/gif.latex?\lambda">-madogram
       as well as the related extremal coefficient estimates;</li>
       <li>Function "rbpspline" fit a penalized spline with radial
       basis function</li>
-      <li>Functions "fitgev" and "fitgpd" fit the generalized extreme
+      <li>Functions "gevmle" and "gpdmle" fit the generalized extreme
       value and generalized pareto distribution;</li>
       <li>Function "covariance" and "variogram" compute the covariance
       and semi-variogram</li>

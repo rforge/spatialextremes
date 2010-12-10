@@ -1,3 +1,4 @@
+<?php $nav_en_cours = 'aboutMe'; ?>
 <div id="right">
   <div id="right_top"></div>
   <div id="right_bg">

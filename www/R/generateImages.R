@@ -147,3 +147,19 @@ points(x.obs, bg = col[idx], pch = 21)
 dev.copy2pdf(file = "condsim2d.pdf")
 system("convert condsim2d.pdf ../images/condsim2d.png; rm condsim2d.pdf")
 dev.off()
+
+##A p-spline
+n <- 200
+x <- runif(n)
+
+fun <- function(x) sin(3 * pi * x)
+y <- fun(x) + rnorm(n, 0, sqrt(0.4))
+knots <- quantile(x, prob = 1:(n/4) / (n/4 + 1))
+fitted <- rbpspline(y, x, knots = knots, degree = 3)
+
+par(mar = c(4, 4, 1, 1))
+plot(x, y)
+lines(fitted, col = 2)
+dev.copy2pdf(file = "pspline.pdf")
+system("convert pspline.pdf ../images/pspline.png; rm pspline.pdf")
+dev.off()

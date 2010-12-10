@@ -104,8 +104,16 @@ body{
     color: #000000;
 }
 
+#buttons #current{
+    width: 193px;
+    color: #000000;
+}
+
+
+
 #content{
     width: 983px;
+    /*background: url(images/cont_razd.gif) 296px 0px repeat-y;*/
 }
 
 #left{

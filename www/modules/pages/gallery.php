@@ -1,3 +1,4 @@
+<?php $nav_en_cours = 'gallery'; ?>
 <div id="gallery" class="imageflow"> 
   <img src="/images/lmadogram.png"
        longdesc="/images/lmadogram.png"
@@ -9,6 +10,9 @@
        width="503" height="503" alt="The F-madogram" />  
   <img src="/images/smith.png" longdesc="/images/smith.png"
        width="503" height="503" alt="Simulation of a Smith RF" />
+  <img src="/images/pspline.png" longdesc="/images/pspline.png"
+       width="503" height="503" alt="Fit of a p-spline with radial
+  basis functions" />
   <img src="/images/schlather.png" longdesc="/images/schlather.png"
        width="503" height="503" alt="Simulation of a Schlather RF" />
   <img src="/images/kriging1d.png" longdesc="/images/kriging1d.png"
