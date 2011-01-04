@@ -1,4 +1,5 @@
-<?php $nav_en_cours = 'learnmore'; ?>
+<?php $nav_en_cours = 'learnmore';
+      $title = 'Bayesian Hierarchical Models: Latent Variable'?>
 <?php include("modules/pages/menuLearnMore.php"); ?>
 <div id="right">
   <div id="right_top"></div>

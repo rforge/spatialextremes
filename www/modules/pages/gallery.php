@@ -1,4 +1,4 @@
-<?php $nav_en_cours = 'gallery'; ?>
+<?php $nav_en_cours = 'gallery'; $title = 'Gallery'; ?>
 <div id="gallery" class="imageflow"> 
   <img src="/images/lmadogram.png"
        longdesc="/images/lmadogram.png"

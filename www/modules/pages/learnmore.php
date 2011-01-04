@@ -1,4 +1,4 @@
-<?php $nav_en_cours = 'learnmore'; ?>
+<?php $nav_en_cours = 'learnmore'; $title = 'Learn More'?>
 <?php include("modules/pages/menuLearnMore.php"); ?>
 <div id="right">
   <div class="text">

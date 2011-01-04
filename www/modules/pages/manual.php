@@ -1,4 +1,4 @@
-<?php $nav_en_cours = 'learnmore'; ?>
+<?php $nav_en_cours = 'learnmore'; $title = 'Manuals'?>
 <?php include("modules/pages/menuLearnMore.php"); ?>
 <div id="right">
   The reference manual, i.e., a document describing all the functions

@@ -1,4 +1,4 @@
-<?php $nav_en_cours = 'aboutMe'; ?>
+<?php $nav_en_cours = 'aboutMe'; $title = 'Contact'?>
 <div id="right">
   <div id="right_top"></div>
   <div id="right_bg">

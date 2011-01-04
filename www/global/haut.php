@@ -8,8 +8,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <title>SpatialExtremes: An R package for modelling spatial
-    extremes</title>
+    <title><?php echo $title ?></title>
     <meta name="keywords" content="spatial extremes, extreme value
     theory, max-stable processes, composite likelihood, latent
     variable, copula, R package, Bayesian hierarchical models,

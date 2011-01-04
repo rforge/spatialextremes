@@ -1,3 +1,4 @@
+<?php $title = 'SpatialExtremes: An R package for modelling spatial extremes' ?>
 <div id="right">
   <div id="right_top"></div>
   <div id="right_bg">
