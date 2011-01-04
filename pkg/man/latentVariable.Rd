@@ -109,10 +109,10 @@ burn.in = 0)
   the proposal density to be defined. These proposals are driven by
   \code{prop} which is a list with three named components 
   \describe{
-    \item{gev}{A vector of length 3 specifying the jump sizes for the
-    location, scale and shape GEV parameters ---
-  \eqn{\theta_{prop} = \theta_{cur} + s (U - 0.5)}{theta_[prop] =
-  theta_[cur] + s (U - 0.5)}, \eqn{U \sim U(0,1)}{U ~ U(0,1)};}
+    \item{gev}{A vector of length 3 specifying the standard deviations
+  of the proposal distributions. These are taken to be normal
+  distribution for the location and shape GEV parameters and a
+  log-normal distribution for the scale GEV parameters;}
     \item{ranges}{A vector of length 3 specifying the jump sizes for the
       range parameters of the covariance functions --- \eqn{q(\cdot |
   \theta_{cur}, s)}{q(. | theta_[cur], s)} is the log-normal density
@@ -153,6 +153,7 @@ burn.in = 0)
   Markov chain, it is recommended to use the library \pkg{coda}.
 }
 \examples{
+\dontrun{
 ## Generate realizations from the model
 n.site <- 30
 n.obs <- 50
@@ -185,15 +186,16 @@ hyper$betaIcov <- list(loc = solve(diag(c(400, 100))),
 
 ## We will use an exponential covariance function so the jump sizes for
 ## the shape parameter of the covariance function are null.
-prop <- list(gev = c(2.5, 1.5, 0.2), ranges = c(0.7, 0.75, 0.9), smooths = c(0,0,0))
+prop <- list(gev = c(1.2, 0.08, 0.08), ranges = c(0.7, 0.8, 0.7), smooths = c(0,0,0))
 start <- list(sills = c(4, .36, 0.009), ranges = c(24, 17, 16), smooths
               = c(1, 1, 1),  beta = list(loc = c(26, 0.5), scale = c(10, 0.2),
                                shape = c(0.15)))
 
 mc <- latent(data, coord, loc.form = loc.form, scale.form = scale.form,
              shape.form = shape.form, hyper = hyper, prop = prop, start = start,
-             n = 500)
+             n = 10000, burn.in = 5000, thin = 15)
 mc
+}
 }
 
 \value{A list}

@@ -140,26 +140,39 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
     
     for (idxSite=0;idxSite<*nSite;idxSite++){
       
-      proposalGEV[0] = rnorm(gevParams[idxSite], propGev[0]);
-      proposalGEV[1] = rlnorm(log(gevParams[*nSite + idxSite]), propGev[1]);
-      proposalGEV[2] = rnorm(gevParams[2 * *nSite + idxSite], propGev[2]);
-
-      double logpropRatio = log(proposalGEV[1] / gevParams[*nSite + idxSite]),
-	topGEV = 0, bottomGEV = 0;
-
-      gevlik(data + idxSite * *nObs, nObs, proposalGEV, proposalGEV + 1,
-	     proposalGEV + 2, &topGEV);
-
-      if (topGEV == -1e6){
-	extRates[0]++;
-	continue;
-      }
-
-      gevlik(data + idxSite * *nObs, nObs, gevParams + idxSite, gevParams +
-	     *nSite + idxSite, gevParams + 2 * *nSite + idxSite, &bottomGEV);
-
-      double topGP = 0, bottomGP = 0;
       for (idxMarge=0;idxMarge<3;idxMarge++){
+	double logpropRatio = 0;
+
+	proposalGEV[0] = gevParams[idxSite];
+	proposalGEV[1] = gevParams[*nSite + idxSite];
+	proposalGEV[2] = gevParams[2 * *nSite + idxSite];
+	
+	if (idxMarge==1){
+	  proposalGEV[1] = rlnorm(log(gevParams[*nSite + idxSite]), propGev[1]);
+	  logpropRatio = log(proposalGEV[1] / gevParams[*nSite + idxSite]);
+	}
+	
+	else 
+	  proposalGEV[idxMarge] = rnorm(gevParams[idxMarge * *nSite + idxSite], propGev[idxMarge]);
+	
+	proposalGEV[0] = rnorm(gevParams[idxSite], propGev[0]);
+	proposalGEV[1] = rlnorm(log(gevParams[*nSite + idxSite]), propGev[1]);
+	proposalGEV[2] = rnorm(gevParams[2 * *nSite + idxSite], propGev[2]);
+	
+	double topGEV = 0, bottomGEV = 0;
+	
+	gevlik(data + idxSite * *nObs, nObs, proposalGEV, proposalGEV + 1,
+	       proposalGEV + 2, &topGEV);
+	
+	if (topGEV == -1e6){
+	  extRates[idxMarge]++;
+	  continue;
+	}
+	
+	gevlik(data + idxSite * *nObs, nObs, gevParams + idxSite, gevParams +
+	       *nSite + idxSite, gevParams + 2 * *nSite + idxSite, &bottomGEV);
+	
+	double topGP = 0, bottomGP = 0;
 	for (idxSite2=0;idxSite2<*nSite;idxSite2++)
 	  resBottom[idxSite2] = gevParams[idxSite2 + idxMarge * *nSite] -
 	    GPmean[idxSite2 + idxMarge * *nSite];
@@ -167,7 +180,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 	memcpy(resTop, resBottom, *nSite * sizeof(double));
 	resTop[idxSite] = proposalGEV[idxMarge] - GPmean[idxSite + idxMarge *
 							 *nSite];
-
+	
 	F77_CALL(dtrsm)("L", "U", "T", "N", nSite, &oneInt, &one, covMatChol +
 			idxMarge * nSite2, nSite, resTop, nSite);
 	F77_CALL(dtrsm)("L", "U", "T", "N", nSite, &oneInt, &one, covMatChol +
@@ -177,21 +190,17 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 	  topGP += resTop[idxSite2] * resTop[idxSite2];
 	  bottomGP += resBottom[idxSite2] * resBottom[idxSite2];
 	}	
+	
+	topGP *= -0.5;
+	bottomGP *= -0.5;
+	
+	if (unif_rand() < exp(topGEV - bottomGEV + topGP - bottomGP +
+			      logpropRatio)){
+	  gevParams[idxSite + idxMarge * *nSite] = proposalGEV[idxMarge];
+	  accRates[idxMarge]++;
+	}
       }
-
-      topGP *= -0.5;
-      bottomGP *= -0.5;
-
-      if (unif_rand() < exp(topGEV - bottomGEV + topGP - bottomGP +
-			    logpropRatio)){
-	gevParams[idxSite] = proposalGEV[0];
-	gevParams[idxSite + *nSite] = proposalGEV[1];
-	gevParams[idxSite + 2 * *nSite] = proposalGEV[2];
-	  
-	accRates[0]++;
-      }
-    }
-  	    
+    }    
     
     /*----------------------------------------------------*/
     //                                                    \\
@@ -404,7 +413,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       }
       
       if (flag != 0){
-	extRates[1 + idxMarge]++;
+	extRates[3 + idxMarge]++;
 	continue;
       }
       
@@ -423,7 +432,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       F77_CALL(dpotrf)("U", nSite, covMatPropChol, nSite, &info);
 
       if (info != 0){
-	extRates[1 + idxMarge]++;
+	extRates[3 + idxMarge]++;
 	continue;
       }
 
@@ -463,7 +472,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
 	logDet[idxMarge] = logDetProp;
 	memcpy(covMatChol + idxMarge * nSite2, covMatPropChol, nSite2 *
 	       sizeof(double));
-	accRates[1 + idxMarge]++;
+	accRates[3 + idxMarge]++;
       }    
     }
 
@@ -500,7 +509,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       }
             
       if (flag != 0){
-    	extRates[4 + idxMarge]++;
+    	extRates[6 + idxMarge]++;
     	continue;
       }
       
@@ -519,7 +528,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       F77_CALL(dpotrf)("U", nSite, covMatPropChol, nSite, &info);
     
       if (info != 0){
-    	extRates[4 + idxMarge]++;
+    	extRates[6 + idxMarge]++;
     	continue;
       }
     
@@ -559,7 +568,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
     	logDet[idxMarge] = logDetProp;
     	memcpy(covMatChol + idxMarge * nSite2, covMatPropChol, nSite2 *
     	       sizeof(double));
-    	accRates[4 + idxMarge]++;
+    	accRates[6 + idxMarge]++;
       }    
     }
 
@@ -598,7 +607,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
   }
   GetRNGstate();
   
-  for (int i=7;i--;){
+  for (int i=10;i--;){
     accRates[i] /= (double) iter;
     extRates[i] /= (double) iter;
   }
