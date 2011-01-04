@@ -343,9 +343,9 @@ condmap <- function(fitted, fix.coord, x, y, covariates = NULL,
 }
 
 map.latent <- function(fitted, x, y, covariates = NULL, param = "quant",
-                       ret.per = 100, col = tim.colors(64), plot.contour = TRUE,
-                       fun = mean, level = 0.95, show.data = TRUE,
-                       control = list(nlines = 500), ...){
+                       ret.per = 100, col = terrain.colors(64),
+                       plot.contour = TRUE, fun = mean, level = 0.95,
+                       show.data = TRUE, control = list(nlines = 500), ...){
 
   if (!(param %in% c("loc", "scale", "shape", "quant")))
     stop("'param' should be one of 'loc', 'scale', 'shape' or 'quant'")
