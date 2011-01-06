@@ -16,6 +16,8 @@
     <meta name="description" content="The SpatialExtremes package aims
     to provide tools  to model spatial extremes." />
     <meta name="Author" content="Mathieu Ribatet" />
+    <link rel="icon" type="image/png" href="images/favicon.png" />
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
     <link href="/styles.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="imageflow.css" type="text/css" />
     <link rel="stylesheet" href="highslide.css" type="text/css" />
