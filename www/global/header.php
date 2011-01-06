@@ -1,11 +1,6 @@
 <!-- header begins -->
 <div id="header">
   <div id="logo">
-    <a href= "http://spatialextremes.r-forge.r-project.org">
-      <div style= "width:290px; height:20px;
-		   position:absolute;left:15%;top:75px;">
-      </div>
-    </a>
     <h2><a href="http://www.r-project.org/" id="R">An
       	R package for spatial extreme modelling</a></h2>
   </div>
