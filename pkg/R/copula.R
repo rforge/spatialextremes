@@ -82,7 +82,7 @@ fitcopula <- function(data, coord, copula = "gaussian", cov.mod = "whitmat",
     covariables <- data.frame(coord)
 
   else
-    covariables <- data.frame(coord, mar.cov)
+    covariables <- data.frame(coord, marg.cov)
   
   loc.model <- modeldef(covariables, loc.form)
   scale.model <- modeldef(covariables, scale.form)
