@@ -391,9 +391,6 @@ print.copula <- function(x, digits = max(3, getOption("digits") - 3), ...){
   if (x$cov.mod == "bessel")
     cov.mod <- "Bessel"
   
-  if (x$cov.mod == "brown")
-    cov.mod <- "Fractional Brownian Motion"
-
   cat("Covariance Family:", cov.mod, "\n")
 
   cat("\nEstimates\n")
@@ -448,7 +445,6 @@ print.copula <- function(x, digits = max(3, getOption("digits") - 3), ...){
                 quote = FALSE)
 
   if(!is.null(x$std.err)) {
-    cat("\nStandard Error Type:", x$std.err.type, "\n")
     cat("\nStandard Errors\n")
     print.default(format(x$std.err, digits = digits), print.gap = 2,
                   quote = FALSE)

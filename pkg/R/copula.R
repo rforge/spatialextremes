@@ -254,7 +254,7 @@ as.double(smooth2), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
                        shapeCoeff, tempCoeff.loc, tempCoeff.scale, tempCoeff.shape))
 
     if (copula == "student")
-      start <- c(list(DoF = 1), start)
+      start <- c(list(DoF = 5), start)
     
     start <- start[!(param %in% names(list(...)))]
   }
@@ -384,7 +384,7 @@ as.double(smooth2), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
   if (copula == "gaussian"){
     copula <- "Gaussian"
     ext.coeff <- function(h)
-      2
+      rep(2, length(h))
   }
 
   else{
