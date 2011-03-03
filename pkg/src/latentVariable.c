@@ -12,7 +12,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
   
   
   int iter = 0, iterThin = 0, idxSite, idxSite2, idxMarge, idxBeta, info = 0,
-    oneInt = 1, zeroInt = 0, nSite2 = *nSite * *nSite,
+    oneInt = 1, nSite2 = *nSite * *nSite,
     nPairs = *nSite * (*nSite + 1) / 2,
     *cumBeta = (int *) R_alloc(4, sizeof(int)),
     *cumBeta2 = (int *) R_alloc(3, sizeof(int)),
@@ -31,7 +31,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
   nBeta2[1] = nBeta[1] * nBeta[1];
   nBeta2[2] = nBeta[2] * nBeta[2];  
   
-  double one = 1.0, zero = 0.0, flag, logDetProp,
+  double one = 1.0, zero = 0.0, flag = 0.0, logDetProp,
     *logDet = (double *) R_alloc(3, sizeof(double)),
     *covMatChol = (double *) R_alloc(3 * nSite2, sizeof(double)),
     *GPmean = (double *) R_alloc(3 * *nSite, sizeof(double)),
@@ -39,7 +39,6 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
     *resBottom = (double *) R_alloc(*nSite, sizeof(double)),
     *covariances = (double *) R_alloc(nPairs, sizeof(double)),
     *proposalGEV = (double *) R_alloc(3, sizeof(double)),
-    *dataCopy = (double *) R_alloc(*nObs, sizeof(double)),
     *covMatPropChol = (double *) R_alloc(nSite2, sizeof(double));
 
   

@@ -8,7 +8,7 @@ void skriging(int *nSite, int *nSiteKrig, int *covmod, int *dim,
   /* This function computes the kriging weights using simple kriging,
      i.e., the mean is supposed to be 0. */
 
-  int i, j, k, oneInt = 1;
+  int i, j, k;
   double zero = 0, one = 1,
     *dist = (double *) R_alloc(*nSite * *nSiteKrig, sizeof(double)),
     *covariances = (double *) R_alloc(*nSite * *nSiteKrig, sizeof(double));    
