@@ -110,10 +110,11 @@ void copula(int *copula, int *covmod, double *dist, double *data, int *nSite, in
     *dns = gaussianCopula(unif, sd, covMat, *nObs, *nSite);
   }
 
-  if (*copula == 2){
+  else if (*copula == 2){
 
     if (*DoF <= 0){
       *dns = (1 - *DoF) * (1 - *DoF) * MINF;
+      return;
     }
       
     for (i=(*nSite * *nObs);i--;)
@@ -213,7 +214,7 @@ double studentCopula(double *data, double DoF, double *covMat, int nObs,
   // This function computes the log-likelihood for the Student copula 
 
   int i, j, info = 0, oneInt = 1;
-  double ans = 0, logDet = 0, one = 1;
+  double logDet = 0, one = 1;
 
   // Cholesky decomposition
   F77_CALL(dpotrf)("U", &nSite, covMat, &nSite, &info);
@@ -228,7 +229,9 @@ double studentCopula(double *data, double DoF, double *covMat, int nObs,
   logDet *= 2;
 
   // Compupte the log of the multivariate Student density
-  double *dummy = (double *) R_alloc(nSite, sizeof(double));
+  double *dummy = (double *) R_alloc(nSite, sizeof(double)),
+    ans = 0;
+
   for (i=nObs;i--;){
     for (j=nSite;j--;)
       dummy[j] = data[i + j * nObs];
@@ -237,12 +240,12 @@ double studentCopula(double *data, double DoF, double *covMat, int nObs,
 		    &nSite, dummy, &nSite);
 
     for (j=nSite;j--;)
-      ans += dummy[j] * dummy[j];
+      ans += log1p(dummy[j] * dummy[j] / DoF);
   }
 
-  ans = nObs * (lgammafn(0.5 * (DoF + nSite)) - lgammafn(0.5 * DoF) - 0.5 *
-		nSite * log(M_PI * DoF) - 0.5 * logDet) -
-    0.5 * (DoF + nSite) * log1p(ans / DoF);
+  ans = nObs * (lgammafn(0.5 * (DoF + nSite)) - lgammafn(0.5 * DoF) -
+		  0.5 * nSite * log(M_PI * DoF) - 0.5 * logDet) - 0.5 *
+    (DoF + nSite) * ans;
 
   //Jacobian part of the Student copula
   for (i=(nSite * nObs);i--;)
