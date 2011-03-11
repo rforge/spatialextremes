@@ -622,3 +622,13 @@ void copula(int *copula, int *covmod, double *dist, double *data, int *nSite, in
 double gaussianCopula(double *unif, double sd, double *covMat, int nObs, int nSite);
 double studentCopula(double *data, double DoF, double *covMat, int nObs,
 		     int nSite);
+
+///////////////////////////////////
+//  From maxLinear.c
+//
+void rcondMaxLin(double *data, double *dsgnMat, int *p, int *nSite, int *nSim,
+		 double *Z);
+void maxLinear(int *nSim, double *dsgnMat, double *Z, int *nSite, int *p,
+	       int *grid, double *sim);
+void maxLinDsgnMat(double *coord, double *grid, int *nSite, int *nGrid,
+		   double *areaPixel, int *dim, double *param, double *dsgnMat);
