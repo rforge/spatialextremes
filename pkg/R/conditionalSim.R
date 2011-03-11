@@ -70,7 +70,7 @@ condrgp <- function(n, coord, data.coord, data, cov.mod = "powexp",
 }
 
 condrmaxstab <- function(n, coord, data.coord, data, cov.mod = "gauss",
-                         ..., grid = FALSE, p = 5000){
+                         ..., grid = FALSE, p = 10000){
 
   data <- as.numeric(data)
 

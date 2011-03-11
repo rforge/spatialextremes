@@ -9,7 +9,7 @@
 }
 \usage{
 condrmaxstab(n, coord, data.coord, data, cov.mod = "gauss", ..., grid =
-FALSE, p = 5000)
+FALSE, p = 10000)
 }
 \arguments{
   \item{n}{Integer. The number of conditional simulations.}
@@ -76,8 +76,8 @@ data <- rmaxstab(1, cond.coord, "gauss", var = 3)
 x <- seq(-10, 10, length = 250)
 cond.sim <- condrmaxstab(5, x, cond.coord, data, var = 3)
 
-matplot(x, t(cond.sim), type = "l", lty = 1, pch = 1)
-points(cond.coord, data)
+matplot(x, t(log(cond.sim)), type = "l", lty = 1, pch = 1)
+points(cond.coord, log(data))
 
 ## Two dimensional conditional simulation
 cond.coord <- matrix(runif(2 * n.cond.site, -10, 10), ncol = 2)
@@ -85,7 +85,8 @@ data <- rmaxstab(1, cond.coord, "gauss", cov11 = 4, cov12 = 0, cov22 = 4)
 
 x <- y <- seq(-10, 10, length = 75)
 cond.sim <- condrmaxstab(4, cbind(x, y), cond.coord, data, cov11 = 4,
-cov12 = 0, cov22 = 4, grid = TRUE)
+cov12 = 0, cov22 = 4, grid = TRUE, p = 2000)
+## Note p is set to 2000 for CPU reasons but is likely to be too small
 
 par(mfrow = c(2, 2), mar = rep(1, 4))
 for (i in 1:4){
