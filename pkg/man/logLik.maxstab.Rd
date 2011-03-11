@@ -7,7 +7,7 @@
   ``maxstab'' and ``copula''}
 \usage{
 \method{logLik}{maxstab}(object, ...)
-\method{loglik}{copula}(object, ...)
+\method{logLik}{copula}(object, ...)
 }
 \arguments{
   \item{object}{An object of class ``maxstab'' or ``copula''. Most often
