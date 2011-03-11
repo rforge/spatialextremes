@@ -1,6 +1,8 @@
 <div id="left">
   <h1><a href="index.php?module=pages&amp;action=maxstable"
 	 class="but">Max-stable processes</a></h1>
+  <h1><a href="index.php?module=pages&amp;action=maxLinear"
+	 class="but">Conditional max-stable simulations</a></h1>
   <h1><a href="index.php?module=pages&amp;action=latent"
   class="but">Latent Variable</a></h1>
   <h1><a href="index.php?module=pages&amp;action=copula"
