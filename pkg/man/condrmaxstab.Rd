@@ -41,11 +41,12 @@ FALSE, p = 5000)
   for all \eqn{x}{x}.
 
   Currently only the discretized Smith model is implemented for which
-  \eqn{f_j(x) = \varphi(x - u_j ; \Sigma)}{f_j(x) = phi(x - u_j ;
-  Sigma)} where \eqn{\varphi(\cdot; \Sigma)}{phi( . ; Sigma)} is the
+  \eqn{f_j(x) = c(p) \varphi(x - u_j ; \Sigma)}{f_j(x) = c(p) phi(x -
+  u_j ; Sigma)} where \eqn{\varphi(\cdot; \Sigma)}{phi( . ; Sigma)} is the
   zero mean (multivariate) normal density with covariance matrix
-  \eqn{\Sigma}{Sigma} and \eqn{u_j}{u_j} is a sequence of deterministic
-  points appropriately chosen.
+  \eqn{\Sigma}{Sigma}, \eqn{u_j}{u_j} is a sequence of deterministic
+  points appropriately chosen and \eqn{c(p)}{c(p)} is a constant
+  ensuring unit Frechet margins.
 }
 \value{
   A matrix containing observations from the required max-stable
