@@ -46,14 +46,15 @@
       <br /><br />
       <div style="text-align: center">
 	<img src="http://latex.codecogs.com/gif.latex?f_j(x) =
-      \varphi(x - u_j ; \Sigma), \qquad x \in \mathbb{R}^d,">
+      c(p) \varphi(x - u_j ; \Sigma), \qquad x \in \mathbb{R}^d,">
       </div>
       where <img src="http://latex.codecogs.com/gif.latex?\varphi(\cdot;\Sigma)">
       is the zero mean (multivariate) normal density with covariance
-      matrix <img src="http://latex.codecogs.com/gif.latex?\Sigma">
-      and <img src="http://latex.codecogs.com/gif.latex?u_j"> are
-      appropriately chose points
-      in <img src="http://latex.codecogs.com/gif.latex?\mathbb{R}^d">.
+      matrix <img src="http://latex.codecogs.com/gif.latex?\Sigma">, <img src="http://latex.codecogs.com/gif.latex?u_j">
+      are appropriately chose points
+      in <img src="http://latex.codecogs.com/gif.latex?\mathbb{R}^d">
+      and <img src="http://latex.codecogs.com/gif.latex?c(p)"> is a
+      constant ensuring unit Frechet margins.
     </div>
   </div>
   <div id="right_bot"></div>
