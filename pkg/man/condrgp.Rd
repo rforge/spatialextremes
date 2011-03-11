@@ -11,11 +11,10 @@ from the simple kriging predictor.
 condrgp(n, coord, data.coord, data, cov.mod = "powexp", mean = 0, nugget
 = 0, sill = 1, range = 1, smooth = 1, grid = FALSE, control = list())
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{n}{Integer. The number of conditional simulations.}
   \item{coord}{A numeric vector or matrix specifying the coordinates
-    where the process has to be generated. If \code{coord} is matrix,
+    where the process has to be generated. If \code{coord} is a matrix,
     each row specifies one location.}
   \item{data.coord}{A numeric vector or matrix specifying the
     coordinates where the process is conditioned.}
