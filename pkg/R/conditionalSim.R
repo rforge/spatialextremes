@@ -131,14 +131,14 @@ condrmaxstab <- function(n, coord, data.coord, data, cov.mod = "gauss",
   param <- unlist(list(...)[param])
 
   if (dim == 1){
-    bounds <- c(min(coord) - 4 * sqrt(param), max(coord) + 4 * sqrt(param))
+    bounds <- c(min(coord) - 4.1 * sqrt(param), max(coord) + 4.1 * sqrt(param))
     delta <- diff(bounds) / (p - 1)
     coord.grid <- seq(bounds[1], bounds[2], length = p) + delta / 2
   }
 
   else if (dim == 2){
     dummy <- sqrt(max(param["cov11"], param["cov22"]))
-    bounds <- apply(coord, 2, range) + 4 * dummy * c(-1, 1)
+    bounds <- apply(coord, 2, range) + 4.1 * dummy * c(-1, 1)
     p <- ceiling(sqrt(p))
     delta <- (bounds[2,] - bounds[1,]) / (p - 1)
         
@@ -169,7 +169,8 @@ condrmaxstab <- function(n, coord, data.coord, data, cov.mod = "gauss",
 
   honored <- all.equal(data, sim.cond)
   if (!isTRUE(honored))
-    warning(paste("Some conditional observations aren't honored!\n", honored, sep = ""))
+    warning(paste("Some conditional observations aren't honored!\n The maximum absolute difference was ", round(max(abs(data - sim.cond)), 2), " for site #",
+                  which.max(abs(data - sim.cond)), sep = ""))
 
   ## Compute the "design matrix" for the max-linear model (only for
   ## the points where we want our simulation)
@@ -179,20 +180,20 @@ condrmaxstab <- function(n, coord, data.coord, data, cov.mod = "gauss",
                      dsgnMat = double(p * n.sim.site), PACKAGE = "SpatialExtremes")$dsgnMat
 
   ## Get the realisations at the desired locations
-  data <- .C("maxLinear", as.integer(n), as.double(dsgn.mat.sim), as.double(Z),
-             as.integer(n.sim.site), as.integer(p), as.integer(grid),
-             sim = double(n.sim.site * n), PACKAGE = "SpatialExtremes")$sim
+  ans <- .C("maxLinear", as.integer(n), as.double(dsgn.mat.sim), as.double(Z),
+            as.integer(n.sim.site), as.integer(p), as.integer(grid),
+            sim = double(n.sim.site * n), PACKAGE = "SpatialExtremes")$sim
 
   if (grid){
     if (n == 1)
-      data <- matrix(data, sqrt(n.sim.site), sqrt(n.sim.site))
+      ans <- matrix(ans, sqrt(n.sim.site), sqrt(n.sim.site))
 
     else
-      data <- array(data, c(sqrt(n.sim.site), sqrt(n.sim.site), n))
+      ans <- array(ans, c(sqrt(n.sim.site), sqrt(n.sim.site), n))
   }
 
   else
-    data <- matrix(data, nrow = n, ncol = n.sim.site)
+    ans <- matrix(ans, nrow = n, ncol = n.sim.site)
   
-  return(data)
+  return(ans)
 }
