@@ -36,15 +36,15 @@ FALSE, p = 10000)
   \eqn{p}{p} is a sufficiently large integer and \eqn{Z_j}{Z_j} are
   independent unit Frechet random variables. Note that to ensure unit
   Frechet margins, the following condition has to be satisfied
-  \deqn{\sum_{j=1, \ldots, p} f_j(x) = 1,}{sum_{j=1, \dots, p} f_j(x) =
+  \deqn{\sum_{j=1, \ldots, p} f_j(x) = 1,}{\sum_{j=1, \dots, p} f_j(x) =
     1,}
   for all \eqn{x}{x}.
 
   Currently only the discretized Smith model is implemented for which
-  \eqn{f_j(x) = c(p) \varphi(x - u_j ; \Sigma)}{f_j(x) = c(p) phi(x -
-  u_j ; Sigma)} where \eqn{\varphi(\cdot; \Sigma)}{phi( . ; Sigma)} is the
-  zero mean (multivariate) normal density with covariance matrix
-  \eqn{\Sigma}{Sigma}, \eqn{u_j}{u_j} is a sequence of deterministic
+  \eqn{f_j(x) = c(p) \varphi(x - u_j ; \Sigma)}{f_j(x) = c(p) \phi(x -
+  u_j ; \Sigma)} where \eqn{\varphi(\cdot; \Sigma)}{\phi( . ; \Sigma)}
+  is the zero mean (multivariate) normal density with covariance matrix
+  \eqn{\Sigma}{\Sigma}, \eqn{u_j}{u_j} is a sequence of deterministic
   points appropriately chosen and \eqn{c(p)}{c(p)} is a constant
   ensuring unit Frechet margins.
 }
@@ -61,17 +61,19 @@ FALSE, p = 10000)
   Mathieu Ribatet
 }
 \section{Warnings}{
-  It may happen that some conditional observations are not honored!
-  Sometimes taking a larger \code{p}{p} solves the issue.
+  It may happen that some conditional observations are not honored
+  because the approximation of a max-stable process by a max-linear one
+  isn't accurate enough! Sometimes taking a larger \code{p} solves the
+  issue.
 }
 \seealso{
-  \code{\link{rmaxstab}}
+  \code{\link{rmaxstab}}, \code{\link{condrmaxstab}}
 }
 \examples{
 ## One dimensional conditional simulations
 n.cond.site <- 10
 cond.coord <- runif(n.cond.site, -10, 10)
-data <- rmaxstab(1, cond.coord, "gauss", var = 3)
+data <- rmaxlin(1, cond.coord, var = 3, p = 10000)
 
 x <- seq(-10, 10, length = 250)
 cond.sim <- condrmaxstab(5, x, cond.coord, data, var = 3)
@@ -88,13 +90,14 @@ cond.sim <- condrmaxstab(4, cbind(x, y), cond.coord, data, cov11 = 4,
 cov12 = 0, cov22 = 4, grid = TRUE, p = 2000)
 ## Note p is set to 2000 for CPU reasons but is likely to be too small
 
-par(mfrow = c(2, 2), mar = rep(1, 4))
+op <- par(mfrow = c(2, 2), mar = rep(1, 4))
 for (i in 1:4){
 image(x, y, log(cond.sim[,,i]), col = heat.colors(64), xaxt = "n", yaxt
 = "n", bty = "n")
 contour(x, y, log(cond.sim[,,i]), add = TRUE)
 text(cond.coord[,1], cond.coord[,2], round(log(data), 2), col = 3)
 }
+par(op)
 }
 
 \keyword{distribution}

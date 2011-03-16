@@ -37,7 +37,7 @@ map.latent(fitted, x, y, covariates = NULL, param = "quant", ret.per =
   \item{control}{A list with named components specifying options to be
     passed to \code{\link{rgp}}. Typically one might want specify
     \code{nlines} to reduce the computational demand.}
-  \item{\dots}{Several arguments to be passed to the \code{link{image}}
+  \item{\dots}{Several arguments to be passed to the \code{\link{image}}
     function.}
 }
 \value{

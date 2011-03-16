@@ -70,7 +70,7 @@ TRUE, warn = TRUE, corr = FALSE)
   This function does not use max-stable copula and the use of non
   max-stable copula for modelling spatial extreme is highly
   questionable. This function was mainly implemented for educational
-  purposes and *not* for concrete modelling purposes. 
+  purposes and \bold{not} for concrete modelling purposes. 
 }
 \references{
   Davison, A.C., Padoan, S.A., Ribatet, M. (2010) Statistical Modelling
