@@ -630,5 +630,5 @@ void rcondMaxLin(double *data, double *dsgnMat, int *p, int *nSite, int *nSim,
 		 double *Z);
 void maxLinear(int *nSim, double *dsgnMat, double *Z, int *nSite, int *p,
 	       int *grid, double *sim);
-void maxLinDsgnMat(double *coord, double *grid, int *nSite, int *nGrid,
+void maxLinDsgnMat(double *coord, double *grid, int *nSite, int *p,
 		   double *areaPixel, int *dim, double *param, double *dsgnMat);

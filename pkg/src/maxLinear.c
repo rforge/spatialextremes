@@ -13,7 +13,8 @@ void rcondMaxLin(double *data, double *dsgnMat, int *p, int *nSite, int *nSim,
     hitBounds[j] = R_PosInf;
    
     for (int i=*nSite;i--;)
-      hitBounds[j] = fmin2(hitBounds[j], data[i] / dsgnMat[i + j * *nSite]);
+      if (dsgnMat[i + j * *nSite] != 0)
+	hitBounds[j] = fmin2(hitBounds[j], data[i] / dsgnMat[i + j * *nSite]);
   }
 
   /* 2. Compute the hitting matrix */
@@ -240,11 +241,12 @@ void maxLinear(int *nSim, double *dsgnMat, double *Z, int *nSite, int *p,
   if (*grid){
     for (int i=*nSim;i--;){
       for (int j=*nSite;j--;){
-	sim[j + i * *nSite] = 0.0;
+	sim[j + i * *nSite] = R_NegInf;
 	
 	for (int k=*p;k--;)
-	  sim[j + i * *nSite] = fmax2(sim[j + i * *nSite],
-				      dsgnMat[j + *nSite * k] * Z[i * *p + k]);
+	  if (dsgnMat[j + *nSite * k] != 0)
+	    sim[j + i * *nSite] = fmax2(sim[j + i * *nSite],
+					dsgnMat[j + *nSite * k] * Z[i * *p + k]);
       }
     }
   }
@@ -252,11 +254,12 @@ void maxLinear(int *nSim, double *dsgnMat, double *Z, int *nSite, int *p,
   else{
     for (int i=*nSim;i--;){
       for (int j=*nSite;j--;){
-	sim[i + j * *nSim] = 0.0;
+	sim[i + j * *nSim] = R_NegInf;
 	
 	for (int k=*p;k--;)
-	  sim[i + j * *nSim] = fmax2(sim[i + j * *nSim],
-				     dsgnMat[j + *nSite * k] * Z[i * *p + k]);
+	  if (dsgnMat[j + *nSite * k] != 0)
+	    sim[i + j * *nSim] = fmax2(sim[i + j * *nSim],
+				       dsgnMat[j + *nSite * k] * Z[i * *p + k]);
       }
     }
   }
@@ -265,7 +268,7 @@ void maxLinear(int *nSim, double *dsgnMat, double *Z, int *nSite, int *p,
 }
   
   
-void maxLinDsgnMat(double *coord, double *grid, int *nSite, int *nGrid,
+void maxLinDsgnMat(double *coord, double *grid, int *nSite, int *p,
 		   double *areaPixel, int *dim, double *param,
 		   double *dsgnMat){
   /* This function computes the design matrix for a max-linear
@@ -278,7 +281,7 @@ void maxLinDsgnMat(double *coord, double *grid, int *nSite, int *nGrid,
       cst = *areaPixel * M_1_SQRT_2PI * sqrt(iVar);
 
     for (int i=*nSite;i--;)
-      for (int j=*nGrid;j--;)
+      for (int j=*p;j--;)
 	dsgnMat[i + j * *nSite] = exp(- 0.5 * (coord[i] - grid[j]) *
 				      (coord[i] - grid[j]) * iVar) * cst;
   }
@@ -289,9 +292,9 @@ void maxLinDsgnMat(double *coord, double *grid, int *nSite, int *nGrid,
       cst = *areaPixel / M_2PI * sqrt(idet);
 
     for (int i=*nSite;i--;)
-      for (int j=*nGrid;j--;){
+      for (int j=*p;j--;){
 	double dummy1 = coord[i] - grid[j],
-	  dummy2 = coord[i + *nSite] - grid[j + *nGrid];
+	  dummy2 = coord[i + *nSite] - grid[j + *p];
 
 	dsgnMat[i + j * *nSite] = exp(-0.5 * (param[2] * dummy1 * dummy1 -
 					      2 * param[1] * dummy1 * dummy2 +
@@ -303,6 +306,12 @@ void maxLinDsgnMat(double *coord, double *grid, int *nSite, int *nGrid,
 
   else
     error("not implemented yet!");
+
+  for (int i=(*p * *nSite);i--;){
+    //Set to zero all entries <= 1e-8
+    if (dsgnMat[i] <= 1e-8)
+      dsgnMat[i] = 0;
+  }
 
   return;  
 }
