@@ -38,12 +38,11 @@
       model and thus approximate conditional simulations from a
       max-stable process.
 
-      <br />However this approaches has some drawbacks since it is not
+      <br />However this approach has some drawbacks since it is not
       clear how to find appropriate
       functions <img src="http://latex.codecogs.com/gif.latex?f_j">. Therefore
       the only available model is currently the (discretized) Smith
-      model for which
-      <br /><br />
+      model for which <br /><br />
       <div style="text-align: center">
 	<img src="http://latex.codecogs.com/gif.latex?f_j(x) =
       c(p) \varphi(x - u_j ; \Sigma), \qquad x \in \mathbb{R}^d,">
@@ -51,7 +50,7 @@
       where <img src="http://latex.codecogs.com/gif.latex?\varphi(\cdot;\Sigma)">
       is the zero mean (multivariate) normal density with covariance
       matrix <img src="http://latex.codecogs.com/gif.latex?\Sigma">, <img src="http://latex.codecogs.com/gif.latex?u_j">
-      are appropriately chose points
+      are appropriately chosen points
       in <img src="http://latex.codecogs.com/gif.latex?\mathbb{R}^d">
       and <img src="http://latex.codecogs.com/gif.latex?c(p)"> is a
       constant ensuring unit Frechet margins.
