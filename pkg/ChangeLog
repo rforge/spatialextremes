@@ -1,3 +1,51 @@
+2011-03-16 12:59  mathieu_ribatet
+
+	* R/conditionalSim.R: Small improvements for the conditional
+	  simulation of max-stable
+	  processes
+
+2011-03-16 12:59  mathieu_ribatet
+
+	* R/maxLinear.R, man/rmaxlin.Rd: Implementation of max-linear
+	  models
+
+2011-03-16 12:58  mathieu_ribatet
+
+	* man/DIC.Rd, man/GEV.Rd, man/GPD.Rd,
+	  man/SpatialExtremes-package.Rd, man/condmap.Rd,
+	  man/condrmaxstab.Rd, man/covariance.Rd, man/cv.Rd,
+	  man/fitcopula.Rd, man/fitmaxstab.Rd, man/fitspatgev.Rd,
+	  man/fmadogram.Rd, man/gcv.Rd, man/latentVariable.Rd,
+	  man/madogram.Rd, man/map.Rd, man/map.latent.Rd, man/rbpspline.Rd,
+	  man/simmaxstab.Rd: Updating the Rd documentation
+
+2011-03-16 08:34  mathieu_ribatet
+
+	* src/header.h, src/maxLinear.c: Some minor modification for the
+	  conditional sampling from max-linear
+	  models
+
+2011-03-13 15:00  mathieu_ribatet
+
+	* src/circulant.c, src/simextremalt.c, src/simgeometric.c,
+	  src/simschlather.c: Replace the use of pythag by hypot for
+	  compatibility with R 2.14-0
+	  (email of Prof. Brian Ripley)
+
+2011-03-11 15:40  mathieu_ribatet
+
+	* R/conditionalSim.R, man/condrmaxstab.Rd: Set p = 10000 for the
+	  conditional max-linear sampling.
+
+2011-03-11 14:55  mathieu_ribatet
+
+	* man/condrmaxstab.Rd: The discretized Smith model was badly
+	  defined in the doc.
+
+2011-03-11 13:20  mathieu_ribatet
+
+	* ChangeLog, DESCRIPTION, NEWS: Prepare the 1.8-0 release!
+
 2011-03-11 13:14  mathieu_ribatet
 
 	* man/logLik.maxstab.Rd: Fix a typo.
