@@ -12,6 +12,8 @@ NEW FEATURES
 
     o The copula approach is now available --- use with caution!
 
+    o Max-linear models are now available.
+
 BUG FIXES
 
     o Fix a bug with model selection.
