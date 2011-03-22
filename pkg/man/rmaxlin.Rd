@@ -63,7 +63,7 @@ rmaxlin(n, coord, cov.mod = "gauss", dsgn.mat, grid = FALSE, p = 500,
   Random Fields. \emph{Advances in Applied Probability}.
 }
 \author{Mathieu Ribatet}
-\seealso{\code{\link{condrmaxstab}}, \code{\link{rmaxstab}}}
+\seealso{\code{\link{condrmaxlin}}, \code{\link{rmaxstab}}}
 \examples{
 ## A one dimensional simulation from a design matrix. This design matrix
 ## corresponds to a max-moving average process MMA(alpha)

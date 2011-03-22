@@ -69,8 +69,8 @@ condrgp <- function(n, coord, data.coord, data, cov.mod = "powexp",
               data = data, cov.mod = cov.mod, grid = grid))  
 }
 
-condrmaxstab <- function(n, coord, data.coord, data, cov.mod = "gauss",
-                         ..., grid = FALSE, p = 10000){
+condrmaxlin <- function(n, coord, data.coord, data, cov.mod = "gauss",
+                        ..., grid = FALSE, p = 10000){
 
   data <- as.numeric(data)
 

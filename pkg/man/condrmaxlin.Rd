@@ -68,7 +68,7 @@ FALSE, p = 10000)
   issue.
 }
 \seealso{
-  \code{\link{rmaxstab}}, \code{\link{condrmaxstab}}
+  \code{\link{rmaxstab}}, \code{\link{condrmaxlin}}
 }
 \examples{
 ## One dimensional conditional simulations
