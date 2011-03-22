@@ -1,3 +1,53 @@
+2011-03-22 13:21  mathieu_ribatet
+
+	* inst/doc/SpatialExtremesGuide.pdf: Use png figures to reduce
+	  vignette size
+
+2011-03-22 13:21  mathieu_ribatet
+
+	* R/conditionalSim.R, man/SpatialExtremes-package.Rd,
+	  man/condrmaxlin.Rd, man/rmaxlin.Rd: condrmaxstab is renamed as
+	  condrmaxlin
+
+2011-03-22 08:38  mathieu_ribatet
+
+	* man/condrmaxlin.Rd: Remove condrmaxstab now named as condrmaxlin
+
+2011-03-22 08:37  mathieu_ribatet
+
+	* man/condrmaxstab.Rd: Remove condrmaxstab now named as condrmaxlin
+
+2011-03-22 08:34  mathieu_ribatet
+
+	* inst/doc/SpatialExtremesGuide.Rnw,
+	  inst/doc/SpatialExtremesGuide.pdf: Use png figures to reduce
+	  vignette size
+
+2011-03-22 08:34  mathieu_ribatet
+
+	* inst/doc/Figures/Schlather2Sim.png,
+	  inst/doc/Figures/Smith2Sim.png,
+	  inst/doc/Figures/rmaxstabSmith.png, inst/doc/Figures/tbm.png: Add
+	  png figures to reduce vignette size
+
+2011-03-22 08:33  mathieu_ribatet
+
+	* inst/doc/Figures: Add png figures to reduce vignette size
+
+2011-03-17 08:19  mathieu_ribatet
+
+	* inst/doc, inst/doc/SpatialExtremesGuide.pdf: The pdf file
+	  produced by the vignette was too large so I will reduce
+	  its size manually.
+
+2011-03-16 13:02  mathieu_ribatet
+
+	* NEWS: Update the NEWS file
+
+2011-03-16 13:01  mathieu_ribatet
+
+	* ChangeLog: Update the ChangeLog
+
 2011-03-16 12:59  mathieu_ribatet
 
 	* R/conditionalSim.R: Small improvements for the conditional
