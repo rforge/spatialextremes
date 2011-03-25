@@ -20,7 +20,7 @@
     <p> My main intersts are (of course) extreme value theory but
       I'm also a Bayesian guy --- look at the latent variable approach
       of the SpatialExtreme package. <br /> You may want to have a look
-      at my <a href="">web page</a>.
+      at my <a href="http://www.math.univ-montp2.fr/~ribatet">web page</a>.
     </p>
     <p>If you have any suggestions, comments or want to report a bug
       please do not hesitate to contact me.
