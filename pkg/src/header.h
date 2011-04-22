@@ -222,6 +222,8 @@ double gev2unifTrend(double *data, int nObs, int nSite, double *locs,
 		     double *scales, double *shapes, double *trendlocs,
 		     double *trendscales, double *trendshapes, double *unif,
 		     double *logdens);
+int getCurrentPair(int site1, int site2, int nSite);
+void getSiteIndex(int currentPair, int nSite, int *site1, int *site2);
 
 ///////////////////////////////////
 //  From univllik.c
