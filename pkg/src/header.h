@@ -608,7 +608,7 @@ void skriging(int *nSite, int *nSiteKrig, int *covmod, int *dim,
 //  From copula.c
 //
 void copula(int *copula, int *covmod, double *dist, double *data, int *nSite, int *nObs,
-	    int *dim, double *locdsgnmat,  double *locpenmat, int *nloccoeff,
+	    int *dim, int * fitmarge, double *locdsgnmat,  double *locpenmat, int *nloccoeff,
 	    int *npparloc, double *locpenalty, double *scaledsgnmat, double *scalepenmat,
 	    int *nscalecoeff, int *npparscale, double *scalepenalty,
 	    double *shapedsgnmat, double *shapepenmat, int *nshapecoeff, int *npparshape,

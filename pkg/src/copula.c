@@ -1,7 +1,7 @@
 #include "header.h"
 
 void copula(int *copula, int *covmod, double *dist, double *data, int *nSite, int *nObs,
-	    int *dim, double *locdsgnmat,  double *locpenmat, int *nloccoeff,
+	    int *dim, int *fitmarge, double *locdsgnmat,  double *locpenmat, int *nloccoeff,
 	    int *npparloc, double *locpenalty, double *scaledsgnmat, double *scalepenmat,
 	    int *nscalecoeff, int *npparscale, double *scalepenalty,
 	    double *shapedsgnmat, double *shapepenmat, int *nshapecoeff, int *npparshape,
@@ -18,7 +18,12 @@ void copula(int *copula, int *covmod, double *dist, double *data, int *nSite, in
   int i, j, flag = usetempcov[0] + usetempcov[1] + usetempcov[2],
     nPairs = *nSite * (*nSite + 1) / 2;
 
-  double sd = sqrt(*sill), *trendlocs, *trendscales, *trendshapes,
+  if (*sill > 1){
+    *dns = (*sill * *sill) * MINF;
+    return;
+  }
+    
+  double *trendlocs, *trendscales, *trendshapes,
     *logdens = (double *) R_alloc(*nSite * *nObs, sizeof(double)),
     *covariances = (double *) R_alloc(nPairs, sizeof(double)),
     *covMat = (double *)R_alloc(*nSite * *nSite, sizeof(double)),
@@ -27,7 +32,8 @@ void copula(int *copula, int *covmod, double *dist, double *data, int *nSite, in
     *shapes = (double *)R_alloc(*nSite, sizeof(double)),
     *unif = (double *) R_alloc(*nSite * *nObs, sizeof(double));
 
-  memset(covMat, 0, *nSite * *nSite * sizeof(double));
+  for (i=(*nSite * *nSite);i--;)
+    covMat[i] = 0;
 
   //Stage 1: Compute the covariance at each location
   switch (*covmod){
@@ -62,32 +68,38 @@ void copula(int *copula, int *covmod, double *dist, double *data, int *nSite, in
       }
   }
 
-  //Stage 2: Compute the GEV parameters using the design matrix
-  *dns = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat, loccoeff,
-		       scalecoeff, shapecoeff, *nSite, *nloccoeff, *nscalecoeff,
-		       *nshapecoeff, locs, scales, shapes);
+  if (*fitmarge){
+    //Stage 2: Compute the GEV parameters using the design matrix
+    *dns = dsgnmat2Param(locdsgnmat, scaledsgnmat, shapedsgnmat, loccoeff,
+			 scalecoeff, shapecoeff, *nSite, *nloccoeff, *nscalecoeff,
+			 *nshapecoeff, locs, scales, shapes);
+    
+    if (flag){
+      trendlocs = (double *) R_alloc(*nObs, sizeof(double));
+      trendscales = (double *) R_alloc(*nObs, sizeof(double));
+      trendshapes = (double *) R_alloc(*nObs, sizeof(double));
+      
+      dsgnmat2temptrend(tempdsgnmatloc, tempdsgnmatscale, tempdsgnmatshape,
+			tempcoeffloc, tempcoeffscale, tempcoeffshape, *nSite,
+			*nObs, usetempcov, *ntempcoeffloc, *ntempcoeffscale,
+			*ntempcoeffshape, trendlocs, trendscales, trendshapes);
+      
+      for (i=*nSite;i--;)
+	for (j=*nObs;j--;)
+	  if (((scales[i] + trendscales[j]) <= 0) ||
+	      ((shapes[i] + trendshapes[j]) <= -1)){
+	    *dns = MINF;
+	    return;
+	  }
+    }
 
-  if (flag){
-    trendlocs = (double *) R_alloc(*nObs, sizeof(double));
-    trendscales = (double *) R_alloc(*nObs, sizeof(double));
-    trendshapes = (double *) R_alloc(*nObs, sizeof(double));
-
-    dsgnmat2temptrend(tempdsgnmatloc, tempdsgnmatscale, tempdsgnmatshape,
-		      tempcoeffloc, tempcoeffscale, tempcoeffshape, *nSite,
-		      *nObs, usetempcov, *ntempcoeffloc, *ntempcoeffscale,
-		      *ntempcoeffshape, trendlocs, trendscales, trendshapes);
-
-    for (i=*nSite;i--;)
-      for (j=*nObs;j--;)
-	if (((scales[i] + trendscales[j]) <= 0) ||
-	    ((shapes[i] + trendshapes[j]) <= -1)){
-	  *dns = MINF;
-	  return;
-	}
+    else if (*dns != 0.0)
+      return;
   }
 
-  else if (*dns != 0.0)
-    return;
+  else
+    for (i=*nSite;i--;)
+      locs[i] = scales[i] = shapes[i] = 1;
 
   //Stage 3: Transformation to unit Frechet
   if (flag)
@@ -105,15 +117,20 @@ void copula(int *copula, int *covmod, double *dist, double *data, int *nSite, in
   // First the "dependence" log-likelihood
   if (*copula == 1){
     for (i=(*nSite * *nObs);i--;)
-      unif[i] = qnorm(unif[i], 0, sd, 1, 0);
+      unif[i] = qnorm(unif[i], 0, 1, 1, 0);
 
-    *dns = gaussianCopula(unif, sd, covMat, *nObs, *nSite);
+    *dns = gaussianCopula(unif, 1, covMat, *nObs, *nSite);
   }
 
   else if (*copula == 2){
 
     if (*DoF <= 0){
       *dns = (1 - *DoF) * (1 - *DoF) * MINF;
+      return;
+    }
+
+    if (*DoF > 35){
+      *dns = (*DoF - 34) * (*DoF - 34) * MINF;
       return;
     }
       
@@ -233,6 +250,7 @@ double studentCopula(double *data, double DoF, double *covMat, int nObs,
     ans = 0;
 
   for (i=nObs;i--;){
+    double dummy2 = 0;
     for (j=nSite;j--;)
       dummy[j] = data[i + j * nObs];
 
@@ -240,7 +258,9 @@ double studentCopula(double *data, double DoF, double *covMat, int nObs,
 		    &nSite, dummy, &nSite);
 
     for (j=nSite;j--;)
-      ans += log1p(dummy[j] * dummy[j] / DoF);
+      dummy2 += dummy[j] * dummy[j];
+
+    ans += log1p(dummy2 / DoF);
   }
 
   ans = nObs * (lgammafn(0.5 * (DoF + nSite)) - lgammafn(0.5 * DoF) -
@@ -253,4 +273,3 @@ double studentCopula(double *data, double DoF, double *covMat, int nObs,
 
   return ans;
 }
-
