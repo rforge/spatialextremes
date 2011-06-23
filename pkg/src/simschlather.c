@@ -776,9 +776,7 @@ void circcore(double *rho, double *a, double *ia, int m, int halfM, int mdag,
   /* This function is the same as the circemb function except that it
      generates only one realisation of the random field. This is only
      useful for the call by rschlathercirc - for CPU reasons. */
-  int r;
-
-  for (r=mdagbar;r--;){
+  for (int r=0;r<mdagbar;r++){
     /* Below is the procedure 5.2.4 in Wood and Chan */
 
     //Computation of the cardinality of A(j)
