@@ -345,7 +345,7 @@ Smith's model with different covariance matrices.
   This proves equation~\eqref{eq:smith}.
 \end{proof}
 
-<<label=Smith2Sim,echo=FALSE>>=
+<<label=Smith2Sim,echo=FALSE,eval=FALSE>>=
 x <- seq(0, 10, length = 100)
 seed <- 19
 set.seed(seed)
@@ -617,7 +617,7 @@ legend("topright", c(expression(nu == 4), expression(nu == 2),
        col = 1:4, lty = 1, inset = 0.05)
 @
 
-<<label=Schlather2Sim,echo=FALSE>>=
+<<label=Schlather2Sim,echo=FALSE,eval=FALSE>>=
 x <- y <- seq(0, 10, length = 100)
 set.seed(12)
 ms0 <- rmaxstab(1, cbind(x, y), "whitmat", nugget = 0, range = 1, smooth = 1, grid=TRUE)
@@ -962,7 +962,7 @@ has $\gamma_X$ as its covariance function.
 A comprehensive overview of methods for simulating random processes on
 a line from various covariance families is given by \citet{Emery2006}.
 
-<<label=tbm,echo=FALSE>>=
+<<label=tbm,echo=FALSE,eval=FALSE>>=
 x <- y <- seq(0, 10, length = 100)
 coord <- cbind(x, y)
 seed <- 3
@@ -1123,7 +1123,7 @@ reasonable choice is to let
 where $\sigma_{ii}$ are the diagonal elements of the covariance matrix
 $\Sigma$.
 
-<<echo=FALSE,label=rmaxstabSmith>>=
+<<echo=FALSE,label=rmaxstabSmith,eval=FALSE>>=
 x <- y <- seq(0, 10, length = 100)
 coord <- cbind(x, y)
 set.seed(8)
