@@ -12,14 +12,14 @@ void copula(int *copula, int *covmod, double *dist, double *data, int *nSite, in
 	    double *tempdsgnmatshape, double *temppenmatshape, int *ntempcoeffshape,
 	    int *nppartempcoeffshape, double *temppenaltyshape, double *loccoeff,
 	    double *scalecoeff, double *shapecoeff, double *tempcoeffloc,
-	    double *tempcoeffscale, double *tempcoeffshape, double *DoF, double *sill, double *range,
+	    double *tempcoeffscale, double *tempcoeffshape, double *DoF, double *nugget, double *range,
 	    double *smooth, double *smooth2, double *dns){
 
   int i, j, flag = usetempcov[0] + usetempcov[1] + usetempcov[2],
     nPairs = *nSite * (*nSite + 1) / 2;
 
-  if (*sill > 1){
-    *dns = (*sill * *sill) * MINF;
+  if (*nugget >= 1){
+    *dns = (*nugget * *nugget) * MINF;
     return;
   }
     
@@ -30,7 +30,8 @@ void copula(int *copula, int *covmod, double *dist, double *data, int *nSite, in
     *locs = (double *)R_alloc(*nSite, sizeof(double)),
     *scales = (double *)R_alloc(*nSite, sizeof(double)),
     *shapes = (double *)R_alloc(*nSite, sizeof(double)),
-    *unif = (double *) R_alloc(*nSite * *nObs, sizeof(double));
+    *unif = (double *) R_alloc(*nSite * *nObs, sizeof(double)),
+    sill = 1 - *nugget;
 
   for (i=(*nSite * *nSite);i--;)
     covMat[i] = 0;
@@ -38,19 +39,19 @@ void copula(int *copula, int *covmod, double *dist, double *data, int *nSite, in
   //Stage 1: Compute the covariance at each location
   switch (*covmod){
   case 1:
-    *dns = whittleMatern(dist, nPairs, *sill, *range, *smooth, covariances);
+    *dns = whittleMatern(dist, nPairs, *nugget, sill, *range, *smooth, covariances);
     break;
   case 2:
-    *dns = cauchy(dist, nPairs, *sill, *range, *smooth, covariances);
+    *dns = cauchy(dist, nPairs, *nugget, sill, *range, *smooth, covariances);
     break;
   case 3:
-    *dns = powerExp(dist, nPairs, *sill, *range, *smooth, covariances);
+    *dns = powerExp(dist, nPairs, *nugget, sill, *range, *smooth, covariances);
     break;
   case 4:
-    *dns = bessel(dist, nPairs, *dim, *sill, *range, *smooth, covariances);
+    *dns = bessel(dist, nPairs, *dim, *nugget, sill, *range, *smooth, covariances);
     break;
   case 5:
-    *dns = caugen(dist, nPairs, *sill, *range, *smooth, *smooth2, covariances);
+    *dns = caugen(dist, nPairs, *nugget, sill, *range, *smooth, *smooth2, covariances);
     break;
   }
 

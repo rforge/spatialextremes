@@ -43,7 +43,6 @@ void distance2orig(double *coord, int n, int dim, double *dist, int grid){
     //Only works with two dimensional grids!!!
     int current = -1;
     double dummy;
-    memset(dist, 0, R_pow_di(n, dim) * sizeof(double));
 
     for (i=0;i<n;i++){
       dummy = coord[i] * coord[i];
@@ -56,9 +55,8 @@ void distance2orig(double *coord, int n, int dim, double *dist, int grid){
   }
 
   else {
-    memset(dist, 0, n * sizeof(double));
-
     for (i=n;i--;){
+      dist[i] = 0;
       for (j=dim;j--;)
 	dist[i] += coord[i + j * n] * coord[i + j * n];
 

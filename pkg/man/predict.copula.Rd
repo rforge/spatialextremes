@@ -32,7 +32,7 @@ n.site <- 35
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
-data <- rmaxstab(50, locations, cov.mod = "whitmat", sill = 1, range = 30,
+data <- rmaxstab(50, locations, cov.mod = "whitmat", nugget = 0, range = 30,
 smooth = 0.5)
 
 ## 2- Transformation to non unit Frechet margins
@@ -52,7 +52,7 @@ form.shape <- shape ~ 1
 
 M0 <- fitcopula(data, locations, "student", "whitmat", loc.form = form.loc,
                         scale.form = form.scale, shape.form =
-                        form.shape, sill = 1)
+                        form.shape, nugget = 0)
 
 ## 4- GEV parameters estimates at each locations or at ungauged locations
 predict(M0)

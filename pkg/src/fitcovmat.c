@@ -57,12 +57,12 @@ void fitcovmat3d(double *cov11, double *cov12, double *cov13,
   return;
 }
 
-void fitcovariance(int *covmod, double *sill, double *range, double *smooth,
+void fitcovariance(int *covmod, double *nugget, double *range, double *smooth,
 		   double *smooth2, int *nPairs, int *dim, double *dist,
 		   double *extcoeff, double *weights, double *ans){
 
-  if (*sill > 1){
-    *ans = - *sill * *sill * MINF;
+  if (*nugget >= 1){
+    *ans = - *nugget * *nugget * MINF;
     return;
   }
 
@@ -71,19 +71,19 @@ void fitcovariance(int *covmod, double *sill, double *range, double *smooth,
 
   switch (*covmod){
   case 1:
-    *ans = -whittleMatern(dist, *nPairs, *sill, *range, *smooth, rho);
+    *ans = -whittleMatern(dist, *nPairs, *nugget, 1 - *nugget, *range, *smooth, rho);
     break;
   case 2:
-    *ans = -cauchy(dist, *nPairs, *sill, *range, *smooth, rho);
+    *ans = -cauchy(dist, *nPairs, *nugget, 1 - *nugget, *range, *smooth, rho);
     break;
   case 3:
-    *ans = -powerExp(dist, *nPairs, *sill, *range, *smooth, rho);
+    *ans = -powerExp(dist, *nPairs, *nugget, 1 - *nugget, *range, *smooth, rho);
     break;
   case 4:
-    *ans = -bessel(dist, *nPairs, *dim, *sill, *range, *smooth, rho);
+    *ans = -bessel(dist, *nPairs, *dim, *nugget, 1 - *nugget, *range, *smooth, rho);
     break;
   case 5:
-    *ans = -caugen(dist, *nPairs, *sill, *range, *smooth, *smooth2, rho);
+    *ans = -caugen(dist, *nPairs, *nugget, 1 - *nugget, *range, *smooth, *smooth2, rho);
     break;
   }
 
@@ -101,12 +101,12 @@ void fitcovariance(int *covmod, double *sill, double *range, double *smooth,
   return;
 }
 
-void fittcovariance(int *covmod, double *sill, double *range, double *smooth,
+void fittcovariance(int *covmod, double *nugget, double *range, double *smooth,
 		    double *smooth2, double *DoF, int *nPairs, int *dim, double *dist,
 		    double *extcoeff, double *weights, double *ans){
 
-   if (*sill > 1){
-    *ans = - *sill * *sill * MINF;
+   if (*nugget >= 1){
+    *ans = - *nugget * *nugget * MINF;
     return;
   }
 
@@ -120,19 +120,19 @@ void fittcovariance(int *covmod, double *sill, double *range, double *smooth,
 
   switch (*covmod){
   case 1:
-    *ans = -whittleMatern(dist, *nPairs, *sill, *range, *smooth, rho);
+    *ans = -whittleMatern(dist, *nPairs, *nugget, 1 - *nugget, *range, *smooth, rho);
     break;
   case 2:
-    *ans = -cauchy(dist, *nPairs, *sill, *range, *smooth, rho);
+    *ans = -cauchy(dist, *nPairs, *nugget, 1 - *nugget, *range, *smooth, rho);
     break;
   case 3:
-    *ans = -powerExp(dist, *nPairs, *sill, *range, *smooth, rho);
+    *ans = -powerExp(dist, *nPairs, *nugget, 1 - *nugget, *range, *smooth, rho);
     break;
   case 4:
-    *ans = -bessel(dist, *nPairs, *dim, *sill, *range, *smooth, rho);
+    *ans = -bessel(dist, *nPairs, *dim, *nugget, 1 - *nugget, *range, *smooth, rho);
     break;
   case 5:
-    *ans = -caugen(dist, *nPairs, *sill, *range, *smooth, *smooth2, rho);
+    *ans = -caugen(dist, *nPairs, *nugget, 1 - *nugget, *range, *smooth, *smooth2, rho);
     break;
   }
 
@@ -150,7 +150,7 @@ void fittcovariance(int *covmod, double *sill, double *range, double *smooth,
   return;
 }
 
-void fiticovariance(int *covmod, double *alpha, double *sill, double *range,
+void fiticovariance(int *covmod, double *alpha, double *nugget, double *range,
 		    double *smooth, double *smooth2, int *nPairs, int *dim,
 		    double *dist, double *extcoeff, double *weights, double *ans){
   /* This computes the least squares for the independent Schlather model */
@@ -165,8 +165,8 @@ void fiticovariance(int *covmod, double *alpha, double *sill, double *range,
     return;
   }
 
-  if (*sill > 1){
-    *ans = - *sill * *sill * MINF;
+  if (*nugget >= 1){
+    *ans = - *nugget * *nugget * MINF;
     return;
   }
 
@@ -175,19 +175,19 @@ void fiticovariance(int *covmod, double *alpha, double *sill, double *range,
 
   switch (*covmod){
   case 1:
-    *ans = -whittleMatern(dist, *nPairs, *sill, *range, *smooth, rho);
+    *ans = -whittleMatern(dist, *nPairs, *nugget, 1 - *nugget, *range, *smooth, rho);
     break;
   case 2:
-    *ans = -cauchy(dist, *nPairs, *sill, *range, *smooth, rho);
+    *ans = -cauchy(dist, *nPairs, *nugget, 1 - *nugget, *range, *smooth, rho);
     break;
   case 3:
-    *ans = -powerExp(dist, *nPairs, *sill, *range, *smooth, rho);
+    *ans = -powerExp(dist, *nPairs, *nugget, 1 - *nugget, *range, *smooth, rho);
     break;
   case 4:
-    *ans = -bessel(dist, *nPairs, *dim, *sill, *range, *smooth, rho);
+    *ans = -bessel(dist, *nPairs, *dim, *nugget, 1 - *nugget, *range, *smooth, rho);
     break;
   case 5:
-    *ans = -caugen(dist, *nPairs, *sill, *range, *smooth, *smooth2, rho);
+    *ans = -caugen(dist, *nPairs, *nugget, 1 - *nugget, *range, *smooth, *smooth2, rho);
     break;
   }
 
@@ -205,14 +205,14 @@ void fiticovariance(int *covmod, double *alpha, double *sill, double *range,
   return;
 }
 
-void fitgcovariance(int *covmod, double *sigma2, double *sigma2Bound, double *sill,
+void fitgcovariance(int *covmod, double *sigma2, double *sigma2Bound, double *nugget,
 		    double *range, double *smooth, double *smooth2, int *nPairs,
 		    int *dim, double *dist, double *extcoeff, double *weights,
 		    double *ans){
   /* This computes the least squares for the geometric Gaussian model */
 
-  if (*sill > 1){
-    *ans = - *sill * *sill * MINF;
+  if (*nugget >= 1){
+    *ans = - *nugget * *nugget * MINF;
     return;
   }
 
@@ -220,7 +220,7 @@ void fitgcovariance(int *covmod, double *sigma2, double *sigma2Bound, double *si
     *rho = (double *)R_alloc(*nPairs, sizeof(double));
 
   *ans = -geomCovariance(dist, *nPairs, *dim, *covmod, *sigma2, *sigma2Bound,
-			 *sill, *range, *smooth, *smooth2, rho);
+			 *nugget, *range, *smooth, *smooth2, rho);
 
   if (*ans != 0.0)
     return;

@@ -90,7 +90,7 @@ coord <- matrix(runif(2 * n.site, -10, 10), ncol = 2)
 colnames(coord) <- c("lon", "lat")
 
 ## Generate data from a Gaussian copula model
-data <- rcopula(n.obs, coord, "gaussian", "powexp", nugget = 1, range = 4, smooth = 1.2)
+data <- rcopula(n.obs, coord, "gaussian", "powexp", nugget = 0, range = 4, smooth = 1.2)
 
 ## Transform the margins to GEV
 locs <- -5 + coord[,"lon"] / 10
@@ -109,7 +109,7 @@ shape.form <- y ~ 1
 
 ## 2. Fit
 M0 <- fitcopula(data, coord, "gaussian", "powexp", loc.form, scale.form,
-                shape.form, sill = 1)
+                shape.form, nugget = 0)
 
 }
 \keyword{htest}

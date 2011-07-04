@@ -53,7 +53,7 @@ fitcopula <- function(data, coord, copula = "gaussian", cov.mod = "whitmat",
     stop("if one formula is given for the GEV parameters, then it should
 be given for *ALL* GEV parameters")
 
-  param <- c("sill", "range", "smooth")
+  param <- c("nugget", "range", "smooth")
 
   if (cov.mod == "caugen")
     param <- c(param, "smooth2")
@@ -213,7 +213,7 @@ as.integer(n.tempcoeff.shape), as.integer(n.ppartemp.shape), as.double(temp.pena
                          paste("as.double(c(", paste(temp.names.loc, collapse = ","), ")), "),
                          paste("as.double(c(", paste(temp.names.scale, collapse = ","), ")), "),
                          paste("as.double(c(", paste(temp.names.shape, collapse = ","), ")), "),
-                         "as.double(DoF), as.double(sill), as.double(range), as.double(smooth),
+                         "as.double(DoF), as.double(nugget), as.double(range), as.double(smooth),
 as.double(smooth2), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
   
   
@@ -227,7 +227,7 @@ as.double(smooth2), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
   
   if (missing(start)){
 
-    start <- list(sill = 1, range = 0.25 * max(dist), smooth = 1)
+    start <- list(nugget = 0, range = 0.25 * max(dist), smooth = 1)
     
     if (copula == "student")
       start <- c(list(DoF = 1), start)
@@ -405,12 +405,12 @@ as.double(smooth2), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
       var.score <- NULL
 
   if (cov.mod == "caugen")
-    cov.fun <- covariance(sill = param["sill"], range = param["range"],
+    cov.fun <- covariance(nugget = param["nugget"], sill = 1 - param["nugget"], range = param["range"],
                           smooth = param["smooth"], smooth2 = param["smooth2"],
                           cov.mod = cov.mod, plot = FALSE)
 
   else
-    cov.fun <- covariance(sill = param["sill"], range = param["range"],
+    cov.fun <- covariance(nugget = param["nugget"], sill = 1 - param["nugget"], range = param["range"],
                           smooth = param["smooth"], cov.mod = cov.mod, plot = FALSE)
 
   if (copula == "gaussian")

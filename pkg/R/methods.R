@@ -108,7 +108,7 @@ print.maxstab <- function(x, digits = max(3, getOption("digits") - 3), ...){
     if (x$fit.marge){
       idx <- which(names(x$fitted.values) == "alpha")
       idx <- c(idx, which(names(x$fitted.values) == "sigma2"))
-      idx <- c(idx, which(names(x$fitted.values) == "sill"))
+      idx <- c(idx, which(names(x$fitted.values) == "nugget"))
       idx <- c(idx, which(names(x$fitted.values) == "range"))
       idx <- c(idx, which(names(x$fitted.values) == "smooth"))
       idx <- c(idx, which(names(x$fitted.values) == "smooth2"))
@@ -394,7 +394,7 @@ print.copula <- function(x, digits = max(3, getOption("digits") - 3), ...){
   cat("Covariance Family:", cov.mod, "\n")
 
   idx <- which(names(x$fitted.values) == "DoF")
-  idx <- c(idx, which(names(x$fitted.values) == "sill"))
+  idx <- c(idx, which(names(x$fitted.values) == "nugget"))
   idx <- c(idx, which(names(x$fitted.values) == "range"))
   idx <- c(idx, which(names(x$fitted.values) == "smooth"))
   idx <- c(idx, which(names(x$fitted.values) == "smooth2"))

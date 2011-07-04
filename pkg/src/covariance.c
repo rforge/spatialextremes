@@ -1,6 +1,6 @@
 #include "header.h"
 
-double whittleMatern(double *dist, int n, double sill, double range,
+double whittleMatern(double *dist, int n, double nugget, double sill, double range,
 		     double smooth, double *rho){
 
   //This function computes the whittle-matern covariance function
@@ -25,11 +25,14 @@ double whittleMatern(double *dist, int n, double sill, double range,
   if (sill <= 0)
     return (1 - sill) * (1 - sill) * MINF;
 
+  if (nugget < 0)
+    return (1 - nugget) * (1 - nugget) * MINF;
+
   for (int i=0;i<n;i++){
     double cst2 = dist[i] * irange;
 
     if (cst2 == 0)
-      rho[i] = sill;
+      rho[i] = sill + nugget;
 
     else
       rho[i] = cst * R_pow(cst2, smooth) * bessel_k(cst2, smooth, 1);
@@ -38,7 +41,7 @@ double whittleMatern(double *dist, int n, double sill, double range,
   return 0.0;
 }
 
-double cauchy(double *dist, int n, double sill, double range,
+double cauchy(double *dist, int n, double nugget, double sill, double range,
 	      double smooth, double *rho){
 
   //This function computes the cauchy covariance function between each
@@ -60,13 +63,22 @@ double cauchy(double *dist, int n, double sill, double range,
   if (sill <= 0.0)
     return (1 - sill) * (1 - sill) * MINF;
 
-  for (int i=0;i<n;i++)
-    rho[i] = sill * R_pow(1 + dist[i] * dist[i] * irange2, -smooth);
+  if (nugget < 0)
+    return (1 - nugget) * (1 - nugget) * MINF;
+
+  for (int i=0;i<n;i++){
+
+    if (dist[i] == 0)
+      rho[i] = nugget + sill;
+
+    else
+      rho[i] = sill * R_pow(1 + dist[i] * dist[i] * irange2, -smooth);
+  }
 
   return 0.0;
 }
 
-double caugen(double *dist, int n, double sill, double range,
+double caugen(double *dist, int n, double nugget, double sill, double range,
 	      double smooth, double smooth2, double *rho){
 
   /*This function computes the generalized cauchy covariance function
@@ -91,14 +103,22 @@ double caugen(double *dist, int n, double sill, double range,
   if (sill <= 0)
     return (1 - sill) * (1 - sill) * MINF;
 
-  for (int i=0;i<n;i++)
-    rho[i] = sill * R_pow(1 + R_pow(dist[i] * irange, smooth2),
-			  ratioSmooth);
+  if (nugget < 0)
+    return (1 - nugget) * (1 - nugget) * MINF;
+
+  for (int i=0;i<n;i++){
+    if (dist[i] == 0)
+      rho[i] = nugget + sill;
+
+    else
+      rho[i] = sill * R_pow(1 + R_pow(dist[i] * irange, smooth2),
+			    ratioSmooth);
+  }
 
   return 0.0;
 }
 
-double powerExp(double *dist, int n, double sill, double range,
+double powerExp(double *dist, int n, double nugget, double sill, double range,
 		double smooth, double *rho){
 
   //This function computes the powered exponential covariance function
@@ -117,13 +137,21 @@ double powerExp(double *dist, int n, double sill, double range,
   if (sill <= 0)
     return (1 - sill) * (1 - sill) * MINF;
 
-  for (int i=0;i<n;i++)
-    rho[i] = sill * exp(-R_pow(dist[i] * irange, smooth));
+  if (nugget < 0)
+    return (1 - nugget) * (1 - nugget) * MINF;
+
+  for (int i=0;i<n;i++){
+    if (dist[i] == 0)
+      rho[i] = nugget + sill;
+
+    else
+      rho[i] = sill * exp(-R_pow(dist[i] * irange, smooth));
+  }
 
   return 0.0;
 }
 
-double bessel(double *dist, int n, int dim, double sill,
+double bessel(double *dist, int n, int dim, double nugget, double sill,
 	      double range, double smooth, double *rho){
   //This function computes the bessel covariance function
   //between each pair of locations.
@@ -145,11 +173,14 @@ double bessel(double *dist, int n, int dim, double sill,
   if (sill <= 0)
     return (1 - sill) * (1 - sill) * MINF;
 
+  if (nugget < 0)
+    return (1 - nugget) * (1 - nugget) * MINF;
+
   for (int i=0;i<n;i++){
     double cst2 = dist[i] * irange;
 
     if (cst2 == 0)
-      rho[i] = sill;
+      rho[i] = nugget + sill;
 
     else if (cst2 <= 1e5)
       rho[i] = cst * R_pow(cst2, -smooth) * bessel_j(cst2, smooth);
@@ -237,7 +268,7 @@ double mahalDistFct3d(double *distVec, int n, double *cov11,
 }
 
 double geomCovariance(double *dist, int n, int dim, int covmod,
-		      double sigma2, double sigma2Bound, double sill,
+		      double sigma2, double sigma2Bound, double nugget,
 		      double range, double smooth, double smooth2,
 		      double *rho){
 
@@ -255,19 +286,19 @@ double geomCovariance(double *dist, int n, int dim, int covmod,
 
   switch (covmod){
   case 1:
-    ans = whittleMatern(dist, n, sill, range, smooth, rho);
+    ans = whittleMatern(dist, n, nugget, 1 - nugget, range, smooth, rho);
     break;
   case 2:
-    ans = cauchy(dist, n, sill, range, smooth, rho);
+    ans = cauchy(dist, n, nugget, 1 - nugget, range, smooth, rho);
     break;
   case 3:
-    ans = powerExp(dist, n, sill, range, smooth, rho);
+    ans = powerExp(dist, n, nugget, 1 - nugget, range, smooth, rho);
     break;
   case 4:
-    ans = bessel(dist, n, dim, sill, range, smooth, rho);
+    ans = bessel(dist, n, dim, nugget, 1 - nugget, range, smooth, rho);
     break;
   case 5:
-    ans = caugen(dist, n, sill, range, smooth, smooth2, rho);
+    ans = caugen(dist, n, nugget, 1 - nugget, range, smooth, smooth2, rho);
   }
 
   if (ans != 0.0)
@@ -278,45 +309,6 @@ double geomCovariance(double *dist, int n, int dim, int covmod,
 
   return ans;
 }
-
-double nsgeomCovariance(double *dist, int nSite, int dim, int covmod,
-			double *sigma2, double sill, double range,
-			double smooth, double smooth2, double *rho){
-
-  const int nPairs = nSite * (nSite - 1) / 2;
-  double ans = 0.0;
-
-  switch (covmod){
-  case 1:
-    ans = whittleMatern(dist, nPairs, sill, range, smooth, rho);
-    break;
-  case 2:
-    ans = cauchy(dist, nPairs, sill, range, smooth, rho);
-    break;
-  case 3:
-    ans = powerExp(dist, nPairs, sill, range, smooth, rho);
-    break;
-  case 4:
-    ans = bessel(dist, nPairs, dim, sill, range, smooth, rho);
-    break;
-  case 5:
-    ans = caugen(dist, nPairs, sill, range, smooth, smooth2, rho);
-  }
-
-  if (ans != 0.0)
-    return ans;
-
-  for (int currentPair=0;currentPair<nPairs;currentPair++){
-    int i, j;
-    getSiteIndex(currentPair, nSite, &i, &j);
-    
-    rho[currentPair] = sqrt(sigma2[i] - 2 * sqrt(sigma2[i] * sigma2[j]) *
-			    rho[currentPair] + sigma2[j]);
-  }
- 
-  return ans;
-}
-
 
 double brownResnick(double *dist, int n, double range, double smooth,
 		    double *rho){

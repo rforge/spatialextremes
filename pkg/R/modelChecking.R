@@ -131,11 +131,11 @@ plot.copula <- function(x, ..., sites){
   model <- x$model
 
   DoF <- x$par["DoF"]
-  sill <- x$par["sill"]
+  nugget <- x$par["nugget"]
   range <- x$par["range"]
   smooth <- x$par["smooth"]
   sim.copula <- rcopula(n.obs * 1000, x$coord[sites,], x$copula, x$cov.mod,
-                        nugget = sill, range = range, smooth = smooth, DoF = DoF)
+                        nugget = nugget, range = range, smooth = smooth, DoF = DoF)
 
   sim.copula <- array(log(sim.copula), c(n.obs, 1000, 4))
     
@@ -236,21 +236,21 @@ plot.maxstab <- function(x, ..., sites){
   }
 
   else if (model == "Schlather"){
-    sill <- x$par["sill"]
+    nugget <- x$par["nugget"]
     range <- x$par["range"]
     smooth <- x$par["smooth"]
     sim.maxstab <- rmaxstab(n.obs * 1000, x$coord[sites,], x$cov.mod,
-                            sill = sill, range = range, smooth = smooth)
+                            nugget = nugget, range = range, smooth = smooth)
   }
   
   else if (model == "Geometric"){
     sigma2 <- x$par["sigma2"]
-    sill <- x$par["sill"]
+    nugget <- x$par["nugget"]
     range <- x$par["range"]
     smooth <- x$par["smooth"]
     cov.mod <- paste("g", x$cov.mod, sep = "")
     sim.maxstab <- rmaxstab(n.obs * 1000, x$coord[sites,], cov.mod,
-                            sigma2 = sigma2, sill = sill, range = range,
+                            sigma2 = sigma2, nugget = nugget, range = range,
                             smooth = smooth)
   }
   
