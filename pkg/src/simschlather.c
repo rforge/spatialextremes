@@ -22,7 +22,6 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
   /* lagi, lagj are integers useful to fill in the output depending on
      if locations are on a grid or not */
   int i, neffSite, lagi = 1, lagj = 1;
-  const double zero = 0;
   double sill = 1 - *nugget;
   
   //rescale the coordinates
