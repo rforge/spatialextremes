@@ -192,6 +192,9 @@ brownresnickfull <- function(data, coord, start, ..., fit.marge = FALSE,
                                    fixed.param = names(fixed.param), param.names = param.names,
                                    weights = weights)
 
+    if (control$check.grad)
+      print(round(rbind(numerical = -opt$grad, analytical = std.err$grad), 3))
+
     opt$hessian <- std.err$hess
     var.score <- std.err$var.score
     ihessian <- try(solve(opt$hessian), silent = TRUE)
@@ -565,6 +568,9 @@ PACKAGE = 'SpatialExtremes')$dns"))
                                    std.err.type = std.err.type, fixed.param = names(fixed.param),
                                    param.names = param.names, weights = weights)
 
+    if (control$check.grad)
+      print(round(rbind(numerical = -opt$grad, analytical = std.err$grad), 3))
+    
     opt$hessian <- std.err$hess
     var.score <- std.err$var.score
     ihessian <- try(solve(opt$hessian), silent = TRUE)

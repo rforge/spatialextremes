@@ -225,6 +225,9 @@ geomgaussfull <- function(data, coord, start, cov.mod = "whitmat", ...,
                                 std.err.type = std.err.type, fixed.param = names(fixed.param),
                                 param.names = param.names, weights = weights)
 
+    if (control$check.grad)
+      print(round(rbind(numerical = -opt$grad, analytical = std.err$grad), 3))
+
     opt$hessian <- std.err$hessian
     var.score <- std.err$var.score
     ihessian <- try(solve(opt$hessian), silent = TRUE)
@@ -637,6 +640,9 @@ as.double(temp.penalty.shape),",
                                 temp.dsgn.mat.shape, use.temp.cov, fit.marge = fit.marge,
                                 std.err.type = std.err.type, fixed.param = names(fixed.param),
                                 param.names = param.names, weights = weights)
+
+    if (control$check.grad)
+      print(round(rbind(numerical = -opt$grad, analytical = std.err$grad), 3))
 
     opt$hessian <- std.err$hessian
     var.score <- std.err$var.score

@@ -58,6 +58,14 @@ be given for *ALL* GEV parameters")
       control$iter.max <- 10000
   }
 
+  if (!is.null(control$check.grad)){
+    method <- "nlm"
+    control$check.grad <- TRUE
+  }
+
+  else
+    control$check.grad <- FALSE
+
   if (cov.mod == "gauss")
     fitted <- switch(reg.mod,
                      "full" = smithfull(data, coord, ..., fit.marge = fit.marge, iso = iso,

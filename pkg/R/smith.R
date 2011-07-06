@@ -252,6 +252,9 @@ smithfull <- function(data, coord, start, fit.marge = FALSE, iso = TRUE,
                             std.err.type, fixed.param = names(fixed.param),
                             param.names = param.names, iso = iso, weights = weights)
 
+    if (control$check.grad)
+      print(round(rbind(numerical = -opt$grad, analytical = std.err$grad), 3))
+    
     opt$hessian <- std.err$hessian
     var.score <- std.err$var.score
     ihessian <- try(solve(opt$hessian), silent = TRUE)
@@ -744,6 +747,9 @@ PACKAGE = 'SpatialExtremes')$dns"))
                             fit.marge = fit.marge, std.err.type = std.err.type, fixed.param = names(fixed.param),
                             param.names = param.names, iso = iso, weights = weights)
 
+    if (control$check.grad)
+      print(round(rbind(numerical = -opt$grad, analytical = std.err$grad), 3))
+    
     opt$hessian <- std.err$hessian
     var.score <- std.err$var.score
     ihessian <- try(solve(opt$hessian), silent = TRUE)
