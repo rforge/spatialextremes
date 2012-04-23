@@ -547,7 +547,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       logDetProp *= 2;
     
       for (idxSite=0;idxSite<*nSite;idxSite++)
-    	resBottom[idxSite] = gevParams[idxSite + idxMarge * *nSite] -
+    	resBott<<<<om[idxSite] = gevParams[idxSite + idxMarge * *nSite] -
     	  GPmean[idxSite + idxMarge * *nSite];
     
       memcpy(resTop, resBottom, *nSite * sizeof(double));
@@ -614,7 +614,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
   }
   GetRNGstate();
   
-  for (int i=10;i--;){
+  for (int i=0;i<9;i++){
     accRates[i] /= (double) iter;
     extRates[i] /= (double) iter;
   }
