@@ -9,7 +9,7 @@
 extremaltfull <- function(data, coord, start, cov.mod = "whitmat", ...,
                           fit.marge = FALSE, warn = TRUE, method = "BFGS",
                           control = list(), std.err.type = "none", corr = FALSE,
-                          weights = NULL){
+                          weights = NULL, check.grad = FALSE){
     ##data is a matrix with each column corresponds to one location
     ##locations is a matrix giving the coordinates (1 row = 1 station)
     n.site <- ncol(data)
@@ -218,7 +218,7 @@ extremaltfull <- function(data, coord, start, cov.mod = "whitmat", ...,
                                     std.err.type = std.err.type, fixed.param = names(fixed.param),
                                     param.names = param.names, weights = weights)
 
-        if (control$check.grad)
+        if (check.grad)
           print(round(rbind(numerical = -opt$grad, analytical = std.err$grad), 3))
 
         opt$hessian <- std.err$hessian
@@ -300,7 +300,7 @@ extremaltform <- function(data, coord, cov.mod, loc.form, scale.form, shape.form
                           warn = TRUE, method = "BFGS", control = list(),
                           std.err.type = "none", corr = FALSE, weights = NULL,
                           temp.cov = NULL, temp.form.loc = NULL, temp.form.scale = NULL,
-                          temp.form.shape = NULL){
+                          temp.form.shape = NULL, check.grad = FALSE){
     ##data is a matrix with each column corresponds to one location
     ##coord is a matrix giving the coordinates (1 row = 1 station)
     n.site <- ncol(data)
@@ -631,7 +631,7 @@ as.double(DoF), dns = double(1), PACKAGE = 'SpatialExtremes')$dns"))
                                     std.err.type = std.err.type, fixed.param = names(fixed.param),
                                     param.names = param.names, weights = weights)
 
-        if (control$check.grad)
+        if (check.grad)
           print(round(rbind(numerical = -opt$grad, analytical = std.err$grad), 3))
 
         opt$hessian <- std.err$hessian
