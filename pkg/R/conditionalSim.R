@@ -57,7 +57,7 @@ condrgp <- function(n, coord, data.coord, data, cov.mod = "powexp",
   
   res <- data - t(uncond[,1:n.cond])
 
-  if (!grid)
+  if (grid)
     res <- t(res)
   
   ans[] <- uncond[,-(1:n.cond)] + res %*% weights
