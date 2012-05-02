@@ -547,7 +547,7 @@ void latentgev(int *n, double *data, int *nSite, int *nObs, int *covmod,
       logDetProp *= 2;
     
       for (idxSite=0;idxSite<*nSite;idxSite++)
-    	resBott<<<<om[idxSite] = gevParams[idxSite + idxMarge * *nSite] -
+    	resBottom[idxSite] = gevParams[idxSite + idxMarge * *nSite] -
     	  GPmean[idxSite + idxMarge * *nSite];
     
       memcpy(resTop, resBottom, *nSite * sizeof(double));
