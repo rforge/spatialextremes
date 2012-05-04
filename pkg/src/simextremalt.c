@@ -113,8 +113,8 @@ void rextremaltdirect(double *coord, int *nObs, int *nSite, int *dim,
  blockSize: see rextremalttbm.
        ans: the generated random field */
 
-  int i, j, k, lwork, info = 0, neffSite, lagi = 1, lagj = 1;
-  double sill = 1 - *nugget, one = 1, zero = 0, *work, tmp, sum, dummy;
+  int i, j, neffSite, lagi = 1, lagj = 1, oneInt = 1;
+  double sill = 1 - *nugget, one = 1, zero = 0, dummy;
 
   if (*grid){
     neffSite = R_pow_di(*nSite, *dim);
@@ -127,55 +127,17 @@ void rextremaltdirect(double *coord, int *nObs, int *nSite, int *dim,
   }
 
   double *covmat = (double *)R_alloc(neffSite * neffSite, sizeof(double)),
-    *d = (double *)R_alloc(neffSite, sizeof(double)),
-    *u = (double *)R_alloc(neffSite * neffSite, sizeof(double)),
-    *v = (double *)R_alloc(neffSite * neffSite, sizeof(double)),
-    *xvals = (double *) R_alloc(neffSite * neffSite, sizeof(double)),
     *gp = (double *)R_alloc(neffSite, sizeof(double));
 
   buildcovmat(nSite, grid, covmod, coord, dim, nugget, &sill, range,
 	      smooth, covmat);
   
-  /* Compute the singular value decomposition of the covariance
-     matrix.
+  /* Compute the Cholesky decomposition of the covariance matrix */
+  int info = 0;
+  F77_CALL(dpotrf)("U", &neffSite, covmat, &neffSite, &info);
 
-     This piece of code is strongly inspired from Lapack.c */
-  
-  Memcpy(xvals, covmat, neffSite * neffSite);
-  
-  {
-    int *iwork= (int *) R_alloc(8 * neffSite, sizeof(int));
-    
-    /* ask for optimal size of work array */
-    lwork = -1;
-    F77_CALL(dgesdd)("A", &neffSite, &neffSite, xvals, &neffSite, d, u,
-		     &neffSite, v, &neffSite, &tmp, &lwork, iwork, &info);
-    if (info != 0)
-      error("error code %d from Lapack routine '%s'", info, "dgesdd");
-
-    lwork = (int) tmp;
-    work = (double *) R_alloc(lwork, sizeof(double));
-
-    F77_CALL(dgesdd)("A", &neffSite, &neffSite, xvals, &neffSite, d, u,
-		     &neffSite, v, &neffSite, work, &lwork, iwork, &info);
-    if (info != 0)
-      error("error code %d from Lapack routine '%s'", info, "dgesdd");
-  }
-
-  /*--------------- end of singular value decomposition ---------------*/
-
-  /* Compute the square root of the covariance matrix */
-  // a) First compute diag(sqrt(d)) %*% u
-  for (i=neffSite;i--;){
-    dummy = sqrt(d[i]);
-    
-    for (j=neffSite;j--;)
-      u[i + neffSite * j] *= dummy;
-  }
-
-  // b) Then compute v^T %*% diag(sqrt(d)) %*% u and put it in covmat
-  F77_CALL(dgemm)("T", "N", &neffSite, &neffSite, &neffSite, &one,
-		  v, &neffSite, u, &neffSite, &zero, covmat, &neffSite);
+  if (info != 0)
+    error("error code %d from Lapack routine '%s'", info, "dpotrf");
   
   GetRNGstate();
  
@@ -183,19 +145,14 @@ void rextremaltdirect(double *coord, int *nObs, int *nSite, int *dim,
     int l;
     for (l=*blockSize;l--;) {
       double scaleStudent = sqrt(*DoF / rchisq(*DoF));
+      
       /* We simulate one realisation of a gaussian random field with
 	 the required covariance function */
       for (j=neffSite;j--;)
-	d[j] = norm_rand();
+	gp[j] = norm_rand();
       
-      for (j=neffSite;j--;){
-	sum = 0;
-	for (k=neffSite;k--;)
-	  sum += d[k] * covmat[j + k * neffSite];
-	
-	gp[j] = sum;
-      }
-	
+      F77_CALL(dtrmv)("U", "T", "N", &neffSite, covmat, &neffSite, gp, &oneInt);
+      
       for (j=neffSite;j--;)
 	ans[j * lagj + i * lagi] = fmax2(gp[j] * scaleStudent, ans[j * lagj + i * lagi]);
       
