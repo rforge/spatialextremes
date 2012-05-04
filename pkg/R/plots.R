@@ -539,7 +539,7 @@ map.latent <- function(fitted, x, y, covariates = NULL, param = "quant",
   }
 
   op <- par(no.readonly = TRUE)
-  layout(matrix(1:6,1), width = rep(c(1, .4), 3))
+  layout(matrix(1:6,1), widths = rep(c(1, .4), 3))
   
   for (i in 1:3){
     par(mar = rep(0.5, 4))
