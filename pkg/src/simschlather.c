@@ -29,7 +29,7 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
   for (int i= 0; i<(*nSite * *dim);i++)    
     coord[i] = coord[i] * irange;
 
-  double *lines = (double *)R_alloc(3 * *nlines, sizeof(double));
+  double *lines = malloc(3 * *nlines * sizeof(double));
   
   if ((*covmod == 3) && (*smooth == 2))
     //This is the gaussian case
@@ -50,6 +50,8 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
 
   GetRNGstate();
 
+  double *gp = malloc(neffSite * sizeof(double));
+
   for (int i = 0; i < *nObs;i++){
     int nKO = neffSite;
     double poisson = 0;
@@ -57,8 +59,7 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
     while (nKO) {
       /* The stopping rule is reached when nKO = 0 i.e. when each site
 	 satisfies the condition in Eq. (8) of Schlather (2002) */
-      double *gp = (double *)R_alloc(neffSite, sizeof(double));
-      
+            
       /* ------- Random rotation of the lines ----------*/
       double u = unif_rand() - 0.5,
 	v = unif_rand() - 0.5,
@@ -100,6 +101,7 @@ void rschlathertbm(double *coord, int *nObs, int *nSite, int *dim,
   for (int i=0; i < (neffSite * *nObs); i++)    
     ans[i] *= imean;
 
+  free(lines); free(gp);
   return;
 }
 
@@ -132,7 +134,8 @@ void rschlatherdirect(double *coord, int *nObs, int *nSite, int *dim,
     lagj = *nObs;
   }
 
-  double *covmat = (double *)R_alloc(neffSite * neffSite, sizeof(double));    
+  double *covmat = malloc(neffSite * neffSite * sizeof(double)),
+    *gp = malloc(neffSite * sizeof(double));
 
   buildcovmat(nSite, grid, covmod, coord, dim, nugget, &sill, range,
 	      smooth, covmat);
@@ -155,8 +158,7 @@ void rschlatherdirect(double *coord, int *nObs, int *nSite, int *dim,
 	 satisfies the condition in Eq. (8) of Schlather (2002) */
       poisson += exp_rand();
       double ipoisson = 1 / poisson, thresh = *uBound * ipoisson;
-      double *gp = (double *)R_alloc(neffSite, sizeof(double));
-      
+            
       /* We simulate one realisation of a gaussian random field with
 	 the required covariance function */
       for (int j=0;j<neffSite;j++)
@@ -177,7 +179,8 @@ void rschlatherdirect(double *coord, int *nObs, int *nSite, int *dim,
   const double imean = M_SQRT2 * M_SQRT_PI;
   for (int i = 0; i < (neffSite * *nObs); i++)    
     ans[i] *= imean;
-  
+
+  free(covmat); free(gp);
   return;
 }
 

@@ -45,9 +45,6 @@ void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
     double poisson = 0;
     int nKO = neffSite;
     
-    //double *gp = (double *)R_alloc(neffSite, sizeof(double)),
-    //  *covmat = (double *)R_alloc(neffSite * neffSite, sizeof(double));
-
     while (nKO){
     //for (int nSim=nSimTot; nSim--;){
       //double *shift = (double *) R_alloc(*dim, sizeof(double));

@@ -6,16 +6,16 @@ void buildcovmat(int *nSite, int *grid, int *covmod, double *coord, int *dim,
 
   int currentPair, nPairs, effnSite = *nSite, zero = 0;
   const double one = 1, dzero = 0;
-  double *dist, *rho, flag = 0, *coordGrid;
+  double flag = 0;
 
   if (*grid)
     effnSite = R_pow_di(effnSite, *dim);
 
   nPairs = effnSite * (effnSite - 1) / 2;
 
-  dist = (double *)R_alloc(nPairs, sizeof(double));
-  rho = (double *)R_alloc(nPairs, sizeof(double));
-  coordGrid = (double *)R_alloc(effnSite * *dim, sizeof(double));
+  double *dist = malloc(nPairs * sizeof(double)),
+    *rho = malloc(nPairs * sizeof(double)),
+    *coordGrid = malloc(effnSite * *dim * sizeof(double));
 
   if (*grid){
     //Coord specify a grid
@@ -99,6 +99,8 @@ void buildcovmat(int *nSite, int *grid, int *covmod, double *coord, int *dim,
     for (int i = 0; i < effnSite; i++)
       covMat[i * (effnSite + 1)] = *sill + *nugget;
 
+
+  free(dist); free(rho); free(coordGrid);
   return;
 }
   
@@ -117,7 +119,7 @@ void direct(int *n, int *nSite, int *grid, int *covmod, double *coord, int *dim,
   else 
     lagj = *n;
 
-  double *covmat = (double *)R_alloc(neffSite * neffSite, sizeof(double));
+  double *covmat = malloc(neffSite * neffSite * sizeof(double));
   
   buildcovmat(nSite, grid, covmod, coord, dim, nugget, sill, range,
 	      smooth, covmat);
@@ -142,6 +144,7 @@ void direct(int *n, int *nSite, int *grid, int *covmod, double *coord, int *dim,
     
   PutRNGstate();
 
+  free(covmat);
   return;
 }
 

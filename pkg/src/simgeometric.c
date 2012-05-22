@@ -22,8 +22,7 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 
   int i, neffSite, lagi = 1, lagj = 1;
   const double loguBound = log(*uBound), halfSigma2 = 0.5 * *sigma2;
-  double sigma = sqrt(*sigma2), sill = 1 - *nugget,
-    *lines = (double *)R_alloc(3 * *nlines, sizeof(double));
+  double sigma = sqrt(*sigma2), sill = 1 - *nugget;
 
   if (*grid){
     neffSite = R_pow_di(*nSite, *dim);
@@ -34,6 +33,9 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
     neffSite = *nSite;
     lagj = *nObs;
   }
+
+  double *gp = malloc(neffSite * sizeof(double)),
+    *lines = malloc(3 * *nlines * sizeof(double));
 
   //rescale the coordinates
   for (i=(*nSite * *dim);i--;){
@@ -48,6 +50,7 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
   //Generate lines
   vandercorput(nlines, lines);
   
+
   GetRNGstate();
  
   for (i=*nObs;i--;){
@@ -58,8 +61,7 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
       /* The stopping rule is reached when nKO = 0 i.e. when each site
 	 satisfies the condition in Eq. (8) of Schlather (2002) */
       int j;
-      double *gp = (double *)R_alloc(neffSite, sizeof(double));
-      
+            
       /* ------- Random rotation of the lines ----------*/
       double u = unif_rand() - 0.5,
 	v = unif_rand() - 0.5,
@@ -100,11 +102,12 @@ void rgeomtbm(double *coord, int *nObs, int *nSite, int *dim,
 
   PutRNGstate();
 
-  /* So fare we generate a max-stable process with standard Gumbel
+  /* So far we generate a max-stable process with standard Gumbel
      margins. Switch to unit Frechet ones */
   for (i=*nObs * neffSite;i--;)
     ans[i] = exp(ans[i]);
 
+  free(lines); free(gp);
   return;
 }
 
@@ -140,8 +143,8 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
     lagj = *nObs;
   }
 
-  double *covmat = (double *)R_alloc(neffSite * neffSite, sizeof(double)),
-    *gp = (double *)R_alloc(neffSite, sizeof(double));
+  double *covmat = malloc(neffSite * neffSite * sizeof(double)),
+    *gp = malloc(neffSite * sizeof(double));
 
   buildcovmat(nSite, grid, covmod, coord, dim, nugget, &sill, range,
 	      smooth, covmat);
@@ -190,6 +193,8 @@ void rgeomdirect(double *coord, int *nObs, int *nSite, int *dim,
      margins. Switch to unit Frechet ones */
   for (i=*nObs * neffSite;i--;)
     ans[i] = exp(ans[i]);
+
+  free(covmat); free(gp);
 
   return;
 }

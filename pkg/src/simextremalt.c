@@ -28,7 +28,7 @@ void rextremalttbm(double *coord, int *nObs, int *nSite, int *dim,
   for (i=(*nSite * *dim);i--;)
         coord[i] = coord[i] * irange;
 
-  double *lines = (double *)R_alloc(3 * *nlines, sizeof(double));
+  double *lines = malloc(3 * *nlines * sizeof(double));
   
   if ((*covmod == 3) && (*smooth == 2))
     //This is the gaussian case
@@ -47,7 +47,7 @@ void rextremalttbm(double *coord, int *nObs, int *nSite, int *dim,
     lagj = *nObs;
   }
 
-  double *gp = (double *)R_alloc(neffSite, sizeof(double));
+  double *gp = malloc(neffSite * sizeof(double));
 
   GetRNGstate();
   
@@ -101,6 +101,7 @@ void rextremalttbm(double *coord, int *nObs, int *nSite, int *dim,
   for (i=(neffSite * *nObs);i--;)
     ans[i] *= imean;
   
+  free(lines); free(gp);
   return;
 }
 
@@ -122,7 +123,7 @@ void rextremaltdirect(double *coord, int *nObs, int *nSite, int *dim,
  blockSize: see rextremalttbm.
        ans: the generated random field */
 
-  int i, j, neffSite, lagi = 1, lagj = 1, oneInt = 1;
+  int neffSite, lagi = 1, lagj = 1, oneInt = 1;
   double sill = 1 - *nugget, one = 1, zero = 0, dummy;
 
   if (*grid){
@@ -135,8 +136,8 @@ void rextremaltdirect(double *coord, int *nObs, int *nSite, int *dim,
     lagj = *nObs;
   }
 
-  double *covmat = (double *)R_alloc(neffSite * neffSite, sizeof(double)),
-    *gp = (double *)R_alloc(neffSite, sizeof(double));
+  double *covmat = malloc(neffSite * neffSite * sizeof(double)),
+    *gp = malloc(neffSite * sizeof(double));
 
   buildcovmat(nSite, grid, covmod, coord, dim, nugget, &sill, range,
 	      smooth, covmat);
@@ -150,7 +151,7 @@ void rextremaltdirect(double *coord, int *nObs, int *nSite, int *dim,
   
   GetRNGstate();
  
-  for (i=*nObs;i--;){
+  for (int i=*nObs;i--;){
     double poisson = 0;
     int nKO = neffSite;
       
@@ -163,13 +164,13 @@ void rextremaltdirect(double *coord, int *nObs, int *nSite, int *dim,
       
       /* We simulate one realisation of a gaussian random field with
 	 the required covariance function */
-      for (j=neffSite;j--;)
+      for (int j=neffSite;j--;)
 	gp[j] = norm_rand();
       
       F77_CALL(dtrmv)("U", "T", "N", &neffSite, covmat, &neffSite, gp, &oneInt);
       
       nKO = neffSite;
-      for (j=neffSite;j--;){
+      for (int j=neffSite;j--;){
 	double dummy = R_pow(fmax2(0, gp[j]), *DoF) * ipoisson;
 	ans[j * lagj + i * lagi] = fmax2(dummy, ans[j * lagj + i * lagi]);
 	nKO -= (thresh <= ans[j * lagj + i * lagi]);
@@ -181,9 +182,10 @@ void rextremaltdirect(double *coord, int *nObs, int *nSite, int *dim,
   //Lastly we multiply by the normalizing constant
   const double imean = M_SQRT_PI * R_pow(2, -0.5 * (*DoF - 2)) /
     gammafn(0.5 * (*DoF + 1));
-  for (i=(neffSite * *nObs);i--;)
+  for (int i=(neffSite * *nObs);i--;)
     ans[i] *= imean;
   
+  free(covmat); free(gp);
   return;
 }
 
@@ -226,8 +228,7 @@ blockSize: see rextremalttbm
   /* ---------- beginning of the embedding stage ---------- */
   int mbar = m * m, halfM = m / 2, notPosDef = 0;
   do {
-    double *dist;
-    dist = (double *)R_alloc(mbar, sizeof(double));
+    double *dist = (double *)R_alloc(mbar, sizeof(double));
 
     notPosDef = 0;
     //Computation of the distance
@@ -311,12 +312,12 @@ blockSize: see rextremalttbm
   int mdag = m / 2 + 1, mdagbar = mdag * mdag;
   double isqrtMbar = 1 / sqrt(mbar);
 
-  double *a = (double *)R_alloc(mbar, sizeof(double)),
-    *ia = (double *)R_alloc(mbar, sizeof(double)),
-    *gp = (double *)R_alloc(nbar, sizeof(double));
+  double *a = malloc(mbar * sizeof(double)),
+    *ia = malloc(mbar * sizeof(double)),
+    *gp = malloc(nbar * sizeof(double));
 
   GetRNGstate();
-  for (i=*nObs;i--;){
+  for (int i=*nObs;i--;){
     int nKO = nbar;
     double poisson = 0;
 
@@ -346,5 +347,6 @@ blockSize: see rextremalttbm
   for (i=(nbar * *nObs);i--;)
     ans[i] *= imean;
   
+  free(a); free(ia); free(gp);
   return;
 }
