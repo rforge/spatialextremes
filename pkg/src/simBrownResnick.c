@@ -34,19 +34,25 @@ void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
     lagj = *nObs;
   }
 
+  double *gp = malloc(neffSite * sizeof(double)),
+    *covmat = malloc(neffSite * neffSite * sizeof(double)),
+    *shift = malloc(*dim * sizeof(double)),
+    *shiftedCoord = malloc(*dim * *nSite * sizeof(double)),
+    *vario = malloc(neffSite * sizeof(double));
+
   GetRNGstate();
   for (int i=0; i<*nObs; i++){
     double poisson = 0;
     int nKO = neffSite;
     
-    double *gp = (double *)R_alloc(neffSite, sizeof(double)),
-      *covmat = (double *)R_alloc(neffSite * neffSite, sizeof(double));
+    //double *gp = (double *)R_alloc(neffSite, sizeof(double)),
+    //  *covmat = (double *)R_alloc(neffSite * neffSite, sizeof(double));
 
     while (nKO){
     //for (int nSim=nSimTot; nSim--;){
-      double *shift = (double *) R_alloc(*dim, sizeof(double));
-      double *shiftedCoord = (double *) R_alloc(*dim * *nSite, sizeof(double));
-      double *vario = (double *) R_alloc(neffSite, sizeof(double));
+      //double *shift = (double *) R_alloc(*dim, sizeof(double));
+      //double *shiftedCoord = (double *) R_alloc(*dim * *nSite, sizeof(double));
+      //double *vario = (double *) R_alloc(neffSite, sizeof(double));
 
       // Shift the locations
       for (int j=0; j<*dim;j++)
@@ -92,6 +98,8 @@ void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
   }
 
   PutRNGstate();
+
+  free(gp); free(covmat); free(shift); free(shiftedCoord); free(vario);
 
   for (int i=0; i<(*nObs * neffSite);i++)
     ans[i] = exp(ans[i]);
