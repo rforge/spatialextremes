@@ -222,28 +222,28 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
   }
 
   else if (model == "Extremal-t"){
-    if (is.null(control$block.size))
-        block.size <- 500
+    if (is.null(control$uBound))
+        uBound <- 3^DoF
 
     else
-      block.size <- control$block.size
+      uBound <- control$uBound
 
     if (method == "direct")
       ans <- .C("rextremaltdirect", as.double(coord), as.integer(n), as.integer(n.site),
                 as.integer(dist.dim), as.integer(cov.mod), grid, as.double(nugget),
-                as.double(range), as.double(smooth), as.double(DoF), as.integer(block.size),
+                as.double(range), as.double(smooth), as.double(DoF), as.double(uBound),
                 ans = ans, PACKAGE = "SpatialExtremes")$ans
 
     else if (method == "circ")
       ans <- .C("rextremaltcirc", as.integer(n), as.integer(n.site), as.double(steps),
                 as.integer(dist.dim), as.integer(cov.mod), as.double(nugget), as.double(range),
-                as.double(smooth), as.double(DoF), as.integer(block.size), ans = ans,
+                as.double(smooth), as.double(DoF), as.double(uBound), ans = ans,
                 PACKAGE = "SpatialExtremes")$ans
     
     else      
       ans <- .C("rextremalttbm", as.double(coord), as.integer(n), as.integer(n.site),
                 as.integer(dist.dim), as.integer(cov.mod), grid, as.double(nugget),
-                as.double(range), as.double(smooth), as.double(DoF), as.integer(block.size),
+                as.double(range), as.double(smooth), as.double(DoF), as.double(uBound),
                 as.integer(nlines), ans = ans, PACKAGE = "SpatialExtremes")$ans
   }
 

@@ -2,7 +2,7 @@
 
 void rextremalttbm(double *coord, int *nObs, int *nSite, int *dim,
 		   int *covmod, int *grid, double *nugget, double *range,
-		   double *smooth, double *DoF, int *blockSize, int *nlines,
+		   double *smooth, double *DoF, double *uBound, int *nlines,
 		   double *ans){
   /* This function generates random fields from the Extremal-t model
 
@@ -22,12 +22,11 @@ void rextremalttbm(double *coord, int *nObs, int *nSite, int *dim,
 
   int i, neffSite, lagi = 1, lagj = 1;
   double sill = 1 - *nugget;
+  const double irange = 1 / *range;
 
   //rescale the coordinates
-  for (i=(*nSite * *dim);i--;){
-    const double irange = 1 / *range;
-    coord[i] = coord[i] * irange;
-  }
+  for (i=(*nSite * *dim);i--;)
+        coord[i] = coord[i] * irange;
 
   double *lines = (double *)R_alloc(3 * *nlines, sizeof(double));
   
@@ -53,10 +52,10 @@ void rextremalttbm(double *coord, int *nObs, int *nSite, int *dim,
   GetRNGstate();
   
   for (i=*nObs;i--;){
-    int l;
-    for (l=*blockSize;l--;){
-      int j;	
-      double scaleStudent = sqrt(*DoF / rchisq(*DoF));
+    int nKO = neffSite;
+    double poisson = 0;
+
+    while (nKO){
 
       /* ------- Random rotation of the lines ----------*/
       double u = unif_rand() - 0.5,
@@ -72,32 +71,42 @@ void rextremalttbm(double *coord, int *nObs, int *nSite, int *dim,
       rotation(lines, nlines, &u, &v, &w, &angle);
       /* -------------- end of rotation ---------------*/
       
+      poisson += exp_rand();
+      double ipoisson = 1 / poisson,
+	thresh = *uBound * ipoisson;
+      
       /* We simulate one realisation of a gaussian random field with
 	 the required covariance function */
-      for (j=neffSite;j--;)
+      for (int j=neffSite;j--;)
 	gp[j] = 0;
+
       tbmcore(nSite, &neffSite, dim, covmod, grid, coord, nugget,
 	      &sill, range, smooth, nlines, lines, gp);
       
-      for (j=neffSite;j--;)
-	ans[j * lagj + i * lagi] = fmax2(gp[j] * scaleStudent, ans[j * lagj + i * lagi]);
-      
+      nKO = neffSite;
+      for (int j=neffSite;j--;){
+	double dummy = R_pow(fmax2(0, gp[j]), *DoF) * ipoisson;
+	ans[j * lagj + i * lagi] = fmax2(dummy, ans[j * lagj + i * lagi]);
+	nKO -= (thresh <= ans[j * lagj + i * lagi]);
+      }    
     }
   }
-
+  
   PutRNGstate();
-
-  //Lastly we multiply by the normalizing constant i.e. (M_k - b_k) / a_k
-  double ia_k = 1 / qt(1 - 1 / (double) *blockSize, *DoF, 1, 0);
+  
+  //Lastly we multiply by the normalizing constant
+  const double imean = M_SQRT_PI * R_pow(2, -0.5 * (*DoF - 2)) /
+    gammafn(0.5 * (*DoF + 1));
+  
   for (i=(neffSite * *nObs);i--;)
-    ans[i] = R_pow(ans[i] * ia_k, *DoF);
-
+    ans[i] *= imean;
+  
   return;
 }
 
 void rextremaltdirect(double *coord, int *nObs, int *nSite, int *dim,
 		      int *covmod, int *grid, double *nugget, double *range,
-		      double *smooth, double *DoF, int *blockSize, double *ans){
+		      double *smooth, double *DoF, double *uBound, double *ans){
   /* This function generates random fields for the Extremal-t model
 
      coord: the coordinates of the locations
@@ -142,9 +151,15 @@ void rextremaltdirect(double *coord, int *nObs, int *nSite, int *dim,
   GetRNGstate();
  
   for (i=*nObs;i--;){
-    int l;
-    for (l=*blockSize;l--;) {
-      double scaleStudent = sqrt(*DoF / rchisq(*DoF));
+    double poisson = 0;
+    int nKO = neffSite;
+      
+    while (nKO){
+      poisson += exp_rand();
+
+      double ipoisson = 1 / poisson,
+	thresh = *uBound * ipoisson;
+
       
       /* We simulate one realisation of a gaussian random field with
 	 the required covariance function */
@@ -153,24 +168,28 @@ void rextremaltdirect(double *coord, int *nObs, int *nSite, int *dim,
       
       F77_CALL(dtrmv)("U", "T", "N", &neffSite, covmat, &neffSite, gp, &oneInt);
       
-      for (j=neffSite;j--;)
-	ans[j * lagj + i * lagi] = fmax2(gp[j] * scaleStudent, ans[j * lagj + i * lagi]);
-      
+      nKO = neffSite;
+      for (j=neffSite;j--;){
+	double dummy = R_pow(fmax2(0, gp[j]), *DoF) * ipoisson;
+	ans[j * lagj + i * lagi] = fmax2(dummy, ans[j * lagj + i * lagi]);
+	nKO -= (thresh <= ans[j * lagj + i * lagi]);
+      }
     }
   }
 
   PutRNGstate();
-  //Lastly we multiply by the normalizing constant i.e. (M_k - b_k) / a_k
-  double ia_k = 1 / qt(1 - 1 / (double) *blockSize, *DoF, 1, 0);
+  //Lastly we multiply by the normalizing constant
+  const double imean = M_SQRT_PI * R_pow(2, -0.5 * (*DoF - 2)) /
+    gammafn(0.5 * (*DoF + 1));
   for (i=(neffSite * *nObs);i--;)
-    ans[i] = R_pow(ans[i] * ia_k, *DoF);
+    ans[i] *= imean;
   
   return;
 }
 
 void rextremaltcirc(int *nObs, int *ngrid, double *steps, int *dim,
 		    int *covmod, double *nugget, double *range,
-		    double *smooth, double *DoF, int *blockSize, double *ans){
+		    double *smooth, double *DoF, double *uBound, double *ans){
   /* This function generates random fields from the Schlather model
 
      nObs: the number of observations to be generated
@@ -298,28 +317,34 @@ blockSize: see rextremalttbm
 
   GetRNGstate();
   for (i=*nObs;i--;){
-    int l;
-    
-    for (l=*blockSize;l--;) {
-      int j;
-      double scaleStudent = sqrt(*DoF / rchisq(*DoF));
+    int nKO = nbar;
+    double poisson = 0;
+
+    while (nKO){
+      poisson += exp_rand();
+      double ipoisson = 1 / poisson,
+	thresh = *uBound * ipoisson;
       
       /* We simulate one realisation of a gaussian random field with
 	 the required covariance function */
       circcore(rho, a, ia, m, halfM, mdag, mdagbar, *ngrid, nbar, isqrtMbar, *nugget, gp);
       
-      for (j=nbar;j--;)
-	ans[j + i * nbar] = fmax2(gp[j] * scaleStudent, ans[j + i * nbar]);
-
+      nKO = nbar;
+      for (int j=nbar;j--;){
+	double dummy = R_pow(fmax2(gp[j], 0), *DoF) * ipoisson;
+	ans[j + i * nbar] = fmax2(dummy, ans[j + i * nbar]);
+	nKO -= (thresh <= ans[j + i * nbar]);
+      }
     }
   }
   
   PutRNGstate();
   
-  //Lastly we multiply by the normalizing constant i.e. (M_k - b_k) / a_k
-  double ia_k = 1 / qt(1 - 1 / (double) *blockSize, *DoF, 1, 0);
+  //Lastly we multiply by the normalizing constant
+  const double imean = M_SQRT_PI * R_pow(2, -0.5 * (*DoF - 2)) /
+    gammafn(0.5 * (*DoF + 1));
   for (i=(nbar * *nObs);i--;)
-    ans[i] = R_pow(ans[i] * ia_k, *DoF);
+    ans[i] *= imean;
   
   return;
 }
