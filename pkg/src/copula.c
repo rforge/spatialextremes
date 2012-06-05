@@ -233,7 +233,7 @@ double studentCopula(double *data, double DoF, double *covMat, int nObs,
   // This function computes the log-likelihood for the Student copula 
 
   int info = 0, oneInt = 1;
-  double logDet = 0, one = 1;
+  double logDet = 0, one = 1, iDoF = 1 / DoF;
 
   // Cholesky decomposition
   F77_CALL(dpotrf)("U", &nSite, covMat, &nSite, &info);
@@ -263,7 +263,7 @@ double studentCopula(double *data, double DoF, double *covMat, int nObs,
     for (int j=nSite;j--;)
       dummy2 += dummy[j] * dummy[j];
 
-    ans += log1p(dummy2 / DoF);
+    ans += log1p(dummy2 * iDoF);
   }
 
   ans = nObs * (lgammafn(0.5 * (DoF + nSite)) - lgammafn(0.5 * DoF) -
