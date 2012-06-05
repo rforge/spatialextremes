@@ -20,7 +20,7 @@ void fitcovmat2d(double *cov11, double *cov12, double *cov22,
     return;
   }
 
-#pragma omp parallel for private(res) reduction(+:dummy)
+  //#pragma omp parallel for private(res) reduction(+:dummy)
   for (int i=0;i<*nPairs;i++){
     res = 2 * pnorm(0.5 * mahalDist[i], 0, 1, 1, 0) - extcoeff[i];
     dummy += res * res / (weights[i] * weights[i]);
@@ -47,7 +47,7 @@ void fitcovmat3d(double *cov11, double *cov12, double *cov13,
   if (*ans != 0.0)
     return;
 
-#pragma omp parallel for private(res) reduction(+:dummy)
+  //#pragma omp parallel for private(res) reduction(+:dummy)
   for (int i=0;i<*nPairs;i++){
     res = 2 * pnorm(0.5 * mahalDist[i], 0, 1, 1, 0) - extcoeff[i];
     dummy += res * res / (weights[i] * weights[i]);
@@ -94,7 +94,7 @@ void fitcovariance(int *covmod, double *nugget, double *range, double *smooth,
     return;
   }
 
-#pragma omp parallel for private(res) reduction(+:dummy)
+  //#pragma omp parallel for private(res) reduction(+:dummy)
   for (int i=0;i<*nPairs;i++){
     res = 1 + sqrt(0.5 - 0.5 * rho[i]) - extcoeff[i];
     dummy += res * res / (weights[i] * weights[i]);
@@ -146,7 +146,7 @@ void fittcovariance(int *covmod, double *nugget, double *range, double *smooth,
     return;
   }
 
-#pragma omp parallel for private(res) reduction(+:dummy)
+  //#pragma omp parallel for private(res) reduction(+:dummy)
   for (int i=0;i<*nPairs;i++){
     res = 2 * pt(sqrt((1 - rho[i]) * (*DoF + 1) / (1 + rho[i])), *DoF + 1, 1, 0) - extcoeff[i];
     dummy += res * res / (weights[i] * weights[i]);
@@ -204,7 +204,7 @@ void fiticovariance(int *covmod, double *alpha, double *nugget, double *range,
     return;
   }
 
-#pragma omp parallel for private(res) reduction(+:dummy)
+  //#pragma omp parallel for private(res) reduction(+:dummy)
   for (int i=0;i<*nPairs;i++){
     res = 2 * *alpha + (1 - *alpha) * (1 + sqrt(0.5 - 0.5 * rho[i])) - extcoeff[i];
     dummy +=  res * res / (weights[i] * weights[i]);
@@ -238,7 +238,7 @@ void fitgcovariance(int *covmod, double *sigma2, double *sigma2Bound, double *nu
     return;
   }
 
-#pragma omp parallel for private(res) reduction(+:dummy)
+  //#pragma omp parallel for private(res) reduction(+:dummy)
   for (int i=0;i<*nPairs;i++){
     res = 2 * pnorm(0.5 * rho[i], 0.0, 1.0, 1, 0) - extcoeff[i];
     dummy += res * res / (weights[i] * weights[i]);
@@ -265,7 +265,7 @@ void fitbrcovariance(double *range, double *smooth, int *nPairs,
     return;
   }
 
-#pragma omp parallel for private(res) reduction(+:dummy)
+  //#pragma omp parallel for private(res) reduction(+:dummy)
   for (int i=0;i<*nPairs;i++){
     res = 2 * pnorm(0.5 * rho[i], 0.0, 1.0, 1, 0) - extcoeff[i];
     dummy += res * res / (weights[i] * weights[i]);
