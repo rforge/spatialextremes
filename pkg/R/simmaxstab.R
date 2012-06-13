@@ -248,6 +248,26 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
   }
 
   else if (model == "Brown-Resnick"){
+    coord <- scale(coord, scale = FALSE)
+    
+    if (is.null(control$max.sim))
+        max.sim <- 1000
+
+    else
+      max.sim <- control$max.sim
+    
+    if (is.null(control$uBound))
+        uBound <- 10
+
+    else
+      uBound <- control$uBound
+
+    if (is.null(control$sim.type))
+      sim.type <- 1
+
+    else
+      sim.type <- control$sim.type
+    
     if (dist.dim == 1)
       bounds <- range(coord)
     
@@ -258,6 +278,7 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
       ans <- .C("rbrowndirect", as.double(coord), as.double(bounds),
                 as.integer(n), as.integer(n.site), as.integer(dist.dim),
                 as.integer(grid), as.double(range), as.double(smooth),
+                as.double(uBound), as.integer(sim.type), as.integer(max.sim),
                 ans = ans, PACKAGE = "SpatialExtremes")$ans
   }
 
