@@ -44,7 +44,6 @@ void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
 
   if (*simType == 1){
     for (int i=0; i<*nObs; i++){
-      printf("Observation %i\n", i);
       double poisson = 0;
       int nKO = neffSite, iter = 0;
       
@@ -114,7 +113,6 @@ void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
       vario[j] = R_pow(vario[j] * irange, *smooth);
 
     for (int i=0; i<*nObs; i++){
-      printf("Observation %i\n", i);
       double poisson = 0;
       int nKO = neffSite, iter = 0;
       
@@ -158,7 +156,6 @@ void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
       vario[j] = R_pow(vario[j] * irange, *smooth);
 
     for (int i=0; i<*nObs; i++){
-      printf("Observation %i\n", i);
       double poisson = 0;
       int nKO = neffSite, iter = 0;
       
