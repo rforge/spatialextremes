@@ -179,29 +179,25 @@ void dsgnmat2temptrend(double *dsgnmatloc, double *dsgnmatscale, double *dsgnmat
 
   //This function computes the temporal trend for each GEV parameters
   //from the design matrix.
-  int i, j;
+
+  for (int i=0; i<nObs; i++)
+    trendlocs[i] = trendscales[i] = trendshapes[i] = 0;
 
   if (usetempcov[0])
-    for (i=nObs;i--;){
-      trendlocs[i] = 0;
-
-      for (j=nloccoeff;j--;)
+    for (int i=0;i<nObs;i++){
+      for (int j=0;j<nloccoeff;j++)
 	trendlocs[i] += loccoeff[j] * dsgnmatloc[i + nObs * j];
     }
 
   if (usetempcov[1])
-    for (i=nObs;i--;){
-      trendscales[i] = 0;
-
-      for (j=nscalecoeff;j--;)
+    for (int i=0;i<nObs;i++){
+      for (int j=0;j<nscalecoeff;j++)
 	trendscales[i] += scalecoeff[j] * dsgnmatscale[i + nObs * j];
     }
 
   if (usetempcov[2])
-    for (i=nObs;i--;){
-      trendshapes[i] = 0;
-
-      for (j=nshapecoeff;j--;)
+    for (int i=0;i<nObs;i++){
+      for (int j=0;j<nshapecoeff;j++)
 	trendshapes[i] += shapecoeff[j] * dsgnmatshape[i + nObs * j];
     }
 
