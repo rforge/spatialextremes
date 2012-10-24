@@ -51,7 +51,7 @@ condrmaxstab(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp",
 	\geq 1} \phi_i 1_{\phi_i(x) < z}.}
   }
 
-  The distribution is Step 1 is usually intractable and in such cases a
+  The distribution in Step 1 is usually intractable and in such cases a
   random scan Gibbs sampler will be used to sample from this
   distribution.
 }
