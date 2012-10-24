@@ -86,10 +86,6 @@ condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp"
   }
 
   if (model == "Schlather"){
-    ## Get the parameters
-    range <- list(...)$range
-    smooth <- list(...)$range
-    
     y <- cond.data
     cov.fun <- covariance(nugget = 0, sill = 1, range = range, smooth = smooth,
                           cov.mod = cov.mod, plot = FALSE)
