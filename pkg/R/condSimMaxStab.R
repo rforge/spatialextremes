@@ -1,7 +1,7 @@
 condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp",
                          ...,  do.sim = TRUE, thin = n.cond, burnin = 50, parts){
 
-  if (cov.mod %in% c("brown", "whitmat", "powexp", "bessel", "cauchy"))
+  if (!(cov.mod %in% c("brown", "whitmat", "powexp", "bessel", "cauchy")))
     stop("'cov.mod' must be one of 'brown', 'whitmat', 'powexp', 'bessel' or 'cauchy'")
   
   timings <- rep(NA, 3)
