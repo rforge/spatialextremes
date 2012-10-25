@@ -416,7 +416,8 @@ void rgeomcirc(int *nObs, int *ngrid, double *steps, int *dim,
 //
 void rbrowndirect(double *coord, double *bounds, int *nObs, int *nSite,
 		  int *dim, int *grid, double *range, double *smooth,
-		  double *uBound, int *method, int *maxSim, double *ans);
+		  double *uBound, int *method, int *maxSim, int *nPP,
+		  int *idxsubOrig, int *nsubOrig, double *ans);
 
 ///////////////////////////////////
 //  From simextremalt.c
