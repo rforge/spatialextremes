@@ -17,9 +17,9 @@
  *  http://www.r-project.org/Licenses/
  */
 
+#include "header.h"
 #include <stdlib.h> /* for abs */
 #include <math.h>
-#include <Rmath.h> /* for imax2(.),..*/
 
 /*  Fast Fourier Transform
  *
