@@ -1,6 +1,6 @@
 Package: SpatialExtremes
-Version: 1.9-1
-Date: 2013-01-28
+Version: 2.0-0
+Date: 2013-03-04
 Title: Modelling Spatial Extremes
 Author: Mathieu Ribatet, Richard Singleton, R Core team
 Maintainer: Mathieu Ribatet <mathieu.ribatet@math.univ-montp2.fr>
