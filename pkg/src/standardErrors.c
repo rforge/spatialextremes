@@ -1411,7 +1411,7 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
 	    //i.e. powered exponential
 	    hess[(*nObs + k) * nPairs + currentPair] = rho[currentPair] * *smooth / *range *
 	      R_pow(dist[currentPair] / *range, *smooth) * jacCommonRho;
-	    hess[(2 * *nObs + k) * nPairs + currentPair] -= rho[currentPair] *
+	    hess[(2 * *nObs + k) * nPairs + currentPair] = -rho[currentPair] *
 	      R_pow(dist[currentPair] / *range, *smooth) * log(dist[currentPair] / *range) *
 	      jacCommonRho;
 	    break;
