@@ -208,7 +208,7 @@ brownresnickfull <- function(data, coord, start, fit.marge = FALSE, ...,
 
     else{
         std.err.type <- "yes"
-        var.cov <- ihessian %*% var.score %*% ihessian / n.obs
+        var.cov <- ihessian %*% var.score %*% ihessian
         std.err <- diag(var.cov)
 
         std.idx <- which(std.err <= 0)
@@ -584,7 +584,7 @@ PACKAGE = 'SpatialExtremes', NAOK = TRUE)$dns"))
 
     else{
         std.err.type <- "yes"
-        var.cov <- ihessian %*% var.score %*% ihessian / n.obs
+        var.cov <- ihessian %*% var.score %*% ihessian
 
         std.err <- diag(var.cov)
 

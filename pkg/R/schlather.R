@@ -231,7 +231,7 @@ schlatherfull <- function(data, coord, start, cov.mod = "whitmat", ...,
 
     else{
         std.err.type <- "yes"
-        var.cov <- ihessian %*% var.score %*% ihessian / n.obs
+        var.cov <- ihessian %*% var.score %*% ihessian
         std.err <- diag(var.cov)
 
         std.idx <- which(std.err <= 0)
@@ -641,7 +641,7 @@ dns = double(1), PACKAGE = 'SpatialExtremes', NAOK = TRUE)$dns"))
 
     else{
         std.err.type <- "yes"
-        var.cov <- ihessian %*% var.score %*% ihessian / n.obs
+        var.cov <- ihessian %*% var.score %*% ihessian
 
         std.err <- diag(var.cov)
 
