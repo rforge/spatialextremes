@@ -226,7 +226,7 @@ condrmaxstab <- function(k = 1, coord, cond.coord, cond.data, cov.mod = "powexp"
     ##conditionning locations!!! If you don't want them then you need
     ##to uncomment the next line...
 
-    ##ans <- ans[,-(1:n.cond)]
+    ans <- ans[,-(1:n.cond)]
   }
 
   else
