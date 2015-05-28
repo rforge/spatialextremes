@@ -1898,7 +1898,7 @@ swiss <- function(city = FALSE, add = FALSE, axes = FALSE, km = TRUE,
     xlim <- c(480000, 840000) * scale
     ylim <- c(58000, 300000) * scale
     plot(ch.grenze.land.teilstueck.1 * scale, type = "n", xlim = xlim, ylim = ylim,
-         axes = axes, xlab = xlab, ylab = ylab, ...)
+         axes = axes, xlab = xlab, ylab = ylab, asp = 1, ...)
   }
 
   lines(ch.grenze.land.teilstueck.1 * scale)
