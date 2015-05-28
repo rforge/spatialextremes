@@ -727,3 +727,15 @@ Rboolean fft_work(double *a, double *b, int nseg, int n, int nspn, int isn,
 void completellik(int *nObs, int *nSite, double *data, int *parts, int *partSizes,
 		  double *cov, double *weights);
 void pschlather(double *q, int *dim, double *cov, double *prob, int *nMC);
+
+
+
+
+///////////////////////////////////
+//  From concurrence.c
+//
+void empiricalConcProb(double *data, int *nSite, int *nObs, int *blockSize,
+		       int *nBlock, double *concProb);
+void empiricalBootConcProb(double *data, int *nSite, int *nObs, int *blockSize,
+			   double *concProb);
+void concProbKendall(double *data, int *nSite, int *nObs, double *concProb);
