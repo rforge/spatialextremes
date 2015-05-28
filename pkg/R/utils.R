@@ -117,3 +117,14 @@ frech2gev <- function(x, loc, scale, shape){
 
   return(names)
 }
+
+logit <- function(p, rep_one_by = 0.999, rep_zero_by = 10^-3, inv = FALSE){
+
+    if (inv)
+        return(1 / (1 + exp(-p)))
+    
+    p[p > rep_one_by] <- rep_one_by
+    p[p<rep_zero_by] <- rep_zero_by
+
+    return(log(p / (1-p)))
+}

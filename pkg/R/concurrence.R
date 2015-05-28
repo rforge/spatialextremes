@@ -88,5 +88,44 @@ concprob <- function(data, coord, fitted, n.bins, add = FALSE, xlim = c(0, max(d
         }
     }
         
-    return(invisible(list(dist = dist, concProb = concProb)))
+    return(invisible(cbind(dist = dist, conc.prob = concProb)))
 }
+
+concarea <- function(data, coord, which = "kendall", n.grid = 100, col = cm.colors(64), plot = TRUE){
+
+    n.site <- nrow(coord)
+
+    ## Get the pairwise concurrence probability estimate
+    est <- concprob(data, coord, which = which, plot = FALSE)[,"conc.prob"]
+
+    ## Form a matrix that contains all pairwise concurrence probabilities
+    conc.prob.mat <- matrix(NA, n.site, n.site)
+    conc.prob.mat[upper.tri(conc.prob.mat)] <- conc.prob.mat[lower.tri(conc.prob.mat)] <- est
+    diag(conc.prob.mat) <- 1
+
+    mesh.size <- diff(range(coord[,1])) * diff(range(coord[,2])) / n.grid^2
+    conc.area <- rep(NA, n.site)
+    
+    for (i in 1:n.site){
+        row <- conc.prob.mat[i,]
+        fit <- fields::Tps(coord, logit(row))
+        pred <- fields::predictSurface(fit, nx = n.grid, ny = n.grid)
+        pred$z <- logit(pred$z, inv = TRUE)
+        conc.area[i] <- sum(pred$z, na.rm = TRUE) * mesh.size
+    }
+
+    ## Get prediction for E[|C(s)|], s in X
+    fit <- fields::Tps(coord, conc.area)
+    conc.area.pred <- fields::predictSurface(fit, nx = n.grid, ny = n.grid)
+
+    if (plot)
+        filled.contour(conc.area.pred$x, conc.area.pred$y, conc.area.pred$z)
+
+    return(invisible(list(x = conc.area.pred$x, y = conc.area.pred$y, z = conc.area.pred$z)))
+}
+           
+
+    
+        
+
+    
