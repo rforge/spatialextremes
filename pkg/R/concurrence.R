@@ -133,7 +133,7 @@ concurrencemap <- function(data, coord, which = "kendall", type = "cell", n.grid
 
     if (plot){
         add <- FALSE
-        if (is.null(plot.border)){
+        if (!is.null(plot.border)){
             plot.border(add = add)
             add <-  TRUE
         }
