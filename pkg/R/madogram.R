@@ -302,7 +302,7 @@ fmadogram <- function(data, coord, fitted, n.bins, which = c("mado", "ext"),
   if (add){
     if (any(which == "mado")){
         if (!is.null(angles))
-            points(dist, mado, col = col.angles, ...)
+            points(dist, fmado, col = col.angles, ...)
 
         else
             points(dist, fmado, col = col[1], ...)

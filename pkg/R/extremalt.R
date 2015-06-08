@@ -287,9 +287,9 @@ extremaltfull <- function(data, coord, start, cov.mod = "whitmat", ...,
         normCst <- sqrt(pi) * 2^(-(param["DoF"] - 2)/2) / gamma(0.5 * (param["DoF"] + 1))
         Y <- rgp(n.sim, h, cov.mod, nugget = param["nugget"], sill = 1 - param["nugget"],
                  range = param["range"], smooth = param["smooth"])
-        Y <- normCst * rbind(pmax(Y,0), pmax(-Y, 0))^DoF##antithetic
-        dummy <- 1 / (1/Y[,1] * pt(-rho / b + (Y / Y[,1])^(1/DoF) / b, DoF + 1) +
-                          1/Y * pt(-rho / b + (Y / Y[,1])^(-1/DoF) / b, DoF + 1))
+        Y <- normCst * rbind(pmax(Y,0), pmax(-Y, 0))^param["DoF"]##antithetic
+        dummy <- 1 / (1/Y[,1] * pt(-rho / b + (Y / Y[,1])^(1/param["DoF"]) / b, param["DoF"] + 1) +
+                          1/Y * pt(-rho / b + (Y / Y[,1])^(-1/param["DoF"]) / b, param["DoF"] + 1))
         
         dummy <- replace(dummy, is.na(dummy), 0)
         dummy[,1] <- 1 ## Fix conflict in NaN handling at the origin
@@ -720,9 +720,9 @@ as.double(DoF), dns = double(1), PACKAGE = 'SpatialExtremes', NAOK = TRUE)$dns")
         normCst <- sqrt(pi) * 2^(-(param["DoF"] - 2)/2) / gamma(0.5 * (param["DoF"] + 1))
         Y <- rgp(n.sim, h, cov.mod, nugget = param["nugget"], sill = 1 - param["nugget"],
                  range = param["range"], smooth = param["smooth"])
-        Y <- normCst * rbind(pmax(Y,0), pmax(-Y, 0))^DoF##antithetic
-        dummy <- 1 / (1/Y[,1] * pt(-rho / b + (Y / Y[,1])^(1/DoF) / b, DoF + 1) +
-                          1/Y * pt(-rho / b + (Y / Y[,1])^(-1/DoF) / b, DoF + 1))
+        Y <- normCst * rbind(pmax(Y,0), pmax(-Y, 0))^param["DoF"]##antithetic
+        dummy <- 1 / (1/Y[,1] * pt(-rho / b + (Y / Y[,1])^(1/param["DoF"]) / b, param["DoF"] + 1) +
+                          1/Y * pt(-rho / b + (Y / Y[,1])^(-1/param["DoF"]) / b, param["DoF"] + 1))
         
         dummy <- replace(dummy, is.na(dummy), 0)
         dummy[,1] <- 1 ## Fix conflict in NaN handling at the origin
