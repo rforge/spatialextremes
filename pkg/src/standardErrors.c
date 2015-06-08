@@ -1218,7 +1218,7 @@ void extremaltstderr(int *covmod, double *data, double *dist, int *nSite, int *n
     didfidfdfPlus1_df = - (*df + 2) * idf * idf * idf,
     sill = 1 - *nugget;
 
-  double h, *jac = (double *)R_alloc(*nObs * *nSite, sizeof(double)),
+  double h = 0, *jac = (double *)R_alloc(*nObs * *nSite, sizeof(double)),
     *rho = (double *)R_alloc(nPairs, sizeof(double)),
     *locs = (double *)R_alloc(*nSite, sizeof(double)),
     *scales = (double *)R_alloc(*nSite, sizeof(double)),
