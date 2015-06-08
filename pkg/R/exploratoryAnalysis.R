@@ -18,7 +18,7 @@ symbolplot <- function(data, coord, which = "gev", plot.border = NULL, col = c("
 
         for (i in 1:3){
             if (!is.null(plot.border)){
-                plot.border()
+                plot.border(add = add)
                 add <- TRUE
             }
 
@@ -61,9 +61,8 @@ symbolplot <- function(data, coord, which = "gev", plot.border = NULL, col = c("
             layout(matrix(2:1, 2), heights = c(0.15, 1))
         
         mar <- par("mar")
-
         if (!is.null(plot.border)){
-            plot.border()
+            plot.border(add = add)
             add <- TRUE
         }
 
@@ -95,8 +94,6 @@ symbolplot <- function(data, coord, which = "gev", plot.border = NULL, col = c("
                 par(mar = mar)
             }
     }
-
-    par(new = FALSE)
 }
 
 

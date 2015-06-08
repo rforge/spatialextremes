@@ -5,7 +5,7 @@
   any spatial trends}
 \usage{
 symbolplot(data, coord, which = "gev", plot.border = NULL,
- col = c("#FF000080", "#0000FF80"))
+ col = c("#FF000080", "#0000FF80"), plot.legend = TRUE)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -19,6 +19,8 @@ symbolplot(data, coord, which = "gev", plot.border = NULL,
     region. If \code{NULL} (default) no border is plotted.}
   \item{col}{A vector of length 2 giving the colors to be used to fill
     the circles.}
+  \item{plot.legend}{Logical. If \code{TRUE} (default), a legend is
+    added to the plot.}
 }
 \details{
   This function will plot several circles whose center is located at the
@@ -31,12 +33,6 @@ symbolplot(data, coord, which = "gev", plot.border = NULL,
 ## Symbol plot for the Swiss rainfall data set
 data(rainfall)
 symbolplot(rain, coord, plot.border = swiss)
-
-## Symbol plot the Dutch wind gust data set
-data(wind)
-data(netherlands)##to produce the border of the Netherlands
-symbolplot(wind, coord, plot.border = function() plot(netherlands),
-which = "median")
 }
 
 \keyword{hplot}

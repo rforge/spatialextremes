@@ -91,9 +91,13 @@ concprob <- function(data, coord, fitted, n.bins, add = FALSE, xlim = c(0, max(d
     return(invisible(cbind(dist = dist, conc.prob = concProb)))
 }
 
-concarea <- function(data, coord, which = "kendall", n.grid = 100, col = cm.colors(64), plot = TRUE, plot.border = NULL){
+concurrencemap <- function(data, coord, which = "kendall", type = "cell", n.grid = 100,
+                           col = cm.colors(64), plot = TRUE, plot.border = NULL, ...){
 
     n.site <- nrow(coord)
+
+    if (!((type == "cell") || (is.numeric(type) && (type >= 1) && (type <= n.site))))
+        stop("'type' must be either 'cell' for expected concurrence cell areas or an integer giving the station used as reference point.")
 
     ## Get the pairwise concurrence probability estimate
     est <- concprob(data, coord, which = which, plot = FALSE)[,"conc.prob"]
@@ -103,45 +107,62 @@ concarea <- function(data, coord, which = "kendall", n.grid = 100, col = cm.colo
     conc.prob.mat[upper.tri(conc.prob.mat)] <- conc.prob.mat[lower.tri(conc.prob.mat)] <- est
     diag(conc.prob.mat) <- 1
 
-    mesh.size <- diff(range(coord[,1])) * diff(range(coord[,2])) / n.grid^2
-    conc.area <- rep(NA, n.site)
-    
-    for (i in 1:n.site){
-        row <- conc.prob.mat[i,]
+    if (type == "cell"){
+        mesh.size <- diff(range(coord[,1])) * diff(range(coord[,2])) / n.grid^2
+        conc.area <- rep(NA, n.site)
+        
+        for (i in 1:n.site){
+            row <- conc.prob.mat[i,]
+            fit <- fields::Tps(coord, logit(row))
+            pred <- fields::predictSurface(fit, nx = n.grid, ny = n.grid)
+            pred$z <- logit(pred$z, inv = TRUE)
+            conc.area[i] <- sum(pred$z, na.rm = TRUE) * mesh.size
+        }
+        
+        ## Get prediction for E[|C(s)|], s in X
+        fit <- fields::Tps(coord, conc.area)
+        pred <- fields::predictSurface(fit, nx = n.grid, ny = n.grid)
+    }
+
+    else {
+        row <- conc.prob.mat[type,]
         fit <- fields::Tps(coord, logit(row))
         pred <- fields::predictSurface(fit, nx = n.grid, ny = n.grid)
         pred$z <- logit(pred$z, inv = TRUE)
-        conc.area[i] <- sum(pred$z, na.rm = TRUE) * mesh.size
     }
-
-    ## Get prediction for E[|C(s)|], s in X
-    fit <- fields::Tps(coord, conc.area)
-    conc.area.pred <- fields::predictSurface(fit, nx = n.grid, ny = n.grid)
 
     if (plot){
         add <- FALSE
         if (is.null(plot.border)){
+            plot.border(add = add)
+            add <-  TRUE
+        }
+
+        layout(matrix(2:1, 2), heights = c(0.15, 1))    
+        add <- FALSE
+        if (!is.null(plot.border)){
             plot.border()
             add <-  TRUE
         }
 
-        
-        image(conc.area.pred$x, conc.area.pred$y, conc.area.pred$z, add = TRUE, ...)
+        z.range <- range(pred$z, na.rm = TRUE)
+        breaks <- seq(z.range[1], z.range[2], length = length(col) + 1)
+        image(pred$x, pred$y, pred$z, add = add, breaks = breaks, col = col, ...)
 
-        if (is.null(plot.border))
-            plot.border()
+        if (!is.null(plot.border))
+            plot.border(add = add)
 
         ## Do the color bar
-        par(las = 1, pty = "m")
+        par(las = 1, pty = "m", mar = rep(0, 4))
         plot.new()
-        plot.window(xlim = range(breaks), ylim = c(0, 1), xaxs = "i", yaxs = "i")
+        plot.window(ylim = c(0, 1), xlim = range(breaks), xaxs = "i", yaxs = "i")
         rect(breaks[-length(breaks)], 0, breaks[-1], 1, col = col, border = NA)
-        axis(4, at = breaks)
+        axis(1, at = pretty(breaks))
         box()
 
     }
 
-    return(invisible(list(x = conc.area.pred$x, y = conc.area.pred$y, z = conc.area.pred$z)))
+    return(invisible(list(x = pred$x, y = pred$y, z = pred$z)))
 }
            
 
