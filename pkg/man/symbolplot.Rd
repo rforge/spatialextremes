@@ -4,7 +4,8 @@
 \description{This function performs a symbol plot to help in identifying
   any spatial trends}
 \usage{
-symbolplot(data, coord, which = "gev", plot.border = NULL, col = c("#FF000080", "#0000FF80"))
+symbolplot(data, coord, which = "gev", plot.border = NULL,
+ col = c("#FF000080", "#0000FF80"))
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
