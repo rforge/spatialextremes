@@ -17,6 +17,7 @@ symbolplot <- function(data, coord, which = "gev", plot.border = NULL, col = c("
         mar <- par("mar")
 
         for (i in 1:3){
+            add <- FALSE
             if (!is.null(plot.border)){
                 plot.border(add = add)
                 add <- TRUE
@@ -32,15 +33,17 @@ symbolplot <- function(data, coord, which = "gev", plot.border = NULL, col = c("
                 radius.legend <- radius.legend[radius.legend > 0]
                 n.circles <- length(radius.legend)
 
-                xlim <- c(0, diff(par("usr")[1:2]))
-                centers <- cbind(seq(xlim[1], xlim[2], length = n.circles), 0)
+                xlim <- par("usr")[1:2]
+                ylim <- par("usr")[3:4]
+                centers <- cbind(seq(xlim[1], xlim[2], length = n.circles), mean(ylim))
 
                 par(mar = c(0, 5, 0, 5))
+                plot(-10^6, xlim = xlim, ylim = ylim, axes = FALSE, bty = "n", xlab = "", ylab = "")
                 symbols(centers, circles = radius.legend * norm.factor, inches = FALSE, bty = "n",
-                        xaxt = "n", yaxt = "n", xlab = "", ylab = "")
+                        xaxt = "n", yaxt = "n", xlab = "", ylab = "", add = TRUE)
 
                 for (j in 1:n.circles)
-                    text(centers[j,1], -max(radius.legend) * norm.factor,
+                    text(centers[j,1], mean(ylim) - 1.1 * max(radius.legend) * norm.factor,
                          bquote(phantom(a)%+-%.(radius.legend[j])), pos = 1, offset = 0.75)
                 
                 par(mar = mar)
