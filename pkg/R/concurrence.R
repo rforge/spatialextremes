@@ -91,7 +91,7 @@ concprob <- function(data, coord, fitted, n.bins, add = FALSE, xlim = c(0, max(d
     return(invisible(cbind(dist = dist, conc.prob = concProb)))
 }
 
-concarea <- function(data, coord, which = "kendall", n.grid = 100, col = cm.colors(64), plot = TRUE){
+concarea <- function(data, coord, which = "kendall", n.grid = 100, col = cm.colors(64), plot = TRUE, plot.border = NULL){
 
     n.site <- nrow(coord)
 
@@ -118,8 +118,28 @@ concarea <- function(data, coord, which = "kendall", n.grid = 100, col = cm.colo
     fit <- fields::Tps(coord, conc.area)
     conc.area.pred <- fields::predictSurface(fit, nx = n.grid, ny = n.grid)
 
-    if (plot)
-        filled.contour(conc.area.pred$x, conc.area.pred$y, conc.area.pred$z)
+    if (plot){
+        add <- FALSE
+        if (is.null(plot.border)){
+            plot.border()
+            add <-  TRUE
+        }
+
+        
+        image(conc.area.pred$x, conc.area.pred$y, conc.area.pred$z, add = TRUE, ...)
+
+        if (is.null(plot.border))
+            plot.border()
+
+        ## Do the color bar
+        par(las = 1, pty = "m")
+        plot.new()
+        plot.window(xlim = range(breaks), ylim = c(0, 1), xaxs = "i", yaxs = "i")
+        rect(breaks[-length(breaks)], 0, breaks[-1], 1, col = col, border = NA)
+        axis(4, at = breaks)
+        box()
+
+    }
 
     return(invisible(list(x = conc.area.pred$x, y = conc.area.pred$y, z = conc.area.pred$z)))
 }
