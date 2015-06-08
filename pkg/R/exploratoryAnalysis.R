@@ -10,7 +10,7 @@ symbolplot <- function(data, coord, which = "gev", plot.border = NULL, col = c("
         ref.value <- rowMeans(values)
 
         if (plot.legend)
-            layout(matrix(c(2,1,4,3,6,5), 2), height = c(0.15, 1))
+            layout(matrix(c(2,1,4,3,6,5), 2), heights = c(0.15, 1))
         else
             par(mfrow = c(1, 3))
 
@@ -58,7 +58,7 @@ symbolplot <- function(data, coord, which = "gev", plot.border = NULL, col = c("
         ref.value <- mean(values, na.rm = TRUE)
 
         if (plot.legend)
-            layout(matrix(2:1, 2), height = c(0.15, 1))
+            layout(matrix(2:1, 2), heights = c(0.15, 1))
         
         mar <- par("mar")
 
