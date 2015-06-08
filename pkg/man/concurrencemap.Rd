@@ -50,9 +50,10 @@ data(USHCNTemp)
 coord <- as.matrix(metadata[,2:3])
 
 ## Subset the station to have a fast example
-n.site <- 100
-coord <- coord[1:n.site,]
-maxima.summer <- maxima.summer[,1:n.site]
+n.site <- 50
+chosen.site <- sample(nrow(coord), n.site)
+coord <- coord[chosen.site,]
+maxima.summer <- maxima.summer[,chosen.site]
 
 ## Define a function to plot the border
 border <- function(add = FALSE) maps::map("usa", add = add)
