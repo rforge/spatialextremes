@@ -46,11 +46,12 @@ concurrencemap(data, coord, which = "kendall", type = "cell", n.grid =
   \code{\link{concprob}}
 }
 \examples{
+require(maps)
 data(USHCNTemp)
 coord <- as.matrix(metadata[,2:3])
 
 ## Subset the station to have a fast example
-n.site <- 50
+n.site <- 30
 chosen.site <- sample(nrow(coord), n.site)
 coord <- coord[chosen.site,]
 maxima.summer <- maxima.summer[,chosen.site]
