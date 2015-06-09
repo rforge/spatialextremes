@@ -1,5 +1,5 @@
 symbolplot <- function(data, coord, which = "gev", plot.border = NULL, col = c("#FF000080", "#0000FF80"),
-                       plot.legend = TRUE){
+                       plot.legend = TRUE, scale = 1){
 
     if (!(which %in% c("gev", "mean", "median")))
         stop("'which' must be one of 'gev', 'mean' or 'median'")
@@ -25,7 +25,7 @@ symbolplot <- function(data, coord, which = "gev", plot.border = NULL, col = c("
 
             sign.col <- col[2 - (values[i,] >= ref.value[i])]
             radius <- abs(values[i,] - ref.value[i])
-            norm.factor <-  min(dist(coord)) / max(radius)
+            norm.factor <-  scale * min(dist(coord)) / max(radius)
             symbols(coord, circles = radius * norm.factor, add = add, bg = sign.col, inches = FALSE)
 
             if (plot.legend){
@@ -71,12 +71,12 @@ symbolplot <- function(data, coord, which = "gev", plot.border = NULL, col = c("
 
         sign.col <- col[2 - (values >= ref.value)]
         radius <- abs(values - ref.value)
-        norm.factor <- min(dist(coord)) / max(radius)
+        norm.factor <- scale * min(dist(coord)) / max(radius)
 
         symbols(coord, circles = radius * norm.factor, add = add, bg = sign.col, inches = FALSE)
 
         for (j in 1:length(radius))
-            text(coord[j,1], coord[j,2], bquote(.(round(radius[j], 1))))
+            text(coord[j,1], coord[j,2], bquote(.(round(radius[j], 1))), col = sign.col)
 
         if (plot.legend){
             radius.legend <- pretty(radius, 4)
