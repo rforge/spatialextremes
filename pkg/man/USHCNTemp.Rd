@@ -16,6 +16,7 @@
   latitude, elevation and the state for each station.}
 \examples{
 data(USHCNTemp)
+require(maps)
 maps::map("usa")
 points(metadata[,2:3], pch = 15)
 }
