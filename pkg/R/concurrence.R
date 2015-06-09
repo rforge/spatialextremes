@@ -132,10 +132,10 @@ concurrencemap <- function(data, coord, which = "kendall", type = "cell", n.grid
     }
 
     if (plot){
-        layout(matrix(2:1, 2), heights = c(0.15, 1))    
+        layout(matrix(2:1, 2), heights = c(0.1, 1))    
         add <- FALSE
         if (!is.null(plot.border)){
-            plot.border()
+            plot.border(add = add)
             add <-  TRUE
         }
 
