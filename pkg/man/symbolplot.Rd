@@ -5,7 +5,7 @@
   any spatial trends}
 \usage{
 symbolplot(data, coord, which = "gev", plot.border = NULL,
- col = c("#FF000080", "#0000FF80"), plot.legend = TRUE)
+ col = c("#FF000080", "#0000FF80"), plot.legend = TRUE, scale = 1)
 }
 \arguments{
   \item{data}{A matrix representing the data. Each column corresponds to
@@ -21,6 +21,9 @@ symbolplot(data, coord, which = "gev", plot.border = NULL,
     the circles.}
   \item{plot.legend}{Logical. If \code{TRUE} (default), a legend is
     added to the plot.}
+  \item{scale}{Positive number. It enables to enlarge (if scale > 1) or
+    reduce (if 0 < scale < 1) the radius of the plotted circles to get a
+    better display.}
 }
 \details{
   This function will plot several circles whose center is located at the
