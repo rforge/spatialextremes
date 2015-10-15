@@ -1,8 +1,14 @@
 concprob <- function(data, coord, fitted, n.bins, add = FALSE, xlim = c(0, max(dist)),
                      ylim = c(min(0, concProb), max(1, concProb)), col = 1:2,
-                     which = "kendall", block.size = floor(sqrt(nrow(data))),
+                     which = "kendall", xlab, ylab, block.size = floor(sqrt(nrow(data))),
                      plot = TRUE, ...){
 
+    if (missing(xlab))
+        xlab <- "h"
+
+    if (missing(ylab))
+        ylab <- expression(p(h))
+    
     if (missing(fitted) && missing(data) && missing(coord))
         stop("You must either specify a fitted model OR 'data' and 'coord'")
 
@@ -78,9 +84,8 @@ concprob <- function(data, coord, fitted, n.bins, add = FALSE, xlim = c(0, max(d
             points(dist, concProb, col = col[1], ...)
 
         else
-            plot(dist, concProb, ylim = ylim, ylab = expression(p(h)),##expression(p(x[1],x[2])),
-                 xlab = expression(h),##xlab = expression(group("||", x[1]-x[2], "||")),
-                 xlim = xlim, col = col[1], ...)
+            plot(dist, concProb, ylim = ylim, ylab = ylab,
+                 xlab = xlab, xlim = xlim, col = col[1], ...)
         
         if (!missing(fitted)){
             ## Plot the theoretical extremal concurence probability function
