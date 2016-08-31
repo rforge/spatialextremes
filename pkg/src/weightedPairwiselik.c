@@ -72,66 +72,69 @@ double wlpliksmith(double *data, double *mahalDist, double *jac,
   //This function computes the log-pairwise likelihood for the
   //smith model.
 
-  int i, j, k, currentPair = -1;
-  double c1, c2, dns = 0.0, lFvec, dvecM1, dvecM2, dvecMixed,
-    dnormc1, dnormc2, pnormc1, pnormc2, idata1, idata2, imahal,
-    idata1Idata2Imahal;
+  const int nPairs = nSite * (nSite - 1) / 2;
+  double dns = 0.0;
 
-  for (i=0;i<(nSite - 1);i++){
-    for (j=i+1;j<nSite;j++){
-      currentPair++;
+  for (int currentPair=0;currentPair<nPairs;currentPair++){
+    int i, j;
+    getSiteIndex(currentPair, nSite, &i, &j);
 
-      imahal = 1 / mahalDist[currentPair];
+    double imahal = 1 / mahalDist[currentPair];
 
-      if (weights[currentPair] != 0){
-	for (k=nObs;k--;){
+    if (weights[currentPair] != 0){
+      for (int k=0;k<nObs;k++){
 	  if (ISNA(data[k + i * nObs]) || ISNA(data[k + j * nObs]))
 	    continue;
 
-	  idata1 = 1 / data[k + i * nObs];
-	  idata2 = 1 / data[k + j * nObs];
-	  idata1Idata2Imahal = idata1 * idata2 * imahal;
+	  double idata1 = 1 / data[k + i * nObs],
+	    idata2 = 1 / data[k + j * nObs],
+	    idata1Idata2Imahal = idata1 * idata2 * imahal,
+	    c1 = log(data[k + j * nObs] * idata1) * imahal + 0.5 * mahalDist[currentPair],
+	    c2 = mahalDist[currentPair] - c1;
 
-	  c1 = log(data[k + j * nObs] * idata1) * imahal + 0.5 * mahalDist[currentPair];
-	  c2 = mahalDist[currentPair] - c1;
+	  if ((c1 > 38) && (c2 < -38))
+	    // Contribution of site 1 only
+	    dns += 2 * log(idata1) - idata1 + jac[k + i * nObs] + jac[k + j * nObs];
 
-	  if ((fabs(c1) > 38) && (fabs(c2) > 38))
-	    /* This means that only data1 or data2 contributes to the
-	       log-likelihood. Hence we consider these parameters as
-	       unfeasible as the bivariate distribution in this case
-	       degenerates
+	  else if ((c1 < -38) && (c2 > 38))
+	    // Contribution of site 2 only
+	    dns += 2 * log(idata2) - idata2 + jac[k + i * nObs] + jac[k + j * nObs];
 
-	       Rmq: 38 is the limiting accuracy for dnorm */
-	    return (fabs(c1) - 37) * (fabs(c2) - 37) * MINF;
+	  else if ((c1 > 38) && (c2 > 38))
+	    // site 1 and site 2 are independent
+	    dns += 2 * log(idata1 * idata2) - idata1 - idata2 + jac[k + i * nObs] + jac[k + j * nObs];
 
-	  dnormc1 = dnorm(c1, 0, 1, 0);
-	  dnormc2 = dnorm(c2, 0, 1, 0);
-	  pnormc1 = pnorm(c1, 0, 1, 1, 0);
-	  pnormc2 = pnorm(c2, 0, 1, 1, 0);
+	  else {
+	    // regular case (since the case c1 < -38 and c2 < -38 is impossible)
 
-	  //It's the log of the joint CDF
-	  lFvec = -pnormc1 * idata1 - pnormc2 * idata2;
+	    double dnormc1 = dnorm(c1, 0, 1, 0),
+	      dnormc2 = dnorm(c2, 0, 1, 0),
+	      pnormc1 = pnorm(c1, 0, 1, 1, 0),
+	      pnormc2 = pnorm(c2, 0, 1, 1, 0),
 
-	  //It's the partial derivative for marge 1
-	  dvecM1 = (dnormc1 * imahal + pnormc1) * idata1 * idata1 - dnormc2 *
-	    idata1Idata2Imahal;
+	      //It's the log of the joint CDF
+	      lFvec = -pnormc1 * idata1 - pnormc2 * idata2,
 
-	  //It's the partial derivative for marge 2
-	  dvecM2 = (dnormc2 * imahal + pnormc2) * idata2 * idata2 - dnormc1 *
-	    idata1Idata2Imahal;
+	      //It's the partial derivative for marge 1
+	      dvecM1 = (dnormc1 * imahal + pnormc1) * idata1 * idata1 - dnormc2 *
+	      idata1Idata2Imahal,
 
-	  //Rmq: to have dvecM1 and dvecM2 we have to multiply
-	  //them by Fvec[i]. It's not done yet as dvecMixed has to be
-	  //computed first.
+	      //It's the partial derivative for marge 2
+	      dvecM2 = (dnormc2 * imahal + pnormc2) * idata2 * idata2 - dnormc1 *
+	      idata1Idata2Imahal,
 
-	  //It's the mixed partial derivative
-	  dvecMixed = dvecM1 * dvecM2 + (data[k + j * nObs] * c2 * dnormc1 +
-					 data[k + i * nObs] * c1 * dnormc2) *
-	    idata1Idata2Imahal * idata1Idata2Imahal;
+	      //Rmq: to have dvecM1 and dvecM2 we have to multiply
+	      //them by Fvec[i]. It's not done yet as dvecMixed has to be
+	      //computed first.
+
+	      //It's the mixed partial derivative
+	      dvecMixed = dvecM1 * dvecM2 + (data[k + j * nObs] * c2 * dnormc1 +
+					     data[k + i * nObs] * c1 * dnormc2) *
+	      idata1Idata2Imahal * idata1Idata2Imahal;
 
 	  //Now the final step, multiplying by Fvec and the gradient
-	  dns += weights[currentPair] * (log(dvecMixed) + lFvec + jac[k + i * nObs] +
-					 jac[k + j * nObs]);
+	    dns += weights[currentPair] * (log(dvecMixed) + lFvec + jac[k + i * nObs] +
+					   jac[k + j * nObs]);
 	}
       }
     }
