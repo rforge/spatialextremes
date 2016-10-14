@@ -210,10 +210,10 @@ plot.maxstab <- function(x, ..., sites){
     shape <- gev.param[i,3]
     probs <- 1:n.obs / (n.obs + 1)
 
-    for (j in 1:1000)
-      boot[j,] <- sort(rgev(n.obs, loc, scale, shape))
-
+    boot <- matrix(rgev(n.obs * 1000, loc, scale, shape), nrow = 1000, ncol = n.obs)
+    boot <- apply(boot, 1, sort)
     ci <- apply(boot, 2, quantile, c(0.025, 0.975))
+
     matplot(1 / (1 - probs), t(ci), pch ="-", col = 1,
             xlab = "Return Period", ylab = "Return level", log = "x")
     fun <- function(T) qgev(1 - 1/T, loc, scale, shape)
