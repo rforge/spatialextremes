@@ -739,3 +739,11 @@ void empiricalConcProb(double *data, int *nSite, int *nObs, int *blockSize,
 void empiricalBootConcProb(double *data, int *nSite, int *nObs, int *blockSize,
 			   double *concProb);
 void concProbKendall(double *data, int *nSite, int *nObs, double *concProb);
+
+///////////////////////////////////
+//  From maxStableExactSim.c
+//
+void rschlatherexact(double *coord, int *nObs, int *nSite, int *dim,
+		     int *covmod, int *grid, double *nugget, double *range,
+		     double *smooth, double *ans);
+
