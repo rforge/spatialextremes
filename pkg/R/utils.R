@@ -32,7 +32,7 @@ distance <- function(coord, vec = FALSE){
 gev2frech <- function(x, loc, scale, shape, emp = FALSE){
 
   if (emp){
-    probs <- rank(x, na.last = "keep") / (length(x) + 1)
+    probs <- rank(x, na.last = "keep") / (sum(!is.na(x)) + 1)
     x <- - 1 / log(probs)
     return(x)
   }
@@ -122,7 +122,7 @@ logit <- function(p, rep_one_by = 0.999, rep_zero_by = 10^-3, inv = FALSE){
 
     if (inv)
         return(1 / (1 + exp(-p)))
-    
+
     p[p > rep_one_by] <- rep_one_by
     p[p<rep_zero_by] <- rep_zero_by
 
