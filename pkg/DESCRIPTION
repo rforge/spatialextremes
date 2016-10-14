@@ -3,7 +3,7 @@ Version: 2.0-2
 Date: 2015-06-08
 Title: Modelling Spatial Extremes
 Authors@R: c(person("Mathieu", "Ribatet", role = c("aut", "cre"),
-	   email = "mathieu.ribatet@univ-montp2.fr"),
+	   email = "mathieu.ribatet@umontpellier.fr"),
 	   person("Richard", "Singleton", role = "ctb"),
 	   person("R Core team", role = "ctb"))
 Depends: R (>= 1.8.0)
