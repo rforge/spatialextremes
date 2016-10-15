@@ -130,8 +130,9 @@ void rbrownrexact(double *coord, int *nObs, int *nSite, int *dim,
        ans: the generated random field
   */
 
-  int neffSite, covmod = 6, lagi = 1, lagj = 1, oneInt = 1, zeroInt = 0;
+  int neffSite, lagi = 1, lagj = 1, oneInt = 1, zeroInt = 0;
   double zero = 0, one = 1, irange = 1 / *range;
+  *covmod = 6;
 
   if (*grid){
     neffSite = R_pow_di(*nSite, *dim);
