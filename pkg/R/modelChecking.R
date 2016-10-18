@@ -212,9 +212,9 @@ plot.maxstab <- function(x, ..., sites){
 
     boot <- matrix(rgev(n.obs * 1000, loc, scale, shape), nrow = 1000, ncol = n.obs)
     boot <- apply(boot, 1, sort)
-    ci <- apply(boot, 2, quantile, c(0.025, 0.975))
+    ci <- apply(boot, 1, quantile, prob = c(0.025, 0.975))
 
-    matplot(1 / (1 - probs), t(ci), pch ="-", col = 1,
+    matplot(1 / (1 - probs), t(ci), pch = "-", col = 1,
             xlab = "Return Period", ylab = "Return level", log = "x")
     fun <- function(T) qgev(1 - 1/T, loc, scale, shape)
     curve(fun, from = 1.001, to = 100, add = TRUE)
