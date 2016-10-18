@@ -294,7 +294,7 @@ plot.maxstab <- function(x, ..., sites){
     ##Plot of the pairwise maxima
     for (i in 1:3){
       for (j in (i+1):4){
-        pair.max <- sort(apply(gumb[,c(i, j)], 1, max))
+        pair.max <- sort(apply(gumb[,c(i, j)], 1, max))##NA are discarded
         sim.pair.max <- apply(pmax(sim.maxstab[,,i], sim.maxstab[,,j]), 2, sort)
         dummy <- rowMeans(sim.pair.max)
         ci <- apply(sim.pair.max, 1, quantile, c(0.025, 0.975))
