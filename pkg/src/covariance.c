@@ -353,14 +353,14 @@ double fbm(double *coord, double *dist, int dim, int nSite, double sill, double 
   /* Rmk: 0.5 Var[Z(x)] = \gamma(||x||) as Z(o) = 0, where \gamma is
      the semi-variogram */
   for (int i=0;i<nSite;i++)
-    distOrig[i] = R_pow(distOrig[i] * irange, smooth);
+    distOrig[i] = pow(distOrig[i] * irange, smooth);
 
   for (int currentPair=0;currentPair<nPairs;currentPair++){
     int i, j;
     getSiteIndex(currentPair, nSite, &i, &j);
-    
+
     rho[currentPair] = sill * (distOrig[i] + distOrig[j] -
-			       R_pow(dist[currentPair] * irange, smooth));
+			       pow(dist[currentPair] * irange, smooth));
   }
 
   free(distOrig);
