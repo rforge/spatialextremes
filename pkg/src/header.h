@@ -743,7 +743,6 @@ void concProbKendall(double *data, int *nSite, int *nObs, double *concProb);
 ///////////////////////////////////
 //  From maxStableExactSim.c
 //
-void rschlatherexact(double *coord, int *nObs, int *nSite, int *dim,
-		     int *covmod, int *grid, double *nugget, double *range,
-		     double *smooth, double *ans);
-
+void rbrownexact(double *coord, int *nObs, int *nSite, int *dim,
+		 int *grid, double *range, double *smooth,
+		 double *ans);

@@ -293,12 +293,17 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
         else
             idx.sub.orig <- n.sub.orig <- 0
 
-        if (method == "direct")
+        if (method == "olddirect")
             ans <- .C("rbrowndirect", as.double(coord), as.double(bounds),
                       as.integer(n), as.integer(n.site), as.integer(dist.dim),
                       as.integer(grid), as.double(range), as.double(smooth),
                       as.double(uBound), as.integer(sim.type), as.integer(max.sim),
                       as.integer(nPP), as.integer(idx.sub.orig), as.integer(n.sub.orig),
+                      ans = ans, PACKAGE = "SpatialExtremes")$ans
+
+        ##if (method == "direct")
+            ans <- .C("rbrownexact", as.double(coord), as.integer(n), as.integer(n.site),
+                      as.integer(dist.dim), as.integer(grid), as.double(range), as.double(smooth),
                       ans = ans, PACKAGE = "SpatialExtremes")$ans
     }
 
