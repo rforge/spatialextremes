@@ -40,15 +40,12 @@ void rbrownexact(double *coord, int *nObs, int *nSite, int *dim,
     *orig = malloc(*dim * sizeof(double)),
     *poisson = malloc(*nObs * sizeof(double));
 
-  printf("building the covariance matrix\n");
   buildcovmat(nSite, grid, &covmod, coord, dim, &zero, &one, range,
 	      smooth, covmat);
 
   /* Compute the Cholesky decomposition of the covariance matrix once for all */
-  printf("start computing cholesky\n");
   int info = 0;
   F77_CALL(dpotrf)("U", &neffSite, covmat, &neffSite, &info);
-  printf("end computing cholesky\n");
 
   if (info != 0)
     error("error code %d from Lapack routine '%s'", info, "dpotrf");
@@ -117,6 +114,135 @@ void rbrownexact(double *coord, int *nObs, int *nSite, int *dim,
 
   PutRNGstate();
   free(covmat); free(gp); free(vario); free(shiftedCoord); free(orig); free(poisson);
+
+  return;
+}
+
+
+void rextremaltexact(double *coord, int *nObs, int *nSite, int *dim,
+		     int *covmod, int *grid, double *nugget, double *range,
+		     double *smooth, double *DoF, double *ans){
+
+  /*
+    This function generates random fields for the extremal-t model
+    using the exact procedure of Dombry et al. (2106) "Exact
+    simulation of max-stable processes" Biometrika
+
+    coord: the coordinates of the locations
+    nObs: the number of observations to be generated
+    nSite: the number of locations
+    dim: the random field is generated in R^dim
+    covmod: the covariance model
+    grid: Does coord specifies a grid?
+    range: the range parameter
+    smooth: the smooth parameter
+    DoF: the degree of freedom
+    ans: the generated random field
+  */
+
+  int neffSite, lagi = 1, lagj = 1, oneInt = 1, zeroInt = 0;
+  double irange = 1 / *range, sill = 1 - *nugget;
+
+  if (*grid){
+    neffSite = R_pow_di(*nSite, *dim);
+    lagi = neffSite;
+  }
+
+  else{
+    neffSite = *nSite;
+    lagj = *nObs;
+  }
+
+  double *covmat = malloc(neffSite * neffSite * sizeof(double)),
+    *scalemat = malloc(neffSite * neffSite * sizeof(double)),
+    *gp = malloc(neffSite * sizeof(double)),
+    *mu = malloc(neffSite * sizeof(double)),
+    *shiftedCoord = malloc(*nSite * *dim * sizeof(double)),
+    *orig = malloc(*dim * sizeof(double)),
+    *poisson = malloc(*nObs * sizeof(double));
+
+  buildcovmat(nSite, grid, covmod, coord, dim, nugget, &sill, range,
+	      smooth, covmat);
+
+  GetRNGstate();
+  for (int j=0;j<neffSite;j++){
+    // Set the origin
+    if (*grid){
+      int idx1 = j / *nSite, idx2 = j % *nSite;//works only for 2d grid
+      orig[0] = coord[idx1];
+      orig[1] = coord[*nSite + idx2];
+    }
+    else {
+      for (int d=0;d<*dim;d++)
+	orig[d] = coord[j + d * *nSite];
+    }
+
+    // Get the mean vector of the extremal function
+    for (int l=0;l<neffSite;l++)
+      mu[l] = covmat[l + j * neffSite];
+
+    // Compute the scale matrix of the extremal function
+    for (int l=0;l<neffSite;l++)
+      for (int m=l;m<neffSite;m++)
+	scalemat[l + m * neffSite] = scalemat[m + l * neffSite] =
+	  (covmat[l + m * neffSite] - covmat[j + l * neffSite] * covmat[j + m * neffSite]) /
+	  ((double) 1.0 + *DoF);
+
+    // By construction this matrix is singular since the j-th row is 0
+    // so we regularize it 
+    scalemat[j + j * neffSite] = 1e-12;
+
+    // Compute the Cholesky decomposition of this matrix
+    int info = 0;
+    F77_CALL(dpotrf)("U", &neffSite, scalemat, &neffSite, &info);
+    
+    if (info != 0)
+      error("error code %d from Lapack routine '%s'", info, "dpotrf");
+
+    // Reset it to the degenerate case
+    scalemat[j + j * neffSite] = 0;
+    
+    for (int i=0; i<*nObs; i++){
+      poisson[i] = exp_rand();
+      double ipoisson = -log(poisson[i]);
+
+      while (ans[j * lagj + i * lagi] < ipoisson){
+	// Generate a proposal extremal function (log-scale)
+	for (int l=0;l<neffSite;l++)
+	  gp[l] = norm_rand();
+
+	F77_CALL(dtrmv)("U", "T", "N", &neffSite, scalemat, &neffSite, gp, &oneInt);
+
+	double scale = sqrt(*DoF / rchisq(*DoF));
+	for (int l=0;l<neffSite;l++)
+	  gp[l] = log(mu[l] + gp[l] * scale);
+
+	// Update the max-stable realization (if any)
+	int valid = 1;
+	for (int l=0; l<j; l++){
+	  if ((ipoisson + gp[l]) > ans[l * lagj + i * lagi]){
+	    valid = 0;
+	    break;
+	  }
+	}
+
+	if (valid == 1)//Valid extremal function --> update \eta(s)
+	  for (int l=j;l<neffSite;l++)
+	    ans[l * lagj + i * lagi] = fmax2(ans[l * lagj + i * lagi], ipoisson + gp[l]);
+
+	// Update the "norm" of the spectral function (log-scale)
+	poisson[i] += exp_rand();
+	ipoisson = -log(poisson[i]);
+      }
+    }
+  }
+
+  // Switch to unit Frechet margins
+  for (int i=0;i<(*nObs * neffSite);i++)
+    ans[i] = exp(*DoF * ans[i]);
+
+  PutRNGstate();
+  free(covmat); free(scalemat); free(gp); free(mu); free(shiftedCoord); free(orig); free(poisson);
 
   return;
 }
