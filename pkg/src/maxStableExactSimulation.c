@@ -189,19 +189,19 @@ void rextremaltexact(double *coord, int *nObs, int *nSite, int *dim,
 	  ((double) 1.0 + *DoF);
 
     // By construction this matrix is singular since the j-th row is 0
-    // so we regularize it 
+    // so we regularize it
     scalemat[j + j * neffSite] = 1e-12;
 
     // Compute the Cholesky decomposition of this matrix
     int info = 0;
     F77_CALL(dpotrf)("U", &neffSite, scalemat, &neffSite, &info);
-    
+
     if (info != 0)
       error("error code %d from Lapack routine '%s'", info, "dpotrf");
 
     // Reset it to the degenerate case
     scalemat[j + j * neffSite] = 0;
-    
+
     for (int i=0; i<*nObs; i++){
       poisson[i] = exp_rand();
       double ipoisson = -log(poisson[i]);

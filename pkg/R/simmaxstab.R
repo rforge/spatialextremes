@@ -176,13 +176,13 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
         else
             uBound <- control$uBound
 
-        if (method == "olddirect")
+        if (method == "direct")
             ans <- .C("rschlatherdirect", as.double(coord), as.integer(n), as.integer(n.site),
                       as.integer(dist.dim), as.integer(cov.mod), grid, as.double(nugget),
                       as.double(range), as.double(smooth), as.double(uBound), ans = ans,
                       PACKAGE = "SpatialExtremes")$ans
 
-        if (method == "direct")
+        else if (method == "exact")
             ans <- .C("rschlatherexact", as.double(coord), as.integer(n), as.integer(n.site), as.integer(dist.dim),
                       as.integer(cov.mod), as.integer(grid), as.double(nugget), as.double(range), as.double(smooth),
                       ans = ans, PACKAGE = "SpatialExtremes")$ans

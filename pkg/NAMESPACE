@@ -2,6 +2,19 @@ importFrom(maps, map)
 useDynLib(SpatialExtremes)
 exportPattern("^[^\\.]")
 
+importFrom("grDevices", "cm.colors", "terrain.colors")
+importFrom("graphics", "abline", "axis", "box", "contour", "curve",
+           "filled.contour", "hist", "image", "layout", "legend",
+           "lines", "matplot", "par", "persp", "plot", "plot.new",
+           "plot.window", "points", "polygon", "rect", "symbols",
+           "text")
+importFrom("stats", "AIC", "deviance", "dist", "fitted", "lm",
+           "median", "model.matrix", "na.omit", "nlm", "nlminb",
+           "optim", "optimize", "pchisq", "pnorm", "ppoints",
+           "predict", "pt", "qchisq", "qnorm", "quantile", "rchisq",
+           "rexp", "rnorm", "runif", "sd", "terms", "uniroot",
+           "update", "var")
+
 
 S3method(TIC, default)
 

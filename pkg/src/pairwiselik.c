@@ -102,19 +102,19 @@ double lpliksmith(double *data, double *mahalDist, double *jac,
       if ((c1 > 38) && (c2 < -38)){
 	// Contribution of site 1 only
 	dns += 2 * log(idata1) - idata1 + jac[k + i * nObs] + jac[k + j * nObs];
-	printf("case 1: mahal = %f\n", mahalDist[currentPair]);
+	//printf("case 1: mahal = %f\n", mahalDist[currentPair]);
       }
 
       else if ((c1 < -38) && (c2 > 38)){
 	// Contribution of site 2 only
 	dns += 2 * log(idata2) - idata2 + jac[k + i * nObs] + jac[k + j * nObs];
-	printf("case 2: mahal = %f\n", mahalDist[currentPair]);
+	//printf("case 2: mahal = %f\n", mahalDist[currentPair]);
       }
 
       else if ((c1 > 38) && (c2 > 38)){
 	// site 1 and site 2 are independent
 	dns += 2 * log(idata1 * idata2) - idata1 - idata2 + jac[k + i * nObs] + jac[k + j * nObs];
-	printf("case 3: mahal = %f\n", mahalDist[currentPair]);
+	//printf("case 3: mahal = %f\n", mahalDist[currentPair]);
       }
 
       else {

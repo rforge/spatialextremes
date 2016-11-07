@@ -1,6 +1,6 @@
 concprob <- function(data, coord, fitted, n.bins, add = FALSE, xlim = c(0, max(dist)),
                      ylim = c(min(0, concProb), max(1, concProb)), col = 1:2,
-                     which = "kendall", xlab, ylab, block.size = floor(sqrt(nrow(data))),
+                     which = "kendall", xlab, ylab, block.size = floor(nrow(data)^(1/3)),
                      plot = TRUE, ...){
 
     if (missing(xlab))
@@ -8,7 +8,7 @@ concprob <- function(data, coord, fitted, n.bins, add = FALSE, xlim = c(0, max(d
 
     if (missing(ylab))
         ylab <- expression(p(h))
-    
+
     if (missing(fitted) && missing(data) && missing(coord))
         stop("You must either specify a fitted model OR 'data' and 'coord'")
 
@@ -37,7 +37,7 @@ concprob <- function(data, coord, fitted, n.bins, add = FALSE, xlim = c(0, max(d
 
     if (any(!(which %in% c("kendall", "emp", "boot"))))
         stop("'which' must be either 'kendall', 'emp' or 'boot'")
-    
+
     n.obs <- nrow(data)
     n.site <- ncol(data)
     n.pairs <- n.site * (n.site - 1) / 2
@@ -49,7 +49,7 @@ concprob <- function(data, coord, fitted, n.bins, add = FALSE, xlim = c(0, max(d
         concProb <- .C("concProbKendall", as.double(data), as.integer(n.site),
                        as.integer(n.obs), concProb = double(n.pairs), NAOK = TRUE,
                        PACKAGE = "SpatialExtremes")$concProb
-    
+
     else if (which == "emp")
         concProb <- .C("empiricalConcProb", as.double(data), as.integer(n.site),
                        as.integer(n.obs), as.integer(block.size), as.integer(n.block),
@@ -86,13 +86,13 @@ concprob <- function(data, coord, fitted, n.bins, add = FALSE, xlim = c(0, max(d
         else
             plot(dist, concProb, ylim = ylim, ylab = ylab,
                  xlab = xlab, xlim = xlim, col = col[1], ...)
-        
+
         if (!missing(fitted)){
             ## Plot the theoretical extremal concurence probability function
             curve(conc.prob.fit, from = xlim[1], to = xlim[2], add = TRUE, col = col[2], ...)
         }
     }
-        
+
     return(invisible(cbind(dist = dist, conc.prob = concProb)))
 }
 
@@ -115,7 +115,7 @@ concurrencemap <- function(data, coord, which = "kendall", type = "cell", n.grid
     if (type == "cell"){
         mesh.size <- diff(range(coord[,1])) * diff(range(coord[,2])) / n.grid^2
         conc.area <- rep(NA, n.site)
-        
+
         for (i in 1:n.site){
             row <- conc.prob.mat[i,]
             fit <- fields::Tps(coord, logit(row))
@@ -123,7 +123,7 @@ concurrencemap <- function(data, coord, which = "kendall", type = "cell", n.grid
             pred$z <- logit(pred$z, inv = TRUE)
             conc.area[i] <- sum(pred$z, na.rm = TRUE) * mesh.size
         }
-        
+
         ## Get prediction for E[|C(s)|], s in X
         fit <- fields::Tps(coord, conc.area)
         pred <- fields::predictSurface(fit, nx = n.grid, ny = n.grid)
@@ -137,7 +137,7 @@ concurrencemap <- function(data, coord, which = "kendall", type = "cell", n.grid
     }
 
     if (plot){
-        layout(matrix(2:1, 2), heights = c(0.1, 1))    
+        layout(matrix(2:1, 2), heights = c(0.1, 1))
         add <- FALSE
         if (!is.null(plot.border)){
             plot.border(add = add)
@@ -163,9 +163,9 @@ concurrencemap <- function(data, coord, which = "kendall", type = "cell", n.grid
 
     return(invisible(list(x = pred$x, y = pred$y, z = pred$z)))
 }
-           
 
-    
-        
 
-    
+
+
+
+

@@ -6,7 +6,7 @@ void empiricalConcProb(double *data, int *nSite, int *nObs, int *blockSize,
 		       int *nBlock, double *concProb){
   /* This function compputes the pairwise concurence probability
      assuming the data are in the max domain of attraction */
-  
+
   double *dataBlock = malloc(*blockSize * *nSite * sizeof(double));
   // will store the data corresponding to a given block
 
@@ -30,7 +30,7 @@ void empiricalConcProb(double *data, int *nSite, int *nObs, int *blockSize,
 	  blockMaxIdx[0] = l;
 	}
       }
-      
+
       for (int j=i+1;j<*nSite;j++){
 	// Compute the block maxima for site j (and its index) and block number k
 	blockMax[1] = dataBlock[j * *blockSize];
@@ -53,39 +53,40 @@ void empiricalConcProb(double *data, int *nSite, int *nObs, int *blockSize,
   }
 
   for (int i=0;i<(*nSite * (*nSite - 1) / 2);i++)
-    concProb[i] /= (double) *nBlock;      
+    concProb[i] /= (double) *nBlock;
 
   free(dataBlock);
   return;
 }
 
 void concProbKendall(double *data, int *nSite, int *nObs, double *concProb){
-  
-  int currentPair=0;
-  for (int i=0;i<(*nSite-1);i++){
-    for (int j=i+1;j<*nSite;j++){
 
-      concProb[currentPair]=0;
-      int nEffObs = 0;//the number of effective contribution (because of possible missing values)
-      for (int k=0;k<(*nObs-1);k++){
+  const int nPair = *nSite * (*nSite - 1) / 2;
 
-	if (ISNA(data[k + i * *nObs]) || ISNA(data[k + j * *nObs]))
+  #pragma omp parallel for
+  for (int currentPair=0;currentPair<nPair;currentPair++){
+    int i,j;
+    getSiteIndex(currentPair, *nSite, &i, &j);
+
+    concProb[currentPair]=0;
+    int nEffObs = 0;//the number of effective contribution (because of possible missing values)
+    for (int k=0;k<(*nObs-1);k++){
+
+      if (ISNA(data[k + i * *nObs]) || ISNA(data[k + j * *nObs]))
+	continue;
+
+      for (int l=k+1;l<*nObs;l++){
+
+	if (ISNA(data[l + i * *nObs]) || ISNA(data[l + j * *nObs]))
 	  continue;
-	
-	for (int l=k+1;l<*nObs;l++){
 
-	  if (ISNA(data[l + i * *nObs]) || ISNA(data[l + j * *nObs]))
-	    continue;
-	  
-	  nEffObs++;
-	  concProb[currentPair] += sign(data[k + i * *nObs] - data[l + i * *nObs]) *
-	    sign(data[k + j * *nObs] - data[l + j * *nObs]);
-	}
+	nEffObs++;
+	concProb[currentPair] += sign(data[k + i * *nObs] - data[l + i * *nObs]) *
+	  sign(data[k + j * *nObs] - data[l + j * *nObs]);
       }
-
-      concProb[currentPair] *= nEffObs == 0 ? NA_REAL : 1.0 / ((double) nEffObs);
-      currentPair++;
     }
+
+    concProb[currentPair] *= nEffObs == 0 ? NA_REAL : 1.0 / ((double) nEffObs);
   }
 
   return;
@@ -96,22 +97,25 @@ void empiricalBootConcProb(double *data, int *nSite, int *nObs, int *blockSize,
 			   double *concProb){
 
   const double normCst = lchoose(*nObs, *blockSize);
-  int currentPair=0;
-  for (int i=0;i<(*nSite-1);i++){
-    for (int j=i+1; j<*nSite; j++){
-      // For each pair compute the estimator
-      concProb[currentPair] = 0;
+  const int nPair = *nSite * (*nSite - 1) / 2;
 
-      for (int k=0;k<*nObs;k++){
-	int d = 0;
-	
-	for (int l=0;l<*nObs;l++)
-	  d += (data[l + i * *nObs] < data[k + i * *nObs]) && (data[l + j * *nObs] < data[k + j * *nObs]);
+  #pragma omp parallel for
+  for (int currentPair=0;currentPair<nPair;currentPair++){
+    int i, j;
+    getSiteIndex(currentPair, *nSite, &i, &j);
 
-	concProb[currentPair] += exp(lchoose(d, *blockSize - 1) - normCst);
-      }
+    // For each pair compute the estimator
+    concProb[currentPair] = 0;
 
-      currentPair++;
+    for (int k=0;k<*nObs;k++){
+      int d = 0;
+
+      for (int l=0;l<*nObs;l++)
+	d += (data[l + i * *nObs] < data[k + i * *nObs]) && (data[l + j * *nObs] < data[k + j * *nObs]);
+
+      concProb[currentPair] += exp(lchoose(d, *blockSize - 1) - normCst);
     }
   }
+
+  return;
 }
