@@ -183,7 +183,7 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
                       PACKAGE = "SpatialExtremes")$ans
 
         else if (method == "exact")
-            ans <- .C("rschlatherexact", as.double(coord), as.integer(n), as.integer(n.site), as.integer(dist.dim),
+            ans <- .C("rschlatherdirect", as.double(coord), as.integer(n), as.integer(n.site), as.integer(dist.dim),
                       as.integer(cov.mod), as.integer(grid), as.double(nugget), as.double(range), as.double(smooth),
                       ans = ans, PACKAGE = "SpatialExtremes")$ans
 
@@ -253,7 +253,7 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
     }
 
     else if (model == "Brown-Resnick"){
-        coord <- scale(coord, scale = FALSE)
+        coord <- scale(coord, scale = FALSE) + 10^-6## to avoid having the origin
 
         if (is.null(control$max.sim))
             max.sim <- 1000

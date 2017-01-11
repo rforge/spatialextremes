@@ -1,3 +1,6 @@
+#ifdef _OPENMP
+# include <omp.h>
+#endif
 #include <R.h>
 #include <Rmath.h>
 #include <Rinternals.h>
@@ -738,7 +741,8 @@ void empiricalConcProb(double *data, int *nSite, int *nObs, int *blockSize,
 		       int *nBlock, double *concProb);
 void empiricalBootConcProb(double *data, int *nSite, int *nObs, int *blockSize,
 			   double *concProb);
-void concProbKendall(double *data, int *nSite, int *nObs, double *concProb);
+void concProbKendall(double *data, int *nSite, int *nObs, double *concProb,
+		     double *jackKnife, int *computeStdErr);
 
 ///////////////////////////////////
 //  From maxStableExactSim.c
