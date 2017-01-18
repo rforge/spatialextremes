@@ -372,7 +372,7 @@ void getSiteIndex(int currentPair, int nSite, int *site1, int *site2){
   *site1 = 0;
 
   while (currentPair > cum){
-    *site1 = *site1 + 1;
+    (*site1)++;
     cum += nFree;
     nFree--;
   }
