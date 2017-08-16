@@ -8,7 +8,7 @@ double lplikschlather(double *data, double *rho, double *jac,
   const int nPairs = nSite * (nSite - 1) / 2;
   double dns = 0.0;
 
-#pragma omp parallel for reduction(+:dns)
+  //#pragma omp parallel for reduction(+:dns)
   for (int currentPair=0;currentPair<nPairs;currentPair++){
 
     int i, j;
@@ -80,7 +80,7 @@ double lpliksmith(double *data, double *mahalDist, double *jac,
   const int nPairs = nSite * (nSite - 1) / 2;
   double dns = 0.0;
 
-#pragma parallel for reduction(+:dns)
+  //#pragma omp parallel for reduction(+:dns)
   for (int currentPair=0;currentPair<nPairs;currentPair++){
 
     int i, j;
@@ -167,7 +167,7 @@ double lplikschlatherind(double *data, double alpha, double *rho,
 
   else if (alpha == 1){
     //The process is a pure noise
-    #pragma omp parallel for reduction(+:dns)
+    //#pragma omp parallel for reduction(+:dns)
     for (int currentPair=0;currentPair<nPairs;currentPair++){
       int i, j;
       getSiteIndex(currentPair, nSite, &i, &j);
@@ -185,7 +185,7 @@ double lplikschlatherind(double *data, double alpha, double *rho,
 
   else {
     //This is a mixture between noise and Schlather
-    #pragma omp parallel for reduction(+:dns)
+    //#pragma omp parallel for reduction(+:dns)
     for (int currentPair=0;currentPair<nPairs;currentPair++){
       int i, j;
       getSiteIndex(currentPair, nSite, &i, &j);
@@ -260,7 +260,7 @@ double lplikextremalt(double *data, double *rho, double df, double *jac,
   const double idf = 1 /df, dfPlus1 = df + 1;
   double dns = 0.0;
 
-#pragma omp parallel for reduction(+:dns)
+  //#pragma omp parallel for reduction(+:dns)
   for (int currentPair=0;currentPair<nPairs;currentPair++){
     int i, j;
     getSiteIndex(currentPair, nSite, &i, &j);

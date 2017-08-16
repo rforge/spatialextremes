@@ -19,7 +19,7 @@ void rbrownexact(double *coord, int *nObs, int *nSite, int *dim,
     ans: the generated random field
   */
 
-  int neffSite, lagi = 1, lagj = 1, oneInt = 1, zeroInt = 0;
+  int neffSite, lagi = 1, lagj = 1, oneInt = 1;
   double zero = 0, one = 1, irange = 1 / *range;
   int covmod = 6;//i.e, fractional Brownian motion
 
@@ -140,8 +140,8 @@ void rextremaltexact(double *coord, int *nObs, int *nSite, int *dim,
     ans: the generated random field
   */
 
-  int neffSite, lagi = 1, lagj = 1, oneInt = 1, zeroInt = 0;
-  double irange = 1 / *range, sill = 1 - *nugget;
+  int neffSite, lagi = 1, lagj = 1, oneInt = 1;
+  double sill = 1 - *nugget;
 
   if (*grid){
     neffSite = R_pow_di(*nSite, *dim);

@@ -716,9 +716,9 @@ void getStartingPartitionExtt(int *nsim, int *n, double *nu, double *covChol,
 ///////////////////////////////////
 //  From fft.c
 //
-static void fftmx(double *a, double *b, int ntot, int n, int nspan, int isn,
-		  int m, int kt, double *at, double *ck, double *bt, double *sk,
-		  int *np, int *nfac);
+//static void fftmx(double *a, double *b, int ntot, int n, int nspan, int isn,
+//		  int m, int kt, double *at, double *ck, double *bt, double *sk,
+//		  int *np, int *nfac);
 void fft_factor(int n, int *pmaxf, int *pmaxp);
 Rboolean fft_work(double *a, double *b, int nseg, int n, int nspn, int isn,
 		  double *work, int *iwork);

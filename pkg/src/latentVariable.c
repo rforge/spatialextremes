@@ -621,7 +621,7 @@ void DIC(int *nChain, int *nSite, int *nObs, double *data, double *chainLoc,
 	 double *dbar){
 
   double tmp=0;
-#pragma omp parallel for reduction(+:tmp)
+  //#pragma omp parallel for reduction(+:tmp)
   for (int i=0;i<*nChain;i++)
     for (int j=0;j<*nSite;j++){
       double dummy = 0;
@@ -634,7 +634,7 @@ void DIC(int *nChain, int *nSite, int *nObs, double *data, double *chainLoc,
   *dbar = -2 * tmp / ((double) *nChain);
 
   tmp=0;
-#pragma omp parallel for reduction(+:tmp)
+  //#pragma omp parallel for reduction(+:tmp)
   for (int i=0;i<*nSite;i++){
     double dummy = 0;
     gevlik(data + i * *nObs, nObs, postLoc + i, postScale + i, postShape + i,

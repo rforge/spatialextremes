@@ -4,7 +4,7 @@ void buildcovmat(int *nSite, int *grid, int *covmod, double *coord, int *dim,
 		 double *nugget, double *sill, double *range,
 		 double *smooth, double *covMat){
 
-  int currentPair, nPairs, effnSite = *nSite, zero = 0;
+  int nPairs, effnSite = *nSite, zero = 0;
   const double one = 1, dzero = 0;
   double flag = 0;
 
@@ -59,7 +59,7 @@ void buildcovmat(int *nSite, int *grid, int *covmod, double *coord, int *dim,
     error("The covariance parameters seem to be ill-defined. Please check\n");
 
   //Fill the non-diagonal elements of the covariance matrix
-  #pragma omp parallel for
+  //#pragma omp parallel for
   for (int currentPair=0;currentPair<nPairs;currentPair++){
     int i = 0, j = 0;
     getSiteIndex(currentPair, effnSite, &i, &j);

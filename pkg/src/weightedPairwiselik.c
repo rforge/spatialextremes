@@ -6,9 +6,7 @@ double wlplikschlather(double *data, double *rho, double *jac,
   //schlather model.
 
   const int nPair = nSite * (nSite - 1) / 2;
-  double c1, dns = 0.0, lFvec, dvecM1, dvecM2, dvecMixed,
-    data1Square, data2Square, twiceData1Data2;
-  //c1 is a useful quantity - see documentation
+  double dns = 0.0;
 
   for (int currentPair=0;currentPair<nPair;currentPair++){
     int i,j;
