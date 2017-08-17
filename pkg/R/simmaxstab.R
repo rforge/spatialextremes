@@ -185,7 +185,7 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
         else if (method == "exact")
             ans <- .C("rschlatherdirect", as.double(coord), as.integer(n), as.integer(n.site), as.integer(dist.dim),
                       as.integer(cov.mod), as.integer(grid), as.double(nugget), as.double(range), as.double(smooth),
-                      ans = ans, PACKAGE = "SpatialExtremes")$ans
+                      as.double(uBound), ans = ans, PACKAGE = "SpatialExtremes")$ans
 
         else if (method == "circ")
             ans <- .C("rschlathercirc", as.integer(n), as.integer(n.site), as.double(steps),
