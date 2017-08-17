@@ -85,7 +85,7 @@ symbolplot <- function(data, coord, which = "gev", plot.border = NULL, col = c("
 
             xlim <- par("usr")[1:2]
             ylim <- par("usr")[3:4]
-            centers <- cbind(seq(xlim[1], xlim[2], length = n.circles), 0)
+            centers <- cbind(seq(xlim[1], xlim[2], length = n.circles), mean(ylim))
 
             par(mar = c(0, 5, 0, 5))
             plot(-10^6, xlim = xlim, ylim = ylim, axes = FALSE, bty = "n", xlab = "", ylab = "")
@@ -93,7 +93,7 @@ symbolplot <- function(data, coord, which = "gev", plot.border = NULL, col = c("
                     xaxt = "n", yaxt = "n", xlab = "", ylab = "", add = TRUE)
 
             for (j in 1:n.circles)
-                text(centers[j,1], -max(radius.legend) * norm.factor,
+                text(centers[j,1], mean(ylim) - 1.1 * max(radius.legend) * norm.factor,
                      bquote(phantom(a)%+-%.(radius.legend[j])), pos = 1, offset = 0.75)
 
                 par(mar = mar)
