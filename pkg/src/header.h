@@ -391,6 +391,9 @@ void rschlathertbm(double *coord, int *nObs, int *nSites, int *dim,
 void rschlatherdirect(double *coord, int *nObs, int *nSites, int *dim,
 		      int *covmod, int *grid, double *nugget, double *range,
 		      double *smooth, double *uBound, double *ans);
+void rschlathercirc(int *nObs, int *ngrid, double *steps, int *dim,
+		    int *covmod, double *nugget, double *range,
+		    double *smooth, double *uBound, double *ans);
 void tbmcore(int *nsite, int *neffSite, int *dim, int *covmod,
 	     int *grid, double *coord, double *nugget, double *sill,
 	     double *range, double *smooth, int *nlines, double *lines,

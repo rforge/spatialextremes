@@ -161,12 +161,11 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
 
     if (model == "Smith")
         ans <- switch(dist.dim,
-                      .C("rsmith1d", as.double(coord), as.double(center), as.double(edge),
-                         as.integer(n), as.integer(n.site), as.double(var), ans = ans,
-                         PACKAGE = "SpatialExtremes")$ans,
-                      .C("rsmith2d", as.double(coord), as.double(center), as.double(edge),
+                      .C(C_rsmith1d, as.double(coord), as.double(center), as.double(edge),
+                         as.integer(n), as.integer(n.site), as.double(var), ans = ans)$ans,
+                      .C(C_rsmith2d, as.double(coord), as.double(center), as.double(edge),
                          as.integer(n), as.integer(n.site), grid, as.double(cov11), as.double(cov12),
-                         as.double(cov22), ans = ans, PACKAGE = "SpatialExtremes")$ans)
+                         as.double(cov22), ans = ans)$ans)
 
     else if (model == "Schlather"){
 
@@ -177,26 +176,25 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
             uBound <- control$uBound
 
         if (method == "direct")
-            ans <- .C("rschlatherdirect", as.double(coord), as.integer(n), as.integer(n.site),
+            ans <- .C(C_rschlatherdirect, as.double(coord), as.integer(n), as.integer(n.site),
                       as.integer(dist.dim), as.integer(cov.mod), grid, as.double(nugget),
-                      as.double(range), as.double(smooth), as.double(uBound), ans = ans,
-                      PACKAGE = "SpatialExtremes")$ans
+                      as.double(range), as.double(smooth), as.double(uBound), ans = ans)$ans
 
         else if (method == "exact")
-            ans <- .C("rschlatherdirect", as.double(coord), as.integer(n), as.integer(n.site), as.integer(dist.dim),
+            ans <- .C(C_rschlatherdirect, as.double(coord), as.integer(n), as.integer(n.site), as.integer(dist.dim),
                       as.integer(cov.mod), as.integer(grid), as.double(nugget), as.double(range), as.double(smooth),
-                      as.double(uBound), ans = ans, PACKAGE = "SpatialExtremes")$ans
+                      as.double(uBound), ans = ans)$ans
 
         else if (method == "circ")
-            ans <- .C("rschlathercirc", as.integer(n), as.integer(n.site), as.double(steps),
+            ans <- .C(C_rschlathercirc, as.integer(n), as.integer(n.site), as.double(steps),
                       as.integer(dist.dim), as.integer(cov.mod), as.double(nugget), as.double(range),
-                      as.double(smooth),  as.double(uBound), ans = ans, PACKAGE = "SpatialExtremes")$ans
+                      as.double(smooth),  as.double(uBound), ans = ans)$ans
 
         else
-            ans <- .C("rschlathertbm", as.double(coord), as.integer(n), as.integer(n.site),
+            ans <- .C(C_rschlathertbm, as.double(coord), as.integer(n), as.integer(n.site),
                       as.integer(dist.dim), as.integer(cov.mod), grid, as.double(nugget),
                       as.double(range), as.double(smooth), as.double(uBound), as.integer(nlines),
-                      ans = ans, PACKAGE = "SpatialExtremes")$ans
+                      ans = ans)$ans
     }
 
     else if (model == "Geometric"){
@@ -208,22 +206,22 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
             uBound <- control$uBound
 
         if (method == "direct")
-            ans <- .C("rgeomdirect", as.double(coord), as.integer(n), as.integer(n.site),
+            ans <- .C(C_rgeomdirect, as.double(coord), as.integer(n), as.integer(n.site),
                       as.integer(dist.dim), as.integer(cov.mod), grid, as.double(sigma2),
                       as.double(nugget), as.double(range), as.double(smooth),
-                      as.double(uBound), ans = ans, PACKAGE = "SpatialExtremes")$ans
+                      as.double(uBound), ans = ans)$ans
 
         else if (method == "circ")
-            ans <- .C("rgeomcirc", as.integer(n), as.integer(n.site), as.double(steps),
+            ans <- .C(C_rgeomcirc, as.integer(n), as.integer(n.site), as.double(steps),
                       as.integer(dist.dim), as.integer(cov.mod), as.double(sigma2),
                       as.double(nugget), as.double(range), as.double(smooth),  as.double(uBound),
-                      ans = ans, PACKAGE = "SpatialExtremes")$ans
+                      ans = ans)$ans
 
         else
-            ans <- .C("rgeomtbm", as.double(coord), as.integer(n), as.integer(n.site),
+            ans <- .C(C_rgeomtbm, as.double(coord), as.integer(n), as.integer(n.site),
                       as.integer(dist.dim), as.integer(cov.mod), grid, as.double(sigma2),
                       as.double(nugget), as.double(range), as.double(smooth), as.double(uBound),
-                      as.integer(nlines), ans = ans, PACKAGE = "SpatialExtremes")$ans
+                      as.integer(nlines), ans = ans)$ans
     }
 
     else if (model == "Extremal-t"){
@@ -234,22 +232,21 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
             uBound <- control$uBound
 
         if (method == "direct")
-            ans <- .C("rextremaltdirect", as.double(coord), as.integer(n), as.integer(n.site),
+            ans <- .C(C_rextremaltdirect, as.double(coord), as.integer(n), as.integer(n.site),
                       as.integer(dist.dim), as.integer(cov.mod), grid, as.double(nugget),
                       as.double(range), as.double(smooth), as.double(DoF), as.double(uBound),
-                      ans = ans, PACKAGE = "SpatialExtremes")$ans
+                      ans = ans)$ans
 
         else if (method == "circ")
-            ans <- .C("rextremaltcirc", as.integer(n), as.integer(n.site), as.double(steps),
+            ans <- .C(C_rextremaltcirc, as.integer(n), as.integer(n.site), as.double(steps),
                       as.integer(dist.dim), as.integer(cov.mod), as.double(nugget), as.double(range),
-                      as.double(smooth), as.double(DoF), as.double(uBound), ans = ans,
-                      PACKAGE = "SpatialExtremes")$ans
+                      as.double(smooth), as.double(DoF), as.double(uBound), ans = ans)$ans
 
         else
-            ans <- .C("rextremalttbm", as.double(coord), as.integer(n), as.integer(n.site),
+            ans <- .C(C_rextremalttbm, as.double(coord), as.integer(n), as.integer(n.site),
                       as.integer(dist.dim), as.integer(cov.mod), grid, as.double(nugget),
                       as.double(range), as.double(smooth), as.double(DoF), as.double(uBound),
-                      as.integer(nlines), ans = ans, PACKAGE = "SpatialExtremes")$ans
+                      as.integer(nlines), ans = ans)$ans
     }
 
     else if (model == "Brown-Resnick"){
@@ -294,17 +291,17 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
             idx.sub.orig <- n.sub.orig <- 0
 
         if (method == "olddirect")
-            ans <- .C("rbrowndirect", as.double(coord), as.double(bounds),
+            ans <- .C(C_rbrowndirect, as.double(coord), as.double(bounds),
                       as.integer(n), as.integer(n.site), as.integer(dist.dim),
                       as.integer(grid), as.double(range), as.double(smooth),
                       as.double(uBound), as.integer(sim.type), as.integer(max.sim),
                       as.integer(nPP), as.integer(idx.sub.orig), as.integer(n.sub.orig),
-                      ans = ans, PACKAGE = "SpatialExtremes")$ans
+                      ans = ans)$ans
 
         ##if (method == "direct")
-            ans <- .C("rbrownexact", as.double(coord), as.integer(n), as.integer(n.site),
+            ans <- .C(C_rbrownexact, as.double(coord), as.integer(n), as.integer(n.site),
                       as.integer(dist.dim), as.integer(grid), as.double(range), as.double(smooth),
-                      ans = ans, PACKAGE = "SpatialExtremes")$ans
+                      ans = ans)$ans
     }
 
     if (grid){

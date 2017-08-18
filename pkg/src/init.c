@@ -1,3 +1,4 @@
+#include "header.h"
 #include <stdlib.h> // for NULL
 #include <R_ext/Rdynload.h>
 
@@ -5,75 +6,11 @@
    Check these declarations against the C/Fortran source code.
 */
 
-/* .C calls */
-extern void bell(void *, void *);
-extern void brownresnickstderr(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void circemb(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void computeWeightsBR(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void computeWeightsExtt(void *, void *, void *, void *, void *, void *, void *, void *);
-extern void computeWeightsSC(void *, void *, void *, void *, void *, void *, void *);
-extern void concProbKendall(void *, void *, void *, void *, void *, void *);
-extern void condsimbrown(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void condsimextt(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void condsimschlather(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void DIC(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void direct(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void distance(void *, void *, void *, void *, void *);
-extern void empiricalBootConcProb(void *, void *, void *, void *, void *);
-extern void empiricalConcProb(void *, void *, void *, void *, void *, void *);
-extern void extCoeffSmith(void *, void *, void *, void *);
-extern void extCoeffST(void *, void *, void *, void *, void *, void *);
-extern void extremaltstderr(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void fitbrcovariance(void *, void *, void *, void *, void *, void *, void *);
-extern void fitcovariance(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void fitcovmat2d(void *, void *, void *, void *, void *, void *, void *, void *);
-extern void fitcovmat3d(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void fitgcovariance(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void fiticovariance(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void fittcovariance(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void geomgaussstderr(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void getStartingPartitionBR(void *, void *, void *, void *, void *, void *);
-extern void getStartingPartitionExtt(void *, void *, void *, void *, void *);
-extern void getStartingPartitionSC(void *, void *, void *, void *);
-extern void gev(void *, void *, void *, void *, void *, void *);
-extern void gevlik(void *, void *, void *, void *, void *, void *);
-extern void gibbsForPartBR(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void gibbsForPartExtt(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void gibbsForPartSC(void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void gpdlik(void *, void *, void *, void *, void *, void *);
-extern void latentgev(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void listAllPartOfASet(void *, void *, void *, void *);
-extern void lmadogram(void *, void *, void *, void *, void *, void *);
-extern void madogram(void *, void *, void *, void *);
-extern void maxLinDsgnMat(void *, void *, void *, void *, void *, void *, void *, void *);
-extern void maxLinear(void *, void *, void *, void *, void *, void *, void *);
-extern void rbrowndirect(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void rbrownexact(void *, void *, void *, void *, void *, void *, void *, void *);
-extern void rcondMaxLin(void *, void *, void *, void *, void *, void *);
-extern void rextremaltcirc(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void rextremaltdirect(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void rextremalttbm(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void rgeomcirc(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void rgeomdirect(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void rgeomtbm(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void rotation(void *, void *, void *, void *, void *, void *);
-extern void rschlathercirc(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void rschlatherdirect(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void rschlathertbm(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void rsmith1d(void *, void *, void *, void *, void *, void *, void *);
-extern void rsmith2d(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void schlatherindstderr(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void schlatherstderr(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void skriging(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void smithstderr(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void smithstderr3d(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void spatgevstderr(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void tbm(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void vandercorput(void *, void *);
-extern void variogram(void *, void *, void *, void *);
 
 static const R_CMethodDef CEntries[] = {
     {"bell",                     (DL_FUNC) &bell,                      2},
+    {"brownresnickfull",         (DL_FUNC) &brownresnickfull,         13},
+    {"brownresnickdsgnmat",      (DL_FUNC) &brownresnickdsgnmat,      46},
     {"brownresnickstderr",       (DL_FUNC) &brownresnickstderr,       29},
     {"circemb",                  (DL_FUNC) &circemb,                  10},
     {"computeWeightsBR",         (DL_FUNC) &computeWeightsBR,         11},
@@ -83,6 +20,7 @@ static const R_CMethodDef CEntries[] = {
     {"condsimbrown",             (DL_FUNC) &condsimbrown,             17},
     {"condsimextt",              (DL_FUNC) &condsimextt,              11},
     {"condsimschlather",         (DL_FUNC) &condsimschlather,         10},
+    {"copula",                   (DL_FUNC) &copula,                   51},
     {"DIC",                      (DL_FUNC) &DIC,                      13},
     {"direct",                   (DL_FUNC) &direct,                   11},
     {"distance",                 (DL_FUNC) &distance,                  5},
@@ -90,6 +28,8 @@ static const R_CMethodDef CEntries[] = {
     {"empiricalConcProb",        (DL_FUNC) &empiricalConcProb,         6},
     {"extCoeffSmith",            (DL_FUNC) &extCoeffSmith,             4},
     {"extCoeffST",               (DL_FUNC) &extCoeffST,                6},
+    {"extremaltfull",            (DL_FUNC) &extremaltfull,            18},
+    {"extremaltdsgnmat",         (DL_FUNC) &extremaltdsgnmat,         51},
     {"extremaltstderr",          (DL_FUNC) &extremaltstderr,          33},
     {"fitbrcovariance",          (DL_FUNC) &fitbrcovariance,           7},
     {"fitcovariance",            (DL_FUNC) &fitcovariance,            11},
@@ -98,6 +38,8 @@ static const R_CMethodDef CEntries[] = {
     {"fitgcovariance",           (DL_FUNC) &fitgcovariance,           13},
     {"fiticovariance",           (DL_FUNC) &fiticovariance,           12},
     {"fittcovariance",           (DL_FUNC) &fittcovariance,           12},
+    {"geomgaussfull",            (DL_FUNC) &geomgaussfull,            19},
+    {"geomgaussdsgnmat",         (DL_FUNC) &geomgaussdsgnmat,         52},
     {"geomgaussstderr",          (DL_FUNC) &geomgaussstderr,          33},
     {"getStartingPartitionBR",   (DL_FUNC) &getStartingPartitionBR,    6},
     {"getStartingPartitionExtt", (DL_FUNC) &getStartingPartitionExtt,  5},
@@ -129,11 +71,18 @@ static const R_CMethodDef CEntries[] = {
     {"rschlathertbm",            (DL_FUNC) &rschlathertbm,            12},
     {"rsmith1d",                 (DL_FUNC) &rsmith1d,                  7},
     {"rsmith2d",                 (DL_FUNC) &rsmith2d,                 10},
+    {"schlatherfull",            (DL_FUNC) &schlatherfull,            17},
+    {"schlatherdsgnmat",         (DL_FUNC) &schlatherdsgnmat,         50},
+    {"schlatherindfull",         (DL_FUNC) &schlatherindfull,         18},
+    {"schlatherinddsgnmat",      (DL_FUNC) &schlatherinddsgnmat,      51},
     {"schlatherindstderr",       (DL_FUNC) &schlatherindstderr,       33},
     {"schlatherstderr",          (DL_FUNC) &schlatherstderr,          32},
     {"skriging",                 (DL_FUNC) &skriging,                 13},
+    {"smithfull",                (DL_FUNC) &smithfull,                14},
+    {"smithdsgnmat",             (DL_FUNC) &smithdsgnmat,             47},
     {"smithstderr",              (DL_FUNC) &smithstderr,              30},
     {"smithstderr3d",            (DL_FUNC) &smithstderr3d,            33},
+    {"spatgevlik",               (DL_FUNC) &spatgevlik,               42},
     {"spatgevstderr",            (DL_FUNC) &spatgevstderr,            24},
     {"tbm",                      (DL_FUNC) &tbm,                      12},
     {"vandercorput",             (DL_FUNC) &vandercorput,              2},
@@ -145,4 +94,5 @@ void R_init_SpatialExtremes(DllInfo *dll)
 {
     R_registerRoutines(dll, CEntries, NULL, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
+    R_forceSymbols(dll, TRUE);
 }

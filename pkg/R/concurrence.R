@@ -48,10 +48,9 @@ concprob <- function(data, coord, fitted, n.bins, add = FALSE, xlim = c(0, max(d
 
     ## Compute p(x1, x2) for each pair of station
     if (which == "kendall"){
-        dummy <- .C("concProbKendall", as.double(data), as.integer(n.site),
+        dummy <- .C(C_concProbKendall, as.double(data), as.integer(n.site),
                     as.integer(n.obs), concProb = double(n.pairs),
-                    jack = double(n.pairs * n.obs), as.integer(std.err), NAOK = TRUE,
-                    PACKAGE = "SpatialExtremes")
+                    jack = double(n.pairs * n.obs), as.integer(std.err), NAOK = TRUE)
 
         if (compute.std.err) {
             jack <- matrix(dummy$jack, n.obs, n.pairs)
@@ -62,16 +61,14 @@ concprob <- function(data, coord, fitted, n.bins, add = FALSE, xlim = c(0, max(d
     }
 
     else if (which == "emp")
-        concProb <- .C("empiricalConcProb", as.double(data), as.integer(n.site),
+        concProb <- .C(C_empiricalConcProb, as.double(data), as.integer(n.site),
                        as.integer(n.obs), as.integer(block.size), as.integer(n.block),
-                       concProb = double(n.pairs), NAOK = TRUE,
-                       PACKAGE = "SpatialExtremes")$concProb
+                       concProb = double(n.pairs), NAOK = TRUE)$concProb
 
     else
-        concProb <- .C("empiricalBootConcProb", as.double(data), as.integer(n.site),
+        concProb <- .C(C_empiricalBootConcProb, as.double(data), as.integer(n.site),
                        as.integer(n.obs), as.integer(block.size),
-                       concProb = double(n.pairs), NAOK = TRUE,
-                       PACKAGE = "SpatialExtremes")$concProb
+                       concProb = double(n.pairs), NAOK = TRUE)$concProb
 
     concProb <- pmax(0, concProb)
 

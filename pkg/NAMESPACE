@@ -1,7 +1,6 @@
-importFrom(maps, map)
-useDynLib(SpatialExtremes)
-exportPattern("^[^\\.]")
+useDynLib(SpatialExtremes, .registration = TRUE, .fixes = "C_")
 
+importFrom(maps, map)
 importFrom("grDevices", "cm.colors", "terrain.colors")
 importFrom("graphics", "abline", "axis", "box", "contour", "curve",
            "filled.contour", "hist", "image", "layout", "legend",
@@ -15,7 +14,19 @@ importFrom("stats", "AIC", "deviance", "dist", "fitted", "lm",
            "rexp", "rnorm", "runif", "sd", "terms", "uniroot",
            "update", "var")
 
+## Our exports
+exportPattern("^[^\\. C\\_]")
 
+##export(rmaxstab)
+##export(rgp)
+##export(madogram)
+##export(fmadogram)
+##export(lmadogram)
+##export(covariance)
+##export(fitextcoeff)
+
+
+## Our methods
 S3method(TIC, default)
 
 ## Methods for class 'maxstab'
