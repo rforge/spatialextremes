@@ -46,8 +46,8 @@ plot = TRUE, compute.std.err = FALSE, ...)
   distances and the concurrence probability estimates.
 }
 \references{
-  Dombry, C., Ribatet, M. and Stoev, S. (2015) Probabilities of
-  concurrent extremes. \emph{Submitted}
+  Dombry, C., Ribatet, M. and Stoev, S. (2017) Probabilities of
+  concurrent extremes. \emph{To appear in JASA}
 }
 \author{Mathieu Ribatet}
 
