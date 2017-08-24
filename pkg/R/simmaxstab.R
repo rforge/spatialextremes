@@ -135,7 +135,7 @@ rmaxstab <- function(n, coord, cov.mod = "gauss", grid = FALSE,
     else
         n.eff.site <- n.site
 
-    ans <- rep(-1e10, n * n.site)
+    ans <- rep(-1e10, n * n.eff.site)
 
     ##Identify which simulation technique is the most adapted or use the
     ##one specified by the user --- this is useless for the Smith model.
