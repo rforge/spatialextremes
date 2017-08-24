@@ -57,12 +57,13 @@ plot = TRUE, compute.std.err = FALSE, ...)
   \code{\link{fmadogram}}, \code{\link{lmadogram}}
 }
 \examples{
-n.site <- 15
+n.site <- 25
 locations <- matrix(runif(2*n.site, 0, 10), ncol = 2)
 colnames(locations) <- c("lon", "lat")
 
 ##Simulate a max-stable process - with unit Frechet margins
-data <- rmaxstab(40, locations, cov.mod = "whitmat", nugget = 0, range = 1,
+n.obs <- 100
+data <- rmaxstab(n.obs, locations, cov.mod = "whitmat", nugget = 0, range = 1,
 smooth = 2)
 
 ##Compute the F-madogram
