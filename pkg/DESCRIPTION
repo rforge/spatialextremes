@@ -1,6 +1,6 @@
 Package: SpatialExtremes
-Version: 2.0-4
-Date: 2017-08-24
+Version: 2.0-5
+Date: 2017-09-15
 Title: Modelling Spatial Extremes
 Authors@R: c(person("Mathieu", "Ribatet", role = c("aut", "cre"),
 	   email = "mathieu.ribatet@umontpellier.fr"),
