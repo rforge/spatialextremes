@@ -214,7 +214,15 @@
     characterisation is bounded above, we will require only a finite
     number of independent replications. If the process is not bounded then
     Schlather [2002] shows that it is however possible to get accurate
-    simulations.
+    simulations. <br />
+
+    The methodology introduced above was the first approach to
+    generate (approximate) realizations from a max-stable process. It
+    is now possible to get exact simulation using the methodology
+    developped by <a
+    href="https://academic.oup.com/biomet/article/103/2/303/1744000">C. Dombry,
+    S. Engelke and M. Oesting</a>. The package uses such a strategy whenever it is possible (or implemented ;-) )
+    
   </div>
   </div>
   <div id="right_bot"></div>
